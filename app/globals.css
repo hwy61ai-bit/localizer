@@ -36,3 +36,18 @@ body {
   text-transform: uppercase;
 }
 }
+/* --- Localizer safety reset for UI pills/buttons --- */
+button {
+  color: inherit;
+}
+
+button[style] {
+  /* If we used inline styles, never let globals wipe them out */
+  background: initial;
+  border: initial;
+}
+
+button[style] {
+  background-color: unset;
+  border-color: unset;
+}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createEventAction } from "./actions";
+import { createEventAction } from "../actions";
 
 export default async function NewEventPage({
   params,

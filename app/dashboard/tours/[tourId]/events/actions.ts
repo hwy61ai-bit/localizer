@@ -1,5 +1,5 @@
 "use server";
-
+import { generatePublicToken } from "@/lib/tokens";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
 
@@ -117,4 +117,3 @@ export async function createVenueLink(formData: FormData) {
 
   redirect(`/v/e/${token}`);
 }
-import { generatePublicToken } from "@/lib/tokens";
