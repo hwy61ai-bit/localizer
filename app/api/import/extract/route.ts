@@ -1,0 +1,61 @@
+import { NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic();
+
+export async function POST(request: Request) {
+  try {
+    const { base64, filename, mimeType } = await request.json();
+
+    if (!base64 || !filename) {
+      return NextResponse.json({ error: "Missing file data." }, { status: 400 });
+    }
+
+    const ext = filename.split(".").pop()?.toLowerCase();
+    let extractedText = "";
+
+    if (ext === "docx" || ext === "doc") {
+      const mammoth = await import("mammoth");
+      const buffer = Buffer.from(base64, "base64");
+      const result = await mammoth.extractRawText({ buffer });
+      extractedText = result.value;
+    } else if (ext === "pdf" || ["jpg", "jpeg", "png", "gif", "webp"].includes(ext ?? "")) {
+      const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext ?? "");
+      const mediaType = isImage ? mimeType : "application/pdf";
+
+      const contentBlock = isImage
+        ? { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } }
+        : { type: "document", source: { type: "base64", media_type: mediaType, data: base64 } };
+
+      const message = await client.messages.create({
+        model: "claude-opus-4-5",
+        max_tokens: 4096,
+        messages: [
+          {
+            role: "user",
+            content: [
+              contentBlock as object,
+              { type: "text", text: "Extract all text from this file exactly as it appears. Return only the raw text, no commentary." },
+            ],
+          },
+        ],
+      });
+
+      extractedText = message.content
+        .filter((b) => b.type === "text")
+        .map((b) => (b as { type: "text"; text: string }).text)
+        .join("");
+    } else {
+      return NextResponse.json({ error: `Unsupported file type: .${ext}` }, { status: 400 });
+    }
+
+    if (!extractedText.trim()) {
+      return NextResponse.json({ error: "Could not extract any text from this file." }, { status: 422 });
+    }
+
+    return NextResponse.json({ text: extractedText });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Extraction failed.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
