@@ -36,6 +36,10 @@ export default async function DashboardPage() {
       role: "owner",
     });
     if (memberError) throw new Error(memberError.message);
+    await supabase
+      .from("orgs")
+      .update({ owner_email: user.email })
+      .eq("id", orgId);
   }
 
   const { data: toursData, error: toursError } = await supabase
