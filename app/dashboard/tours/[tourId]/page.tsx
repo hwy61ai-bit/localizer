@@ -186,6 +186,21 @@ export default async function TourPage({
               >
                 + New Tour
               </button>
+              <Link
+  href={`/dashboard/tours/${tourId}/import`}
+  style={{
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #111",
+    background: "#111",
+    color: "#fff",
+    textDecoration: "none",
+    fontWeight: 900,
+    fontSize: 13,
+  }}
+>
+  ↑ Import Schedule
+</Link>
             </form>
 
             <button
