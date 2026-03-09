@@ -23,20 +23,41 @@ export async function POST(request: Request) {
       const isImage = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext ?? "");
       const mediaType = isImage ? mimeType : "application/pdf";
 
-      const contentBlock = isImage
-        ? { type: "image", source: { type: "base64", media_type: mediaType, data: base64 } }
-        : { type: "document", source: { type: "base64", media_type: mediaType, data: base64 } };
-
       const message = await client.messages.create({
         model: "claude-opus-4-5",
         max_tokens: 4096,
         messages: [
           {
             role: "user",
-            content: [
-              contentBlock as object,
-              { type: "text", text: "Extract all text from this file exactly as it appears. Return only the raw text, no commentary." },
-            ],
+            content: isImage
+              ? [
+                  {
+                    type: "image" as const,
+                    source: {
+                      type: "base64" as const,
+                      media_type: mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+                      data: base64,
+                    },
+                  },
+                  {
+                    type: "text" as const,
+                    text: "Extract all text from this file exactly as it appears. Return only the raw text, no commentary.",
+                  },
+                ]
+              : [
+                  {
+                    type: "document" as const,
+                    source: {
+                      type: "base64" as const,
+                      media_type: "application/pdf" as const,
+                      data: base64,
+                    },
+                  },
+                  {
+                    type: "text" as const,
+                    text: "Extract all text from this file exactly as it appears. Return only the raw text, no commentary.",
+                  },
+                ],
           },
         ],
       });
