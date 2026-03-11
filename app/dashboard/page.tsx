@@ -143,7 +143,7 @@ export default async function DashboardPage() {
           <form action={createTour}>
             <button type="submit" style={{
               width: "100%",
-              minHeight: 148,
+              aspectRatio: "1 / 1",
               background: "transparent",
               border: "1.5px dashed #CCCCCC",
               borderRadius: 14,
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
               cursor: "pointer",
               padding: 20,
             }}>
-              <span style={{ fontSize: 28, color: "#ccc", lineHeight: 1 }}>+</span>
+              <span style={{ fontSize: 140, fontWeight: 900, color: "#111", lineHeight: 1 }}>+</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#aaa", letterSpacing: "0.04em" }}>New Tour</span>
             </button>
           </form>

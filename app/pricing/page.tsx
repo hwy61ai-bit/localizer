@@ -66,6 +66,10 @@ export default function PricingPage() {
     <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "48px 24px 80px" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
 
+        <div style={{ marginBottom: 24 }}>
+          <a href="/" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>← Back</a>
+        </div>
+
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h1 className="brand-title" style={{ margin: 0, marginBottom: 12 }}>LOCALIZER</h1>
