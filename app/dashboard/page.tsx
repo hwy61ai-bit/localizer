@@ -72,7 +72,6 @@ export default async function DashboardPage() {
     }
   }
 
-  redirect("/dashboard/artists");
 
   async function createTour() {
     "use server";
