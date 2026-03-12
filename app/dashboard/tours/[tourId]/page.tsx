@@ -8,7 +8,7 @@ import EventsTable from "./components/EventsTable";
 
 type TourRow = {
   id: string; org_id: string; name: string;
-  band_tour_label: string | null; spotify_url: string | null; created_at: string; last_opened_at: string | null;
+  band_tour_label: string | null; spotify_url: string | null; artist_id: string | null; created_at: string; last_opened_at: string | null;
 };
 type EventRow = {
   id: string; tour_id: string; date_iso: string; day: string | null;
