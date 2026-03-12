@@ -4,17 +4,17 @@ import { supabase } from "@/lib/supabaseClient";
 
 export default function AuthConfirm() {
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        window.location.href = "/dashboard";
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = "/dashboard";
-    });
-
-    return () => subscription.unsubscribe();
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) {
+          window.location.href = "/dashboard";
+        } else {
+          console.error("Auth error:", error.message);
+          window.location.href = "/login?error=auth";
+        }
+      });
+    }
   }, []);
 
   return (
