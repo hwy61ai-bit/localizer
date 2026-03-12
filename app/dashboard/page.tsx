@@ -112,7 +112,7 @@ export default async function DashboardPage() {
               {tours.length} tour{tours.length !== 1 ? "s" : ""}
             </div>
           </div>
-          <div style={{ fontSize: 12, color: "#aaa" }}>{user.email}</div>
+          <div style={{ fontSize: 12, color: "#aaa" }}>{user?.email}</div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
