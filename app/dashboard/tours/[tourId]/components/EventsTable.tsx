@@ -27,7 +27,7 @@ type CityStateCellProps = {
   editing: { id: string; field: EditableField } | null;
   saving: string | null;
   drafts: { city: string; state: string };
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   onStartEdit: (e: EventRow, field: EditableField) => void;
   onDraftChange: (val: string) => void;
   onCommit: () => void;
@@ -89,7 +89,7 @@ type CellProps = {
   editing: { id: string; field: EditableField } | null;
   saving: string | null;
   draft: string;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
   onStartEdit: (e: EventRow, field: EditableField) => void;
   onDraftChange: (val: string) => void;
   onCommit: () => void;
