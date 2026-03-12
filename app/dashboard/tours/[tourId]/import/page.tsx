@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 type ParsedEvent = {
@@ -21,11 +21,22 @@ export default function ImportPage() {
 
   const [rawText, setRawText] = useState("");
   const [parsing, setParsing] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [events, setEvents] = useState<ParsedEvent[] | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const prevent = (e: DragEvent) => e.preventDefault();
+    window.addEventListener("dragover", prevent);
+    window.addEventListener("drop", prevent);
+    return () => {
+      window.removeEventListener("dragover", prevent);
+      window.removeEventListener("drop", prevent);
+    };
+  }, []);
 
   // ── Handle file upload (PDF, DOCX, image, CSV, txt)
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -42,6 +53,7 @@ export default function ImportPage() {
     }
 
     // For PDF, DOCX, images — read as base64 and extract text via a second AI call
+    setExtracting(true);
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = (reader.result as string).split(",")[1];
@@ -60,9 +72,11 @@ export default function ImportPage() {
         const data = await res.json();
         if (data.text) {
           setRawText(data.text);
+          setExtracting(false);
         } else {
           setRawText("");
           setError(data.error ?? "Could not extract text from file.");
+          setExtracting(false);
         }
       } catch {
         setError("Failed to extract file content.");
@@ -131,6 +145,14 @@ export default function ImportPage() {
     }
   }
 
+
+  function formatDate(iso: string | null) {
+    if (!iso) return "—";
+    const [y, m, d] = iso.split("-");
+    if (!m || !d) return iso;
+    return `${m}/${d}/${y}`;
+  }
+
   const s = styles;
 
   return (
@@ -157,7 +179,7 @@ export default function ImportPage() {
 
         {/* Input card — hide after parse */}
         {!events && (
-          <div style={s.card}>
+          <div style={s.card} onDragOver={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}>
             {/* File upload row */}
             <div style={s.uploadRow}>
               <div style={s.uploadLabel}>Upload a file</div>
@@ -188,7 +210,7 @@ export default function ImportPage() {
               style={s.textarea}
               placeholder={`Paste your tour schedule here. Any format works — itinerary emails, spreadsheet copy/paste, Google Doc text, routing sheets, etc.\n\nExample:\nMay 1 — Detroit, MI — The Fillmore — promo@example.com\nMay 3 — Chicago, IL — Metro — buyer@metro.com`}
               value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
+              onChange={(e) => setRawText(e.target.value)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}
               rows={14}
             />
 
@@ -197,13 +219,13 @@ export default function ImportPage() {
             <button
               style={{
                 ...s.parseBtn,
-                opacity: !rawText.trim() || parsing ? 0.5 : 1,
-                cursor: !rawText.trim() || parsing ? "not-allowed" : "pointer",
+                opacity: !rawText.trim() || parsing || extracting ? 0.5 : 1,
+                cursor: !rawText.trim() || parsing || extracting ? "not-allowed" : "pointer",
               }}
-              disabled={!rawText.trim() || parsing}
+              disabled={!rawText.trim() || parsing || extracting}
               onClick={handleParse}
             >
-              {parsing ? "Parsing with AI…" : "Parse Schedule →"}
+              {extracting ? "Extracting file…" : parsing ? "Parsing with AI…" : "Parse Schedule →"}
             </button>
 
             {parsing && (
@@ -284,7 +306,7 @@ export default function ImportPage() {
                     background: i % 2 === 0 ? "#fff" : "#fafafa",
                   }}
                 >
-                  <div style={s.col.date}>{e.date_iso ?? "—"}</div>
+                  <div style={s.col.date}>{formatDate(e.date_iso)}</div>
                   <div style={s.col.day}>{e.day ?? "—"}</div>
                   <div style={s.col.venue}>{e.venue_name ?? "—"}</div>
                   <div style={s.col.city}>

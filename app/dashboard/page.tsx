@@ -72,6 +72,8 @@ export default async function DashboardPage() {
     }
   }
 
+  redirect("/dashboard/artists");
+
   async function createTour() {
     "use server";
     const supabase = await supabaseServer();
@@ -104,7 +106,8 @@ export default async function DashboardPage() {
 
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
           <div>
-            <h1 className="brand-title" style={{ margin: 0, marginBottom: 4 }}>LOCALIZER</h1>
+            <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
+            <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>TOURS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>
               {tours.length} tour{tours.length !== 1 ? "s" : ""}
             </div>
