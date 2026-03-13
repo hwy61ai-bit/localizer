@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 const FONTS = [
@@ -75,16 +75,24 @@ function buildPreviewUrl(
 
 export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: string }) {
   const [cfg, setCfg] = useState<OverlayConfig>(tour.overlay_config ?? DEFAULT_CONFIG);
+  const [debouncedCfg, setDebouncedCfg] = useState<OverlayConfig>(tour.overlay_config ?? DEFAULT_CONFIG);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
   const bandName = tour.band_tour_label ?? tour.name ?? "Artist";
   const hasImage = !!tour.image_url;
-  const previewUrl = hasImage ? buildPreviewUrl(tour.image_url!, cloudName, cfg, bandName) : null;
+  const previewUrl = hasImage ? buildPreviewUrl(tour.image_url!, cloudName, debouncedCfg, bandName) : null;
 
   function update(key: keyof OverlayConfig, value: string | number | boolean) {
-    setCfg((prev) => ({ ...prev, [key]: value }));
+    setCfg((prev) => {
+      const next = { ...prev, [key]: value };
+      // Debounce preview update by 800ms
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      debounceTimer.current = setTimeout(() => setDebouncedCfg(next), 800);
+      return next;
+    });
     setSaved(false);
   }
 
