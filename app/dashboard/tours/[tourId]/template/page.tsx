@@ -12,7 +12,7 @@ export default async function TemplatePage({
 
   const { data: tour, error } = await supabase
     .from("tours")
-    .select("id, name, band_tour_label, image_url, image_square_id, image_story_id, image_landscape_id, overlay_config")
+    .select("id, name, band_name, band_tour_label, image_url, image_square_id, image_story_id, image_landscape_id, overlay_config")
     .eq("id", tourId)
     .single();
 

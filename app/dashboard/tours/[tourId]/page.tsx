@@ -8,7 +8,7 @@ import EventsTable from "./components/EventsTable";
 
 type TourRow = {
   id: string; org_id: string; name: string;
-  band_tour_label: string | null; spotify_url: string | null; artist_id: string | null; created_at: string; last_opened_at: string | null;
+  band_tour_label: string | null; band_name: string | null; spotify_url: string | null; artist_id: string | null; created_at: string; last_opened_at: string | null;
 };
 type EventRow = {
   id: string; tour_id: string; date_iso: string; day: string | null;
@@ -24,13 +24,14 @@ export default async function TourPage({ params, searchParams }: { params: Promi
   const supabase = await supabaseServer();
 
   const { data: tour, error: tourError } = await supabase
-    .from("tours").select("id, org_id, name, band_tour_label, spotify_url, artist_id, created_at, last_opened_at, overlay_config")
+    .from("tours").select("id, org_id, name, band_tour_label, band_name, spotify_url, artist_id, created_at, last_opened_at, overlay_config")
     .eq("id", tourId).single<TourRow>();
   if (tourError || !tour) throw new Error(tourError?.message ?? "Tour not found");
 
   const orgId = tour.org_id;
   const tourName = tour.name;
   const bandTourLabel = tour.band_tour_label;
+  const bandName = tour.band_name;
   const spotifyUrl = tour.spotify_url;
 
   await supabase.from("tours").update({ last_opened_at: new Date().toISOString() }).eq("id", tourId);
@@ -61,11 +62,13 @@ export default async function TourPage({ params, searchParams }: { params: Promi
 
   async function saveBandTourLabel(formData: FormData) {
     "use server";
-    const value = String(formData.get("band_tour_label") ?? "").trim();
+    const band = String(formData.get("band_name") ?? "").trim();
+    const tour_label = String(formData.get("band_tour_label") ?? "").trim();
     const spotify = String(formData.get("spotify_url") ?? "").trim();
     const supabase = await supabaseServer();
     const { error } = await supabase.from("tours").update({
-      band_tour_label: value.length ? value : null,
+      band_name: band.length ? band : null,
+      band_tour_label: tour_label.length ? tour_label : null,
       spotify_url: spotify.length ? spotify : null,
     }).eq("id", tourId);
     if (error) throw new Error(error.message);
@@ -94,10 +97,14 @@ export default async function TourPage({ params, searchParams }: { params: Promi
 
 
         <div style={{ padding: 18, border: "1px solid #e6e6e6", borderRadius: 16, background: "#fff", marginBottom: 18 }}>
-          <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 10 }}>Band / Tour</div>
           <form action={saveBandTourLabel} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <input name="band_tour_label" defaultValue={bandTourLabel ?? ""} placeholder="Band/Tour" style={{ flex: 1, padding: "12px 14px", border: "1px solid #ddd", borderRadius: 12, fontSize: 18, fontWeight: 800, outline: "none" }} />
+            <div>
+              <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Band</div>
+              <input name="band_name" defaultValue={bandName ?? ""} placeholder="Band name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", border: "1px solid #ddd", borderRadius: 12, fontSize: 18, fontWeight: 800, outline: "none" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 6 }}>Tour</div>
+              <input name="band_tour_label" defaultValue={bandTourLabel ?? ""} placeholder="Tour name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", border: "1px solid #ddd", borderRadius: 12, fontSize: 16, fontWeight: 600, outline: "none" }} />
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <input name="spotify_url" defaultValue={spotifyUrl ?? ""} placeholder="Spotify Artist or Playlist URL (optional)" style={{ flex: 1, padding: "10px 14px", border: "1px solid #ddd", borderRadius: 12, fontSize: 13, outline: "none", color: "#555" }} />

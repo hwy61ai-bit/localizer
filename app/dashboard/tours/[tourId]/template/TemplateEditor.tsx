@@ -64,6 +64,7 @@ const BAND_DEFAULT: FieldConfig = { x: 0.5, y: 0.65, size: 80 };
 type Tour = {
   id: string;
   name: string;
+  band_name: string | null;
   band_tour_label: string | null;
   image_url: string | null;
   image_square_id: string | null;
@@ -123,7 +124,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
   const SNAP = 0.025;
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
-  const bandName = tour.band_tour_label ?? tour.name ?? "Artist";
+  const bandName = tour.band_name ?? tour.name ?? "Artist";
 
   const formatImageIds: Record<FormatKey, string | null> = {
     square:    tour.image_square_id,
