@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 
 const FONTS = [
@@ -13,7 +13,7 @@ const FONTS = [
   { label: "Saira Condensed", value: "Saira Condensed" },
 ];
 
-type OverlayConfig = {
+export type OverlayConfig = {
   fontFamily: string;
   bandColor: string;
   dateColor: string;
@@ -45,278 +45,235 @@ const DEFAULT_CONFIG: OverlayConfig = {
   showBandName: false,
 };
 
+type FormatKey = "square" | "story" | "landscape";
+
+const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
+  { key: "square",    label: "IG Square",  w: 1080, h: 1080 },
+  { key: "story",     label: "IG Story",   w: 1080, h: 1350 },
+  { key: "landscape", label: "FB Cover",   w: 1920, h: 1080 },
+];
+
 type Tour = {
   id: string;
   name: string;
   band_tour_label: string | null;
   image_url: string | null;
-  overlay_config: OverlayConfig | null;
+  image_square_id: string | null;
+  image_story_id: string | null;
+  image_landscape_id: string | null;
+  overlay_config: Record<FormatKey, OverlayConfig> | null;
 };
 
 function buildPreviewUrl(
   publicId: string,
   cloudName: string,
   cfg: OverlayConfig,
-  bandName: string
+  bandName: string,
+  format: FormatKey
 ): string {
+  const dims = { square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, landscape: { w: 1920, h: 1080 } };
+  const { w, h } = dims[format];
   const font = cfg.fontFamily.replace(/ /g, "%20");
-  const maxW = 918;
+  const maxW = Math.round(w * 0.85);
+  const scale = format === "landscape" ? 0.75 : 1;
+  const dateSize  = Math.round(cfg.dateSize  * scale);
+  const venueSize = Math.round(cfg.venueSize * scale);
+  const citySize  = Math.round(cfg.citySize  * scale);
+  const bandSize  = Math.round(cfg.bandSize  * scale);
   const sanitize = (t: string) => t.replace(/,/g, " ").replace(/[/?&#%]/g, "").trim();
 
-  const layers = [
-    `c_fill,g_center,h_1920,w_1080`,
-    ...(cfg.showGradient ? [`e_gradient_fade:symmetric_pad,y_-0.5`] : []),
-    `c_fit,co_rgb:${cfg.bandColor},fl_layer_apply,g_south,l_text:${font}_${cfg.bandSize}_bold:${encodeURIComponent(sanitize(bandName))},w_${maxW},y_${cfg.yOffset + cfg.dateSize + cfg.venueSize + cfg.citySize + 24}`,
-    `c_fit,co_rgb:${cfg.dateColor},fl_layer_apply,g_south,l_text:${font}_${cfg.dateSize}:Saturday%20April%2025%202026,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset + cfg.venueSize + cfg.citySize + 12}`,
-    `c_fit,co_rgb:${cfg.venueColor},fl_layer_apply,g_south,l_text:${font}_${cfg.venueSize}_bold:White%20Water%20Tavern,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset + cfg.citySize + 6}`,
-    `c_fit,co_rgb:${cfg.cityColor},fl_layer_apply,g_south,l_text:${font}_${cfg.citySize}:Little%20Rock%20AR,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset}`,
+  const layers: string[] = [
+    `c_fill,g_center,h_${h},w_${w}`,
+    ...(cfg.showGradient ? ["e_gradient_fade:symmetric_pad,y_-0.5"] : []),
+    ...(cfg.showBandName ? [`c_fit,co_rgb:${cfg.bandColor},fl_layer_apply,g_south,l_text:${font}_${bandSize}_bold:${encodeURIComponent(sanitize(bandName))},w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset + dateSize + venueSize + citySize + 24}`] : []),
+    `c_fit,co_rgb:${cfg.dateColor},fl_layer_apply,g_south,l_text:${font}_${dateSize}:Saturday%20April%2025%202026,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset + venueSize + citySize + 12}`,
+    `c_fit,co_rgb:${cfg.venueColor},fl_layer_apply,g_south,l_text:${font}_${venueSize}_bold:White%20Water%20Tavern,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset + citySize + 6}`,
+    `c_fit,co_rgb:${cfg.cityColor},fl_layer_apply,g_south,l_text:${font}_${citySize}:Little%20Rock%20AR,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
 }
 
 export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: string }) {
-  const [cfg, setCfg] = useState<OverlayConfig>(tour.overlay_config ?? DEFAULT_CONFIG);
-  const [debouncedCfg, setDebouncedCfg] = useState<OverlayConfig>(tour.overlay_config ?? DEFAULT_CONFIG);
+  const savedConfigs = tour.overlay_config ?? {} as Record<FormatKey, OverlayConfig>;
+
+  const [activeFormat, setActiveFormat] = useState<FormatKey>("square");
+  const [configs, setConfigs] = useState<Record<FormatKey, OverlayConfig>>({
+    square:    savedConfigs.square    ?? DEFAULT_CONFIG,
+    story:     savedConfigs.story     ?? DEFAULT_CONFIG,
+    landscape: savedConfigs.landscape ?? DEFAULT_CONFIG,
+  });
+  const [debouncedConfigs, setDebouncedConfigs] = useState(configs);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
   const bandName = tour.band_tour_label ?? tour.name ?? "Artist";
-  const hasImage = !!tour.image_url;
-  const previewUrl = hasImage ? buildPreviewUrl(tour.image_url!, cloudName, debouncedCfg, bandName) : null;
+
+  const formatImageIds: Record<FormatKey, string | null> = {
+    square:    tour.image_square_id,
+    story:     tour.image_story_id ?? tour.image_square_id,
+    landscape: tour.image_landscape_id ?? tour.image_square_id,
+  };
+
+  const cfg = configs[activeFormat];
+  const dCfg = debouncedConfigs[activeFormat];
+  const publicId = formatImageIds[activeFormat];
+  const previewUrl = publicId ? buildPreviewUrl(publicId, cloudName, dCfg, bandName, activeFormat) : null;
 
   function update(key: keyof OverlayConfig, value: string | number | boolean) {
-    setCfg((prev) => {
-      const next = { ...prev, [key]: value };
-      // Debounce preview update by 800ms
+    setConfigs((prev) => {
+      const next = { ...prev, [activeFormat]: { ...prev[activeFormat], [key]: value } };
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(() => setDebouncedCfg(next), 400);
+      debounceTimer.current = setTimeout(() => setDebouncedConfigs(next), 400);
       return next;
     });
     setSaved(false);
   }
 
+  function updateDebounced(key: keyof OverlayConfig, value: number) {
+    setConfigs((prev) => {
+      const next = { ...prev, [activeFormat]: { ...prev[activeFormat], [key]: value } };
+      setDebouncedConfigs(next);
+      return next;
+    });
+  }
+
   async function save() {
     setSaving(true);
-    await fetch(`/api/tours/${tourId}/advance`, {
+    await fetch(`/api/tours/${tourId}/overlay-config`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ overlay_config: cfg }),
+      body: JSON.stringify({ overlay_config: configs }),
     });
     setSaving(false);
     setSaved(true);
   }
 
+  const Toggle = ({ cfgKey, label, desc }: { cfgKey: keyof OverlayConfig; label: string; desc: string }) => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 700 }}>{label}</div>
+        <div style={{ fontSize: 12, color: "#888" }}>{desc}</div>
+      </div>
+      <button
+        onClick={() => update(cfgKey, !cfg[cfgKey])}
+        style={{ width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer", background: cfg[cfgKey] ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}
+      >
+        <span style={{ position: "absolute", top: 2, left: cfg[cfgKey] ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+      </button>
+    </div>
+  );
+
+  const Slider = ({ cfgKey, label, min, max, step }: { cfgKey: keyof OverlayConfig; label: string; min: number; max: number; step: number }) => (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+        <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg[cfgKey]}px</span>
+      </div>
+      <input
+        type="range" min={min} max={max} step={step}
+        value={cfg[cfgKey] as number}
+        onChange={(e) => update(cfgKey, parseInt(e.target.value))}
+        onMouseUp={(e) => updateDebounced(cfgKey, parseInt((e.target as HTMLInputElement).value))}
+        onTouchEnd={(e) => updateDebounced(cfgKey, parseInt((e.target as HTMLInputElement).value))}
+        style={{ width: "100%", cursor: "pointer" }}
+      />
+    </div>
+  );
+
   return (
     <div style={{ background: "#EEEEEE", minHeight: "100vh", padding: 32 }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #ddd" }}>
           <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>← Back to Tour</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <h1 className="brand-title" style={{ margin: 0 }}>LOCALIZER</h1>
-            <button
-              onClick={save}
-              disabled={saving}
-              style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: saved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
-            >{saving ? "Saving..." : saved ? "Saved ✓" : "Save Template"}</button>
+            <button onClick={save} disabled={saving} style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: saved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}>
+              {saving ? "Saving..." : saved ? "Saved ✓" : "Save Template"}
+            </button>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 24, alignItems: "start" }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+          {FORMATS.map((f) => (
+            <button key={f.key} onClick={() => setActiveFormat(f.key)} style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid", borderColor: activeFormat === f.key ? "#111" : "#ddd", background: activeFormat === f.key ? "#111" : "#fff", color: activeFormat === f.key ? "#fff" : "#111", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              {f.label}
+            </button>
+          ))}
+        </div>
 
-          {/* Preview */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 24, alignItems: "start" }}>
           <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ddd", overflow: "hidden" }}>
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", fontSize: 12, fontWeight: 900, color: "#555" }}>PREVIEW — Poster Format</div>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", fontSize: 12, fontWeight: 900, color: "#555" }}>
+              PREVIEW — {FORMATS.find(f => f.key === activeFormat)?.label}
+            </div>
             {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Template preview"
-                style={{ width: "100%", height: "auto", maxHeight: "70vh", objectFit: "contain", display: "block" }}
-              />
+              <img src={previewUrl} alt="Preview" style={{ width: "100%", height: "auto", maxHeight: "70vh", objectFit: "contain", display: "block" }} />
             ) : (
               <div style={{ padding: 48, textAlign: "center", color: "#999", fontSize: 14 }}>
-                Upload a tour poster image first to preview the template.
-                <br /><br />
+                No image uploaded for this format yet.<br /><br />
                 <Link href={`/dashboard/tours/${tourId}/assets`} style={{ color: "#111", fontWeight: 700 }}>→ Import Assets</Link>
               </div>
             )}
           </div>
 
-          {/* Controls */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-            {/* Font */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 10 }}>FONT</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {FONTS.map((f) => (
-                  <button
-                    key={f.value}
-                    onClick={() => update("fontFamily", f.value)}
-                    style={{
-                      padding: "10px 14px", borderRadius: 8, border: "1px solid",
-                      borderColor: cfg.fontFamily === f.value ? "#111" : "#ddd",
-                      background: cfg.fontFamily === f.value ? "#111" : "#fff",
-                      color: cfg.fontFamily === f.value ? "#fff" : "#111",
-                      fontWeight: 700, fontSize: 13, cursor: "pointer", textAlign: "left",
-                    }}
-                  >{f.label}</button>
+                  <button key={f.value} onClick={() => update("fontFamily", f.value)} style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid", borderColor: cfg.fontFamily === f.value ? "#111" : "#ddd", background: cfg.fontFamily === f.value ? "#111" : "#fff", color: cfg.fontFamily === f.value ? "#fff" : "#111", fontWeight: 700, fontSize: 13, cursor: "pointer", textAlign: "left" }}>
+                    {f.label}
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* Text sizes */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 12 }}>TEXT SIZES</div>
-              {[
-                { label: "Date", key: "dateSize", min: 20, max: 120 },
-                { label: "Venue", key: "venueSize", min: 20, max: 120 },
-                { label: "City / State", key: "citySize", min: 20, max: 120 },
-              ].map(({ label, key, min, max }) => (
-                <div key={key} style={{ marginBottom: 14 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg[key as keyof OverlayConfig]}px</span>
-                  </div>
-                  <input
-                    type="range" min={min} max={max} step={2}
-                    value={cfg[key as keyof OverlayConfig] as number}
-                    onChange={(e) => update(key as keyof OverlayConfig, parseInt(e.target.value))}
-                    onMouseUp={(e) => setDebouncedCfg({ ...cfg, [key]: parseInt((e.target as HTMLInputElement).value) })}
-                    onTouchEnd={(e) => setDebouncedCfg({ ...cfg, [key]: parseInt((e.target as HTMLInputElement).value) })}
-                    style={{ width: "100%", cursor: "pointer" }}
-                  />
-                </div>
-              ))}
+              <Slider cfgKey="dateSize"  label="Date"         min={20} max={120} step={2} />
+              <Slider cfgKey="venueSize" label="Venue"        min={20} max={120} step={2} />
+              <Slider cfgKey="citySize"  label="City / State" min={20} max={120} step={2} />
             </div>
 
-            {/* Y Offset */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 12 }}>TEXT POSITION</div>
-              <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>Distance from bottom</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg.yOffset}px</span>
-              </div>
-              <input
-                type="range" min={20} max={600} step={10}
-                value={cfg.yOffset}
-                onChange={(e) => update("yOffset", parseInt(e.target.value))}
-                onMouseUp={(e) => setDebouncedCfg({ ...cfg, yOffset: parseInt((e.target as HTMLInputElement).value) })}
-                onTouchEnd={(e) => setDebouncedCfg({ ...cfg, yOffset: parseInt((e.target as HTMLInputElement).value) })}
-                style={{ width: "100%", cursor: "pointer" }}
-              />
-              <div style={{ marginTop: 14, marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>Horizontal position</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg.xOffset > 0 ? `+${cfg.xOffset}` : cfg.xOffset}px</span>
-              </div>
-              <input
-                type="range" min={-400} max={400} step={10}
-                value={cfg.xOffset}
-                onChange={(e) => update("xOffset", parseInt(e.target.value))}
-                onMouseUp={(e) => setDebouncedCfg({ ...cfg, xOffset: parseInt((e.target as HTMLInputElement).value) })}
-                onTouchEnd={(e) => setDebouncedCfg({ ...cfg, xOffset: parseInt((e.target as HTMLInputElement).value) })}
-                style={{ width: "100%", cursor: "pointer" }}
-              />
+              <Slider cfgKey="yOffset" label="Distance from bottom" min={20}   max={600} step={10} />
+              <Slider cfgKey="xOffset" label="Horizontal position"  min={-400} max={400} step={10} />
             </div>
 
-            {/* Colors */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 10 }}>TEXT COLORS</div>
-              {[
-                { label: "Band Name", key: "bandColor" },
-                { label: "Date", key: "dateColor" },
-                { label: "Venue", key: "venueColor" },
+              {([
+                { label: "Date",         key: "dateColor" },
+                { label: "Venue",        key: "venueColor" },
                 { label: "City / State", key: "cityColor" },
-              ].map(({ label, key }) => (
-                <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              ] as { label: string; key: keyof OverlayConfig }[]).map(({ label, key }) => (
+                <div key={key as string} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
-                  <input
-                    type="color"
-                    value={`#${cfg[key as keyof OverlayConfig]}`}
-                    onChange={(e) => update(key as keyof OverlayConfig, e.target.value.replace("#", ""))}
-                    style={{ width: 36, height: 28, borderRadius: 6, border: "1px solid #ddd", cursor: "pointer", padding: 2 }}
-                  />
+                  <input type="color" value={`#${cfg[key]}`} onChange={(e) => update(key, e.target.value.replace("#", ""))} style={{ width: 36, height: 28, borderRadius: 6, border: "1px solid #ddd", cursor: "pointer", padding: 2 }} />
                 </div>
               ))}
             </div>
 
-            {/* Band name toggle */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: cfg.showBandName ? 12 : 0 }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>Show band name</div>
-                  <div style={{ fontSize: 12, color: "#888" }}>Enable if your poster doesn't already have it</div>
-                </div>
-                <button
-                  onClick={() => update("showBandName", !cfg.showBandName)}
-                  style={{
-                    width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
-                    background: cfg.showBandName ? "#111" : "#ddd", transition: "background 0.2s",
-                    position: "relative", flexShrink: 0,
-                  }}
-                >
-                  <span style={{
-                    position: "absolute", top: 2, left: cfg.showBandName ? 22 : 2,
-                    width: 20, height: 20, borderRadius: "50%", background: "#fff",
-                    transition: "left 0.2s",
-                  }} />
-                </button>
-              </div>
+              <Toggle cfgKey="showBandName" label="Show band name" desc="Enable if your image doesnt have it baked in" />
               {cfg.showBandName && (
-                <div>
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600 }}>Band Name Size</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg.bandSize}px</span>
-                    </div>
-                    <input
-                      type="range" min={20} max={200} step={2}
-                      value={cfg.bandSize}
-                      onChange={(e) => update("bandSize", parseInt(e.target.value))}
-                      onMouseUp={(e) => setDebouncedCfg({ ...cfg, bandSize: parseInt((e.target as HTMLInputElement).value) })}
-                      onTouchEnd={(e) => setDebouncedCfg({ ...cfg, bandSize: parseInt((e.target as HTMLInputElement).value) })}
-                      style={{ width: "100%", cursor: "pointer" }}
-                    />
-                  </div>
+                <div style={{ marginTop: 12 }}>
+                  <Slider cfgKey="bandSize" label="Band Name Size" min={20} max={200} step={2} />
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: 13, fontWeight: 600 }}>Band Name Color</span>
-                    <input
-                      type="color"
-                      value={`#${cfg.bandColor}`}
-                      onChange={(e) => update("bandColor", e.target.value.replace("#", ""))}
-                      style={{ width: 36, height: 28, borderRadius: 6, border: "1px solid #ddd", cursor: "pointer", padding: 2 }}
-                    />
+                    <input type="color" value={`#${cfg.bandColor}`} onChange={(e) => update("bandColor", e.target.value.replace("#", ""))} style={{ width: 36, height: 28, borderRadius: 6, border: "1px solid #ddd", cursor: "pointer", padding: 2 }} />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Gradient toggle */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700 }}>Dark gradient</div>
-                  <div style={{ fontSize: 12, color: "#888" }}>Improves text legibility over light images</div>
-                </div>
-                <button
-                  onClick={() => update("showGradient", !cfg.showGradient)}
-                  style={{
-                    width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
-                    background: cfg.showGradient ? "#111" : "#ddd", transition: "background 0.2s",
-                    position: "relative",
-                  }}
-                >
-                  <span style={{
-                    position: "absolute", top: 2, left: cfg.showGradient ? 22 : 2,
-                    width: 20, height: 20, borderRadius: "50%", background: "#fff",
-                    transition: "left 0.2s",
-                  }} />
-                </button>
-              </div>
+              <Toggle cfgKey="showGradient" label="Dark gradient" desc="Improves text legibility over light images" />
             </div>
-
           </div>
         </div>
       </div>

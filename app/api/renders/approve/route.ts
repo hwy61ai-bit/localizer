@@ -74,9 +74,10 @@ export async function POST(req: NextRequest) {
       .filter(Boolean).join(", "),
   };
 
-  const overlayConfig = t.overlay_config ?? undefined;
+  // Per-format overlay configs — tours.overlay_config is now { square: {...}, story: {...}, landscape: {...} }
+  const allConfigs = t.overlay_config ?? {};
 
-  // 5. Build 4 render URLs using per-format public_ids
+  // 5. Build 4 render URLs using per-format public_ids and per-format configs
   const formatPublicIds: Record<string, string | null> = {
     poster: t.image_url ?? null,
     square: t.image_square_id ?? null,
@@ -88,7 +89,8 @@ export async function POST(req: NextRequest) {
   for (const format of FORMATS) {
     const pid = formatPublicIds[format];
     if (pid) {
-      renderUrls[`render_${format}_url`] = buildRenderUrl(pid, eventData, format, overlayConfig);
+      const formatConfig = allConfigs[format] ?? allConfigs ?? undefined;
+      renderUrls[`render_${format}_url`] = buildRenderUrl(pid, eventData, format as any, formatConfig);
     }
   }
 
