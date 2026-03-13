@@ -243,13 +243,19 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
               </div>
               {cfg.showBandName && (
                 <div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>Band Name Size</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <button onClick={() => update("bandSize", Math.max(20, cfg.bandSize - 4))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>−</button>
-                      <span style={{ fontSize: 13, fontWeight: 700, width: 30, textAlign: "center" }}>{cfg.bandSize}</span>
-                      <button onClick={() => update("bandSize", Math.min(200, cfg.bandSize + 4))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>+</button>
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>Band Name Size</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg.bandSize}px</span>
                     </div>
+                    <input
+                      type="range" min={20} max={200} step={2}
+                      value={cfg.bandSize}
+                      onChange={(e) => update("bandSize", parseInt(e.target.value))}
+                      onMouseUp={(e) => setDebouncedCfg({ ...cfg, bandSize: parseInt((e.target as HTMLInputElement).value) })}
+                      onTouchEnd={(e) => setDebouncedCfg({ ...cfg, bandSize: parseInt((e.target as HTMLInputElement).value) })}
+                      style={{ width: "100%", cursor: "pointer" }}
+                    />
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: 13, fontWeight: 600 }}>Band Name Color</span>
