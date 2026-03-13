@@ -16,7 +16,7 @@ const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
 };
 
 export type OverlayConfig = {
-  fontFamily?: string;       // e.g. "Bebas Neue" — must be a Google Font on free tier
+  fontFamily?: string;       // must be a supported Google Font e.g. "Oswald", "Anton", "Teko" 
   bandColor?: string;        // hex without #, e.g. "ffffff"
   dateColor?: string;
   venueColor?: string;
@@ -37,7 +37,7 @@ export type EventData = {
 };
 
 const DEFAULT_CONFIG: Required<OverlayConfig> = {
-  fontFamily: "Bebas Neue",
+  fontFamily: "Oswald",
   bandColor: "ffffff",
   dateColor: "cccccc",
   venueColor: "ffffff",
