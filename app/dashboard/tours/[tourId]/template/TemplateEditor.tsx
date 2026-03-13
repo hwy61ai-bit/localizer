@@ -25,6 +25,7 @@ type OverlayConfig = {
   citySize: number;
   yOffset: number;
   showGradient: boolean;
+  showBandName: boolean;
 };
 
 const DEFAULT_CONFIG: OverlayConfig = {
@@ -39,6 +40,7 @@ const DEFAULT_CONFIG: OverlayConfig = {
   citySize: 40,
   yOffset: 120,
   showGradient: false,
+  showBandName: false,
 };
 
 type Tour = {
@@ -207,6 +209,51 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                   />
                 </div>
               ))}
+            </div>
+
+            {/* Band name toggle */}
+            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: cfg.showBandName ? 12 : 0 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>Show band name</div>
+                  <div style={{ fontSize: 12, color: "#888" }}>Enable if your poster doesn't already have it</div>
+                </div>
+                <button
+                  onClick={() => update("showBandName", !cfg.showBandName)}
+                  style={{
+                    width: 44, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
+                    background: cfg.showBandName ? "#111" : "#ddd", transition: "background 0.2s",
+                    position: "relative", flexShrink: 0,
+                  }}
+                >
+                  <span style={{
+                    position: "absolute", top: 2, left: cfg.showBandName ? 22 : 2,
+                    width: 20, height: 20, borderRadius: "50%", background: "#fff",
+                    transition: "left 0.2s",
+                  }} />
+                </button>
+              </div>
+              {cfg.showBandName && (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>Band Name Size</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <button onClick={() => update("bandSize", Math.max(20, cfg.bandSize - 4))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>−</button>
+                      <span style={{ fontSize: 13, fontWeight: 700, width: 30, textAlign: "center" }}>{cfg.bandSize}</span>
+                      <button onClick={() => update("bandSize", Math.min(200, cfg.bandSize + 4))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>+</button>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>Band Name Color</span>
+                    <input
+                      type="color"
+                      value={`#${cfg.bandColor}`}
+                      onChange={(e) => update("bandColor", e.target.value.replace("#", ""))}
+                      style={{ width: 36, height: 28, borderRadius: 6, border: "1px solid #ddd", cursor: "pointer", padding: 2 }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Gradient toggle */}

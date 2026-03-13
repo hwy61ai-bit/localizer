@@ -28,6 +28,7 @@ export type OverlayConfig = {
   gravity?: string;          // e.g. "south" — anchor point for text block
   yOffset?: number;          // pixels from anchor
   showGradient?: boolean;    // default false
+  showBandName?: boolean;    // default false
 };
 
 export type EventData = {
@@ -50,6 +51,7 @@ const DEFAULT_CONFIG: Required<OverlayConfig> = {
   gravity: "south",
   yOffset: 120,
   showGradient: false,
+  showBandName: false,
 };
 
 function sanitizeText(text: string): string {
@@ -98,8 +100,8 @@ export function buildRenderUrl(
     // 2. Optional gradient fade at bottom for text legibility
     ...(cfg.showGradient ? [{ effect: "gradient_fade:symmetric_pad", y: -0.5 }] : []),
 
-    // 3. Band name
-    {
+    // 3. Band name (optional — off by default since most posters have it baked in)
+    ...(cfg.showBandName ? [{
       overlay: { font_family: font, font_size: bandSize, font_weight: "bold", text: bandName },
       color: `#${cfg.bandColor}`,
       gravity: cfg.gravity,
@@ -107,7 +109,7 @@ export function buildRenderUrl(
       width: maxW,
       crop: "fit",
       flags: "layer_apply",
-    },
+    }] : []),
 
     // 4. Date
     {
