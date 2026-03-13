@@ -90,7 +90,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
       const next = { ...prev, [key]: value };
       // Debounce preview update by 800ms
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
-      debounceTimer.current = setTimeout(() => setDebouncedCfg(next), 800);
+      debounceTimer.current = setTimeout(() => setDebouncedCfg(next), 400);
       return next;
     });
     setSaved(false);
@@ -167,35 +167,44 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
 
             {/* Text sizes */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 10 }}>TEXT SIZES</div>
+              <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 12 }}>TEXT SIZES</div>
               {[
-                { label: "Band Name", key: "bandSize" },
-                { label: "Date", key: "dateSize" },
-                { label: "Venue", key: "venueSize" },
-                { label: "City / State", key: "citySize" },
-              ].map(({ label, key }) => (
-                <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <button onClick={() => update(key as keyof OverlayConfig, Math.max(20, (cfg[key as keyof OverlayConfig] as number) - 4))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>−</button>
-                    <span style={{ fontSize: 13, fontWeight: 700, width: 30, textAlign: "center" }}>{cfg[key as keyof OverlayConfig]}</span>
-                    <button onClick={() => update(key as keyof OverlayConfig, Math.min(200, (cfg[key as keyof OverlayConfig] as number) + 4))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>+</button>
+                { label: "Date", key: "dateSize", min: 20, max: 120 },
+                { label: "Venue", key: "venueSize", min: 20, max: 120 },
+                { label: "City / State", key: "citySize", min: 20, max: 120 },
+              ].map(({ label, key, min, max }) => (
+                <div key={key} style={{ marginBottom: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>{label}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg[key as keyof OverlayConfig]}px</span>
                   </div>
+                  <input
+                    type="range" min={min} max={max} step={2}
+                    value={cfg[key as keyof OverlayConfig] as number}
+                    onChange={(e) => update(key as keyof OverlayConfig, parseInt(e.target.value))}
+                    onMouseUp={(e) => setDebouncedCfg({ ...cfg, [key]: parseInt((e.target as HTMLInputElement).value) })}
+                    onTouchEnd={(e) => setDebouncedCfg({ ...cfg, [key]: parseInt((e.target as HTMLInputElement).value) })}
+                    style={{ width: "100%", cursor: "pointer" }}
+                  />
                 </div>
               ))}
             </div>
 
             {/* Y Offset */}
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 10 }}>TEXT POSITION</div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 12 }}>TEXT POSITION</div>
+              <div style={{ marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 13, fontWeight: 600 }}>Distance from bottom</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button onClick={() => update("yOffset", Math.max(20, cfg.yOffset - 10))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>−</button>
-                  <span style={{ fontSize: 13, fontWeight: 700, width: 40, textAlign: "center" }}>{cfg.yOffset}px</span>
-                  <button onClick={() => update("yOffset", Math.min(600, cfg.yOffset + 10))} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900 }}>+</button>
-                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg.yOffset}px</span>
               </div>
+              <input
+                type="range" min={20} max={600} step={10}
+                value={cfg.yOffset}
+                onChange={(e) => update("yOffset", parseInt(e.target.value))}
+                onMouseUp={(e) => setDebouncedCfg({ ...cfg, yOffset: parseInt((e.target as HTMLInputElement).value) })}
+                onTouchEnd={(e) => setDebouncedCfg({ ...cfg, yOffset: parseInt((e.target as HTMLInputElement).value) })}
+                style={{ width: "100%", cursor: "pointer" }}
+              />
             </div>
 
             {/* Colors */}
