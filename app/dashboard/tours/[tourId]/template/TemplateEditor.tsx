@@ -21,7 +21,6 @@ type FieldConfig = { x: number; y: number; size: number };
 type FormatConfig = {
   fontFamily: string;
   textColor: string;
-  showGradient: boolean;
   showBandName: boolean;
   bandSize: number;
   band?: FieldConfig;
@@ -33,7 +32,6 @@ type FormatConfig = {
 const DEFAULT_FORMAT: FormatConfig = {
   fontFamily: "Oswald",
   textColor: "ffffff",
-  showGradient: false,
   showBandName: false,
   bandSize: 80,
   date:  { x: 0.5, y: 0.84, size: 40 },
@@ -433,19 +431,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
               )}
             </div>
 
-            {/* Gradient */}
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>Dark gradient</div>
-                  <div style={{ fontSize: 11, color: "#888" }}>Helps legibility over light images</div>
-                </div>
-                <button onClick={() => updateCfg("showGradient", !cfg.showGradient)}
-                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.showGradient ? "#111" : "#ddd", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
-                  <span style={{ position: "absolute", top: 2, left: cfg.showGradient ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-                </button>
-              </div>
-            </div>
+
 
           </div>
         </div>

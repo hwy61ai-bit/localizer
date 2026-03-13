@@ -17,7 +17,6 @@ export type FieldConfig = {
 export type FormatConfig = {
   fontFamily: string;
   textColor: string;
-  showGradient: boolean;
   showBandName: boolean;
   bandSize: number;
   date: FieldConfig;
@@ -28,7 +27,6 @@ export type FormatConfig = {
 export const DEFAULT_FORMAT_CONFIG: FormatConfig = {
   fontFamily: "Oswald",
   textColor: "ffffff",
-  showGradient: false,
   showBandName: false,
   bandSize: 80,
   date:  { x: 0.5, y: 0.84, size: 40 },
