@@ -272,9 +272,15 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                 <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default" }}>
                   <img src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
 
-                  {/* Center guide */}
+                  {/* Center vertical guide */}
                   {dragging && (
                     <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 0, borderLeft: "1px dashed rgba(255,255,255,0.9)", pointerEvents: "none", zIndex: 20 }} />
+                  )}
+                  {/* Horizontal alignment guides — shows when any 2 fields share same y */}
+                  {(["venue", "date", "city"] as FieldKey[]).flatMap(a =>
+                    (["venue", "date", "city"] as FieldKey[]).filter(b => b !== a && Math.abs(cfg[a].y - cfg[b].y) < 0.025).map(b => (
+                      <div key={a + b} style={{ position: "absolute", top: `${cfg[a].y * 100}%`, left: 0, right: 0, height: 0, borderTop: "1px dashed rgba(255,220,0,0.8)", pointerEvents: "none", zIndex: 19 }} />
+                    ))
                   )}
 
                   {/* Draggable labels */}
@@ -401,7 +407,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                   <div style={{ fontSize: 11, color: "#888" }}>Helps legibility over light images</div>
                 </div>
                 <button onClick={() => updateCfg("showGradient", !cfg.showGradient)}
-                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.showGradient ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
+                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.showGradient ? "#111" : "#ddd", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
                   <span style={{ position: "absolute", top: 2, left: cfg.showGradient ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
                 </button>
               </div>
