@@ -119,7 +119,6 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
             <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", fontSize: 12, fontWeight: 900, color: "#555" }}>PREVIEW — Poster Format</div>
             {previewUrl ? (
               <img
-                key={previewUrl}
                 src={previewUrl}
                 alt="Template preview"
                 style={{ width: "100%", height: "auto", display: "block" }}
