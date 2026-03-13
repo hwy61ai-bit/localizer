@@ -24,6 +24,7 @@ type OverlayConfig = {
   venueSize: number;
   citySize: number;
   yOffset: number;
+  xOffset: number;
   showGradient: boolean;
   showBandName: boolean;
 };
@@ -39,6 +40,7 @@ const DEFAULT_CONFIG: OverlayConfig = {
   venueSize: 52,
   citySize: 40,
   yOffset: 120,
+  xOffset: 0,
   showGradient: false,
   showBandName: false,
 };
@@ -65,9 +67,9 @@ function buildPreviewUrl(
     `c_fill,g_center,h_1920,w_1080`,
     ...(cfg.showGradient ? [`e_gradient_fade:symmetric_pad,y_-0.5`] : []),
     `c_fit,co_rgb:${cfg.bandColor},fl_layer_apply,g_south,l_text:${font}_${cfg.bandSize}_bold:${encodeURIComponent(sanitize(bandName))},w_${maxW},y_${cfg.yOffset + cfg.dateSize + cfg.venueSize + cfg.citySize + 24}`,
-    `c_fit,co_rgb:${cfg.dateColor},fl_layer_apply,g_south,l_text:${font}_${cfg.dateSize}:Saturday%20April%2025%202026,w_${maxW},y_${cfg.yOffset + cfg.venueSize + cfg.citySize + 12}`,
-    `c_fit,co_rgb:${cfg.venueColor},fl_layer_apply,g_south,l_text:${font}_${cfg.venueSize}_bold:White%20Water%20Tavern,w_${maxW},y_${cfg.yOffset + cfg.citySize + 6}`,
-    `c_fit,co_rgb:${cfg.cityColor},fl_layer_apply,g_south,l_text:${font}_${cfg.citySize}:Little%20Rock%20AR,w_${maxW},y_${cfg.yOffset}`,
+    `c_fit,co_rgb:${cfg.dateColor},fl_layer_apply,g_south,l_text:${font}_${cfg.dateSize}:Saturday%20April%2025%202026,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset + cfg.venueSize + cfg.citySize + 12}`,
+    `c_fit,co_rgb:${cfg.venueColor},fl_layer_apply,g_south,l_text:${font}_${cfg.venueSize}_bold:White%20Water%20Tavern,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset + cfg.citySize + 6}`,
+    `c_fit,co_rgb:${cfg.cityColor},fl_layer_apply,g_south,l_text:${font}_${cfg.citySize}:Little%20Rock%20AR,w_${maxW},x_${cfg.xOffset},y_${cfg.yOffset}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -203,6 +205,18 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                 onChange={(e) => update("yOffset", parseInt(e.target.value))}
                 onMouseUp={(e) => setDebouncedCfg({ ...cfg, yOffset: parseInt((e.target as HTMLInputElement).value) })}
                 onTouchEnd={(e) => setDebouncedCfg({ ...cfg, yOffset: parseInt((e.target as HTMLInputElement).value) })}
+                style={{ width: "100%", cursor: "pointer" }}
+              />
+              <div style={{ marginTop: 14, marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>Horizontal position</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#555" }}>{cfg.xOffset > 0 ? `+${cfg.xOffset}` : cfg.xOffset}px</span>
+              </div>
+              <input
+                type="range" min={-400} max={400} step={10}
+                value={cfg.xOffset}
+                onChange={(e) => update("xOffset", parseInt(e.target.value))}
+                onMouseUp={(e) => setDebouncedCfg({ ...cfg, xOffset: parseInt((e.target as HTMLInputElement).value) })}
+                onTouchEnd={(e) => setDebouncedCfg({ ...cfg, xOffset: parseInt((e.target as HTMLInputElement).value) })}
                 style={{ width: "100%", cursor: "pointer" }}
               />
             </div>

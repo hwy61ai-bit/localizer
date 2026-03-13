@@ -27,6 +27,7 @@ export type OverlayConfig = {
   citySize?: number;
   gravity?: string;          // e.g. "south" — anchor point for text block
   yOffset?: number;          // pixels from anchor
+  xOffset?: number;          // horizontal offset, 0 = centered
   showGradient?: boolean;    // default false
   showBandName?: boolean;    // default false
 };
@@ -50,6 +51,7 @@ const DEFAULT_CONFIG: Required<OverlayConfig> = {
   citySize: 40,
   gravity: "south",
   yOffset: 120,
+  xOffset: 0,
   showGradient: false,
   showBandName: false,
 };
@@ -116,6 +118,7 @@ export function buildRenderUrl(
       overlay: { font_family: font, font_size: dateSize, text: dateStr },
       color: `#${cfg.dateColor}`,
       gravity: cfg.gravity,
+      x: cfg.xOffset,
       y: cfg.yOffset + venueSize + citySize + 12,
       width: maxW,
       crop: "fit",
@@ -127,6 +130,7 @@ export function buildRenderUrl(
       overlay: { font_family: font, font_size: venueSize, font_weight: "bold", text: venueName },
       color: `#${cfg.venueColor}`,
       gravity: cfg.gravity,
+      x: cfg.xOffset,
       y: cfg.yOffset + citySize + 6,
       width: maxW,
       crop: "fit",
@@ -138,6 +142,7 @@ export function buildRenderUrl(
       overlay: { font_family: font, font_size: citySize, text: cityState },
       color: `#${cfg.cityColor}`,
       gravity: cfg.gravity,
+      x: cfg.xOffset,
       y: cfg.yOffset,
       width: maxW,
       crop: "fit",
