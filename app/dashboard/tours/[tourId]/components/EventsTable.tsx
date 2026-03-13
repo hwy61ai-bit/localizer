@@ -123,6 +123,7 @@ function PreviewLightbox({ events, overlayConfig, imageSquareId, imageStoryId, i
   const [formatIndex, setFormatIndex] = useState(0);
 
   const oc = overlayConfig ?? {};
+  console.log('overlayConfig in lightbox:', JSON.stringify(overlayConfig));
   const squareCfg  = oc.square    ?? DEFAULT_FORMAT;
   const storyCfg   = oc.story     ?? DEFAULT_FORMAT;
   const landscapeCfg = oc.landscape ?? DEFAULT_FORMAT;
