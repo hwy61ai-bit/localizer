@@ -85,7 +85,7 @@ export default function AssetsPage() {
             style={{
               aspectRatio: (fmt.id === "tour_poster" && asset) ? undefined : fmt.aspect, background: "#1a1a1a",
               border: asset ? "none" : "1.5px dashed #2a2a2a",
-              borderRadius: 12, overflow: "hidden", position: "relative",
+              borderRadius: 12, overflow: (fmt.id === "tour_poster" && asset) ? "visible" : "hidden", position: "relative",
               cursor: asset ? "default" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: "0 4px 20px rgba(0,0,0,0.4)", transition: "border-color 0.15s",
