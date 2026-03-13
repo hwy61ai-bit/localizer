@@ -49,7 +49,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
     if (!user) { alert("Not logged in."); setCreatingTour(false); return; }
     const { data: memberData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).maybeSingle();
     if (!memberData?.org_id) { alert("Could not find org."); setCreatingTour(false); return; }
-    const { data, error } = await supabase.from("tours").insert({ name: "New Tour", artist_id: artistId, band_tour_label: form.name, org_id: memberData.org_id }).select("id").single();
+    const { data, error } = await supabase.from("tours").insert({ name: "New Tour", artist_id: artistId, band_name: form.name, org_id: memberData.org_id }).select("id").single();
     if (error || !data) { alert("Failed to create tour."); setCreatingTour(false); return; }
     router.push("/dashboard/tours/" + data.id);
   }
