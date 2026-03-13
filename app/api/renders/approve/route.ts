@@ -79,9 +79,9 @@ export async function POST(req: NextRequest) {
   // 5. Build 4 render URLs using per-format public_ids
   const formatPublicIds: Record<string, string | null> = {
     poster: t.image_url ?? null,
-    square: t.image_square_id ?? t.image_url ?? null,
-    story: t.image_story_id ?? t.image_url ?? null,
-    landscape: t.image_landscape_id ?? t.image_url ?? null,
+    square: t.image_square_id ?? null,
+    story: t.image_story_id ?? t.image_square_id ?? null,
+    landscape: t.image_landscape_id ?? t.image_square_id ?? null,
   };
 
   const renderUrls: Record<string, string> = {};
