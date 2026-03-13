@@ -96,25 +96,29 @@ export function buildRenderUrl(
       overlay: { font_family: font, font_size: cfg.bandSize, font_weight: "bold", text: bandName },
       color, gravity: "center", x: 0,
       y: Math.round((0.65 - 0.5) * dims.h),
-      width: maxW, crop: "fit", flags: "layer_apply.no_overflow",
+      width: maxW, crop: "fit", flags: "layer_apply",
+      no_overflow: true,
     }] : []),
     {
       overlay: { font_family: font, font_size: cfg.venue.size, font_weight: "bold", text: venueName },
       color, gravity: "center",
       x: venuePos.xPx, y: venuePos.yPx,
-      width: maxW, crop: "fit", flags: "layer_apply.no_overflow",
+      width: maxW, crop: "fit", flags: "layer_apply",
+      no_overflow: true,
     },
     {
       overlay: { font_family: font, font_size: cfg.date.size, text: dateStr },
       color, gravity: "center",
       x: datePos.xPx, y: datePos.yPx,
-      width: maxW, crop: "fit", flags: "layer_apply.no_overflow",
+      width: maxW, crop: "fit", flags: "layer_apply",
+      no_overflow: true,
     },
     {
       overlay: { font_family: font, font_size: cfg.city.size, text: cityState },
       color, gravity: "center",
       x: cityPos.xPx, y: cityPos.yPx,
-      width: maxW, crop: "fit", flags: "layer_apply.no_overflow",
+      width: maxW, crop: "fit", flags: "layer_apply",
+      no_overflow: true,
     },
   ];
 
