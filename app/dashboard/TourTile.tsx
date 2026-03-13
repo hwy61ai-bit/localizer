@@ -87,7 +87,7 @@ export default function TourTile({
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
 
       <div
-        onClick={() => router.push(`/dashboard/artists/${tourId}`)}
+        onClick={() => router.push(`/dashboard/tours/${tourId}`)}
         style={{
           background: currentImage ? "transparent" : "#fff",
           border: "1px solid #DDDDDD",
