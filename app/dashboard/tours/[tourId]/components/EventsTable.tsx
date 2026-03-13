@@ -75,7 +75,7 @@ function formatDateLong(iso: string, day: string | null): string {
 }
 
 function sanitize(t: string) {
-  return encodeURIComponent(t.replace(/,/g, " ").replace(/[/?&#%]/g, "").trim());
+  return encodeURIComponent(t.replace(/,/g, " ").replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim());
 }
 
 function buildUrl(publicId: string, cloudName: string, cfg: FormatConfig, event: EventRow, w: number, h: number): string {
