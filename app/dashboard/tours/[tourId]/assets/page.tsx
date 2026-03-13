@@ -49,13 +49,18 @@ export default function AssetsPage() {
       const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
       setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: data.publicUrl }]);
       if (formatId === "tour_poster") {
-        // Also upload to Cloudinary and store public_id for rendering
+        // Upload to Cloudinary and store public_id for rendering
         const fd = new FormData();
         fd.append("file", file);
-        await fetch(`/api/tours/${tourId}/upload-image`, {
+        const res = await fetch(`/api/tours/${tourId}/upload-image`, {
           method: "POST",
           body: fd,
         });
+        const result = await res.json();
+        if (result.url) {
+          // Use the fresh Cloudinary URL
+          setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: result.url }]);
+        }
       }
     } catch (err) {
       console.error(err);
