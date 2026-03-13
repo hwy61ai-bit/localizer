@@ -64,8 +64,12 @@ export default function TourTile({
     if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
     setDeleting(true);
     try {
-      const { error: artistError } = await supabase.from("artists").delete().eq("id", tourId);
-      if (artistError) throw artistError;
+      await supabase.from("venue_links").delete().in("event_id", 
+        (await supabase.from("events").select("id").eq("tour_id", tourId)).data?.map(e => e.id) ?? []
+      );
+      await supabase.from("events").delete().eq("tour_id", tourId);
+      const { error } = await supabase.from("tours").delete().eq("id", tourId);
+      if (error) throw error;
       window.location.href = "/dashboard";
     } catch (err) {
       console.error("Delete failed:", err);
