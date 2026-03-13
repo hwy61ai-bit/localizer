@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
@@ -21,6 +21,22 @@ export default function AssetsPage() {
   const [uploading, setUploading] = useState<string | null>(null);
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
+  useEffect(() => {
+    async function loadExisting() {
+      const { data } = await supabase
+        .from("tours")
+        .select("image_url")
+        .eq("id", tourId)
+        .single();
+      if (data?.image_url) {
+        // Build the Cloudinary URL from public_id
+        const url = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${data.image_url}`;
+        setAssets([{ formatId: "tour_poster", url }]);
+      }
+    }
+    loadExisting();
+  }, [tourId]);
+
   async function handleUpload(formatId: string, file: File) {
     setUploading(formatId);
     try {
@@ -33,10 +49,12 @@ export default function AssetsPage() {
       const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
       setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: data.publicUrl }]);
       if (formatId === "tour_poster") {
-        await fetch(`/api/tours/${tourId}/advance`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tour_poster_url: data.publicUrl }),
+        // Also upload to Cloudinary and store public_id for rendering
+        const fd = new FormData();
+        fd.append("file", file);
+        await fetch(`/api/tours/${tourId}/upload-image`, {
+          method: "POST",
+          body: fd,
         });
       }
     } catch (err) {

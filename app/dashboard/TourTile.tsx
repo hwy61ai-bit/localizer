@@ -36,7 +36,7 @@ export default function TourTile({
     setUploading(true);
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `tour-images/${tourId}.${ext}`;
+      const path = `artist-images/${tourId}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("localizer-assets")
         .upload(path, file, { upsert: true });
@@ -45,7 +45,7 @@ export default function TourTile({
         .from("localizer-assets")
         .getPublicUrl(path);
       const { error: updateError } = await supabase
-        .from("tours")
+        .from("artists")
         .update({ image_url: urlData.publicUrl })
         .eq("id", tourId);
       if (updateError) throw updateError;
@@ -64,10 +64,8 @@ export default function TourTile({
     if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
     setDeleting(true);
     try {
-      const { error: eventsError } = await supabase.from("events").delete().eq("tour_id", tourId);
-      if (eventsError) throw eventsError;
-      const { error: tourError } = await supabase.from("tours").delete().eq("id", tourId);
-      if (tourError) throw tourError;
+      const { error: artistError } = await supabase.from("artists").delete().eq("id", tourId);
+      if (artistError) throw artistError;
       window.location.href = "/dashboard";
     } catch (err) {
       console.error("Delete failed:", err);
@@ -85,7 +83,7 @@ export default function TourTile({
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
 
       <div
-        onClick={() => router.push(`/dashboard/tours/${tourId}`)}
+        onClick={() => router.push(`/dashboard/artists/${tourId}`)}
         style={{
           background: currentImage ? "transparent" : "#fff",
           border: "1px solid #DDDDDD",

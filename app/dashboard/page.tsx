@@ -42,48 +42,40 @@ export default async function DashboardPage() {
       .eq("id", orgId);
   }
 
-  const { data: toursData, error: toursError } = await supabase
-    .from("tours")
-    .select("id, name, band_tour_label, image_url, created_at, last_opened_at")
+  const { data: artistsData, error: artistsError } = await supabase
+    .from("artists")
+    .select("id, name, image_url, created_at")
     .eq("org_id", orgId)
-    .order("last_opened_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false });
 
-  if (toursError) throw new Error(toursError.message);
-  const tours = toursData ?? [];
+  if (artistsError) throw new Error(artistsError.message);
+  const artists = artistsData ?? [];
 
-  const tourStats: { [key: string]: TourStat } = {};
+  const tourCounts: { [key: string]: number } = {};
 
-  if (tours.length > 0) {
-    const { data: eventStats } = await supabase
-      .from("events")
-      .select("tour_id, date_iso")
-      .in("tour_id", tours.map((t) => t.id))
-      .not("date_iso", "is", null);
+  if (artists.length > 0) {
+    const { data: tourData } = await supabase
+      .from("tours")
+      .select("id, artist_id")
+      .in("artist_id", artists.map((a) => a.id));
 
-    for (const tour of tours) {
-      const rows = (eventStats ?? []).filter((e) => e.tour_id === tour.id);
-      const dates = rows.map((e) => e.date_iso as string).filter(Boolean).sort();
-      tourStats[tour.id] = {
-        count: rows.length,
-        minDate: dates.length > 0 ? dates[0] : null,
-        maxDate: dates.length > 0 ? dates[dates.length - 1] : null,
-      };
+    for (const artist of artists) {
+      tourCounts[artist.id] = (tourData ?? []).filter((t) => t.artist_id === artist.id).length;
     }
   }
 
 
-  async function createTour() {
+  async function createArtist() {
     "use server";
     const supabase = await supabaseServer();
-    const newTourId = randomUUID();
-    const { error } = await supabase.from("tours").insert({
-      id: newTourId,
+    const newArtistId = randomUUID();
+    const { error } = await supabase.from("artists").insert({
+      id: newArtistId,
       org_id: orgId,
-      name: "New Tour",
+      name: "New Artist",
     });
     if (error) throw new Error(error.message);
-    redirect(`/dashboard/tours/${newTourId}`);
+    redirect(`/dashboard/artists/${newArtistId}`);
   }
 
   function formatDate(iso: string | null): string | null {
@@ -106,43 +98,33 @@ export default async function DashboardPage() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
           <div>
             <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
-            <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>TOURS</h2>
+            <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>
-              {tours.length} tour{tours.length !== 1 ? "s" : ""}
+              {artists.length} artist{artists.length !== 1 ? "s" : ""}
             </div>
           </div>
-          <div style={{ fontSize: 12, color: "#aaa" }}>{user?.email}</div>
+
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
 
-          {tours.map((tour) => {
-            const stats: TourStat = tourStats[tour.id] ?? { count: 0, minDate: null, maxDate: null };
-            const bandName: string | null = tour.band_tour_label ?? null;
-            const tourName: string = tour.name ?? "Untitled Tour";
-            const minFmt = formatDate(stats.minDate);
-            const maxFmt = formatDate(stats.maxDate);
-            let dateRange: string | null = null;
-            if (minFmt && maxFmt && minFmt !== maxFmt) {
-              dateRange = `${minFmt} – ${maxFmt}`;
-            } else if (minFmt) {
-              dateRange = minFmt;
-            }
+          {artists.map((artist) => {
+            const dateRange: string | null = null;
 
             return (
               <TourTile
-                key={tour.id}
-                tourId={tour.id}
-                tourName={tourName}
-                bandName={bandName}
+                key={artist.id}
+                tourId={artist.id}
+                tourName={artist.name ?? "Untitled Artist"}
+                bandName={artist.name ?? null}
                 dateRange={dateRange}
-                eventCount={stats.count}
-                imageUrl={tour.image_url ?? null}
+                eventCount={tourCounts[artist.id] ?? 0}
+                imageUrl={artist.image_url ?? null}
               />
             );
           })}
 
-          <form action={createTour}>
+          <form action={createArtist}>
             <button type="submit" style={{
               width: "100%",
               aspectRatio: "1 / 1",
@@ -158,7 +140,7 @@ export default async function DashboardPage() {
               padding: 20,
             }}>
               <span style={{ fontSize: 140, fontWeight: 900, color: "#111", lineHeight: 1 }}>+</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#aaa", letterSpacing: "0.04em" }}>New Tour</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#aaa", letterSpacing: "0.04em" }}>New Artist</span>
             </button>
           </form>
 

@@ -2,11 +2,10 @@ import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 const PHOTO_ASSETS = [
-  { label: "IG Post", dims: "1080 x 1080", aspect: "1/1", tag: "ig_post" },
-  { label: "IG Stories", dims: "1080 x 1920", aspect: "9/16", tag: "ig_story" },
-  { label: "FB Event Cover", dims: "1920 x 1080", aspect: "16/9", tag: "fb_cover" },
-  { label: "Full Tour Poster", dims: "1080 x 1920", aspect: "9/16", tag: "tour_poster" },
-  { label: "Email Header", dims: "600 x 200", aspect: "3/1", tag: "email_header" },
+  { label: "Full Tour Poster", dims: "1080 x 1920", aspect: "9/16", key: "render_poster_url" },
+  { label: "IG Post / Square", dims: "1080 x 1080", aspect: "1/1", key: "render_square_url" },
+  { label: "IG Stories", dims: "1080 x 1350", aspect: "4/5", key: "render_story_url" },
+  { label: "Landscape / FB Cover", dims: "1920 x 1080", aspect: "16/9", key: "render_landscape_url" },
 ];
 
 export default async function VenuePage({
@@ -19,11 +18,18 @@ export default async function VenuePage({
 
   const { data: link, error: linkError } = await supabase
     .from("venue_links")
-    .select("event_id, org_id, is_active")
+    .select("event_id, org_id, is_active, render_poster_url, render_square_url, render_story_url, render_landscape_url")
     .eq("token", token)
     .maybeSingle();
 
   if (linkError || !link || !link.is_active) notFound();
+
+  const renderUrls: Record<string, string | null> = {
+    render_poster_url: (link as any).render_poster_url ?? null,
+    render_square_url: (link as any).render_square_url ?? null,
+    render_story_url: (link as any).render_story_url ?? null,
+    render_landscape_url: (link as any).render_landscape_url ?? null,
+  };
 
   const { data: event, error: eventError } = await supabase
     .from("events")
@@ -35,14 +41,13 @@ export default async function VenuePage({
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("name, band_tour_label, spotify_url, artist_id, tour_poster_url")
+    .select("name, band_tour_label, spotify_url, artist_id")
     .eq("id", event!.tour_id)
     .single();
 
   if (tourError || !tour) notFound();
 
   const t = tour as any;
-  const tourPosterUrl: string | null = t.tour_poster_url ?? null;
   const bandName = t.band_tour_label ?? t.name ?? "Artist";
   const spotifyUrl: string | null = t.spotify_url ?? null;
   const spotifyEmbedUrl = spotifyUrl
@@ -116,16 +121,17 @@ export default async function VenuePage({
         <div className="photo-grid">
           {PHOTO_ASSETS.map((asset) => {
             const paddingMap: Record<string, string> = {
-              "1/1": "100%", "9/16": "177.78%", "16/9": "56.25%",
-              "11/17": "154.55%", "3/1": "33.33%",
+              "1/1": "100%", "9/16": "177.78%", "4/5": "125%", "16/9": "56.25%",
             };
             const pt = paddingMap[asset.aspect] ?? "100%";
+            const url = renderUrls[asset.key] ?? null;
+            const isPoster = asset.key === "render_poster_url";
             return (
-              <div className="asset-card" key={asset.tag}>
+              <div className="asset-card" key={asset.key}>
                 <div className="asset-preview">
-                  <div className="asset-preview-inner" style={{ paddingTop: pt }}>
-                    {asset.tag === "tour_poster" && tourPosterUrl ? (
-                      <img src={tourPosterUrl} alt="Full Tour Poster" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div className="asset-preview-inner" style={isPoster && url ? { paddingTop: 0 } : { paddingTop: pt }}>
+                    {url ? (
+                      <img src={url} alt={asset.label} style={isPoster ? { width: "100%", height: "auto", display: "block", position: "relative" } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : (
                       <>
                         <div className="asset-placeholder">
@@ -146,10 +152,10 @@ export default async function VenuePage({
                     <span className="asset-label">{asset.label}</span>
                     <span className="asset-dims">{asset.dims}</span>
                   </div>
-                  {asset.tag === "tour_poster" && tourPosterUrl ? (
-                    <a href={tourPosterUrl} target="_blank" rel="noopener noreferrer" style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid #2a2a2a", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, textDecoration: "none", color: "#c8a96e", fontSize: 16 }}>DL</a>
+                  {url ? (
+                    <a href={url} download target="_blank" rel="noopener noreferrer" style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid #2a2a2a", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, textDecoration: "none", color: "#c8a96e", fontSize: 16 }}>↓</a>
                   ) : (
-                    <div className="asset-dl-btn">
+                    <div className="asset-dl-btn" style={{ opacity: 0.3 }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />

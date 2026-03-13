@@ -80,6 +80,8 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
             <div>
               <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
               <h2 className="brand-title" style={{ margin: 0, fontSize: "400%", marginBottom: 0 }}>{form.name || "ARTIST"}</h2>
+              <div style={{ borderBottom: "2px solid #111111", marginTop: 6, marginBottom: 6 }} />
+              <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>Advance Materials / Tours</div>
             </div>
             <button onClick={handleSave} disabled={saving} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: saved ? "#22c55e" : "#111", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
               {saved ? "Saved" : saving ? "Saving..." : "Save"}

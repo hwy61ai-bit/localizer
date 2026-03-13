@@ -9,6 +9,7 @@ type EventRow = {
   city: string; state: string | null; venue: string;
   promoter_email: string | null; manager_email: string | null;
   sent_at: string | null; event_index: number | null;
+  render_status: string | null;
 };
 
 type Props = { events: EventRow[]; tourId: string; orgId: string };
@@ -29,12 +30,13 @@ type CityStateCellProps = {
   drafts: { city: string; state: string };
   inputRef: React.RefObject<HTMLInputElement | null>;
   onStartEdit: (e: EventRow, field: EditableField) => void;
-  onDraftChange: (val: string) => void;
+  onCityChange: (val: string) => void;
+  onStateChange: (val: string) => void;
   onCommit: () => void;
   onKey: (e: React.KeyboardEvent) => void;
 };
 
-function CityStateCell({ event, editing, saving, drafts, inputRef, onStartEdit, onDraftChange, onCommit, onKey }: CityStateCellProps) {
+function CityStateCell({ event, editing, saving, drafts, inputRef, onStartEdit, onCityChange, onStateChange, onCommit, onKey }: CityStateCellProps) {
   const isCityEditing = editing?.id === event.id && editing?.field === "city";
   const isStateEditing = editing?.id === event.id && editing?.field === "state";
   const isEditing = isCityEditing || isStateEditing;
@@ -58,7 +60,7 @@ function CityStateCell({ event, editing, saving, drafts, inputRef, onStartEdit, 
         <input
           ref={inputRef}
           value={drafts.city}
-          onChange={e => onDraftChange(e.target.value)}
+          onChange={e => onCityChange(e.target.value)}
           onBlur={onCommit}
           onKeyDown={onKey}
           style={{ border: "none", outline: "none", width: 110, fontSize: 14, background: "transparent", padding: 0 }}
@@ -69,8 +71,9 @@ function CityStateCell({ event, editing, saving, drafts, inputRef, onStartEdit, 
       <span style={{ fontSize: 14, color: "#999" }}>,</span>
       {isStateEditing ? (
         <input
+          ref={inputRef}
           value={drafts.state}
-          onChange={e => onDraftChange(e.target.value)}
+          onChange={e => onStateChange(e.target.value)}
           onBlur={onCommit}
           onKeyDown={onKey}
           style={{ border: "none", outline: "none", width: 30, fontSize: 14, background: "transparent", padding: 0 }}
@@ -202,7 +205,18 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             style={{ display: "grid", gridTemplateColumns: COLS + " 80px", minWidth: 1470, padding: "10px 16px", borderTop: "1px solid #f0f0f0", alignItems: "center", background: i % 2 === 0 ? "#fff" : "#fafafa", position: "relative" }}>
             <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
             <Cell event={e} field="day" display={e.day ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
-            <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+            <CityStateCell
+              event={e}
+              editing={editing}
+              saving={saving}
+              drafts={drafts}
+              inputRef={inputRef}
+              onStartEdit={startEdit}
+              onCityChange={val => setDrafts(d => ({ ...d, city: val }))}
+              onStateChange={val => setDrafts(d => ({ ...d, state: val }))}
+              onCommit={commitEdit}
+              onKey={handleKey}
+            />
             <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
             <div style={{ opacity: 0.8 }}><Cell event={e} field="promoter_email" display={e.promoter_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
             <div style={{ opacity: 0.8 }}><Cell event={e} field="manager_email" display={e.manager_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
@@ -211,16 +225,45 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             </div>
             <div>
               {e.sent_at ? (
-                <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#e9f7ef", fontWeight: 900, fontSize: 12 }}>SENT</span>
+                <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#e9f7ef", fontWeight: 900, fontSize: 12 }}>✓ SENT</span>
+              ) : e.render_status === "rendering" ? (
+                <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff8e1", fontWeight: 900, fontSize: 12 }}>⏳ RENDERING</span>
+              ) : e.render_status === "error" ? (
+                <button
+                  onClick={async () => {
+                    setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "rendering" } : ev));
+                    const res = await fetch("/api/renders/approve", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ eventId: e.id, orgId }),
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                      setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "ready", sent_at: new Date().toISOString() } : ev));
+                    } else {
+                      setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "error" } : ev));
+                    }
+                  }}
+                  style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #e00", background: "#fff0f0", cursor: "pointer", fontWeight: 900, fontSize: 12, color: "#c00" }}
+                >↺ RETRY</button>
               ) : (
-                <form action={async (fd) => {
-                  const eventId = fd.get("eventId") as string;
-                  await fetch(`/api/events/${eventId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sent_at: new Date().toISOString() }) });
-                  setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, sent_at: new Date().toISOString() } : ev));
-                }}>
-                  <input type="hidden" name="eventId" value={e.id} />
-                  <button type="submit" style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#ffecec", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>SEND</button>
-                </form>
+                <button
+                  onClick={async () => {
+                    setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "rendering" } : ev));
+                    const res = await fetch("/api/renders/approve", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ eventId: e.id, orgId }),
+                    });
+                    const data = await res.json();
+                    if (data.ok) {
+                      setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "ready", sent_at: new Date().toISOString() } : ev));
+                    } else {
+                      setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "error" } : ev));
+                    }
+                  }}
+                  style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #111", background: "#111", color: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}
+                >▶ APPROVE & SEND</button>
               )}
             </div>
             <div>

@@ -43,8 +43,8 @@ export default async function TourPage({ params, searchParams }: { params: Promi
   const pinnedTabs = tours.slice(0, 4);
 
   const { data: eventsData, error: eventsError } = await supabase
-    .from("events").select("id, tour_id, date_iso, day, city, state, venue, promoter_email, manager_email, sent_at, event_index")
-    .eq("tour_id", tourId).order("event_index", { ascending: true }).order("date_iso", { ascending: true });
+    .from("events").select("id, tour_id, date_iso, day, city, state, venue, promoter_email, manager_email, sent_at, event_index, render_status")
+    .eq("tour_id", tourId).order("date_iso", { ascending: true });
   if (eventsError) throw new Error(eventsError.message);
 
   const eventRows = (eventsData ?? []) as EventRow[];
