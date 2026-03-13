@@ -27,6 +27,7 @@ export type OverlayConfig = {
   citySize?: number;
   gravity?: string;          // e.g. "south" — anchor point for text block
   yOffset?: number;          // pixels from anchor
+  showGradient?: boolean;    // default false
 };
 
 export type EventData = {
@@ -48,6 +49,7 @@ const DEFAULT_CONFIG: Required<OverlayConfig> = {
   citySize: 40,
   gravity: "south",
   yOffset: 120,
+  showGradient: false,
 };
 
 function sanitizeText(text: string): string {
@@ -93,8 +95,8 @@ export function buildRenderUrl(
     // 1. Resize base image to target format
     { width: dims.w, height: dims.h, crop: "fill", gravity: "center" },
 
-    // 2. Built-in gradient fade at bottom for text legibility
-    { effect: "gradient_fade:symmetric_pad", y: -0.5 },
+    // 2. Optional gradient fade at bottom for text legibility
+    ...(cfg.showGradient ? [{ effect: "gradient_fade:symmetric_pad", y: -0.5 }] : []),
 
     // 3. Band name
     {
