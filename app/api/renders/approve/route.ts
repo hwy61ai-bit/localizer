@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   // 2. Fetch tour for image public_id and overlay config
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, name, band_tour_label, image_url, overlay_config")
+    .select("id, name, band_tour_label, image_url, image_square_id, image_story_id, image_landscape_id, overlay_config")
     .eq("id", event.tour_id)
     .single();
 
@@ -54,9 +54,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Tour not found" }, { status: 404 });
   }
 
-  const publicId = (tour as any).image_url;
-  if (!publicId) {
-    return NextResponse.json({ error: "Tour has no image. Upload a tour image before sending." }, { status: 400 });
+  const t = tour as any;
+  if (!t.image_url && !t.image_square_id && !t.image_story_id && !t.image_landscape_id) {
+    return NextResponse.json({ error: "Tour has no images. Upload images before sending." }, { status: 400 });
   }
 
   // 3. Mark as rendering
@@ -74,12 +74,22 @@ export async function POST(req: NextRequest) {
       .filter(Boolean).join(", "),
   };
 
-  const overlayConfig = (tour as any).overlay_config ?? undefined;
+  const overlayConfig = t.overlay_config ?? undefined;
 
-  // 5. Build 4 render URLs
+  // 5. Build 4 render URLs using per-format public_ids
+  const formatPublicIds: Record<string, string | null> = {
+    poster: t.image_url ?? null,
+    square: t.image_square_id ?? t.image_url ?? null,
+    story: t.image_story_id ?? t.image_url ?? null,
+    landscape: t.image_landscape_id ?? t.image_url ?? null,
+  };
+
   const renderUrls: Record<string, string> = {};
   for (const format of FORMATS) {
-    renderUrls[`render_${format}_url`] = buildRenderUrl(publicId, eventData, format, overlayConfig);
+    const pid = formatPublicIds[format];
+    if (pid) {
+      renderUrls[`render_${format}_url`] = buildRenderUrl(pid, eventData, format, overlayConfig);
+    }
   }
 
   // 6. Upsert venue_link with render URLs

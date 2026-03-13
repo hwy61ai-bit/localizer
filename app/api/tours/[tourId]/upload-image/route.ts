@@ -10,6 +10,13 @@ cloudinary.config({
 
 export const dynamic = 'force-dynamic';
 
+const FORMAT_COLUMN: Record<string, string> = {
+  tour_poster: "image_url",
+  ig_post: "image_square_id",
+  ig_story: "image_story_id",
+  facebook: "image_landscape_id",
+};
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { tourId: string } }
@@ -18,21 +25,22 @@ export async function POST(
   const contentType = req.headers.get("content-type") ?? "";
 
   let public_id: string;
+  let formatId: string = "tour_poster";
 
   if (contentType.includes("application/json")) {
-    // Browser uploaded directly to Cloudinary, just save the public_id
     const body = await req.json();
     public_id = body.public_id;
+    formatId = body.formatId ?? "tour_poster";
   } else {
-    // Fallback: file upload through server (small files only)
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    formatId = (formData.get("formatId") as string) ?? "tour_poster";
     if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const result = await new Promise<{ public_id: string; secure_url: string }>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: "localizer/tours", public_id: `tour_${tourId}`, overwrite: true, resource_type: "image" },
+        { folder: "localizer/tours", public_id: `tour_${tourId}_${formatId}`, overwrite: true, resource_type: "image" },
         (error, result) => {
           if (error || !result) return reject(error);
           resolve(result as { public_id: string; secure_url: string });
@@ -42,10 +50,11 @@ export async function POST(
     public_id = result.public_id;
   }
 
+  const column = FORMAT_COLUMN[formatId] ?? "image_url";
   const supabase = await supabaseServer();
   const { error } = await supabase
     .from("tours")
-    .update({ image_url: public_id })
+    .update({ [column]: public_id })
     .eq("id", tourId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -28,13 +28,18 @@ export default function AssetsPage() {
     async function loadExisting() {
       const { data } = await supabase
         .from("tours")
-        .select("image_url")
+        .select("image_url, image_square_id, image_story_id, image_landscape_id")
         .eq("id", tourId)
         .single();
-      if (data?.image_url) {
-        const url = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${data.image_url}`;
-        setAssets([{ formatId: "tour_poster", url }]);
-      }
+      if (!data) return;
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const base = `https://res.cloudinary.com/${cloudName}/image/upload/`;
+      const loaded: { formatId: string; url: string }[] = [];
+      if (data.image_url) loaded.push({ formatId: "tour_poster", url: `${base}${data.image_url}` });
+      if (data.image_square_id) loaded.push({ formatId: "ig_post", url: `${base}${data.image_square_id}` });
+      if (data.image_story_id) loaded.push({ formatId: "ig_story", url: `${base}${data.image_story_id}` });
+      if (data.image_landscape_id) loaded.push({ formatId: "facebook", url: `${base}${data.image_landscape_id}` });
+      if (loaded.length) setAssets(loaded);
     }
     loadExisting();
   }, [tourId]);
@@ -47,37 +52,25 @@ export default function AssetsPage() {
     }
     setUploading(formatId);
     try {
-      if (formatId === "tour_poster") {
-        // Upload directly to Cloudinary (bypasses Vercel 4.5mb limit)
-        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-        const fd = new FormData();
-        fd.append("file", file);
-        fd.append("upload_preset", "localizer_tours");
-        fd.append("public_id", `tour_${tourId}`);
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-          method: "POST",
-          body: fd,
-        });
-        const result = await res.json();
-        if (result.error) throw new Error(result.error.message);
-        // Save public_id to DB
-        await fetch(`/api/tours/${tourId}/upload-image`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ public_id: result.public_id }),
-        });
-        setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: result.secure_url }]);
-      } else {
-        // Other formats go to Supabase storage
-        const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-        const path = `tour-assets/${tourId}/${formatId}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from("localizer-assets")
-          .upload(path, file, { upsert: true });
-        if (uploadError) throw uploadError;
-        const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
-        setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: data.publicUrl }]);
-      }
+      // All photo formats upload directly to Cloudinary
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", "localizer_tours");
+      fd.append("public_id", `tour_${tourId}_${formatId}`);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: fd,
+      });
+      const result = await res.json();
+      if (result.error) throw new Error(result.error.message);
+      // Save public_id to DB
+      await fetch(`/api/tours/${tourId}/upload-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ public_id: result.public_id, formatId }),
+      });
+      setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: result.secure_url }]);
     } catch (err) {
       console.error(err);
       alert("Upload failed.");
