@@ -24,7 +24,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
   const supabase = await supabaseServer();
 
   const { data: tour, error: tourError } = await supabase
-    .from("tours").select("id, org_id, name, band_tour_label, band_name, spotify_url, artist_id, created_at, last_opened_at, overlay_config")
+    .from("tours").select("id, org_id, name, band_tour_label, band_name, spotify_url, artist_id, created_at, last_opened_at, overlay_config, image_url, image_square_id, image_story_id, image_landscape_id")
     .eq("id", tourId).single<TourRow>();
   if (tourError || !tour) throw new Error(tourError?.message ?? "Tour not found");
 
