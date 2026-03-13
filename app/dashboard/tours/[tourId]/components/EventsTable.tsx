@@ -100,9 +100,9 @@ function buildUrl(publicId: string, cloudName: string, cfg: FormatConfig, event:
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${Math.round(cfg.venue.size * scale)}_bold:${venueName},w_${maxW},x_${vp.xPx},y_${vp.yPx}`,
-    `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${Math.round(cfg.date.size * scale)}:${dateStr},w_${maxW},x_${dp.xPx},y_${dp.yPx}`,
-    `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${Math.round(cfg.city.size * scale)}:${cityState},w_${maxW},x_${cp.xPx},y_${cp.yPx}`,
+    `c_fit,co_rgb:${color},fl_layer_apply.fl_no_overflow,g_center,l_text:${font}_${Math.round(cfg.venue.size * scale)}_bold:${venueName},w_${maxW},x_${vp.xPx},y_${vp.yPx}`,
+    `c_fit,co_rgb:${color},fl_layer_apply.fl_no_overflow,g_center,l_text:${font}_${Math.round(cfg.date.size * scale)}:${dateStr},w_${maxW},x_${dp.xPx},y_${dp.yPx}`,
+    `c_fit,co_rgb:${color},fl_layer_apply.fl_no_overflow,g_center,l_text:${font}_${Math.round(cfg.city.size * scale)}:${cityState},w_${maxW},x_${cp.xPx},y_${cp.yPx}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -166,13 +166,21 @@ function PreviewLightbox({ events, overlayConfig, imageSquareId, imageStoryId, i
       </div>
 
       {/* Image */}
-      <div style={{ position: "relative", maxWidth: 600, width: "100%" }}>
-        {previewUrl ? (
-          <img src={previewUrl} alt="Preview" style={{ width: "100%", height: "auto", borderRadius: 12, display: "block" }} />
-        ) : (
-          <div style={{ padding: 48, textAlign: "center", color: "#888", background: "#222", borderRadius: 12 }}>No image uploaded for this format</div>
-        )}
-      </div>
+      {(() => {
+        const aspectRatio = fmt.h / fmt.w;
+        const maxW = fmt.key === "landscape" ? 800 : fmt.key === "story" ? 400 : 500;
+        return (
+          <div style={{ position: "relative", maxWidth: maxW, width: "100%" }}>
+            <div style={{ paddingBottom: `${aspectRatio * 100}%`, position: "relative", borderRadius: 12, overflow: "hidden", background: "#222" }}>
+              {previewUrl ? (
+                <img src={previewUrl} alt="Preview" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              ) : (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#888" }}>No image uploaded for this format</div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Event navigation */}
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 16 }}>
