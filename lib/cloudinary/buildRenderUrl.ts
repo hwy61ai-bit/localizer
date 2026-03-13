@@ -83,7 +83,7 @@ export function buildRenderUrl(
   const venueSize = Math.round(cfg.venueSize * scale);
   const citySize  = Math.round(cfg.citySize  * scale);
 
-  const font = cfg.fontFamily.replace(/ /g, "_");
+  const font = encodeURIComponent(cfg.fontFamily);
   const maxW = Math.round(dims.w * 0.85); // text constrained to 85% of canvas width
 
   const bandName  = sanitizeText(event.bandName);

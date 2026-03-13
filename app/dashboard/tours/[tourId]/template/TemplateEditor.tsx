@@ -55,7 +55,7 @@ function buildPreviewUrl(
   cfg: OverlayConfig,
   bandName: string
 ): string {
-  const font = cfg.fontFamily.replace(/ /g, "_");
+  const font = cfg.fontFamily.replace(/ /g, "%20");
   const maxW = 918;
   const sanitize = (t: string) => t.replace(/,/g, " ").replace(/[/?&#%]/g, "").trim();
 
@@ -121,7 +121,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
               <img
                 src={previewUrl}
                 alt="Template preview"
-                style={{ width: "100%", height: "auto", display: "block" }}
+                style={{ width: "100%", height: "auto", maxHeight: "70vh", objectFit: "contain", display: "block" }}
               />
             ) : (
               <div style={{ padding: 48, textAlign: "center", color: "#999", fontSize: 14 }}>
