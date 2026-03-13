@@ -20,8 +20,11 @@ export default function AssetsPage() {
   const [assets, setAssets] = useState<{ formatId: string; url: string }[]>([]);
   const [uploading, setUploading] = useState<string | null>(null);
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const initialLoadDone = useRef(false);
 
   useEffect(() => {
+    if (initialLoadDone.current) return;
+    initialLoadDone.current = true;
     async function loadExisting() {
       const { data } = await supabase
         .from("tours")
@@ -29,7 +32,6 @@ export default function AssetsPage() {
         .eq("id", tourId)
         .single();
       if (data?.image_url) {
-        // Build the Cloudinary URL from public_id
         const url = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${data.image_url}`;
         setAssets([{ formatId: "tour_poster", url }]);
       }
@@ -38,33 +40,43 @@ export default function AssetsPage() {
   }, [tourId]);
 
   async function handleUpload(formatId: string, file: File) {
-    if (file.size > 20 * 1024 * 1024) {
-      alert("File is too large. Please upload an image under 20MB.");
+    const maxSize = formatId.startsWith("tiktok") || formatId.startsWith("yt") ? 100 : 20;
+    if (file.size > maxSize * 1024 * 1024) {
+      alert(`File is too large. Please upload a file under ${maxSize}MB.`);
       return;
     }
     setUploading(formatId);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `tour-assets/${tourId}/${formatId}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("localizer-assets")
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
-      setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: data.publicUrl }]);
       if (formatId === "tour_poster") {
-        // Upload to Cloudinary and store public_id for rendering
+        // Upload directly to Cloudinary (bypasses Vercel 4.5mb limit)
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
         const fd = new FormData();
         fd.append("file", file);
-        const res = await fetch(`/api/tours/${tourId}/upload-image`, {
+        fd.append("upload_preset", "localizer_tours");
+        fd.append("public_id", `tour_${tourId}`);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
           method: "POST",
           body: fd,
         });
         const result = await res.json();
-        if (result.url) {
-          // Use the fresh Cloudinary URL
-          setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: result.url }]);
-        }
+        if (result.error) throw new Error(result.error.message);
+        // Save public_id to DB
+        await fetch(`/api/tours/${tourId}/upload-image`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ public_id: result.public_id }),
+        });
+        setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: result.secure_url }]);
+      } else {
+        // Other formats go to Supabase storage
+        const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+        const path = `tour-assets/${tourId}/${formatId}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("localizer-assets")
+          .upload(path, file, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
+        setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: data.publicUrl }]);
       }
     } catch (err) {
       console.error(err);
