@@ -5,6 +5,13 @@ const nextConfig = {
       bodySizeLimit: '20mb',
     },
   },
+  // Increase API route body size limit
+  async headers() {
+    return [];
+  },
 };
+
+// Patch the body size limit for API routes
+process.env.NEXT_BODY_SIZE_LIMIT = '20971520'; // 20mb in bytes
 
 module.exports = nextConfig;

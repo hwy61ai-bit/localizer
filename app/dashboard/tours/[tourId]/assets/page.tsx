@@ -38,6 +38,10 @@ export default function AssetsPage() {
   }, [tourId]);
 
   async function handleUpload(formatId: string, file: File) {
+    if (file.size > 20 * 1024 * 1024) {
+      alert("File is too large. Please upload an image under 20MB.");
+      return;
+    }
     setUploading(formatId);
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
