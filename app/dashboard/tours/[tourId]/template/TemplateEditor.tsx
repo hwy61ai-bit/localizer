@@ -24,6 +24,7 @@ type FormatConfig = {
   showGradient: boolean;
   showBandName: boolean;
   bandSize: number;
+  band?: FieldConfig;
   date: FieldConfig;
   venue: FieldConfig;
   city: FieldConfig;
@@ -57,6 +58,8 @@ const SAMPLE_TEXT: Record<FieldKey, string> = {
   date:  "Saturday, April 25, 2026",
   city:  "Little Rock, AR",
 };
+
+const BAND_DEFAULT: FieldConfig = { x: 0.5, y: 0.65, size: 80 };
 
 type Tour = {
   id: string;
@@ -120,6 +123,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
   const SNAP = 0.025;
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+  const bandName = tour.band_tour_label ?? tour.name ?? "Artist";
 
   const formatImageIds: Record<FormatKey, string | null> = {
     square:    tour.image_square_id,
@@ -284,6 +288,35 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                   )}
 
                   {/* Draggable labels */}
+                  {cfg.showBandName && (() => {
+                    const fc = cfg.band ?? BAND_DEFAULT;
+                    return (
+                      <div
+                        key="band"
+                        onMouseDown={(e) => { e.preventDefault(); setDragging("band" as any); }}
+                        style={{
+                          position: "absolute",
+                          left: `${fc.x * 100}%`,
+                          top: `${fc.y * 100}%`,
+                          transform: "translate(-50%, -50%)",
+                          cursor: "grab",
+                          fontFamily: cfg.fontFamily,
+                          fontSize: `${Math.round(fc.size * previewScale)}px`,
+                          fontWeight: 700,
+                          color: `#${cfg.textColor}`,
+                          whiteSpace: "nowrap",
+                          textShadow: "0 1px 4px rgba(0,0,0,0.9)",
+                          outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "1px dashed rgba(255,255,255,0.6)",
+                          outlineOffset: 4,
+                          padding: "2px 6px",
+                          borderRadius: 3,
+                          zIndex: dragging === "band" ? 10 : 5,
+                        }}
+                      >
+                        {bandName.toUpperCase()}
+                      </div>
+                    );
+                  })()}
                   {(["venue", "date", "city"] as FieldKey[]).map(field => {
                     const fc = cfg[field];
                     const isActive = dragging === field;
