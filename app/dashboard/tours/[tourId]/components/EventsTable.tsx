@@ -167,17 +167,14 @@ function PreviewLightbox({ events, overlayConfig, imageSquareId, imageStoryId, i
 
       {/* Image */}
       {(() => {
-        const aspectRatio = fmt.h / fmt.w;
         const maxW = fmt.key === "landscape" ? 800 : fmt.key === "story" ? 400 : 500;
         return (
-          <div style={{ position: "relative", maxWidth: maxW, width: "100%" }}>
-            <div style={{ paddingBottom: `${aspectRatio * 100}%`, position: "relative", borderRadius: 12, overflow: "hidden", background: "#222" }}>
-              {previewUrl ? (
-                <img src={previewUrl} alt="Preview" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              ) : (
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#888" }}>No image uploaded for this format</div>
-              )}
-            </div>
+          <div style={{ maxWidth: maxW, width: "100%", borderRadius: 12, overflow: "hidden", background: "#222" }}>
+            {previewUrl ? (
+              <img src={previewUrl} alt="Preview" style={{ width: "100%", height: "auto", display: "block" }} />
+            ) : (
+              <div style={{ padding: 48, textAlign: "center", color: "#888" }}>No image uploaded for this format</div>
+            )}
           </div>
         );
       })()}
