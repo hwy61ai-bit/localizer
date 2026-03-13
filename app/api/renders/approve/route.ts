@@ -12,12 +12,10 @@ const FORMATS: RenderFormat[] = ["poster", "square", "story", "landscape"];
 function formatDateForOverlay(iso: string): string {
   try {
     const d = new Date(iso + "T12:00:00");
-    // No commas — Cloudinary chokes on them even after encoding
-    const weekday = d.toLocaleDateString("en-US", { weekday: "long" });
     const month = d.toLocaleDateString("en-US", { month: "long" });
     const day = d.getDate();
     const year = d.getFullYear();
-    return `${weekday} ${month} ${day} ${year}`;
+    return `${month} ${day} ${year}`;
   } catch {
     return iso;
   }

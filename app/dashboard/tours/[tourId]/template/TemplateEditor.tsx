@@ -53,7 +53,7 @@ const FIELD_LABELS: Record<FieldKey, string> = {
 
 const SAMPLE_TEXT: Record<FieldKey, string> = {
   venue: "Stubbs Waller Creek Amphitheater",
-  date:  "Saturday, April 25, 2026",
+  date:  "April 25 2026",
   city:  "Little Rock, AR",
 };
 
