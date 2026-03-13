@@ -114,7 +114,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
     story:     { ...DEFAULT_FORMAT, ...saved0.story },
     landscape: { ...DEFAULT_FORMAT, ...saved0.landscape },
   });
-  const [dragging, setDragging] = useState<FieldKey | null>(null);
+  const [dragging, setDragging] = useState<FieldKey | "band" | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [containerWidth, setContainerWidth] = useState(700);
   const [saving, setSaving] = useState(false);
@@ -293,7 +293,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                     return (
                       <div
                         key="band"
-                        onMouseDown={(e) => { e.preventDefault(); setDragging("band" as any); }}
+                        onMouseDown={(e) => { e.preventDefault(); setDragging("band"); }}
                         style={{
                           position: "absolute",
                           left: `${fc.x * 100}%`,
