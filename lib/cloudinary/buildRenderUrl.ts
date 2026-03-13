@@ -92,7 +92,6 @@ export function buildRenderUrl(
 
   const transformations: object[] = [
     { width: dims.w, height: dims.h, crop: "fill", gravity: "center" },
-    ...(cfg.showGradient ? [{ effect: "gradient_fade:symmetric_pad", y: -0.5 }] : []),
     ...(cfg.showBandName ? [{
       overlay: { font_family: font, font_size: cfg.bandSize, font_weight: "bold", text: bandName },
       color, gravity: "center", x: 0,
