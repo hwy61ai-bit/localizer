@@ -127,9 +127,10 @@ function PreviewLightbox({ events, overlayConfig, imageSquareId, imageStoryId, i
   const storyCfg   = oc.story     ?? DEFAULT_FORMAT;
   const landscapeCfg = oc.landscape ?? DEFAULT_FORMAT;
 
-  const squarePid    = imageSquareId;
-  const storyPid     = imageStoryId ?? imageSquareId;
-  const landscapePid = imageLandscapeId ?? imageSquareId;
+  const prefix = (id: string | null) => id ? `localizer/tours/${id}` : null;
+  const squarePid    = prefix(imageSquareId);
+  const storyPid     = prefix(imageStoryId) ?? prefix(imageSquareId);
+  const landscapePid = prefix(imageLandscapeId) ?? prefix(imageSquareId);
 
   const formats: PreviewFormat[] = [
     { key: "square",    label: "IG Square",  publicId: squarePid,    w: 1080, h: 1080, cfg: squareCfg },
