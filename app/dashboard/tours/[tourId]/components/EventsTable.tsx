@@ -141,6 +141,7 @@ function PreviewLightbox({ events, overlayConfig, imageSquareId, imageStoryId, i
   const event = events[eventIndex];
   const fmt = formats[formatIndex];
   const previewUrl = fmt.publicId ? buildUrl(fmt.publicId, cloudName, fmt.cfg, event, fmt.w, fmt.h) : null;
+  console.log("publicId:", fmt.publicId, "previewUrl:", previewUrl);
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
