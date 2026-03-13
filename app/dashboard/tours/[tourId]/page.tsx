@@ -15,6 +15,7 @@ type EventRow = {
   city: string; state: string | null; venue: string;
   promoter_email: string | null; manager_email: string | null;
   sent_at: string | null; event_index: number | null;
+  render_status: string | null;
 };
 
 export default async function TourPage({ params, searchParams }: { params: Promise<{ tourId: string }>; searchParams?: { saved?: string } }) {
