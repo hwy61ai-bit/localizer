@@ -83,7 +83,7 @@ export default function AssetsPage() {
           <div
             onClick={() => !asset && fileRefs.current[fmt.id]?.click()}
             style={{
-              aspectRatio: fmt.aspect, background: "#1a1a1a",
+              aspectRatio: (fmt.id === "tour_poster" && asset) ? undefined : fmt.aspect, background: "#1a1a1a",
               border: asset ? "none" : "1.5px dashed #2a2a2a",
               borderRadius: 12, overflow: "hidden", position: "relative",
               cursor: asset ? "default" : "pointer",
@@ -95,7 +95,7 @@ export default function AssetsPage() {
           >
             {asset ? (
               <>
-                <img src={asset.url} alt={fmt.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={asset.url} alt={fmt.label} style={{ width: "100%", height: "auto", display: "block" }} />
                 <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0, transition: "opacity 0.15s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = "0")}>
