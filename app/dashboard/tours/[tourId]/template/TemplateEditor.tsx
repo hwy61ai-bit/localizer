@@ -95,7 +95,6 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
 
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
-    ...(cfg.showGradient ? ["e_gradient_fade:symmetric_pad,y_-0.5"] : []),
     `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${cfg.venue.size}_bold:${san("White Water Tavern")},w_${maxW},x_${vp.xPx},y_${vp.yPx}`,
     `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${cfg.date.size}:${san("Saturday April 25 2026")},w_${maxW},x_${dp.xPx},y_${dp.yPx}`,
     `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${cfg.city.size}:${san("Little Rock AR")},w_${maxW},x_${cp.xPx},y_${cp.yPx}`,
