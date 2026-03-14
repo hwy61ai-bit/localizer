@@ -57,8 +57,7 @@ export default function AssetsPage() {
       const fd = new FormData();
       fd.append("file", file);
       fd.append("upload_preset", "localizer_tours");
-      fd.append("public_id", `tour_${tourId}_${formatId}`);
-      fd.append("invalidate", "true");
+      fd.append("public_id", `tour_${tourId}_${formatId}_${Date.now()}`);
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: "POST",
         body: fd,
