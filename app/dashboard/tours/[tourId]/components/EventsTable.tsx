@@ -18,13 +18,6 @@ type Props = {
   orgId: string;
 };
 
-type VenueLink = {
-  event_id: string;
-  render_square_url: string | null;
-  render_story_url: string | null;
-  render_landscape_url: string | null;
-};
-
 const EDITABLE_FIELDS = ["date_iso","day","city","state","venue","promoter_email","manager_email"] as const;
 type EditableField = typeof EDITABLE_FIELDS[number];
 
@@ -32,84 +25,6 @@ function formatDate(iso: string) {
   const [y, m, d] = iso.split("-");
   if (!m || !d) return iso;
   return `${m}/${d}/${y}`;
-}
-
-function PreviewLightbox({ events, tourId, orgId, onClose }: {
-  events: EventRow[];
-  tourId: string;
-  orgId: string;
-  onClose: () => void;
-}) {
-  const [eventIndex, setEventIndex] = useState(0);
-  const [formatIndex, setFormatIndex] = useState(0);
-  const [links, setLinks] = useState<Record<string, VenueLink> | null>(null);
-
-  if (!links) {
-    fetch(`/api/venue-links?tourId=${tourId}&orgId=${orgId}`)
-      .then(r => r.json())
-      .then(data => {
-        const map: Record<string, VenueLink> = {};
-        for (const link of (data.links ?? [])) map[link.event_id] = link;
-        setLinks(map);
-      });
-  }
-
-  const event = events[eventIndex];
-  const link = links?.[event?.id];
-  const thumb = (url: string | null | undefined) =>
-    url ? url.replace("/image/upload/", "/image/upload/w_600/") : null;
-  const formats = [
-    { label: "IG Post", url: thumb(link?.render_square_url), maxW: 480 },
-    { label: "IG Story", url: thumb(link?.render_story_url), maxW: 380 },
-    { label: "FB Cover", url: thumb(link?.render_landscape_url), maxW: 700 },
-  ];
-  const fmt = formats[formatIndex];
-
-  return (
-    <div
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}
-    >
-      <div style={{ width: "100%", maxWidth: 800, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <div style={{ color: "#fff", fontWeight: 900, fontSize: 15 }}>
-          {event?.venue} — {event?.city}{event?.state ? `, ${event.state}` : ""}
-          <span style={{ color: "#aaa", fontWeight: 400, fontSize: 13 }}> · {event?.date_iso ? formatDate(event.date_iso) : ""}</span>
-        </div>
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", opacity: 0.7 }}>✕</button>
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {formats.map((f, i) => (
-          <button key={f.label} onClick={() => setFormatIndex(i)}
-            style={{ padding: "7px 16px", borderRadius: 8, border: "1px solid", borderColor: formatIndex === i ? "#fff" : "rgba(255,255,255,0.25)", background: formatIndex === i ? "#fff" : "transparent", color: formatIndex === i ? "#111" : "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ maxWidth: fmt.maxW, width: "100%", borderRadius: 12, overflow: "hidden", background: "#1a1a1a" }}>
-        {!links ? (
-          <div style={{ padding: 48, textAlign: "center", color: "#555", fontSize: 13 }}>Loading...</div>
-        ) : fmt.url ? (
-          <img key={fmt.url} src={fmt.url} alt={fmt.label} style={{ width: "100%", display: "block", transition: "opacity 0.2s" }} />
-        ) : (
-          <div style={{ padding: 48, textAlign: "center", color: "#555", fontSize: 13 }}>Not rendered yet</div>
-        )}
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 20 }}>
-        <button onClick={() => setEventIndex(i => Math.max(0, i - 1))} disabled={eventIndex === 0}
-          style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.25)", background: "transparent", color: "#fff", fontWeight: 700, fontSize: 13, cursor: eventIndex === 0 ? "not-allowed" : "pointer", opacity: eventIndex === 0 ? 0.3 : 1 }}>
-          ← Prev
-        </button>
-        <span style={{ color: "#aaa", fontSize: 12 }}>{eventIndex + 1} / {events.length}</span>
-        <button onClick={() => setEventIndex(i => Math.min(events.length - 1, i + 1))} disabled={eventIndex === events.length - 1}
-          style={{ padding: "8px 18px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.25)", background: "transparent", color: "#fff", fontWeight: 700, fontSize: 13, cursor: eventIndex === events.length - 1 ? "not-allowed" : "pointer", opacity: eventIndex === events.length - 1 ? 0.3 : 1 }}>
-          Next →
-        </button>
-      </div>
-    </div>
-  );
 }
 
 type CityStateCellProps = {
@@ -189,7 +104,6 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function startEdit(e: EventRow, field: EditableField) {
@@ -290,18 +204,8 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
 
   const COLS = "90px 100px 180px 200px 200px 200px 100px 140px 80px";
   const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
-  const readyEvents = events.filter(e => e.render_status === "ready" || !!e.sent_at);
-
   return (
     <>
-      {showPreview && (
-        <PreviewLightbox
-          events={readyEvents}
-          tourId={tourId}
-          orgId={orgId}
-          onClose={() => setShowPreview(false)}
-        />
-      )}
       <div style={{ overflowX: "auto" }}>
         <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#fafafa" }}>
           <div style={{ fontSize: 13, color: "#888" }}>
@@ -311,13 +215,6 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             {generateError && (
               <span style={{ fontSize: 12, color: "#c00", fontWeight: 700 }}>{generateError}</span>
             )}
-            <button
-              onClick={() => setShowPreview(true)}
-              disabled={readyEvents.length === 0}
-              style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 700, fontSize: 13, cursor: readyEvents.length === 0 ? "not-allowed" : "pointer", opacity: readyEvents.length === 0 ? 0.4 : 1 }}
-            >
-              Preview All
-            </button>
             <button
               onClick={generateAll}
               disabled={generating || events.length === 0}
@@ -367,7 +264,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                   const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
                   const data = await res.json();
                   if (data.token) window.open(`/v/e/${data.token}`, "_blank");
-                }} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link</button>
+                }} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link / Preview</button>
               </div>
               {hoveredRow === e.id && (
                 <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
