@@ -21,8 +21,6 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const [creatingTour, setCreatingTour] = useState(false);
   const [deletingTourId, setDeletingTourId] = useState<string | null>(null);
   const [hoveredTourId, setHoveredTourId] = useState<string | null>(null);
-  const [deletingTourId, setDeletingTourId] = useState<string | null>(null);
-  const [hoveredTourId, setHoveredTourId] = useState<string | null>(null);
   const [advMaterials, setAdvMaterials] = useState<{ [key: string]: string }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
