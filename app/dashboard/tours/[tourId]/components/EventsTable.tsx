@@ -164,7 +164,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             ? { ...e, render_status: "error" }
             : { ...e, render_status: "ready" }
         ));
-        setGenerateError(`${data.errors.length} event(s) failed. Check errors and re-render individually.`);
+        setGenerateError(data.errors[0] ?? "Render failed");
       }
     } catch {
       setGenerateError("Generate failed. Check your network and try again.");

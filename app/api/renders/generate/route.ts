@@ -124,7 +124,8 @@ export async function POST(req: NextRequest) {
     try {
       await renderOneEvent(supabase, event, tour, orgId);
     } catch (err: any) {
-      errors.push(`${event.venue} (${event.date_iso}): ${err.message}`);
+      console.error("RENDER ERROR", event.venue, err);
+      errors.push(`${event.venue} (${event.date_iso}): ${err.message ?? String(err)}`);
       await supabase.from("events").update({ render_status: "error" }).eq("id", event.id);
     }
   }
