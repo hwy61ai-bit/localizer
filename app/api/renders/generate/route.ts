@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         bandName:      (tour as any).band_name ?? tour.band_tour_label ?? tour.name ?? "Artist",
         dateFormatted: formatDateForRender(event.date_iso),
         venueName:     event.venue_name ?? event.venue ?? "",
-        cityState:     [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(" · "),
+        cityState:     [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),
       };
 
       const renderUrls: Record<string, string> = {};
