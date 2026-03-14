@@ -143,7 +143,8 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       if (existing?.id) {
-        await supabase.from("venue_links").update({ ...renderUrls }).eq("id", existing.id);
+        const { error: updateErr } = await supabase.from("venue_links").update({ ...renderUrls }).eq("id", existing.id);
+        console.log("UPDATE RESULT:", existing.id, updateErr ? JSON.stringify(updateErr) : "OK");
       } else {
         const token = generatePublicToken();
         await supabase.from("venue_links").insert({
