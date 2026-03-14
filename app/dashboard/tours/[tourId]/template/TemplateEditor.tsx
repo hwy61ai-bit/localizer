@@ -209,6 +209,9 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
 
   function generatePreview() {
     if (!publicId) return;
+    console.log("venue:", JSON.stringify(cfg.venue));
+    console.log("date:", JSON.stringify(cfg.date));
+    console.log("city:", JSON.stringify(cfg.city));
     setPreviewUrl(buildPreviewUrl(publicId, cloudName, cfg, activeFormat));
   }
 
