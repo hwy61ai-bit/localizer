@@ -95,9 +95,9 @@ export default async function DashboardPage() {
     <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
           <div>
-            <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
+            <div style={{ position: "absolute", top: 0, right: 0 }}><a href="/account" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>Account</a></div><h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
             <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>
               {artists.length} artist{artists.length !== 1 ? "s" : ""}
