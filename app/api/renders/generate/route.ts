@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_tour_label, image_square_id, image_story_id, image_landscape_id, overlay_config")
+    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, overlay_config")
     .eq("id", tourId_resolved)
     .eq("org_id", orgId)
     .single();
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
       };
 
       const eventData = {
-        bandName:      tour.band_tour_label ?? tour.name ?? "Artist",
+        bandName:      (tour as any).band_name ?? tour.band_tour_label ?? tour.name ?? "Artist",
         dateFormatted: formatDateForRender(event.date_iso),
         venueName:     event.venue_name ?? event.venue ?? "",
         cityState:     [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),

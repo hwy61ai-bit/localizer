@@ -71,7 +71,7 @@ type Tour = {
   overlay_config: Record<FormatKey, FormatConfig> | null;
 };
 
-function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig, format: FormatKey, fe?: { venue: string; date_iso: string; city: string; state: string | null } | null): string {
+function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig, format: FormatKey, bandNameStr?: string, fe?: { venue: string; date_iso: string; city: string; state: string | null } | null): string {
   const fmtDims = {
     square:    { w: 1080, h: 1080 },
     story:     { w: 1080, h: 1350 },
@@ -96,6 +96,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
 
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
+    ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(fe?.venue ?? bandName)},co_rgb:${color}/fl_layer_apply,g_center,x_${Math.round((( cfg.band?.x ?? 0.5) - 0.5) * fmtDims.w)},y_${Math.round(((cfg.band?.y ?? 0.65) - 0.5) * fmtDims.h)}`] : []),
     `l_text:${font}_${cfg.venue.size}_bold:${san(fe?.venue ?? "Stubbs Waller Creek Amphitheater")},co_rgb:${color}/fl_layer_apply,g_center,x_${vp.xPx},y_${vp.yPx}`,
     `l_text:${font}_${cfg.date.size}:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : "April 25 2026")},co_rgb:${color}/fl_layer_apply,g_center,x_${dp.xPx},y_${dp.yPx}`,
     `l_text:${font}_${cfg.city.size}:${san(fe ? [fe.city, fe.state].filter(Boolean).join(" ") : "Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_center,x_${cp.xPx},y_${cp.yPx}`,
@@ -233,7 +234,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tou
                 onClick={() => {
                   const pid = formatImageIds[activeFormat];
                   if (!pid) { alert("No image uploaded for this format."); return; }
-                  window.open(buildPreviewUrl(pid, cloudName, cfg, activeFormat, firstEvent), "_blank");
+                  window.open(buildPreviewUrl(pid, cloudName, cfg, activeFormat, bandName, firstEvent), "_blank");
                 }}
                 style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
               >Preview Render</button>
