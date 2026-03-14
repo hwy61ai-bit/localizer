@@ -96,9 +96,9 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
 
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
-    `l_text:${font}_${cfg.venue.size}_bold:${san("Stubbs Waller Creek Amphitheater")},co_rgb:${color}/fl_layer_apply,g_center,x_${vp.xPx},y_${vp.yPx}`,
-    `l_text:${font}_${cfg.date.size}:${san("April 25 2026")},co_rgb:${color}/fl_layer_apply,g_center,x_${dp.xPx},y_${dp.yPx}`,
-    `l_text:${font}_${cfg.city.size}:${san("Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_center,x_${cp.xPx},y_${cp.yPx}`,
+    `l_text:${font}_${cfg.venue.size}_bold:${san(firstEvent?.venue ?? "Stubbs Waller Creek Amphitheater")},co_rgb:${color}/fl_layer_apply,g_center,x_${vp.xPx},y_${vp.yPx}`,
+    `l_text:${font}_${cfg.date.size}:${san(firstEvent ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() : "April 25 2026")},co_rgb:${color}/fl_layer_apply,g_center,x_${dp.xPx},y_${dp.yPx}`,
+    `l_text:${font}_${cfg.city.size}:${san(firstEvent ? [firstEvent.city, firstEvent.state].filter(Boolean).join(" ") : "Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_center,x_${cp.xPx},y_${cp.yPx}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
