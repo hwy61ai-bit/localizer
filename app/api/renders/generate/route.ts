@@ -168,6 +168,22 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Warm CDN cache in background — fetch thumbnail versions so Preview All is fast
+  (async () => {
+    try {
+      for (const event of events) {
+        const { data: link } = await supabase.from("venue_links")
+          .select("render_square_url, render_story_url, render_landscape_url")
+          .eq("event_id", event.id).maybeSingle();
+        if (link) {
+          for (const url of [link.render_square_url, link.render_story_url, link.render_landscape_url]) {
+            if (url) fetch(url.replace("/image/upload/", "/image/upload/w_600/")).catch(() => {});
+          }
+        }
+      }
+    } catch {}
+  })();
+
   if (errors.length > 0) {
     return NextResponse.json({ ok: false, errors }, { status: 207 });
   }

@@ -91,7 +91,7 @@ function PreviewLightbox({ events, tourId, orgId, onClose }: {
         {!links ? (
           <div style={{ padding: 48, textAlign: "center", color: "#555", fontSize: 13 }}>Loading...</div>
         ) : fmt.url ? (
-          <img src={fmt.url} alt={fmt.label} style={{ width: "100%", display: "block" }} />
+          <img key={fmt.url} src={fmt.url} alt={fmt.label} style={{ width: "100%", display: "block", transition: "opacity 0.2s" }} />
         ) : (
           <div style={{ padding: 48, textAlign: "center", color: "#555", fontSize: 13 }}>Not rendered yet</div>
         )}
