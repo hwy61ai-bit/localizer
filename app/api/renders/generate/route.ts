@@ -26,7 +26,7 @@ function formatDateForRender(iso: string): string {
 
 function sanitize(t: string): string {
   return encodeURIComponent(
-    t.replace(/,/g, " ").replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim()
+    t.replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim()
   );
 }
 
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         bandName:      (tour as any).band_name ?? tour.band_tour_label ?? tour.name ?? "Artist",
         dateFormatted: formatDateForRender(event.date_iso),
         venueName:     event.venue_name ?? event.venue ?? "",
-        cityState:     [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join("%2C "),
+        cityState:     [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),
       };
 
       const renderUrls: Record<string, string> = {};
