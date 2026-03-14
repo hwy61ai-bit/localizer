@@ -99,7 +99,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 64 }}>
           {assets.map((asset) => (
             <div key={asset.label} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden" }}>
-              <div style={{ aspectRatio: asset.aspect, background: "#1a1a1a", position: "relative", overflow: "hidden" }}>
+              <div style={{ background: "#1a1a1a" }}>
                 {asset.url ? (
                   <img src={asset.url} alt={asset.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 ) : (
