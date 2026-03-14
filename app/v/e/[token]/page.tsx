@@ -182,10 +182,10 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {advMaterials.length > 0 && (
           <div style={{ marginBottom: 48 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
               {advMaterials.map((mat) => (
                 <a key={mat.label} href={mat.url} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", background: "#111", border: "1px solid #1e1e1e", borderRadius: 12, textDecoration: "none", color: "#d4d0c8", fontWeight: 600, fontSize: 14 }}>
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", background: "#0d2b1a", border: "1px solid #1a4d2e", borderRadius: 12, textDecoration: "none", color: "#4ade80", fontWeight: 700, fontSize: 15 }}>
                   <span style={{ fontSize: 20 }}>↓</span>
                   {mat.label}
                 </a>
