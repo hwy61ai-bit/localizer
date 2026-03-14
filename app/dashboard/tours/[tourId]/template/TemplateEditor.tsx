@@ -80,7 +80,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
   const font = cfg.fontFamily.replace(/ /g, "%20");
   const maxW = Math.round(fmtDims.w * 0.85);
   const color = cfg.textColor;
-  const san = (t: string) => encodeURIComponent(t.replace(/,/g, " ").replace(/[/?&#%]/g, "").trim());
+  const san = (t: string) => { const clean = t.replace(/[/?&#%]/g, "").trim(); return clean.split(",").map(part => encodeURIComponent(part.trim())).join("%252C%20"); };
 
   function toPixel(field: FieldConfig) {
     return {
