@@ -166,6 +166,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
       if (!dragging || !containerRef.current) return;
       const el = imgRef.current ?? containerRef.current;
       const rect = el.getBoundingClientRect();
+      console.log("using:", imgRef.current ? "imgRef" : "containerRef", "rect:", rect.width, rect.height);
       let x = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
       const y = Math.max(0.02, Math.min(0.98, (e.clientY - rect.top) / rect.height));
       if (Math.abs(x - 0.5) < SNAP) x = 0.5;
