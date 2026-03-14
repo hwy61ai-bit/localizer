@@ -99,7 +99,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
     ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(bandNameStr ?? "Band Name")},co_rgb:${color}/fl_layer_apply,g_center,x_${Math.round((( cfg.band?.x ?? 0.5) - 0.5) * fmtDims.w)},y_${Math.round(((cfg.band?.y ?? 0.65) - 0.5) * fmtDims.h)}`] : []),
     `l_text:${font}_${cfg.venue.size}_bold:${san(fe?.venue ?? "Stubbs Waller Creek Amphitheater")},co_rgb:${color}/fl_layer_apply,g_center,x_${vp.xPx},y_${vp.yPx}`,
     `l_text:${font}_${cfg.date.size}:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : "April 25 2026")},co_rgb:${color}/fl_layer_apply,g_center,x_${dp.xPx},y_${dp.yPx}`,
-    `l_text:${font}_${cfg.city.size}:${san(fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_center,x_${cp.xPx},y_${cp.yPx}`,
+    `l_text:${font}_${cfg.city.size}:${san(fe ? [fe.city, fe.state].filter(Boolean).join(" · ") : "Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_center,x_${cp.xPx},y_${cp.yPx}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -338,7 +338,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tou
                         {firstEvent ? (
                           field === "venue" ? firstEvent.venue :
                           field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
-                          [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
+                          [firstEvent.city, firstEvent.state].filter(Boolean).join(" · ")
                         ) : SAMPLE_TEXT[field]}
                       </div>
                     );
