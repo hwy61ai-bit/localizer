@@ -152,7 +152,7 @@ export async function renderEventFormat(
     ],
   });
 
-  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: w } });
+  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: w }, font: { fontBuffers: [Buffer.from(fontData)] } });
   const textLayer = Buffer.from(resvg.render().asPng());
 
   const imageBuffer = await fetchImageBuffer(basePublicId);
