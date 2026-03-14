@@ -39,7 +39,7 @@ function buildCloudinaryUrl(
 ): string {
   const { w, h } = FORMAT_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
-  const font = "Arial";
+  const font = (cfg.fontFamily ?? "Oswald").replace(/ /g, "_");
   const color = cfg.textColor ?? "ffffff";
   const maxW = Math.round(w * 0.85);
 
@@ -60,9 +60,9 @@ function buildCloudinaryUrl(
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    `l_text:${font}_${venueSize}_bold:${venueName}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${venueX},y_${venueY}`,
-    `l_text:${font}_${dateSize}:${dateStr}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${dateX},y_${dateY}`,
-    `l_text:${font}_${citySize}:${cityState}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${cityX},y_${cityY}`,
+    `l_text:${font}_${venueSize}_bold:${venueName},co_rgb:${color}/c_fit,fl_layer_apply,g_center,w_${maxW},x_${venueX},y_${venueY}`,
+    `l_text:${font}_${dateSize}:${dateStr},co_rgb:${color}/c_fit,fl_layer_apply,g_center,w_${maxW},x_${dateX},y_${dateY}`,
+    `l_text:${font}_${citySize}:${cityState},co_rgb:${color}/c_fit,fl_layer_apply,g_center,w_${maxW},x_${cityX},y_${cityY}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
