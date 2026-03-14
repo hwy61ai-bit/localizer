@@ -56,10 +56,12 @@ function PreviewLightbox({ events, tourId, orgId, onClose }: {
 
   const event = events[eventIndex];
   const link = links?.[event?.id];
+  const thumb = (url: string | null | undefined) =>
+    url ? url.replace("/image/upload/", "/image/upload/w_600/") : null;
   const formats = [
-    { label: "IG Post", url: link?.render_square_url, maxW: 480 },
-    { label: "IG Story", url: link?.render_story_url, maxW: 380 },
-    { label: "FB Cover", url: link?.render_landscape_url, maxW: 700 },
+    { label: "IG Post", url: thumb(link?.render_square_url), maxW: 480 },
+    { label: "IG Story", url: thumb(link?.render_story_url), maxW: 380 },
+    { label: "FB Cover", url: thumb(link?.render_landscape_url), maxW: 700 },
   ];
   const fmt = formats[formatIndex];
 
