@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { renderEventFormat, DEFAULT_FORMAT_CONFIG } from "@/lib/render/renderEvent";
-import type { RenderFormat, FormatConfig } from "@/lib/render/renderEvent";
 import { generatePublicToken } from "@/lib/tokens";
+
+type RenderFormat = "square" | "story" | "landscape";
+
+const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
+  square:    { w: 1080, h: 1080 },
+  story:     { w: 1080, h: 1350 },
+  landscape: { w: 1920, h: 1080 },
+};
 
 const FORMATS: RenderFormat[] = ["square", "story", "landscape"];
 
@@ -18,67 +24,48 @@ function formatDateForRender(iso: string): string {
   }
 }
 
-async function renderOneEvent(
-  supabase: Awaited<ReturnType<typeof supabaseServer>>,
-  event: any,
-  tour: any,
-  orgId: string
-) {
-  const eventId = event.id;
-  const allConfigs = tour.overlay_config ?? {};
+function sanitize(t: string): string {
+  return encodeURIComponent(
+    t.replace(/,/g, " ").replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim()
+  );
+}
 
-  const formatPublicIds: Record<RenderFormat, string | null> = {
-    square:    tour.image_square_id ?? null,
-    story:     tour.image_story_id ?? tour.image_square_id ?? null,
-    landscape: tour.image_landscape_id ?? tour.image_square_id ?? null,
-  };
+function buildCloudinaryUrl(
+  publicId: string,
+  cloudName: string,
+  format: RenderFormat,
+  overlayConfig: any,
+  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string }
+): string {
+  const { w, h } = FORMAT_DIMS[format];
+  const cfg = overlayConfig?.[format] ?? overlayConfig ?? {};
+  const font = (cfg.fontFamily ?? "Oswald").replace(/ /g, "_");
+  const color = cfg.textColor ?? "ffffff";
+  const maxW = Math.round(w * 0.85);
 
-  const eventData = {
-    bandName: tour.band_tour_label ?? tour.name ?? "Artist",
-    dateFormatted: formatDateForRender(event.date_iso),
-    venueName: event.venue_name ?? event.venue ?? "",
-    cityState: [event.venue_city ?? event.city, event.venue_state ?? event.state]
-      .filter(Boolean).join(", "),
-  };
+  const venueSize  = cfg.venue?.size  ?? 52;
+  const dateSize   = cfg.date?.size   ?? 40;
+  const citySize   = cfg.city?.size   ?? 40;
 
-  const renderUrls: Record<string, string> = {};
+  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
+  const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
+  const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
+  const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * h);
+  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
+  const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
 
-  for (const format of FORMATS) {
-    const pid = formatPublicIds[format];
-    if (!pid) continue;
-    const cfg: FormatConfig = { ...DEFAULT_FORMAT_CONFIG, ...(allConfigs[format] ?? {}) };
-    const outputId = `renders/${event.tour_id}/${eventId}_${format}`;
-    try {
-      const url = await renderEventFormat(pid, format, eventData, cfg, outputId);
-      renderUrls[`render_${format}_url`] = url;
-    } catch (err) {
-      console.error(`Render failed for ${eventId} ${format}:`, err);
-      throw err;
-    }
-  }
+  const venueName = sanitize(eventData.venueName);
+  const dateStr   = sanitize(eventData.dateFormatted);
+  const cityState = sanitize(eventData.cityState);
 
-  // Upsert venue_link
-  const { data: existing } = await supabase
-    .from("venue_links")
-    .select("id, token")
-    .eq("event_id", eventId)
-    .eq("is_active", true)
-    .maybeSingle();
+  const layers = [
+    `c_fill,g_center,h_${h},w_${w}`,
+    `l_text:${font}_${venueSize}_bold:${venueName}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${venueX},y_${venueY}`,
+    `l_text:${font}_${dateSize}:${dateStr}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${dateX},y_${dateY}`,
+    `l_text:${font}_${citySize}:${cityState}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${cityX},y_${cityY}`,
+  ];
 
-  if (existing?.id) {
-    await supabase.from("venue_links").update({ ...renderUrls }).eq("id", existing.id);
-  } else {
-    const token = generatePublicToken();
-    await supabase.from("venue_links").insert({
-      org_id: orgId,
-      event_id: eventId,
-      token,
-      is_active: true,
-      ...renderUrls,
-    });
-  }
-
-  await supabase.from("events").update({ render_status: "ready" }).eq("id", eventId);
+  return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -87,45 +74,89 @@ export async function POST(req: NextRequest) {
   if (!tourId && !eventId) return NextResponse.json({ error: "Missing tourId or eventId" }, { status: 400 });
 
   const supabase = await supabaseServer();
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
 
   // Fetch tour
-  const tourQuery = tourId
-    ? supabase.from("tours").select("id, org_id, name, band_tour_label, image_square_id, image_story_id, image_landscape_id, overlay_config").eq("id", tourId).eq("org_id", orgId).single()
-    : supabase.from("tours").select("id, org_id, name, band_tour_label, image_square_id, image_story_id, image_landscape_id, overlay_config").eq("org_id", orgId).eq("id",
-        (await supabase.from("events").select("tour_id").eq("id", eventId).single()).data?.tour_id ?? ""
-      ).single();
-
-  const { data: tour, error: tourError } = await tourQuery;
-  if (tourError || !tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
-
-  if (!tour.image_square_id) {
-    return NextResponse.json({ error: "No images uploaded. Go to Import Assets first." }, { status: 400 });
+  let tourId_resolved = tourId;
+  if (!tourId_resolved) {
+    const { data: ev } = await supabase.from("events").select("tour_id").eq("id", eventId).single();
+    tourId_resolved = ev?.tour_id;
   }
 
-  // Fetch events to render
+  const { data: tour, error: tourError } = await supabase
+    .from("tours")
+    .select("id, org_id, name, band_tour_label, image_square_id, image_story_id, image_landscape_id, overlay_config")
+    .eq("id", tourId_resolved)
+    .eq("org_id", orgId)
+    .single();
+
+  if (tourError || !tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
+  if (!tour.image_square_id) return NextResponse.json({ error: "No images uploaded. Go to Import Assets first." }, { status: 400 });
+
+  // Fetch events
   let events: any[] = [];
   if (eventId) {
     const { data } = await supabase.from("events").select("*").eq("id", eventId).single();
     if (data) events = [data];
   } else {
-    const { data } = await supabase.from("events").select("*").eq("tour_id", tourId).order("date_iso");
+    const { data } = await supabase.from("events").select("*").eq("tour_id", tourId_resolved).order("date_iso");
     events = data ?? [];
   }
 
   if (events.length === 0) return NextResponse.json({ error: "No events found" }, { status: 400 });
 
-  // Mark all as rendering
-  const ids = events.map(e => e.id);
+  const ids = events.map((e: any) => e.id);
   await supabase.from("events").update({ render_status: "rendering" }).in("id", ids);
 
-  // Render sequentially to avoid memory spikes
   const errors: string[] = [];
+
   for (const event of events) {
     try {
-      await renderOneEvent(supabase, event, tour, orgId);
+      const formatPublicIds: Record<RenderFormat, string | null> = {
+        square:    tour.image_square_id ?? null,
+        story:     tour.image_story_id ?? tour.image_square_id ?? null,
+        landscape: tour.image_landscape_id ?? tour.image_square_id ?? null,
+      };
+
+      const eventData = {
+        bandName:      tour.band_tour_label ?? tour.name ?? "Artist",
+        dateFormatted: formatDateForRender(event.date_iso),
+        venueName:     event.venue_name ?? event.venue ?? "",
+        cityState:     [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),
+      };
+
+      const renderUrls: Record<string, string> = {};
+      for (const format of FORMATS) {
+        const pid = formatPublicIds[format];
+        if (!pid) continue;
+        renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData);
+      }
+
+      // Upsert venue_link
+      const { data: existing } = await supabase
+        .from("venue_links")
+        .select("id, token")
+        .eq("event_id", event.id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (existing?.id) {
+        await supabase.from("venue_links").update({ ...renderUrls }).eq("id", existing.id);
+      } else {
+        const token = generatePublicToken();
+        await supabase.from("venue_links").insert({
+          org_id: orgId,
+          event_id: event.id,
+          token,
+          is_active: true,
+          ...renderUrls,
+        });
+      }
+
+      await supabase.from("events").update({ render_status: "ready" }).eq("id", event.id);
+
     } catch (err: any) {
-      console.error("RENDER ERROR", event.venue, JSON.stringify(err), err?.stack);
-      errors.push(`${event.venue} (${event.date_iso}): ${err?.stack ?? err?.message ?? String(err)}`);
+      errors.push(`${event.venue} (${event.date_iso}): ${err?.message ?? String(err)}`);
       await supabase.from("events").update({ render_status: "error" }).eq("id", event.id);
     }
   }
