@@ -322,7 +322,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tou
                           transform: "translate(-50%, -50%)",
                           cursor: "grab",
                           fontFamily: cfg.fontFamily,
-                          fontSize: `${Math.round(cfg.bandSize * previewScale)}px`,
+                          fontSize: `${Math.round(fc.size * previewScale)}px`,
                           fontWeight: field === "venue" ? 700 : 400,
                           color: `#${cfg.textColor}`,
                           whiteSpace: "nowrap",
