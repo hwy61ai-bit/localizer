@@ -121,6 +121,7 @@ export default async function DashboardPage() {
                 eventCount={tourCounts[artist.id] ?? 0}
                 imageUrl={artist.image_url ?? null}
                 href={`/dashboard/artists/${artist.id}`}
+                type="artist"
               />
             );
           })}

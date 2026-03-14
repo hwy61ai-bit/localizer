@@ -12,6 +12,7 @@ type Props = {
   eventCount: number;
   imageUrl: string | null;
   href?: string;
+  type?: "artist" | "tour";
 };
 
 export default function TourTile({
@@ -21,6 +22,7 @@ export default function TourTile({
   eventCount,
   imageUrl,
   href,
+  type = "tour",
 }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -66,12 +68,26 @@ export default function TourTile({
     if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
     setDeleting(true);
     try {
-      await supabase.from("venue_links").delete().in("event_id", 
-        (await supabase.from("events").select("id").eq("tour_id", tourId)).data?.map(e => e.id) ?? []
-      );
-      await supabase.from("events").delete().eq("tour_id", tourId);
-      const { error } = await supabase.from("tours").delete().eq("id", tourId);
-      if (error) throw error;
+      if (type === "artist") {
+        const { data: tours } = await supabase.from("tours").select("id").eq("artist_id", tourId);
+        const tourIds = (tours ?? []).map(t => t.id);
+        if (tourIds.length > 0) {
+          const { data: events } = await supabase.from("events").select("id").in("tour_id", tourIds);
+          const eventIds = (events ?? []).map(e => e.id);
+          if (eventIds.length > 0) await supabase.from("venue_links").delete().in("event_id", eventIds);
+          await supabase.from("events").delete().in("tour_id", tourIds);
+          await supabase.from("tours").delete().in("id", tourIds);
+        }
+        const { error } = await supabase.from("artists").delete().eq("id", tourId);
+        if (error) throw error;
+      } else {
+        await supabase.from("venue_links").delete().in("event_id",
+          (await supabase.from("events").select("id").eq("tour_id", tourId)).data?.map(e => e.id) ?? []
+        );
+        await supabase.from("events").delete().eq("tour_id", tourId);
+        const { error } = await supabase.from("tours").delete().eq("id", tourId);
+        if (error) throw error;
+      }
       window.location.href = "/dashboard";
     } catch (err) {
       console.error("Delete failed:", err);
