@@ -121,7 +121,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
             <Link href={`/dashboard/tours/${tourId}/events/new`} style={{ padding: "10px 18px", border: "1px solid #111", borderRadius: 10, background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>+ New Event</Link>
           </div>
 
-          <EventsTable events={eventRows} tourId={tourId} orgId={orgId} overlayConfig={(tour as any).overlay_config ?? null} imageSquareId={(tour as any).image_square_id ?? null} imageStoryId={(tour as any).image_story_id ?? null} imageLandscapeId={(tour as any).image_landscape_id ?? null} cloudName={process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? ""} />
+          <EventsTable events={eventRows} tourId={tourId} orgId={orgId}  />
           
         </div>
       </div>

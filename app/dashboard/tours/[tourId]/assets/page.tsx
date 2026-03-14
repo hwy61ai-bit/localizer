@@ -113,10 +113,6 @@ export default function AssetsPage() {
                 <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0, transition: "opacity 0.15s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = "0")}>
-                  <button onClick={() => alert("Text editor coming soon!")}
-                    style={{ padding: "9px 18px", borderRadius: 8, border: "none", background: "#fff", color: "#111", fontWeight: 900, fontSize: 12, cursor: "pointer" }}>
-                    Edit Text
-                  </button>
                   <button onClick={(e) => { e.stopPropagation(); fileRefs.current[fmt.id]?.click(); }}
                     style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid #444", background: "transparent", color: "#aaa", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>
                     Replace

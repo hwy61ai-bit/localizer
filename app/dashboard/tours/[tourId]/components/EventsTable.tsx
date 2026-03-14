@@ -12,48 +12,10 @@ type EventRow = {
   render_status: string | null;
 };
 
-type FieldConfig = { x: number; y: number; size: number };
-type FormatConfig = {
-  fontFamily: string;
-  textColor: string;
-  showBandName: boolean;
-  bandSize: number;
-  band?: FieldConfig;
-  date: FieldConfig;
-  venue: FieldConfig;
-  city: FieldConfig;
-};
-type OverlayConfig = {
-  square?: FormatConfig;
-  story?: FormatConfig;
-  landscape?: FormatConfig;
-};
-
-const DEFAULT_FIELD: Record<string, FieldConfig> = {
-  date:  { x: 0.5, y: 0.84, size: 40 },
-  venue: { x: 0.5, y: 0.76, size: 52 },
-  city:  { x: 0.5, y: 0.91, size: 40 },
-};
-
-const DEFAULT_FORMAT: FormatConfig = {
-  fontFamily: "Oswald",
-  textColor: "ffffff",
-  showBandName: false,
-  bandSize: 80,
-  date:  DEFAULT_FIELD.date,
-  venue: DEFAULT_FIELD.venue,
-  city:  DEFAULT_FIELD.city,
-};
-
 type Props = {
   events: EventRow[];
   tourId: string;
   orgId: string;
-  overlayConfig: OverlayConfig | null;
-  imageSquareId: string | null;
-  imageStoryId: string | null;
-  imageLandscapeId: string | null;
-  cloudName: string;
 };
 
 const EDITABLE_FIELDS = ["date_iso","day","city","state","venue","promoter_email","manager_email"] as const;
@@ -63,135 +25,6 @@ function formatDate(iso: string) {
   const [y, m, d] = iso.split("-");
   if (!m || !d) return iso;
   return `${m}/${d}/${y}`;
-}
-
-function formatDateLong(iso: string): string {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  const month = date.toLocaleDateString("en-US", { month: "long" });
-  return `${month} ${d} ${y}`;
-}
-
-function sanitize(t: string) {
-  return encodeURIComponent(t.replace(/,/g, " ").replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim());
-}
-
-function buildUrl(publicId: string, cloudName: string, cfg: FormatConfig, event: EventRow, w: number, h: number): string {
-  const font = cfg.fontFamily.replace(/ /g, "%20");
-  const maxW = Math.round(w * 0.85);
-  const color = cfg.textColor;
-
-
-  function toPixel(field: FieldConfig) {
-    return {
-      xPx: Math.round((field.x - 0.5) * w),
-      yPx: Math.round((field.y - 0.5) * h),
-    };
-  }
-
-  const vp = toPixel(cfg.venue);
-  const dp = toPixel(cfg.date);
-  const cp = toPixel(cfg.city);
-  const dateStr = sanitize(formatDateLong(event.date_iso));
-  const venueName = sanitize(event.venue);
-  const cityState = sanitize(`${event.city}${event.state ? " " + event.state : ""}`);
-
-  const layers = [
-    `c_fill,g_center,h_${h},w_${w}`,
-    `l_text:${font}_${cfg.venue.size}_bold:${venueName}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${vp.xPx},y_${vp.yPx}`,
-    `l_text:${font}_${cfg.date.size}:${dateStr}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${dp.xPx},y_${dp.yPx}`,
-    `l_text:${font}_${cfg.city.size}:${cityState}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${cp.xPx},y_${cp.yPx}`,
-  ];
-
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
-}
-
-type PreviewFormat = { key: string; label: string; publicId: string | null; w: number; h: number; cfg: FormatConfig };
-
-function PreviewLightbox({ events, overlayConfig, imageSquareId, imageStoryId, imageLandscapeId, cloudName, onClose }: {
-  events: EventRow[];
-  overlayConfig: OverlayConfig | null;
-  imageSquareId: string | null;
-  imageStoryId: string | null;
-  imageLandscapeId: string | null;
-  cloudName: string;
-  onClose: () => void;
-}) {
-  const [eventIndex, setEventIndex] = useState(0);
-  const [formatIndex, setFormatIndex] = useState(0);
-
-  const oc = overlayConfig ?? {};
-  console.log('overlayConfig in lightbox:', JSON.stringify(overlayConfig));
-  const squareCfg  = oc.square    ?? DEFAULT_FORMAT;
-  const storyCfg   = oc.story     ?? DEFAULT_FORMAT;
-  const landscapeCfg = oc.landscape ?? DEFAULT_FORMAT;
-
-  const squarePid    = imageSquareId;
-  const storyPid     = imageStoryId ?? imageSquareId;
-  const landscapePid = imageLandscapeId ?? imageSquareId;
-
-  const formats: PreviewFormat[] = [
-    { key: "square",    label: "IG Square",  publicId: squarePid,    w: 1080, h: 1080, cfg: squareCfg },
-    { key: "story",     label: "IG Story",   publicId: storyPid,     w: 1080, h: 1350, cfg: storyCfg },
-    { key: "landscape", label: "FB Cover",   publicId: landscapePid, w: 1920, h: 1080, cfg: landscapeCfg },
-  ];
-
-  const event = events[eventIndex];
-  const fmt = formats[formatIndex];
-  const previewUrl = fmt.publicId ? buildUrl(fmt.publicId, cloudName, fmt.cfg, event, fmt.w, fmt.h) : null;
-  console.log("publicId:", fmt.publicId, "previewUrl:", previewUrl);
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-
-      {/* Header */}
-      <div style={{ width: "100%", maxWidth: 900, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px 12px" }}>
-        <div style={{ color: "#fff", fontWeight: 900, fontSize: 16 }}>
-          {event.day ? `${event.day} ` : ""}{formatDate(event.date_iso)} — {event.venue}, {event.city}{event.state ? `, ${event.state}` : ""}
-        </div>
-        <button onClick={onClose} style={{ background: "none", border: "none", color: "#fff", fontSize: 24, cursor: "pointer", lineHeight: 1 }}>✕</button>
-      </div>
-
-      {/* Format tabs */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        {formats.map((f, i) => (
-          <button key={f.key} onClick={() => setFormatIndex(i)}
-            style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid", borderColor: formatIndex === i ? "#fff" : "rgba(255,255,255,0.3)", background: formatIndex === i ? "#fff" : "transparent", color: formatIndex === i ? "#111" : "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
-            {f.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Image */}
-      {(() => {
-        const maxW = fmt.key === "landscape" ? 800 : fmt.key === "story" ? 400 : 500;
-        return (
-          <div style={{ maxWidth: maxW, width: "100%", borderRadius: 12, overflow: "hidden", background: "#222" }}>
-            {previewUrl ? (
-              <img src={previewUrl} alt="Preview" style={{ width: "100%", height: "auto", display: "block" }} />
-            ) : (
-              <div style={{ padding: 48, textAlign: "center", color: "#888" }}>No image uploaded for this format</div>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* Event navigation */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 16 }}>
-        <button onClick={() => setEventIndex(i => Math.max(0, i - 1))} disabled={eventIndex === 0}
-          style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontWeight: 700, fontSize: 14, cursor: eventIndex === 0 ? "not-allowed" : "pointer", opacity: eventIndex === 0 ? 0.3 : 1 }}>
-          ← Prev
-        </button>
-        <span style={{ color: "#aaa", fontSize: 13 }}>{eventIndex + 1} / {events.length}</span>
-        <button onClick={() => setEventIndex(i => Math.min(events.length - 1, i + 1))} disabled={eventIndex === events.length - 1}
-          style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontWeight: 700, fontSize: 14, cursor: eventIndex === events.length - 1 ? "not-allowed" : "pointer", opacity: eventIndex === events.length - 1 ? 0.3 : 1 }}>
-          Next →
-        </button>
-      </div>
-    </div>
-  );
 }
 
 type CityStateCellProps = {
@@ -261,7 +94,7 @@ function Cell({ event, field, display, editing, saving, draft, inputRef, onStart
   );
 }
 
-export default function EventsTable({ events: initial, tourId, orgId, overlayConfig, imageSquareId, imageStoryId, imageLandscapeId, cloudName }: Props) {
+export default function EventsTable({ events: initial, tourId, orgId }: Props) {
   const [events, setEvents] = useState<EventRow[]>(initial);
   const [editing, setEditing] = useState<{ id: string; field: EditableField } | null>(null);
   const [draft, setDraft] = useState("");
@@ -269,7 +102,8 @@ export default function EventsTable({ events: initial, tourId, orgId, overlayCon
   const [saving, setSaving] = useState<string | null>(null);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function startEdit(e: EventRow, field: EditableField) {
@@ -310,96 +144,150 @@ export default function EventsTable({ events: initial, tourId, orgId, overlayCon
     if (e.key === "Escape") setEditing(null);
   }
 
-  const COLS = "90px 100px 180px 200px 200px 200px 100px 100px 80px";
+  async function generateAll() {
+    setGenerating(true);
+    setGenerateError(null);
+    setEvents(prev => prev.map(e => ({ ...e, render_status: "rendering" })));
+    try {
+      const res = await fetch("/api/renders/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tourId, orgId }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setEvents(prev => prev.map(e => ({ ...e, render_status: "ready" })));
+      } else {
+        const failedVenues = (data.errors ?? []).map((err: string) => err.split(":")[0]);
+        setEvents(prev => prev.map(e =>
+          failedVenues.some((v: string) => e.venue.includes(v))
+            ? { ...e, render_status: "error" }
+            : { ...e, render_status: "ready" }
+        ));
+        setGenerateError(`${data.errors.length} event(s) failed. Check errors and re-render individually.`);
+      }
+    } catch {
+      setGenerateError("Generate failed. Check your network and try again.");
+      setEvents(prev => prev.map(e => ({ ...e, render_status: "error" })));
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function sendEvent(eventId: string) {
+    setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, render_status: "rendering" } : ev));
+    const res = await fetch("/api/renders/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventId, orgId }),
+    });
+    const data = await res.json();
+    setEvents(prev => prev.map(ev => ev.id === eventId
+      ? { ...ev, render_status: data.ok ? "ready" : "error", sent_at: data.ok ? new Date().toISOString() : null }
+      : ev
+    ));
+  }
+
+  async function reRenderEvent(eventId: string) {
+    setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, render_status: "rendering" } : ev));
+    const res = await fetch("/api/renders/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventId, orgId }),
+    });
+    const data = await res.json();
+    setEvents(prev => prev.map(ev => ev.id === eventId
+      ? { ...ev, render_status: data.ok ? "ready" : "error" }
+      : ev
+    ));
+  }
+
+  const COLS = "90px 100px 180px 200px 200px 200px 100px 140px 80px";
+  const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
 
   return (
-    <>
-      {showPreview && (
-        <PreviewLightbox
-          events={events}
-          overlayConfig={overlayConfig}
-          imageSquareId={imageSquareId}
-          imageStoryId={imageStoryId}
-          imageLandscapeId={imageLandscapeId}
-          cloudName={cloudName}
-          onClose={() => setShowPreview(false)}
-        />
-      )}
-
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-        <button
-          onClick={() => setShowPreview(true)}
-          disabled={events.length === 0}
-          style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 13, cursor: events.length === 0 ? "not-allowed" : "pointer", opacity: events.length === 0 ? 0.4 : 1 }}
-        >👁 Preview All</button>
+    <div style={{ overflowX: "auto" }}>
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#fafafa" }}>
+        <div style={{ fontSize: 13, color: "#888" }}>
+          {events.length === 0 ? "No events yet." : `${events.length} event${events.length !== 1 ? "s" : ""} · ${events.filter(e => !!e.sent_at).length} sent`}
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {generateError && (
+            <span style={{ fontSize: 12, color: "#c00", fontWeight: 700 }}>{generateError}</span>
+          )}
+          <button
+            onClick={generateAll}
+            disabled={generating || events.length === 0}
+            style={{
+              padding: "10px 20px", borderRadius: 10, border: "none",
+              background: generating ? "#888" : "#111",
+              color: "#fff", fontWeight: 900, fontSize: 13,
+              cursor: generating || events.length === 0 ? "not-allowed" : "pointer",
+              opacity: events.length === 0 ? 0.4 : 1,
+              transition: "background 0.2s"
+            }}
+          >
+            {generating ? "Generating..." : allReady ? "Re-Generate All" : "Generate All"}
+          </button>
+        </div>
       </div>
 
-      <div style={{ overflowX: "auto" }}>
-        <div style={{ display: "grid", gridTemplateColumns: COLS, minWidth: 1470, gap: 0, padding: "10px 16px", background: "#fafafa", fontSize: 12, fontWeight: 900, borderBottom: "1px solid #eee" }}>
-          <div>Date</div><div>Day</div><div>City, ST</div><div>Venue</div>
-          <div>Promoter Email</div><div>Manager Email</div>
-          <div>Assets</div><div>Status</div><div>Link</div><div></div>
-        </div>
+      <div style={{ display: "grid", gridTemplateColumns: COLS, minWidth: 1200, gap: 0, padding: "10px 16px", background: "#fafafa", fontSize: 12, fontWeight: 900, borderBottom: "1px solid #eee" }}>
+        <div>Date</div><div>Day</div><div>City, ST</div><div>Venue</div>
+        <div>Promoter Email</div><div>Manager Email</div>
+        <div>Assets</div><div>Status</div><div>Link</div>
+      </div>
 
-        {events.length === 0 ? (
-          <div style={{ padding: 16, opacity: 0.7 }}>No events yet. Click <b>+ New Event</b> to create one.</div>
-        ) : (
-          events.map((e, i) => (
-            <div key={e.id}
-              onMouseEnter={() => setHoveredRow(e.id)}
-              onMouseLeave={() => { setHoveredRow(null); setConfirmDelete(null); }}
-              style={{ display: "grid", gridTemplateColumns: COLS + " 80px", minWidth: 1470, padding: "10px 16px", borderTop: "1px solid #f0f0f0", alignItems: "center", background: i % 2 === 0 ? "#fff" : "#fafafa", position: "relative" }}>
-              <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
-              <Cell event={e} field="day" display={e.day ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
-              <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
-              <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
-              <div style={{ opacity: 0.8 }}><Cell event={e} field="promoter_email" display={e.promoter_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
-              <div style={{ opacity: 0.8 }}><Cell event={e} field="manager_email" display={e.manager_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
-              <div><OpenAssetsButton event={{ id: e.id, date_iso: e.date_iso, city: e.city, state: e.state, venue: e.venue }} /></div>
-              <div>
-                {e.sent_at ? (
-                  <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#e9f7ef", fontWeight: 900, fontSize: 12 }}>✓ SENT</span>
-                ) : e.render_status === "rendering" ? (
-                  <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff8e1", fontWeight: 900, fontSize: 12 }}>⏳ RENDERING</span>
-                ) : e.render_status === "error" ? (
-                  <button onClick={async () => {
-                    setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "rendering" } : ev));
-                    const res = await fetch("/api/renders/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventId: e.id, orgId }) });
-                    const data = await res.json();
-                    setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: data.ok ? "ready" : "error", sent_at: data.ok ? new Date().toISOString() : null } : ev));
-                  }} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #e00", background: "#fff0f0", cursor: "pointer", fontWeight: 900, fontSize: 12, color: "#c00" }}>↺ RETRY</button>
-                ) : (
-                  <button onClick={async () => {
-                    setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: "rendering" } : ev));
-                    const res = await fetch("/api/renders/approve", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventId: e.id, orgId }) });
-                    const data = await res.json();
-                    setEvents(prev => prev.map(ev => ev.id === e.id ? { ...ev, render_status: data.ok ? "ready" : "error", sent_at: data.ok ? new Date().toISOString() : null } : ev));
-                  }} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #111", background: "#111", color: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>▶ APPROVE & SEND</button>
-                )}
-              </div>
-              <div>
-                <button onClick={async () => {
-                  const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
-                  const data = await res.json();
-                  if (data.token) window.open(`/v/e/${data.token}`, "_blank");
-                }} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>🔗</button>
-              </div>
-              {hoveredRow === e.id && (
-                <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
-                  {confirmDelete === e.id ? (
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button onClick={() => deleteEvent(e.id)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #e00", background: "#fff0f0", color: "#c00", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Delete</button>
-                      <button onClick={() => setConfirmDelete(null)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Cancel</button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", opacity: 0.6 }}>✕</button>
-                  )}
-                </div>
+      {events.length === 0 ? (
+        <div style={{ padding: 16, opacity: 0.7 }}>No events yet. Click <b>+ New Event</b> to create one.</div>
+      ) : (
+        events.map((e, i) => (
+          <div key={e.id}
+            onMouseEnter={() => setHoveredRow(e.id)}
+            onMouseLeave={() => { setHoveredRow(null); setConfirmDelete(null); }}
+            style={{ display: "grid", gridTemplateColumns: COLS + " 80px", minWidth: 1200, padding: "10px 16px", borderTop: "1px solid #f0f0f0", alignItems: "center", background: i % 2 === 0 ? "#fff" : "#fafafa", position: "relative" }}>
+            <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+            <Cell event={e} field="day" display={e.day ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+            <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
+            <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+            <div style={{ opacity: 0.8 }}><Cell event={e} field="promoter_email" display={e.promoter_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
+            <div style={{ opacity: 0.8 }}><Cell event={e} field="manager_email" display={e.manager_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
+            <div><OpenAssetsButton event={{ id: e.id, date_iso: e.date_iso, city: e.city, state: e.state, venue: e.venue }} /></div>
+            <div>
+              {e.sent_at ? (
+                <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#e9f7ef", fontWeight: 900, fontSize: 12 }}>SENT</span>
+              ) : e.render_status === "rendering" ? (
+                <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff8e1", fontWeight: 900, fontSize: 12 }}>Rendering...</span>
+              ) : e.render_status === "ready" ? (
+                <button onClick={() => sendEvent(e.id)} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #1a7f4b", background: "#e9f7ef", color: "#1a7f4b", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Send</button>
+              ) : e.render_status === "error" ? (
+                <button onClick={() => reRenderEvent(e.id)} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #e00", background: "#fff0f0", cursor: "pointer", fontWeight: 900, fontSize: 12, color: "#c00" }}>Retry</button>
+              ) : (
+                <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#f5f5f5", fontWeight: 900, fontSize: 12, color: "#999" }}>Not ready</span>
               )}
             </div>
-          ))
-        )}
-      </div>
-    </>
+            <div>
+              <button onClick={async () => {
+                const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
+                const data = await res.json();
+                if (data.token) window.open(`/v/e/${data.token}`, "_blank");
+              }} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link</button>
+            </div>
+            {hoveredRow === e.id && (
+              <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
+                {confirmDelete === e.id ? (
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <button onClick={() => deleteEvent(e.id)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #e00", background: "#fff0f0", color: "#c00", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Delete</button>
+                    <button onClick={() => setConfirmDelete(null)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Cancel</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", opacity: 0.6 }}>x</button>
+                )}
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
   );
 }
