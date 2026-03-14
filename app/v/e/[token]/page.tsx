@@ -23,18 +23,25 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: tour } = await supabase
     .from("tours")
-    .select("name, band_tour_label, spotify_url")
+    .select("name, band_name, band_tour_label, spotify_url, image_url, adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url")
     .eq("id", event.tour_id)
     .single();
 
   if (!tour) notFound();
 
   const t = tour as any;
-  const bandName = t.band_tour_label ?? t.name ?? "Artist";
+  const bandName = t.band_name ?? t.band_tour_label ?? t.name ?? "Artist";
   const spotifyUrl: string | null = t.spotify_url ?? null;
   const spotifyEmbedUrl = spotifyUrl
     ? spotifyUrl.replace("open.spotify.com/", "open.spotify.com/embed/")
     : null;
+
+  const advMaterials: { label: string; url: string }[] = [
+    { label: "Stage Plot", url: t.adv_stage_plot_url },
+    { label: "Hospitality Rider", url: t.adv_hospitality_url },
+    { label: "FOH Requirements", url: t.adv_foh_url },
+    { label: "W-9", url: t.adv_w9_url },
+  ].filter((m) => !!m.url) as { label: string; url: string }[];
 
   const venueName = event.venue_name ?? event.venue ?? "";
   const city = event.venue_city ?? event.city ?? "";
@@ -51,11 +58,13 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
     } catch {}
   }
 
-  const assets = [
+  const photoAssets = [
     { label: "IG Post", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
     { label: "IG Stories", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
     { label: "FB Event Cover", dims: "1920 × 1080", aspect: "16/9", url: link.render_landscape_url },
   ];
+
+  const posterUrl: string | null = link.render_poster_url ?? (t.image_url ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${t.image_url}` : null);
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#fff" }}>
@@ -94,16 +103,16 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           </div>
         </div>
 
-        {/* Assets */}
+        {/* Photos */}
         <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 64 }}>
-          {assets.map((asset) => (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 48 }}>
+          {photoAssets.map((asset) => (
             <div key={asset.label} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden" }}>
               <div style={{ background: "#1a1a1a" }}>
                 {asset.url ? (
-                  <img src={asset.url} alt={asset.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <img src={asset.url} alt={asset.label} style={{ width: "100%", display: "block" }} />
                 ) : (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#333", fontSize: 13 }}>
+                  <div style={{ aspectRatio: asset.aspect, display: "flex", alignItems: "center", justifyContent: "center", color: "#333", fontSize: 13 }}>
                     Rendering soon
                   </div>
                 )}
@@ -124,6 +133,41 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           ))}
         </div>
 
+        {/* Tour Poster */}
+        {posterUrl && (
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Tour Poster</div>
+            <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden", maxWidth: 400 }}>
+              <img src={posterUrl} alt="Tour Poster" style={{ width: "100%", display: "block" }} />
+              <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Full Tour Poster</div>
+                  <div style={{ fontSize: 11, color: "#555" }}>Print quality</div>
+                </div>
+                <a href={posterUrl} download target="_blank" rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: "#1e1e1e", color: "#fff", textDecoration: "none", fontSize: 16 }}>
+                  ↓
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Video */}
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
+          <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, padding: 32, textAlign: "center" }}>
+            <div style={{ fontSize: 24, marginBottom: 12 }}>▶</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8 }}>Video Assets Coming Soon</div>
+            <div style={{ fontSize: 13, color: "#555", marginBottom: 16 }}>Optimized video files for every platform will appear here once rendered.</div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+              {["YouTube", "Instagram Reels", "TikTok", "Facebook", "Twitter / X"].map((f) => (
+                <span key={f} style={{ padding: "4px 12px", borderRadius: 999, border: "1px solid #1e1e1e", fontSize: 11, color: "#555" }}>{f}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Spotify */}
         {spotifyEmbedUrl && (
           <div style={{ marginBottom: 48 }}>
@@ -131,6 +175,22 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy" style={{ borderRadius: 16 }} />
+          </div>
+        )}
+
+        {/* Advance Materials */}
+        {advMaterials.length > 0 && (
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
+              {advMaterials.map((mat) => (
+                <a key={mat.label} href={mat.url} target="_blank" rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", background: "#111", border: "1px solid #1e1e1e", borderRadius: 12, textDecoration: "none", color: "#d4d0c8", fontWeight: 600, fontSize: 14 }}>
+                  <span style={{ fontSize: 20 }}>↓</span>
+                  {mat.label}
+                </a>
+              ))}
+            </div>
           </div>
         )}
 
