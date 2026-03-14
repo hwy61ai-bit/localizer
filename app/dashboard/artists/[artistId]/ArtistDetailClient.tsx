@@ -70,48 +70,28 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
     finally { setAdvUploading(null); }
   }
 
+  async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
+    e.stopPropagation();
+    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
+    setDeletingTourId(tourId);
+    try {
+      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
+      if (events?.length) {
+        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
+        await supabase.from("events").delete().eq("tour_id", tourId);
+      }
+      await supabase.from("tours").delete().eq("id", tourId);
+      setTours(prev => prev.filter(t => t.id !== tourId));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed. Please try again.");
+    } finally {
+      setDeletingTourId(null);
+    }
+  }
+
   const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 14px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 14, background: "#fff", color: "#111", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#999", marginBottom: 6, display: "block" };
-
-  async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
-    e.stopPropagation();
-    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
-    setDeletingTourId(tourId);
-    try {
-      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
-      if (events?.length) {
-        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
-        await supabase.from("events").delete().eq("tour_id", tourId);
-      }
-      await supabase.from("tours").delete().eq("id", tourId);
-      setTours(prev => prev.filter(t => t.id !== tourId));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Delete failed. Please try again.");
-    } finally {
-      setDeletingTourId(null);
-    }
-  }
-
-  async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
-    e.stopPropagation();
-    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
-    setDeletingTourId(tourId);
-    try {
-      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
-      if (events?.length) {
-        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
-        await supabase.from("events").delete().eq("tour_id", tourId);
-      }
-      await supabase.from("tours").delete().eq("id", tourId);
-      setTours(prev => prev.filter(t => t.id !== tourId));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Delete failed. Please try again.");
-    } finally {
-      setDeletingTourId(null);
-    }
-  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
@@ -155,47 +135,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
             {ADV_FIELDS.map((field) => {
               const url = advMaterials[field.id];
               const isUploading = advUploading === field.id;
-              async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
-    e.stopPropagation();
-    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
-    setDeletingTourId(tourId);
-    try {
-      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
-      if (events?.length) {
-        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
-        await supabase.from("events").delete().eq("tour_id", tourId);
-      }
-      await supabase.from("tours").delete().eq("id", tourId);
-      setTours(prev => prev.filter(t => t.id !== tourId));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Delete failed. Please try again.");
-    } finally {
-      setDeletingTourId(null);
-    }
-  }
-
-  async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
-    e.stopPropagation();
-    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
-    setDeletingTourId(tourId);
-    try {
-      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
-      if (events?.length) {
-        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
-        await supabase.from("events").delete().eq("tour_id", tourId);
-      }
-      await supabase.from("tours").delete().eq("id", tourId);
-      setTours(prev => prev.filter(t => t.id !== tourId));
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Delete failed. Please try again.");
-    } finally {
-      setDeletingTourId(null);
-    }
-  }
-
-  return (
+              return (
                 <div key={field.id}>
                   <label style={labelStyle}>{field.label}</label>
                   <input ref={(el) => { fileRefs.current[field.id] = el; }} type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAdvUpload(field.id, f); }} />
