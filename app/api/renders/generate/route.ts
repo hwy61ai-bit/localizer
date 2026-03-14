@@ -57,8 +57,15 @@ function buildCloudinaryUrl(
   const dateStr   = sanitize(eventData.dateFormatted);
   const cityState = sanitize(eventData.cityState);
 
+  const showBand = cfg.showBandName ?? false;
+  const bandSize = cfg.bandSize ?? 48;
+  const bandName = sanitize(eventData.bandName);
+  const bandX = Math.round(((cfg.band?.x ?? 0.5) - 0.5) * w);
+  const bandY = Math.round(((cfg.band?.y ?? 0.65) - 0.5) * h);
+
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
+    ...(showBand ? [`l_text:${font}_${bandSize}_bold:${bandName},co_rgb:${color}/fl_layer_apply,g_center,x_${bandX},y_${bandY}`] : []),
     `l_text:${font}_${venueSize}_bold:${venueName},co_rgb:${color}/fl_layer_apply,g_center,x_${venueX},y_${venueY}`,
     `l_text:${font}_${dateSize}:${dateStr},co_rgb:${color}/fl_layer_apply,g_center,x_${dateX},y_${dateY}`,
     `l_text:${font}_${citySize}:${cityState},co_rgb:${color}/fl_layer_apply,g_center,x_${cityX},y_${cityY}`,
