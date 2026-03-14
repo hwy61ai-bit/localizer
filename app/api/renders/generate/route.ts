@@ -40,7 +40,7 @@ function buildCloudinaryUrl(
 ): string {
   const { w, h } = FORMAT_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
-  const font = (cfg.fontFamily ?? "Oswald").replace(/ /g, "_");
+  const font = "Arial";
   const color = cfg.textColor ?? "ffffff";
   const maxW = Math.round(w * 0.85);
 
