@@ -152,7 +152,8 @@ export async function renderEventFormat(
     ],
   });
 
-  const textLayer = await sharp(Buffer.from(svg), { density: 150 }).resize(w, h).png().toBuffer();
+  const resvg = new Resvg(svg);
+  const textLayer = Buffer.from(resvg.render().asPng());
 
   const imageBuffer = await fetchImageBuffer(basePublicId);
   const base = await sharp(imageBuffer)
