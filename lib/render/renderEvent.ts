@@ -1,7 +1,6 @@
 import sharp from "sharp";
 import satori from "satori";
-import fs from "fs";
-import path from "path";
+import { getOswaldRegular, getOswaldBold } from "./fonts";
 
 export type FieldConfig = { x: number; y: number; size: number };
 export type FormatConfig = {
@@ -40,19 +39,7 @@ export type EventData = {
   cityState: string;
 };
 
-let cachedRegular: ArrayBuffer | null = null;
-let cachedBold: ArrayBuffer | null = null;
 
-function getFont(weight: "Regular" | "Bold"): ArrayBuffer {
-  if (weight === "Regular" && cachedRegular) return cachedRegular;
-  if (weight === "Bold" && cachedBold) return cachedBold;
-  const fontPath = path.join(process.cwd(), "public", "fonts", `Oswald-${weight}.ttf`);
-  const buf = fs.readFileSync(fontPath);
-  const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
-  if (weight === "Regular") cachedRegular = ab;
-  else cachedBold = ab;
-  return ab;
-}
 
 function parseColor(hex: string): string {
   return hex.startsWith("#") ? hex : `#${hex}`;
@@ -127,8 +114,8 @@ export async function renderEventFormat(
 ): Promise<string> {
   const { w, h } = FORMAT_DIMS[format];
 
-  const fontRegular = getFont("Regular");
-  const fontBold = getFont("Bold");
+  const fontRegular = getOswaldRegular();
+  const fontBold = getOswaldBold();
 
   const color = parseColor(cfg.textColor);
 
