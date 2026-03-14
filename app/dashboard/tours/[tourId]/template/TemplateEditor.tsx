@@ -104,7 +104,9 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
 }
 
-export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: string }) {
+type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string } | null;
+
+export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tour; tourId: string; firstEvent: FirstEvent }) {
   const saved0 = (tour.overlay_config ?? {}) as Partial<Record<FormatKey, FormatConfig>>;
 
   const [activeFormat, setActiveFormat] = useState<FormatKey>("square");
@@ -324,7 +326,11 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                           pointerEvents: "all",
                         }}
                       >
-                        {SAMPLE_TEXT[field]}
+                        {firstEvent ? (
+                          field === "venue" ? firstEvent.venue :
+                          field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
+                          [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
+                        ) : SAMPLE_TEXT[field]}
                       </div>
                     );
                   })}

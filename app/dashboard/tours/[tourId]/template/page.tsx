@@ -2,11 +2,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { notFound } from "next/navigation";
 import TemplateEditor from "./TemplateEditor";
 
-export default async function TemplatePage({
-  params,
-}: {
-  params: Promise<{ tourId: string }>;
-}) {
+export default async function TemplatePage({ params }: { params: Promise<{ tourId: string }> }) {
   const { tourId } = await params;
   const supabase = await supabaseServer();
 
@@ -18,5 +14,14 @@ export default async function TemplatePage({
 
   if (error || !tour) notFound();
 
-  return <TemplateEditor tour={tour} tourId={tourId} />;
+  const { data: events } = await supabase
+    .from("events")
+    .select("date_iso, city, state, venue")
+    .eq("tour_id", tourId)
+    .order("date_iso", { ascending: true })
+    .limit(1);
+
+  const firstEvent = events?.[0] ?? null;
+
+  return <TemplateEditor tour={tour} tourId={tourId} firstEvent={firstEvent} />;
 }
