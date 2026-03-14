@@ -195,7 +195,6 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
       },
     }));
     setSaved(false);
-    setPreviewUrl(null);
   }
 
   function updateCfg(key: keyof FormatConfig, value: any) {
@@ -204,7 +203,6 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
       [activeFormat]: { ...prev[activeFormat], [key]: value },
     }));
     setSaved(false);
-    setPreviewUrl(null);
   }
 
   async function save() {
@@ -241,7 +239,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
         {/* Format tabs */}
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           {FORMATS.map(f => (
-            <button key={f.key} onClick={() => { setActiveFormat(f.key); setPreviewUrl(null); }}
+            <button key={f.key} onClick={() => { setActiveFormat(f.key); }}
               style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid", borderColor: activeFormat === f.key ? "#111" : "#ddd", background: activeFormat === f.key ? "#111" : "#fff", color: activeFormat === f.key ? "#fff" : "#111", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
               {f.label}
             </button>
