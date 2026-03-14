@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
 import { getOswaldRegular, getOswaldBold } from "./fonts";
 
@@ -150,7 +151,8 @@ export async function renderEventFormat(
     ],
   });
 
-  const textLayer = await sharp(Buffer.from(svg)).resize(w, h).png().toBuffer();
+  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: w } });
+  const textLayer = Buffer.from(resvg.render().asPng());
 
   const imageBuffer = await fetchImageBuffer(basePublicId);
   const base = await sharp(imageBuffer)
