@@ -96,9 +96,9 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
 
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
-    `l_text:${font}_${cfg.venue.size}_bold:${san("Stubbs Waller Creek Amphitheater")}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${vp.xPx},y_${vp.yPx}`,
-    `l_text:${font}_${cfg.date.size}:${san("April 25 2026")}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${dp.xPx},y_${dp.yPx}`,
-    `l_text:${font}_${cfg.city.size}:${san("Little Rock AR")}/c_fit,co_rgb:${color},fl_layer_apply,g_center,w_${maxW},x_${cp.xPx},y_${cp.yPx}`,
+    `l_text:${font}_${cfg.venue.size}_bold:${san("Stubbs Waller Creek Amphitheater")},co_rgb:${color}/c_fit,fl_layer_apply,g_center,w_${maxW},x_${vp.xPx},y_${vp.yPx}`,
+    `l_text:${font}_${cfg.date.size}:${san("April 25 2026")},co_rgb:${color}/c_fit,fl_layer_apply,g_center,w_${maxW},x_${dp.xPx},y_${dp.yPx}`,
+    `l_text:${font}_${cfg.city.size}:${san("Little Rock AR")},co_rgb:${color}/c_fit,fl_layer_apply,g_center,w_${maxW},x_${cp.xPx},y_${cp.yPx}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -230,6 +230,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tou
             <div style={{ display: "flex", gap: 8 }}>
 
               <button
+              <button
+                onClick={() => {
+                  const pid = formatImageIds[activeFormat];
+                  if (!pid) { alert("No image uploaded for this format."); return; }
+                  window.open(buildPreviewUrl(pid, cloudName, cfg, activeFormat), "_blank");
+                }}
+                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
+              >Preview Render</button>
                 onClick={save}
                 disabled={saving}
                 style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: saved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
