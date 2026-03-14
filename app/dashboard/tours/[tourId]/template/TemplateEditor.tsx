@@ -33,10 +33,10 @@ const DEFAULT_FORMAT: FormatConfig = {
   fontFamily: "Oswald",
   textColor: "ffffff",
   showBandName: false,
-  bandSize: 80,
-  date:  { x: 0.5, y: 0.84, size: 40 },
-  venue: { x: 0.5, y: 0.76, size: 52 },
-  city:  { x: 0.5, y: 0.91, size: 40 },
+  bandSize: 48,
+  date:  { x: 0.5, y: 0.84, size: 28 },
+  venue: { x: 0.5, y: 0.76, size: 36 },
+  city:  { x: 0.5, y: 0.91, size: 28 },
 };
 
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [

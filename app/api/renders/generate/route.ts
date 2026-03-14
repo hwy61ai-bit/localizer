@@ -11,7 +11,6 @@ const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
 };
 
 const FORMATS: RenderFormat[] = ["square", "story", "landscape"];
-const PREVIEW_SCALE = 0.56; // editor container ~600px / image 1080px
 
 function formatDateForRender(iso: string): string {
   try {
@@ -44,9 +43,9 @@ function buildCloudinaryUrl(
   const color = cfg.textColor ?? "ffffff";
   const maxW = Math.round(w * 0.85);
 
-  const venueSize  = Math.round((cfg.venue?.size  ?? 52) * PREVIEW_SCALE);
-  const dateSize   = Math.round((cfg.date?.size   ?? 40) * PREVIEW_SCALE);
-  const citySize   = Math.round((cfg.city?.size   ?? 40) * PREVIEW_SCALE);
+  const venueSize  = cfg.venue?.size  ?? 36;
+  const dateSize   = cfg.date?.size   ?? 28;
+  const citySize   = cfg.city?.size   ?? 28;
 
   const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
   const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
