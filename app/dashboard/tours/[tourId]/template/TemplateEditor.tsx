@@ -93,11 +93,12 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
   const dp = toPixel(cfg.date);
   const cp = toPixel(cfg.city);
 
+  const scale = format === "landscape" ? 0.75 : 1;
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
-    `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${cfg.venue.size}_bold:${san("White Water Tavern")},w_${maxW},x_${vp.xPx},y_${vp.yPx}`,
-    `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${cfg.date.size}:${san("Saturday April 25 2026")},w_${maxW},x_${dp.xPx},y_${dp.yPx}`,
-    `c_fit,co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${cfg.city.size}:${san("Little Rock AR")},w_${maxW},x_${cp.xPx},y_${cp.yPx}`,
+    `co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${Math.round(cfg.venue.size * scale)}_bold:${san("Stubbs Waller Creek Amphitheater")},x_${vp.xPx},y_${vp.yPx}`,
+    `co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${Math.round(cfg.date.size * scale)}:${san("April 25 2026")},x_${dp.xPx},y_${dp.yPx}`,
+    `co_rgb:${color},fl_layer_apply,g_center,l_text:${font}_${Math.round(cfg.city.size * scale)}:${san("Little Rock AR")},x_${cp.xPx},y_${cp.yPx}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
