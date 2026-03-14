@@ -119,6 +119,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const SNAP = 0.025;
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
@@ -163,7 +164,8 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
   useEffect(() => {
     function onMouseMove(e: MouseEvent) {
       if (!dragging || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
+      const el = imgRef.current ?? containerRef.current;
+      const rect = el.getBoundingClientRect();
       let x = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
       const y = Math.max(0.02, Math.min(0.98, (e.clientY - rect.top) / rect.height));
       if (Math.abs(x - 0.5) < SNAP) x = 0.5;
@@ -276,7 +278,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
                 </div>
               ) : imageUrl ? (
                 <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default" }}>
-                  <img src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
+                  <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
 
                   {/* Center vertical guide */}
                   {dragging && (
