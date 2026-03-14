@@ -126,6 +126,8 @@ export async function POST(req: NextRequest) {
       };
 
       const renderUrls: Record<string, string> = {};
+      console.log("EVENT DATA:", JSON.stringify(eventData));
+      console.log("FORMAT IDS:", JSON.stringify(formatPublicIds));
       for (const format of FORMATS) {
         const pid = formatPublicIds[format];
         if (!pid) continue;
@@ -153,6 +155,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      console.log("RENDER URLS:", JSON.stringify(renderUrls));
       await supabase.from("events").update({ render_status: "ready" }).eq("id", event.id);
 
     } catch (err: any) {
