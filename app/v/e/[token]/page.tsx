@@ -1,51 +1,33 @@
 import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
 
-const PHOTO_ASSETS = [
-  { label: "Full Tour Poster", dims: "1080 x 1920", aspect: "9/16", key: "render_poster_url" },
-  { label: "IG Post / Square", dims: "1080 x 1080", aspect: "1/1", key: "render_square_url" },
-  { label: "IG Stories", dims: "1080 x 1350", aspect: "4/5", key: "render_story_url" },
-  { label: "Landscape / FB Cover", dims: "1920 x 1080", aspect: "16/9", key: "render_landscape_url" },
-];
-
-export default async function VenuePage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
+export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const supabase = await supabaseServer();
 
-  const { data: link, error: linkError } = await supabase
+  const { data: link } = await supabase
     .from("venue_links")
-    .select("event_id, org_id, is_active, render_poster_url, render_square_url, render_story_url, render_landscape_url")
+    .select("event_id, org_id, is_active, render_square_url, render_story_url, render_landscape_url, render_poster_url")
     .eq("token", token)
     .maybeSingle();
 
-  if (linkError || !link || !link.is_active) notFound();
+  if (!link || !link.is_active) notFound();
 
-  const renderUrls: Record<string, string | null> = {
-    render_poster_url: (link as any).render_poster_url ?? null,
-    render_square_url: (link as any).render_square_url ?? null,
-    render_story_url: (link as any).render_story_url ?? null,
-    render_landscape_url: (link as any).render_landscape_url ?? null,
-  };
-
-  const { data: event, error: eventError } = await supabase
+  const { data: event } = await supabase
     .from("events")
     .select("id, tour_id, date_iso, city, state, venue, venue_name, venue_city, venue_state")
-    .eq("id", link!.event_id)
+    .eq("id", link.event_id)
     .single();
 
-  if (eventError || !event) notFound();
+  if (!event) notFound();
 
-  const { data: tour, error: tourError } = await supabase
+  const { data: tour } = await supabase
     .from("tours")
-    .select("name, band_tour_label, spotify_url, artist_id")
-    .eq("id", event!.tour_id)
+    .select("name, band_tour_label, spotify_url")
+    .eq("id", event.tour_id)
     .single();
 
-  if (tourError || !tour) notFound();
+  if (!tour) notFound();
 
   const t = tour as any;
   const bandName = t.band_tour_label ?? t.name ?? "Artist";
@@ -54,21 +36,10 @@ export default async function VenuePage({
     ? spotifyUrl.replace("open.spotify.com/", "open.spotify.com/embed/")
     : null;
 
-  const { data: artistData } = t.artist_id
-    ? await supabase.from("artists").select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url").eq("id", t.artist_id).single()
-    : { data: null };
-  const advSrc = artistData ?? t;
-  const advMaterials: { label: string; url: string }[] = [
-    { label: "Stage Plot", url: advSrc.adv_stage_plot_url },
-    { label: "Hospitality Rider", url: advSrc.adv_hospitality_url },
-    { label: "FOH Requirements", url: advSrc.adv_foh_url },
-    { label: "W-9", url: advSrc.adv_w9_url },
-  ].filter((m) => m.url && typeof m.url === "string" && m.url.length > 0) as { label: string; url: string }[];
-
-  const venueName = event!.venue_name ?? event!.venue ?? "";
-  const city = event!.venue_city ?? event!.city ?? "";
-  const state = event!.venue_state ?? event!.state ?? "";
-  const dateStr = event!.date_iso ?? "";
+  const venueName = event.venue_name ?? event.venue ?? "";
+  const city = event.venue_city ?? event.city ?? "";
+  const state = event.venue_state ?? event.state ?? "";
+  const dateStr = event.date_iso ?? "";
 
   let formattedDate = dateStr;
   if (dateStr) {
@@ -80,162 +51,93 @@ export default async function VenuePage({
     } catch {}
   }
 
+  const assets = [
+    { label: "IG Post", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
+    { label: "IG Stories", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
+    { label: "FB Event Cover", dims: "1920 × 1080", aspect: "16/9", url: link.render_landscape_url },
+  ];
+
   return (
-    <div style={{ background: "#0a0a0a", minHeight: "100vh" }}>
+    <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#fff" }}>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" />
-      <div className="page-wrap">
-        <div className="topbar">
-          <span className="topbar-brand">LOCALIZER</span>
-          <span className="topbar-badge">Official Asset Kit</span>
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px 64px" }}>
+
+        {/* Header */}
+        <div style={{ padding: "24px 0 20px", borderBottom: "1px solid #1e1e1e", marginBottom: 32, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: "#fff" }}>LOCALIZER</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Official Asset Kit</span>
         </div>
-        <div className="hero">
-          <div className="hero-eyebrow">Show Assets</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 20, marginBottom: 28 }}>
-            <div className="hero-band">{bandName}</div>
-          </div>
-          <hr style={{ border: "none", borderTop: "1px solid #ffffff", marginBottom: 28, marginTop: 0 }} />
-          <div className="hero-meta">
+
+        {/* Hero */}
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Show Assets</div>
+          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, letterSpacing: 2, lineHeight: 1, marginBottom: 20 }}>{bandName}</div>
+          <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
             {formattedDate && (
-              <div className="hero-meta-item">
-                <span className="hero-meta-label">Date</span>
-                <span className="hero-meta-value" style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 36, letterSpacing: "0.08em", color: "#f0ede8" }}>{formattedDate}</span>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#555", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.08em" }}>Date</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "#d4d0c8" }}>{formattedDate}</div>
               </div>
             )}
             {venueName && (
-              <div className="hero-meta-item">
-                <span className="hero-meta-label">Venue</span>
-                <span className="hero-meta-value" style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 36, letterSpacing: "0.08em", color: "#f0ede8" }}>{venueName}</span>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#555", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.08em" }}>Venue</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "#d4d0c8" }}>{venueName}</div>
               </div>
             )}
             {(city || state) && (
-              <div className="hero-meta-item">
-                <span className="hero-meta-label">Location</span>
-                <span className="hero-meta-value" style={{ fontFamily: "Bebas Neue, sans-serif", fontSize: 36, letterSpacing: "0.08em", color: "#f0ede8" }}>{[city, state].filter(Boolean).join(", ")}</span>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#555", marginBottom: 3, textTransform: "uppercase", letterSpacing: "0.08em" }}>Location</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "#d4d0c8" }}>{[city, state].filter(Boolean).join(", ")}</div>
               </div>
             )}
           </div>
         </div>
-        <div className="section-header" style={{ marginBottom: 32 }}>
-          <span className="section-title">PHOTOS</span>
-        </div>
-        <div className="photo-grid">
-          {PHOTO_ASSETS.map((asset) => {
-            const paddingMap: Record<string, string> = {
-              "1/1": "100%", "9/16": "177.78%", "4/5": "125%", "16/9": "56.25%",
-            };
-            const pt = paddingMap[asset.aspect] ?? "100%";
-            const url = renderUrls[asset.key] ?? null;
-            const isPoster = asset.key === "render_poster_url";
-            return (
-              <div className="asset-card" key={asset.key}>
-                <div className="asset-preview">
-                  <div className="asset-preview-inner" style={isPoster && url ? { paddingTop: 0 } : { paddingTop: pt }}>
-                    {url ? (
-                      <img src={url} alt={asset.label} style={isPoster ? { width: "100%", height: "auto", display: "block", position: "relative" } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
-                    ) : (
-                      <>
-                        <div className="asset-placeholder">
-                          <svg className="asset-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <circle cx="8.5" cy="8.5" r="1.5" />
-                            <polyline points="21 15 16 10 5 21" />
-                          </svg>
-                          <span className="asset-placeholder-text">Rendering soon</span>
-                        </div>
-                        <span className="asset-coming-soon">Not ready</span>
-                      </>
-                    )}
+
+        {/* Assets */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 64 }}>
+          {assets.map((asset) => (
+            <div key={asset.label} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden" }}>
+              <div style={{ aspectRatio: asset.aspect, background: "#1a1a1a", position: "relative", overflow: "hidden" }}>
+                {asset.url ? (
+                  <img src={asset.url} alt={asset.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#333", fontSize: 13 }}>
+                    Rendering soon
                   </div>
-                </div>
-                <div className="asset-info">
-                  <div className="asset-label-group">
-                    <span className="asset-label">{asset.label}</span>
-                    <span className="asset-dims">{asset.dims}</span>
-                  </div>
-                  {url ? (
-                    <a href={url} download target="_blank" rel="noopener noreferrer" style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid #2a2a2a", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, textDecoration: "none", color: "#c8a96e", fontSize: 16 }}>↓</a>
-                  ) : (
-                    <div className="asset-dl-btn" style={{ opacity: 0.3 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
-            );
-          })}
-        </div>
-        <div className="video-section">
-          <div className="section-header">
-            <span className="section-title">VIDEO</span>
-          </div>
-          <div className="video-coming-soon-card">
-            <div className="video-coming-soon-icon">play</div>
-            <div className="video-coming-soon-title">Video Assets Coming Soon</div>
-            <div className="video-coming-soon-sub">Optimized video files for every platform will appear here once rendered.</div>
-            <div className="video-format-list">
-              {["YouTube", "Instagram Reels", "TikTok", "Facebook", "Twitter / X"].map((f) => (
-                <span className="video-format-tag" key={f}>{f}</span>
-              ))}
+              <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>{asset.label}</div>
+                  <div style={{ fontSize: 11, color: "#555" }}>{asset.dims}</div>
+                </div>
+                {asset.url && (
+                  <a href={asset.url} download target="_blank" rel="noopener noreferrer"
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: "#1e1e1e", color: "#fff", textDecoration: "none", fontSize: 16 }}>
+                    ↓
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
+          ))}
         </div>
+
+        {/* Spotify */}
         {spotifyEmbedUrl && (
           <div style={{ marginBottom: 48 }}>
-            <div className="section-header">
-              <span className="section-title">LISTEN</span>
-            </div>
-            <iframe
-              src={spotifyEmbedUrl}
-              width="100%"
-              height="352"
-              frameBorder="0"
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Listen</div>
+            <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
-              style={{ borderRadius: 16 }}
-            />
+              loading="lazy" style={{ borderRadius: 16 }} />
           </div>
         )}
-        {advMaterials.length > 0 && (
-          <div style={{ marginBottom: 48 }}>
-            <div className="section-header">
-              <span className="section-title">ADVANCE MATERIALS</span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
-              {advMaterials.map((mat) => (
-                <a
-                  key={mat.label}
-                  href={mat.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "16px 20px",
-                    background: "#111",
-                    border: "1px solid #1e1e1e",
-                    borderRadius: 12,
-                    textDecoration: "none",
-                    color: "#d4d0c8",
-                    fontWeight: 600,
-                    fontSize: 14,
-                  }}
-                >
-                  
-                  <span style={{ flex: 1, fontWeight: 600, fontSize: 14, color: "#d4d0c8" }}>{mat.label}</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "#c8a96e", textTransform: "uppercase", flexShrink: 0 }}>Download</span>
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
-        <div className="page-footer">
-          <span className="footer-brand">LOCALIZER</span>
-          <span className="footer-note">Tour dates in. Show graphics out.</span>
+
+        {/* Footer */}
+        <div style={{ borderTop: "1px solid #1e1e1e", paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, letterSpacing: 2, color: "#333" }}>LOCALIZER</span>
+          <span style={{ fontSize: 11, color: "#333" }}>Tour dates in. Show graphics out.</span>
         </div>
       </div>
     </div>
