@@ -264,7 +264,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                   const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
                   const data = await res.json();
                   if (data.token) window.open(`/v/e/${data.token}`, "_blank");
-                }} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link / Preview</button>
+                }} style={{ padding: "6px 14px", borderRadius: 999, border: "none", background: "#111", color: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link / Preview</button>
               </div>
               {hoveredRow === e.id && (
                 <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
