@@ -11,6 +11,7 @@ type Props = {
   dateRange: string | null;
   eventCount: number;
   imageUrl: string | null;
+  href?: string;
 };
 
 export default function TourTile({
@@ -19,6 +20,7 @@ export default function TourTile({
   dateRange,
   eventCount,
   imageUrl,
+  href,
 }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -87,7 +89,7 @@ export default function TourTile({
       <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
 
       <div
-        onClick={() => router.push(`/dashboard/tours/${tourId}`)}
+        onClick={() => router.push(href ?? `/dashboard/tours/${tourId}`)}
         style={{
           background: currentImage ? "transparent" : "#fff",
           border: "1px solid #DDDDDD",
