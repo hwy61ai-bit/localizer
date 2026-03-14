@@ -19,6 +19,10 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [creatingTour, setCreatingTour] = useState(false);
+  const [deletingTourId, setDeletingTourId] = useState<string | null>(null);
+  const [hoveredTourId, setHoveredTourId] = useState<string | null>(null);
+  const [deletingTourId, setDeletingTourId] = useState<string | null>(null);
+  const [hoveredTourId, setHoveredTourId] = useState<string | null>(null);
   const [advMaterials, setAdvMaterials] = useState<{ [key: string]: string }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
@@ -71,6 +75,46 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 14px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 14, background: "#fff", color: "#111", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#999", marginBottom: 6, display: "block" };
 
+  async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
+    e.stopPropagation();
+    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
+    setDeletingTourId(tourId);
+    try {
+      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
+      if (events?.length) {
+        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
+        await supabase.from("events").delete().eq("tour_id", tourId);
+      }
+      await supabase.from("tours").delete().eq("id", tourId);
+      setTours(prev => prev.filter(t => t.id !== tourId));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed. Please try again.");
+    } finally {
+      setDeletingTourId(null);
+    }
+  }
+
+  async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
+    e.stopPropagation();
+    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
+    setDeletingTourId(tourId);
+    try {
+      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
+      if (events?.length) {
+        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
+        await supabase.from("events").delete().eq("tour_id", tourId);
+      }
+      await supabase.from("tours").delete().eq("id", tourId);
+      setTours(prev => prev.filter(t => t.id !== tourId));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed. Please try again.");
+    } finally {
+      setDeletingTourId(null);
+    }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -113,7 +157,47 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
             {ADV_FIELDS.map((field) => {
               const url = advMaterials[field.id];
               const isUploading = advUploading === field.id;
-              return (
+              async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
+    e.stopPropagation();
+    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
+    setDeletingTourId(tourId);
+    try {
+      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
+      if (events?.length) {
+        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
+        await supabase.from("events").delete().eq("tour_id", tourId);
+      }
+      await supabase.from("tours").delete().eq("id", tourId);
+      setTours(prev => prev.filter(t => t.id !== tourId));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed. Please try again.");
+    } finally {
+      setDeletingTourId(null);
+    }
+  }
+
+  async function handleDeleteTour(e: React.MouseEvent, tourId: string) {
+    e.stopPropagation();
+    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
+    setDeletingTourId(tourId);
+    try {
+      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
+      if (events?.length) {
+        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
+        await supabase.from("events").delete().eq("tour_id", tourId);
+      }
+      await supabase.from("tours").delete().eq("id", tourId);
+      setTours(prev => prev.filter(t => t.id !== tourId));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed. Please try again.");
+    } finally {
+      setDeletingTourId(null);
+    }
+  }
+
+  return (
                 <div key={field.id}>
                   <label style={labelStyle}>{field.label}</label>
                   <input ref={(el) => { fileRefs.current[field.id] = el; }} type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAdvUpload(field.id, f); }} />
@@ -146,18 +230,28 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {tours.map((tour) => (
-            <div key={tour.id} onClick={() => router.push("/dashboard/tours/" + tour.id)} style={{ background: tour.image_url ? "transparent" : "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, aspectRatio: "1 / 1", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden", position: "relative", cursor: "pointer" }}>
-              {tour.image_url && (
-                <>
-                  <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + tour.image_url + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
-                </>
-              )}
-              <div style={{ position: "relative", zIndex: 1, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: tour.image_url ? "rgba(255,255,255,0.6)" : "#999" }}>Tour</div>
-              <div style={{ position: "relative", zIndex: 1 }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: tour.image_url ? "#fff" : "#111", marginBottom: 8 }}>{tour.band_tour_label ?? tour.name}</div>
-                <div style={{ fontSize: 16, color: tour.image_url ? "rgba(255,255,255,0.5)" : "#ccc", textAlign: "right" }}>&#8594;</div>
+            <div key={tour.id} style={{ position: "relative" }}
+              onMouseEnter={() => setHoveredTourId(tour.id)}
+              onMouseLeave={() => setHoveredTourId(null)}>
+              <div onClick={() => router.push("/dashboard/tours/" + tour.id)} style={{ background: tour.image_url ? "transparent" : "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, aspectRatio: "1 / 1", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden", position: "relative", cursor: "pointer", opacity: deletingTourId === tour.id ? 0.4 : 1 }}>
+                {tour.image_url && (
+                  <>
+                    <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + tour.image_url + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
+                  </>
+                )}
+                <div style={{ position: "relative", zIndex: 1, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: tour.image_url ? "rgba(255,255,255,0.6)" : "#999" }}>Tour</div>
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: tour.image_url ? "#fff" : "#111", marginBottom: 8 }}>{tour.band_tour_label ?? tour.name}</div>
+                  <div style={{ fontSize: 16, color: tour.image_url ? "rgba(255,255,255,0.5)" : "#ccc", textAlign: "right" }}>&#8594;</div>
+                </div>
               </div>
+              {hoveredTourId === tour.id && (
+                <button onClick={(e) => handleDeleteTour(e, tour.id)}
+                  style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,0,0,0.3)", background: "rgba(0,0,0,0.55)", color: "rgba(255,100,100,0.9)", fontSize: 11, fontWeight: 700, cursor: "pointer", backdropFilter: "blur(4px)" }}>
+                  {deletingTourId === tour.id ? "Deleting…" : "Delete"}
+                </button>
+              )}
             </div>
           ))}
           <button onClick={handleCreateTour} disabled={creatingTour} style={{ width: "100%", aspectRatio: "1 / 1", background: "transparent", border: "1.5px dashed #CCCCCC", borderRadius: 14, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", padding: 20 }}>
