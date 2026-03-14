@@ -1,6 +1,6 @@
 import sharp from "sharp";
-import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
+import { Resvg } from "@resvg/resvg-js";
 import { getOswaldRegular, getOswaldBold } from "./fonts";
 
 export type FieldConfig = { x: number; y: number; size: number };
@@ -40,17 +40,53 @@ export type EventData = {
   cityState: string;
 };
 
-
-
 function parseColor(hex: string): string {
-  return hex.startsWith("#") ? hex : `#${hex}`;
+  return hex.startsWith("#") ? hex : "#" + hex;
+}
+
+async function renderTextPng(text: string, fontSize: number, color: string, bold: boolean, maxWidth: number): Promise<Buffer> {
+  const fontRegular = getOswaldRegular();
+  const fontBold = getOswaldBold();
+  const lineHeight = Math.round(fontSize * 1.2);
+  const padH = Math.round(fontSize * 0.5);
+  const h = lineHeight * 3 + padH * 2;
+  const node = {
+    type: "div",
+    props: {
+      style: {
+        display: "flex",
+        flexDirection: "column" as const,
+        alignItems: "center",
+        justifyContent: "center",
+        width: maxWidth,
+        height: h,
+        fontSize,
+        fontFamily: "Oswald",
+        fontWeight: bold ? 700 : 400,
+        color,
+        textAlign: "center" as const,
+        lineHeight: 1.2,
+      },
+      children: text,
+    },
+  };
+  const svg = await satori(node as any, {
+    width: maxWidth,
+    height: h,
+    fonts: [
+      { name: "Oswald", data: fontRegular, weight: 400, style: "normal" as const },
+      { name: "Oswald", data: fontBold, weight: 700, style: "normal" as const },
+    ],
+  });
+  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: maxWidth } });
+  return Buffer.from(resvg.render().asPng());
 }
 
 async function fetchImageBuffer(publicId: string): Promise<Buffer> {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const url = `https://res.cloudinary.com/${cloudName}/image/upload/${publicId}`;
+  const url = "https://res.cloudinary.com/" + cloudName + "/image/upload/" + publicId;
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch image: ${publicId} (${res.status})`);
+  if (!res.ok) throw new Error("Failed to fetch image: " + publicId);
   return Buffer.from(await res.arrayBuffer());
 }
 
@@ -59,7 +95,7 @@ async function uploadToCloudinary(buffer: Buffer, publicId: string): Promise<str
   const apiKey = process.env.CLOUDINARY_API_KEY!;
   const apiSecret = process.env.CLOUDINARY_API_SECRET!;
   const timestamp = Math.floor(Date.now() / 1000);
-  const str = `overwrite=true&public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+  const str = "overwrite=true&public_id=" + publicId + "&timestamp=" + timestamp + apiSecret;
   const hashBuffer = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(str));
   const signature = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
   const form = new FormData();
@@ -69,101 +105,30 @@ async function uploadToCloudinary(buffer: Buffer, publicId: string): Promise<str
   form.append("timestamp", String(timestamp));
   form.append("api_key", apiKey);
   form.append("signature", signature);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: "POST",
-    body: form,
-  });
+  const res = await fetch("https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload", { method: "POST", body: form });
   const result = await res.json();
-  if (result.error) throw new Error(`Cloudinary upload failed: ${result.error.message}`);
+  if (result.error) throw new Error("Cloudinary upload failed: " + result.error.message);
   return result.secure_url;
 }
 
-function makeText(text: string, field: FieldConfig, cfg: FormatConfig, w: number, h: number, bold: boolean): object {
-  const maxW = Math.round(w * 0.85);
-  const xLeft = Math.round(field.x * w) - Math.round(maxW / 2);
-  const yTop = Math.round(field.y * h) - Math.round(field.size * 0.6);
-  const color = parseColor(cfg.textColor);
-  return {
-    type: "div",
-    props: {
-      style: {
-        position: "absolute" as const,
-        left: xLeft,
-        top: yTop,
-        width: maxW,
-        display: "flex",
-        justifyContent: "center",
-        flexWrap: "wrap" as const,
-        fontSize: field.size,
-        fontFamily: "Oswald",
-        fontWeight: bold ? 700 : 400,
-        color,
-        lineHeight: 1.2,
-        textAlign: "center" as const,
-      },
-      children: text,
-    },
-  };
-}
-
-export async function renderEventFormat(
-  basePublicId: string,
-  format: RenderFormat,
-  event: EventData,
-  cfg: FormatConfig,
-  outputPublicId: string
-): Promise<string> {
+export async function renderEventFormat(basePublicId: string, format: RenderFormat, event: EventData, cfg: FormatConfig, outputPublicId: string): Promise<string> {
   const { w, h } = FORMAT_DIMS[format];
-
-  const fontRegular = getOswaldRegular();
-  const fontBold = getOswaldBold();
-
   const color = parseColor(cfg.textColor);
-
-  const children: object[] = [];
-  if (cfg.showBandName && cfg.band) {
-    children.push(makeText(event.bandName, cfg.band, cfg, w, h, true));
-  }
-  children.push(makeText(event.venueName, cfg.venue, cfg, w, h, true));
-  children.push(makeText(event.dateFormatted, cfg.date, cfg, w, h, false));
-  children.push(makeText(event.cityState, cfg.city, cfg, w, h, false));
-
-  const node = {
-    type: "div",
-    props: {
-      style: {
-        position: "relative" as const,
-        width: w,
-        height: h,
-        display: "flex",
-        flexDirection: "column" as const,
-      },
-      children,
-    },
-  };
-
-  const svg = await satori(node as any, {
-    width: w,
-    height: h,
-    fonts: [
-      { name: "Oswald", data: fontRegular, weight: 400, style: "normal" as const },
-      { name: "Oswald", data: fontBold, weight: 700, style: "normal" as const },
-    ],
-  });
-
-  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: w } });
-  const textLayer = Buffer.from(resvg.render().asPng());
-
+  const maxW = Math.round(w * 0.85);
   const imageBuffer = await fetchImageBuffer(basePublicId);
-  const base = await sharp(imageBuffer)
-    .resize(w, h, { fit: "cover", position: "center" })
-    .png()
-    .toBuffer();
-
-  const rendered = await sharp(base)
-    .composite([{ input: textLayer, top: 0, left: 0 }])
-    .png()
-    .toBuffer();
-
-  return await uploadToCloudinary(rendered, outputPublicId);
+  let base = await sharp(imageBuffer).resize(w, h, { fit: "cover", position: "center" }).png().toBuffer();
+  async function addText(text: string, field: FieldConfig, bold: boolean) {
+    const textPng = await renderTextPng(text, field.size, color, bold, maxW);
+    const meta = await sharp(textPng).metadata();
+    const textH = meta.height ?? field.size * 2;
+    const textW = meta.width ?? maxW;
+    const left = Math.max(0, Math.round(field.x * w) - Math.round(textW / 2));
+    const top = Math.max(0, Math.round(field.y * h) - Math.round(textH / 2));
+    base = await sharp(base).composite([{ input: textPng, left, top }]).png().toBuffer();
+  }
+  if (cfg.showBandName && cfg.band) await addText(event.bandName, cfg.band, true);
+  await addText(event.venueName, cfg.venue, true);
+  await addText(event.dateFormatted, cfg.date, false);
+  await addText(event.cityState, cfg.city, false);
+  return await uploadToCloudinary(base, outputPublicId);
 }
