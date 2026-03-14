@@ -49,43 +49,8 @@ async function getOswaldFont(): Promise<ArrayBuffer> {
   return cachedFont;
 }
 
-function colorStr(hex: string): string {
-  const h = hex.replace("#", "");
-  const full = h.length === 3 ? h.split("").map((c: string) => c + c).join("") : h;
-  const r = parseInt(full.slice(0, 2), 16);
-  const g = parseInt(full.slice(2, 4), 16);
-  const b = parseInt(full.slice(4, 6), 16);
-  return `rgb(${r},${g},${b})`;
-}
-
-function textEl(text: string, field: FieldConfig, cfg: FormatConfig, w: number, h: number, bold: boolean): object {
-  const maxW = Math.round(w * 0.85);
-  const xLeft = Math.round(field.x * w) - Math.round(maxW / 2);
-  const yTop = Math.round(field.y * h) - Math.round(field.size * 0.6);
-  const color = cfg.textColor.startsWith("#") ? cfg.textColor : `#${cfg.textColor}`;
-
-  return {
-    type: "div",
-    props: {
-      style: {
-        position: "absolute" as const,
-        left: xLeft,
-        top: yTop,
-        width: maxW,
-        display: "flex",
-        justifyContent: "center",
-        flexWrap: "wrap" as const,
-        fontSize: field.size,
-        fontFamily: "Oswald",
-        fontWeight: bold ? 700 : 400,
-        color: colorStr(color),
-        textAlign: "center" as const,
-        lineHeight: 1.2,
-        textShadow: "0px 2px 8px rgba(0,0,0,0.8)",
-      },
-      children: text,
-    },
-  };
+function parseColor(hex: string): string {
+  return hex.startsWith("#") ? hex : `#${hex}`;
 }
 
 async function fetchImageBuffer(publicId: string): Promise<Buffer> {
@@ -100,12 +65,10 @@ async function uploadToCloudinary(buffer: Buffer, publicId: string): Promise<str
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
   const apiKey = process.env.CLOUDINARY_API_KEY!;
   const apiSecret = process.env.CLOUDINARY_API_SECRET!;
-
   const timestamp = Math.floor(Date.now() / 1000);
   const str = `overwrite=true&public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
   const hashBuffer = await crypto.subtle.digest("SHA-1", new TextEncoder().encode(str));
   const signature = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-
   const form = new FormData();
   form.append("file", new Blob([new Uint8Array(buffer)], { type: "image/png" }), "render.png");
   form.append("public_id", publicId);
@@ -113,7 +76,6 @@ async function uploadToCloudinary(buffer: Buffer, publicId: string): Promise<str
   form.append("timestamp", String(timestamp));
   form.append("api_key", apiKey);
   form.append("signature", signature);
-
   const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
     method: "POST",
     body: form,
@@ -132,32 +94,62 @@ export async function renderEventFormat(
 ): Promise<string> {
   const { w, h } = FORMAT_DIMS[format];
   const fontData = await getOswaldFont();
+  const color = parseColor(cfg.textColor);
 
-  const children: object[] = [];
-  if (cfg.showBandName && cfg.band) {
-    children.push(textEl(event.bandName, cfg.band, cfg, w, h, true));
-  }
-  children.push(textEl(event.venueName, cfg.venue, cfg, w, h, true));
-  children.push(textEl(event.dateFormatted, cfg.date, cfg, w, h, false));
-  children.push(textEl(event.cityState, cfg.city, cfg, w, h, false));
-
-  const svg = await satori(
-    ({
+  // Build one text block per field — stacked absolutely by top offset
+  function makeText(text: string, field: FieldConfig, bold: boolean) {
+    const topPct = `${(field.y * 100).toFixed(2)}%`;
+    return {
       type: "div",
       props: {
-        style: { position: "relative", width: w, height: h, display: "flex" },
-        children,
+        style: {
+          position: "absolute" as const,
+          top: topPct,
+          left: "7.5%",
+          width: "85%",
+          display: "flex",
+          justifyContent: "center",
+          fontSize: field.size,
+          fontFamily: "Oswald",
+          fontWeight: bold ? 700 : 400,
+          color,
+          lineHeight: 1.2,
+        },
+        children: text,
       },
-    }) as any,
-    {
-      width: w,
-      height: h,
-      fonts: [
-        { name: "Oswald", data: fontData, weight: 400, style: "normal" },
-        { name: "Oswald", data: fontData, weight: 700, style: "normal" },
-      ],
-    }
-  );
+    };
+  }
+
+  const children = [] as object[];
+  if (cfg.showBandName && cfg.band) {
+    children.push(makeText(event.bandName, cfg.band, true));
+  }
+  children.push(makeText(event.venueName, cfg.venue, true));
+  children.push(makeText(event.dateFormatted, cfg.date, false));
+  children.push(makeText(event.cityState, cfg.city, false));
+
+  const node = {
+    type: "div",
+    props: {
+      style: {
+        position: "relative" as const,
+        width: w,
+        height: h,
+        display: "flex",
+        flexDirection: "column" as const,
+      },
+      children,
+    },
+  };
+
+  const svg = await satori(node as any, {
+    width: w,
+    height: h,
+    fonts: [
+      { name: "Oswald", data: fontData, weight: 400, style: "normal" as const },
+      { name: "Oswald", data: fontData, weight: 700, style: "normal" as const },
+    ],
+  });
 
   const textLayer = await sharp(Buffer.from(svg)).toFormat("png").toBuffer();
 
