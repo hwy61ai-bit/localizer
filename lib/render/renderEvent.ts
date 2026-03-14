@@ -1,6 +1,7 @@
-import { Resvg } from "@resvg/resvg-js";
 import sharp from "sharp";
 import satori from "satori";
+import fs from "fs";
+import path from "path";
 
 export type FieldConfig = { x: number; y: number; size: number };
 export type FormatConfig = {
@@ -39,15 +40,18 @@ export type EventData = {
   cityState: string;
 };
 
-let cachedFont: ArrayBuffer | null = null;
+let cachedRegular: ArrayBuffer | null = null;
+let cachedBold: ArrayBuffer | null = null;
 
-async function getOswaldFont(): Promise<ArrayBuffer> {
-  if (cachedFont) return cachedFont;
-  const url = `${process.env.NEXT_PUBLIC_APP_URL}/fonts/Oswald.ttf`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch Oswald font: ${res.status}`);
-  cachedFont = await res.arrayBuffer();
-  return cachedFont;
+function getFont(weight: "Regular" | "Bold"): ArrayBuffer {
+  if (weight === "Regular" && cachedRegular) return cachedRegular;
+  if (weight === "Bold" && cachedBold) return cachedBold;
+  const fontPath = path.join(process.cwd(), "public", "fonts", `Oswald-${weight}.ttf`);
+  const buf = fs.readFileSync(fontPath);
+  const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+  if (weight === "Regular") cachedRegular = ab;
+  else cachedBold = ab;
+  return ab;
 }
 
 function parseColor(hex: string): string {
@@ -86,6 +90,34 @@ async function uploadToCloudinary(buffer: Buffer, publicId: string): Promise<str
   return result.secure_url;
 }
 
+function makeText(text: string, field: FieldConfig, cfg: FormatConfig, w: number, h: number, bold: boolean): object {
+  const maxW = Math.round(w * 0.85);
+  const xLeft = Math.round(field.x * w) - Math.round(maxW / 2);
+  const yTop = Math.round(field.y * h) - Math.round(field.size * 0.6);
+  const color = parseColor(cfg.textColor);
+  return {
+    type: "div",
+    props: {
+      style: {
+        position: "absolute" as const,
+        left: xLeft,
+        top: yTop,
+        width: maxW,
+        display: "flex",
+        justifyContent: "center",
+        flexWrap: "wrap" as const,
+        fontSize: field.size,
+        fontFamily: "Oswald",
+        fontWeight: bold ? 700 : 400,
+        color,
+        lineHeight: 1.2,
+        textAlign: "center" as const,
+      },
+      children: text,
+    },
+  };
+}
+
 export async function renderEventFormat(
   basePublicId: string,
   format: RenderFormat,
@@ -94,40 +126,19 @@ export async function renderEventFormat(
   outputPublicId: string
 ): Promise<string> {
   const { w, h } = FORMAT_DIMS[format];
-  const fontData = await getOswaldFont();
+
+  const fontRegular = getFont("Regular");
+  const fontBold = getFont("Bold");
+
   const color = parseColor(cfg.textColor);
 
-  // Build one text block per field — stacked absolutely by top offset
-  function makeText(text: string, field: FieldConfig, bold: boolean) {
-    const topPct = `${(field.y * 100).toFixed(2)}%`;
-    return {
-      type: "div",
-      props: {
-        style: {
-          position: "absolute" as const,
-          top: topPct,
-          left: "7.5%",
-          width: "85%",
-          display: "flex",
-          justifyContent: "center",
-          fontSize: field.size,
-          fontFamily: "Oswald",
-          fontWeight: bold ? 700 : 400,
-          color,
-          lineHeight: 1.2,
-        },
-        children: text,
-      },
-    };
-  }
-
-  const children = [] as object[];
+  const children: object[] = [];
   if (cfg.showBandName && cfg.band) {
-    children.push(makeText(event.bandName, cfg.band, true));
+    children.push(makeText(event.bandName, cfg.band, cfg, w, h, true));
   }
-  children.push(makeText(event.venueName, cfg.venue, true));
-  children.push(makeText(event.dateFormatted, cfg.date, false));
-  children.push(makeText(event.cityState, cfg.city, false));
+  children.push(makeText(event.venueName, cfg.venue, cfg, w, h, true));
+  children.push(makeText(event.dateFormatted, cfg.date, cfg, w, h, false));
+  children.push(makeText(event.cityState, cfg.city, cfg, w, h, false));
 
   const node = {
     type: "div",
@@ -147,23 +158,22 @@ export async function renderEventFormat(
     width: w,
     height: h,
     fonts: [
-      { name: "Oswald", data: fontData, weight: 400, style: "normal" as const },
-      { name: "Oswald", data: fontData, weight: 700, style: "normal" as const },
+      { name: "Oswald", data: fontRegular, weight: 400, style: "normal" as const },
+      { name: "Oswald", data: fontBold, weight: 700, style: "normal" as const },
     ],
   });
 
-  const resvg = new Resvg(svg);
-  const textLayer = Buffer.from(resvg.render().asPng());
+  const textLayer = await sharp(Buffer.from(svg)).resize(w, h).png().toBuffer();
 
   const imageBuffer = await fetchImageBuffer(basePublicId);
   const base = await sharp(imageBuffer)
     .resize(w, h, { fit: "cover", position: "center" })
-    .toFormat("png")
+    .png()
     .toBuffer();
 
   const rendered = await sharp(base)
     .composite([{ input: textLayer, top: 0, left: 0 }])
-    .toFormat("png")
+    .png()
     .toBuffer();
 
   return await uploadToCloudinary(rendered, outputPublicId);
