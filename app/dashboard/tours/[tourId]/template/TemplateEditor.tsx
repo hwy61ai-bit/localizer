@@ -114,7 +114,6 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
     landscape: { ...DEFAULT_FORMAT, ...saved0.landscape },
   });
   const [dragging, setDragging] = useState<FieldKey | "band" | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [containerWidth, setContainerWidth] = useState(700);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -166,8 +165,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
       if (!dragging || !containerRef.current) return;
       const el = imgRef.current ?? containerRef.current;
       const rect = el.getBoundingClientRect();
-      console.log("using:", imgRef.current ? "imgRef" : "containerRef", "rect:", rect.width, rect.height);
-      let x = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
+        let x = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
       const y = Math.max(0.02, Math.min(0.98, (e.clientY - rect.top) / rect.height));
       if (Math.abs(x - 0.5) < SNAP) x = 0.5;
       setConfigs(prev => ({
@@ -210,14 +208,6 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
     setPreviewUrl(null);
   }
 
-  function generatePreview() {
-    if (!publicId) return;
-    console.log("venue:", JSON.stringify(cfg.venue));
-    console.log("date:", JSON.stringify(cfg.date));
-    console.log("city:", JSON.stringify(cfg.city));
-    setPreviewUrl(buildPreviewUrl(publicId, cloudName, cfg, activeFormat));
-  }
-
   async function save() {
     setSaving(true);
     await fetch(`/api/tours/${tourId}/overlay-config`, {
@@ -239,11 +229,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <h1 className="brand-title" style={{ margin: 0 }}>LOCALIZER</h1>
             <div style={{ display: "flex", gap: 8 }}>
-              <button
-                onClick={generatePreview}
-                disabled={!publicId}
-                style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 700, fontSize: 13, cursor: publicId ? "pointer" : "not-allowed", opacity: publicId ? 1 : 0.5 }}
-              >Generate Preview</button>
+
               <button
                 onClick={save}
                 disabled={saving}
@@ -269,15 +255,7 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
           <div>
             <div style={{ fontSize: 11, color: "#888", marginBottom: 8, fontWeight: 600 }}>DRAG TEXT TO POSITION — snaps to center</div>
             <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ddd", overflow: "hidden" }}>
-              {previewUrl ? (
-                <div style={{ position: "relative" }}>
-                  <img src={previewUrl} alt="Preview" style={{ width: "100%", display: "block" }} />
-                  <button onClick={() => setPreviewUrl(null)}
-                    style={{ position: "absolute", top: 12, right: 12, padding: "6px 12px", borderRadius: 8, border: "none", background: "rgba(0,0,0,0.6)", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
-                    ← Back to Editor
-                  </button>
-                </div>
-              ) : imageUrl ? (
+              {imageUrl ? (
                 <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default" }}>
                   <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
 
