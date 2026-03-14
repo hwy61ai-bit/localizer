@@ -176,7 +176,6 @@ export default function TemplateEditor({ tour, tourId }: { tour: Tour; tourId: s
         },
       }));
       setSaved(false);
-      setPreviewUrl(null);
     }
     function onMouseUp() { setDragging(null); }
     window.addEventListener("mousemove", onMouseMove);
