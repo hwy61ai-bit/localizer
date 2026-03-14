@@ -152,8 +152,7 @@ export async function renderEventFormat(
     ],
   });
 
-  const resvg = new Resvg(svg, { fitTo: { mode: "width", value: w }, font: { fontBuffers: [Buffer.from(fontData)] } });
-  const textLayer = Buffer.from(resvg.render().asPng());
+  const textLayer = await sharp(Buffer.from(svg), { density: 150 }).resize(w, h).png().toBuffer();
 
   const imageBuffer = await fetchImageBuffer(basePublicId);
   const base = await sharp(imageBuffer)
