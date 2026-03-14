@@ -25,9 +25,8 @@ function formatDateForRender(iso: string): string {
 }
 
 function sanitize(t: string): string {
-  return encodeURIComponent(
-    t.replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim()
-  );
+  const clean = t.replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim();
+  return clean.split(",").map(part => encodeURIComponent(part.trim())).join("%252C%20");
 }
 
 function buildCloudinaryUrl(
