@@ -230,7 +230,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tou
             <div style={{ display: "flex", gap: 8 }}>
 
               <button
-              <button
                 onClick={() => {
                   const pid = formatImageIds[activeFormat];
                   if (!pid) { alert("No image uploaded for this format."); return; }
@@ -238,6 +237,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tou
                 }}
                 style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
               >Preview Render</button>
+              <button
                 onClick={save}
                 disabled={saving}
                 style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: saved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
