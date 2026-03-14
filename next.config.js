@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  serverExternalPackages: ["sharp", "@resvg/resvg-js"],
   experimental: {
     serverActions: {
       bodySizeLimit: '20mb',
