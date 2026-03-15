@@ -23,11 +23,17 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: tour } = await supabase
     .from("tours")
-    .select("name, band_name, band_tour_label, spotify_url, image_url, adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url")
+    .select("name, band_name, band_tour_label, spotify_url, image_url, artist_id")
     .eq("id", event.tour_id)
     .single();
 
   if (!tour) notFound();
+
+  const { data: artist } = await supabase
+    .from("artists")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url")
+    .eq("id", (tour as any).artist_id)
+    .single();
 
   const t = tour as any;
   const bandName = t.band_name ?? t.band_tour_label ?? t.name ?? "Artist";
@@ -36,11 +42,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
     ? spotifyUrl.replace("open.spotify.com/", "open.spotify.com/embed/")
     : null;
 
+  const a = artist as any;
   const advMaterials: { label: string; url: string }[] = [
-    { label: "Stage Plot", url: t.adv_stage_plot_url },
-    { label: "Hospitality Rider", url: t.adv_hospitality_url },
-    { label: "FOH Requirements", url: t.adv_foh_url },
-    { label: "W-9", url: t.adv_w9_url },
+    { label: "Stage Plot", url: a?.adv_stage_plot_url },
+    { label: "Hospitality Rider", url: a?.adv_hospitality_url },
+    { label: "FOH Requirements", url: a?.adv_foh_url },
+    { label: "W-9", url: a?.adv_w9_url },
   ].filter((m) => !!m.url) as { label: string; url: string }[];
 
   const venueName = event.venue_name ?? event.venue ?? "";
