@@ -223,13 +223,25 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
 
   async function save() {
     setSaving(true);
-    await fetch(`/api/tours/${tourId}/overlay-config`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ overlay_config: configs }),
-    });
-    setSaving(false);
-    setSaved(true);
+    try {
+      const res = await fetch(`/api/tours/${tourId}/overlay-config`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ overlay_config: configs }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        console.error("Save failed:", data.error ?? res.status);
+        alert("Save failed — please try again before generating.");
+      } else {
+        setSaved(true);
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Save failed — network error.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (

@@ -24,13 +24,13 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const [advMaterials, setAdvMaterials] = useState<{ [key: string]: string }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
-  const [form, setForm] = useState({ name: "", bio: "", manager_name: "", manager_email: "", booking_agent_name: "", booking_agent_email: "", spotify_url: "" });
+  const [form, setForm] = useState({ name: "", bio: "", manager_name: "", manager_email: "", booking_agent_name: "", booking_agent_email: "", publicist_name: "", publicist_email: "", agent_name: "", agent_email: "", spotify_url: "" });
 
   useEffect(() => {
     async function load() {
       const { data: a } = await supabase.from("artists").select("*").eq("id", artistId).single();
       if (!a) { router.push("/dashboard"); return; }
-      setForm({ name: a.name ?? "", bio: a.bio ?? "", manager_name: a.manager_name ?? "", manager_email: a.manager_email ?? "", booking_agent_name: a.booking_agent_name ?? "", booking_agent_email: a.booking_agent_email ?? "", spotify_url: a.spotify_url ?? "" });
+      setForm({ name: a.name ?? "", bio: a.bio ?? "", manager_name: a.manager_name ?? "", manager_email: a.manager_email ?? "", booking_agent_name: a.booking_agent_name ?? "", booking_agent_email: a.booking_agent_email ?? "", publicist_name: a.publicist_name ?? "", publicist_email: a.publicist_email ?? "", agent_name: a.agent_name ?? "", agent_email: a.agent_email ?? "", spotify_url: a.spotify_url ?? "" });
       setAdvMaterials({ adv_stage_plot_url: a.adv_stage_plot_url ?? "", adv_hospitality_url: a.adv_hospitality_url ?? "", adv_foh_url: a.adv_foh_url ?? "", adv_w9_url: a.adv_w9_url ?? "" });
       const { data: t } = await supabase.from("tours").select("id, name, band_tour_label, image_url").eq("artist_id", artistId).order("created_at", { ascending: false });
       setTours(t ?? []);
@@ -126,6 +126,10 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
             <div><label style={labelStyle}>Manager Email</label><input style={inputStyle} value={form.manager_email} onChange={(e) => setForm({ ...form, manager_email: e.target.value })} /></div>
             <div><label style={labelStyle}>Booking Agent</label><input style={inputStyle} value={form.booking_agent_name} onChange={(e) => setForm({ ...form, booking_agent_name: e.target.value })} /></div>
             <div><label style={labelStyle}>Booking Agent Email</label><input style={inputStyle} value={form.booking_agent_email} onChange={(e) => setForm({ ...form, booking_agent_email: e.target.value })} /></div>
+            <div><label style={labelStyle}>Publicist Name</label><input style={inputStyle} value={form.publicist_name} onChange={(e) => setForm({ ...form, publicist_name: e.target.value })} /></div>
+            <div><label style={labelStyle}>Publicist Email</label><input style={inputStyle} value={form.publicist_email} onChange={(e) => setForm({ ...form, publicist_email: e.target.value })} /></div>
+            <div><label style={labelStyle}>Agent Name</label><input style={inputStyle} value={form.agent_name} onChange={(e) => setForm({ ...form, agent_name: e.target.value })} /></div>
+            <div><label style={labelStyle}>Agent Email</label><input style={inputStyle} value={form.agent_email} onChange={(e) => setForm({ ...form, agent_email: e.target.value })} /></div>
           </div>
         </div>
 
