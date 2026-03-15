@@ -130,7 +130,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                   <div style={{ fontSize: 11, color: "#555" }}>{asset.dims}</div>
                 </div>
                 {asset.url && (
-                  <a href={asset.url} download target="_blank" rel="noopener noreferrer"
+                  <a href={`/api/download?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(asset.label.replace(/ /g,"_") + ".jpg")}`} download
                     style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: "#1e1e1e", color: "#fff", textDecoration: "none", fontSize: 16 }}>
                     ↓
                   </a>
@@ -151,7 +151,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Full Tour Poster</div>
                   <div style={{ fontSize: 11, color: "#555" }}>Print quality</div>
                 </div>
-                <a href={posterUrl} download target="_blank" rel="noopener noreferrer"
+                <a href={`/api/download?url=${encodeURIComponent(posterUrl)}&filename=tour_poster.jpg`} download
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: "#1e1e1e", color: "#fff", textDecoration: "none", fontSize: 16 }}>
                   ↓
                 </a>
