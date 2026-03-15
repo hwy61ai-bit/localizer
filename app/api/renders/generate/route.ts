@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
 
+// Set to false to disable auto line-wrapping for long venue/city names
+const ENABLE_TEXT_WRAP = true;
+
 type RenderFormat = "square" | "story" | "landscape";
 
 const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
@@ -29,6 +32,28 @@ function sanitize(t: string): string {
   return clean.split(",").map(part => encodeURIComponent(part.trim())).join("%252C%20");
 }
 
+function wrapText(text: string, fontSize: number, canvasW: number): string {
+  if (!ENABLE_TEXT_WRAP) return text;
+  const maxW = canvasW * 0.85;
+  const charsPerLine = Math.floor(maxW / (fontSize * 0.6));
+  if (text.length <= charsPerLine) return text;
+  // Split at word boundaries
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const test = current ? current + " " + word : word;
+    if (test.length > charsPerLine && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines.join("%0A");
+}
+
 function buildCloudinaryUrl(
   publicId: string,
   cloudName: string,
@@ -53,9 +78,9 @@ function buildCloudinaryUrl(
   const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
 
-  const venueName = sanitize(eventData.venueName);
+  const venueName = sanitize(wrapText(eventData.venueName, venueSize, w));
   const dateStr   = sanitize(eventData.dateFormatted);
-  const cityState = sanitize(eventData.cityState);
+  const cityState = sanitize(wrapText(eventData.cityState, citySize, w));
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;

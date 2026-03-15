@@ -18,10 +18,10 @@ export default async function TemplatePage({ params }: { params: Promise<{ tourI
     .from("events")
     .select("date_iso, city, state, venue")
     .eq("tour_id", tourId)
-    .order("date_iso", { ascending: true })
-    .limit(1);
+    .order("date_iso", { ascending: true });
 
-  const firstEvent = events?.[0] ?? null;
+  const allEvents = events ?? [];
+  const firstEvent = allEvents[0] ?? null;
 
-  return <TemplateEditor tour={tour} tourId={tourId} firstEvent={firstEvent} />;
+  return <TemplateEditor tour={tour} tourId={tourId} firstEvent={firstEvent} allEvents={allEvents} />;
 }

@@ -107,8 +107,21 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
 
 type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string } | null;
 
-export default function TemplateEditor({ tour, tourId, firstEvent }: { tour: Tour; tourId: string; firstEvent: FirstEvent }) {
+export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: { tour: Tour; tourId: string; firstEvent: FirstEvent; allEvents: NonNullable<FirstEvent>[] }) {
   const saved0 = (tour.overlay_config ?? {}) as Partial<Record<FormatKey, FormatConfig>>;
+
+  // Find longest strings across all events for overflow detection
+  const longestVenue = allEvents.reduce((max, e) => e.venue.length > max.length ? e.venue : max, firstEvent?.venue ?? "");
+  const longestCity = allEvents.reduce((max, e) => {
+    const cs = [e.city, e.state].filter(Boolean).join(", ");
+    return cs.length > max.length ? cs : max;
+  }, firstEvent ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ") : "");
+
+  function isOverflow(text: string, field: FieldConfig, imgW: number): boolean {
+    const availableW = imgW * 0.85;
+    const estimatedW = field.size * 0.6 * text.length;
+    return estimatedW > availableW;
+  }
 
   const [activeFormat, setActiveFormat] = useState<FormatKey>("square");
   const [configs, setConfigs] = useState<Record<FormatKey, FormatConfig>>({
