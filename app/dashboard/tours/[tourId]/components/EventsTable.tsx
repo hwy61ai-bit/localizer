@@ -219,7 +219,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               disabled={generating || events.length === 0}
               style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: generating ? "#888" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: generating || events.length === 0 ? "not-allowed" : "pointer", opacity: events.length === 0 ? 0.4 : 1, transition: "background 0.2s" }}
             >
-              {generating ? "Generating..." : allReady ? "Re-Generate All" : "Generate All"}
+              {generating ? "Generating..." : allReady ? "4. Re-Generate All" : "4. Generate All"}
             </button>
           </div>
         </div>
