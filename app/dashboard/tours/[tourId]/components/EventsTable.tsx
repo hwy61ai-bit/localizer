@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import type React from "react";
-import OpenAssetsButton from "./OpenAssetsButton";
 
 type EventRow = {
   id: string; tour_id: string; date_iso: string; day: string | null;
@@ -228,7 +227,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
         <div style={{ display: "grid", gridTemplateColumns: COLS, minWidth: 1200, gap: 0, padding: "10px 16px", background: "#fafafa", fontSize: 12, fontWeight: 900, borderBottom: "1px solid #eee" }}>
           <div>Date</div><div>Day</div><div>City, ST</div><div>Venue</div>
           <div>Promoter Email</div><div>Manager Email</div>
-          <div>Assets</div><div>Status</div><div>Link</div>
+          <div>Status</div><div>Link</div>
         </div>
 
         {events.length === 0 ? (
@@ -245,8 +244,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <div style={{ opacity: 0.8 }}><Cell event={e} field="promoter_email" display={e.promoter_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
               <div style={{ opacity: 0.8 }}><Cell event={e} field="manager_email" display={e.manager_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
-              <div><OpenAssetsButton event={{ id: e.id, date_iso: e.date_iso, city: e.city, state: e.state, venue: e.venue }} /></div>
-              <div>
+                            <div>
                 {e.sent_at ? (
                   <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#e9f7ef", fontWeight: 900, fontSize: 12 }}>SENT</span>
                 ) : e.render_status === "rendering" ? (

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { randomUUID } from "crypto";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { createVenueLink } from "./events/actions";
-import OpenAssetsButton from "./components/OpenAssetsButton";
 import EventsTable from "./components/EventsTable";
 
 type TourRow = {
