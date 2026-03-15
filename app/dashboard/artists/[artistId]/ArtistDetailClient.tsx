@@ -24,6 +24,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const [advMaterials, setAdvMaterials] = useState<{ [key: string]: string }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const [artistImageUrl, setArtistImageUrl] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", bio: "", manager_name: "", manager_email: "", booking_agent_name: "", booking_agent_email: "", publicist_name: "", publicist_email: "", agent_name: "", agent_email: "", spotify_url: "" });
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
       const { data: a } = await supabase.from("artists").select("*").eq("id", artistId).single();
       if (!a) { router.push("/dashboard"); return; }
       setForm({ name: a.name ?? "", bio: a.bio ?? "", manager_name: a.manager_name ?? "", manager_email: a.manager_email ?? "", booking_agent_name: a.booking_agent_name ?? "", booking_agent_email: a.booking_agent_email ?? "", publicist_name: a.publicist_name ?? "", publicist_email: a.publicist_email ?? "", agent_name: a.agent_name ?? "", agent_email: a.agent_email ?? "", spotify_url: a.spotify_url ?? "" });
+      setArtistImageUrl(a.image_url ?? null);
       setAdvMaterials({ adv_stage_plot_url: a.adv_stage_plot_url ?? "", adv_hospitality_url: a.adv_hospitality_url ?? "", adv_foh_url: a.adv_foh_url ?? "", adv_w9_url: a.adv_w9_url ?? "" });
       const { data: t } = await supabase.from("tours").select("id, name, band_tour_label, image_url").eq("artist_id", artistId).order("created_at", { ascending: false });
       setTours(t ?? []);
@@ -175,17 +177,17 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
             <div key={tour.id} style={{ position: "relative" }}
               onMouseEnter={() => setHoveredTourId(tour.id)}
               onMouseLeave={() => setHoveredTourId(null)}>
-              <div onClick={() => router.push("/dashboard/tours/" + tour.id)} style={{ background: tour.image_url ? "transparent" : "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, aspectRatio: "1 / 1", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden", position: "relative", cursor: "pointer", opacity: deletingTourId === tour.id ? 0.4 : 1 }}>
-                {tour.image_url && (
+              <div onClick={() => router.push("/dashboard/tours/" + tour.id)} style={{ background: (tour.image_url ?? artistImageUrl) ? "transparent" : "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, aspectRatio: "1 / 1", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden", position: "relative", cursor: "pointer", opacity: deletingTourId === tour.id ? 0.4 : 1 }}>
+                {(tour.image_url ?? artistImageUrl) && (
                   <>
-                    <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + tour.image_url + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
+                    <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + (tour.image_url ?? artistImageUrl) + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
                   </>
                 )}
-                <div style={{ position: "relative", zIndex: 1, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: tour.image_url ? "rgba(255,255,255,0.6)" : "#999" }}>Tour</div>
+                <div style={{ position: "relative", zIndex: 1, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: (tour.image_url ?? artistImageUrl) ? "rgba(255,255,255,0.6)" : "#999" }}>Tour</div>
                 <div style={{ position: "relative", zIndex: 1 }}>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: tour.image_url ? "#fff" : "#111", marginBottom: 8 }}>{tour.band_tour_label ?? tour.name}</div>
-                  <div style={{ fontSize: 16, color: tour.image_url ? "rgba(255,255,255,0.5)" : "#ccc", textAlign: "right" }}>&#8594;</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: (tour.image_url ?? artistImageUrl) ? "#fff" : "#111", marginBottom: 8 }}>{tour.band_tour_label ?? tour.name}</div>
+                  <div style={{ fontSize: 16, color: (tour.image_url ?? artistImageUrl) ? "rgba(255,255,255,0.5)" : "#ccc", textAlign: "right" }}>&#8594;</div>
                 </div>
               </div>
               {hoveredTourId === tour.id && (
