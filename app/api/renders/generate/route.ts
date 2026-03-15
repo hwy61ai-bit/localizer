@@ -91,9 +91,9 @@ function buildCloudinaryUrl(
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
     ...(showBand ? [`l_text:${font}_${bandSize}_bold:${bandName},co_rgb:${color}/fl_layer_apply,g_center,x_${bandX},y_${bandY}`] : []),
-    `l_text:${font}_${venueSize}_bold:${venueName},co_rgb:${color}/fl_layer_apply,g_center,x_${venueX},y_${venueY}`,
-    `l_text:${font}_${dateSize}:${dateStr},co_rgb:${color}/fl_layer_apply,g_center,x_${dateX},y_${dateY}`,
-    `l_text:${font}_${citySize}:${cityState},co_rgb:${color}/fl_layer_apply,g_center,x_${cityX},y_${cityY}`,
+    `l_text:${font}_${venueSize}_bold_center:${venueName},co_rgb:${color}/fl_layer_apply,g_center,x_${venueX},y_${venueY}`,
+    `l_text:${font}_${dateSize}_center:${dateStr},co_rgb:${color}/fl_layer_apply,g_center,x_${dateX},y_${dateY}`,
+    `l_text:${font}_${citySize}_center:${cityState},co_rgb:${color}/fl_layer_apply,g_center,x_${cityX},y_${cityY}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
