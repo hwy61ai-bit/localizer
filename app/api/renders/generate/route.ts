@@ -38,7 +38,7 @@ function wrapText(text: string, fontSize: number, canvasW: number): string {
   const charsPerLine = Math.floor(maxW / (fontSize * 0.6));
   if (text.length <= charsPerLine) return text;
   // Split at word boundaries
-  const words = text.split(" ");
+  const words = text.split("%20");
   const lines: string[] = [];
   let current = "";
   for (const word of words) {
@@ -78,9 +78,9 @@ function buildCloudinaryUrl(
   const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
 
-  const venueName = sanitize(wrapText(eventData.venueName, venueSize, w));
+  const venueName = wrapText(sanitize(eventData.venueName), venueSize, w);
   const dateStr   = sanitize(eventData.dateFormatted);
-  const cityState = sanitize(wrapText(eventData.cityState, citySize, w));
+  const cityState = wrapText(sanitize(eventData.cityState), citySize, w);
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;

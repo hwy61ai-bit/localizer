@@ -353,6 +353,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                           field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
                           [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
                         ) : SAMPLE_TEXT[field]}
+                        {field === "venue" && isOverflow(longestVenue, cfg.venue, fmtDims.w) && (
+                          <span title={`"${longestVenue}" may overflow — reduce font size or the text will wrap`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
+                        )}
+                        {field === "city" && isOverflow(longestCity, cfg.city, fmtDims.w) && (
+                          <span title={`"${longestCity}" may overflow — reduce font size or the text will wrap`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
+                        )}
                       </div>
                     );
                   })}
