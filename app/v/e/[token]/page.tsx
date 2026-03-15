@@ -87,7 +87,10 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Hero */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 8 }}>Show Assets</div>
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, letterSpacing: 2, lineHeight: 1, marginBottom: 20 }}>{bandName}</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, letterSpacing: 2, lineHeight: 1 }}>{bandName}</div>
+            <a href={`/api/download-all?token=${token}`} download style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 8, background: "#fff", color: "#000", fontWeight: 900, fontSize: 12, letterSpacing: "0.08em", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>↓ DOWNLOAD ALL ASSETS</a>
+          </div>
           <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
             {formattedDate && (
               <div>
