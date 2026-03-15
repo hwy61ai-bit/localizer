@@ -32,7 +32,6 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
       const { data: a } = await supabase.from("artists").select("*").eq("id", artistId).single();
       if (!a) { router.push("/dashboard"); return; }
       setForm({ name: a.name ?? "", bio: a.bio ?? "", manager_name: a.manager_name ?? "", manager_email: a.manager_email ?? "", booking_agent_name: a.booking_agent_name ?? "", booking_agent_email: a.booking_agent_email ?? "", publicist_name: a.publicist_name ?? "", publicist_email: a.publicist_email ?? "", agent_name: a.agent_name ?? "", agent_email: a.agent_email ?? "", spotify_url: a.spotify_url ?? "" });
-      console.log("DEBUG artist image_url:", a.image_url);
       setArtistImageUrl(a.image_url ?? null);
       setAdvMaterials({ adv_stage_plot_url: a.adv_stage_plot_url ?? "", adv_hospitality_url: a.adv_hospitality_url ?? "", adv_foh_url: a.adv_foh_url ?? "", adv_w9_url: a.adv_w9_url ?? "" });
       const { data: t } = await supabase.from("tours").select("id, name, band_tour_label, image_url").eq("artist_id", artistId).order("created_at", { ascending: false });
@@ -181,7 +180,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
               <div onClick={() => router.push("/dashboard/tours/" + tour.id)} style={{ background: (tour.image_url ?? artistImageUrl) ? "transparent" : "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, aspectRatio: "1 / 1", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden", position: "relative", cursor: "pointer", opacity: deletingTourId === tour.id ? 0.4 : 1 }}>
                 {(tour.image_url ?? artistImageUrl) && (
                   <>
-                    <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + (tour.image_url ?? artistImageUrl) + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
+                    <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + (tour.image_url ? (tour.image_url.startsWith("http") ? tour.image_url : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${tour.image_url}`) : artistImageUrl) + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
                   </>
                 )}
