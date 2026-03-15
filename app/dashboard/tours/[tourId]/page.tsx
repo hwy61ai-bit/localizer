@@ -78,7 +78,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
 
 
   return (
-    <div style={{ padding: 32, background: "#EEEEEE", minHeight: "100vh" }}>
+    <div style={{ padding: 32, background: "#F7F7F5", minHeight: "100vh" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #ddd" }}>
           <Link href={tour.artist_id ? `/dashboard/artists/${tour.artist_id}` : "/dashboard"} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>← Back</Link>

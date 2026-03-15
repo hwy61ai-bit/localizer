@@ -94,7 +94,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const labelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#999", marginBottom: 6, display: "block" };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
+    <div style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 32 }}>
           <button onClick={() => router.push("/dashboard")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#888", marginBottom: 16, padding: 0 }}>Back</button>

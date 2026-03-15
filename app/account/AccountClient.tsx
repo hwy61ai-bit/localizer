@@ -52,7 +52,7 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
   const planLabel = PLAN_LABELS[plan] ?? plan;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px" }}>
+    <div style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px" }}>
       <div style={{ maxWidth: 600, margin: "0 auto" }}>
 
         <div style={{ marginBottom: 24 }}>

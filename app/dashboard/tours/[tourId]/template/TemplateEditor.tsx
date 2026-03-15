@@ -233,7 +233,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
   }
 
   return (
-    <div style={{ background: "#EEEEEE", minHeight: "100vh", padding: 32 }}>
+    <div style={{ background: "#F7F7F5", minHeight: "100vh", padding: 32 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         {/* Header */}

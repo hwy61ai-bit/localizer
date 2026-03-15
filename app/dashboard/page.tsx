@@ -92,7 +92,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
+    <div style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
