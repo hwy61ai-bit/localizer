@@ -87,9 +87,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
               <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>↑ Import Schedule</Link>
               <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>↑ Import Assets</Link>
               <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>Poster Template</Link>
-              <form action={createTour} style={{ margin: 0 }}>
-                <button style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", cursor: "pointer", fontWeight: 700, fontSize: 13 }}>+ New Tour</button>
-              </form>
+
             </div>
           </div>
         </div>
