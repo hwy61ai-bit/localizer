@@ -87,7 +87,6 @@ export async function POST(req: NextRequest) {
       to: event.promoter_email,
       subject: `Show assets ready — ${bandName} @ ${venueName}`,
       html: `
-        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; padding: 40px 32px; border-radius: 12px;">
           <p style="font-family: sans-serif; font-size: 11px; font-weight: 700; color: #555; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 16px 0;">Show Assets Ready</p>
           <h1 style="font-family: 'Bebas Neue', Impact, sans-serif; font-size: 64px; font-weight: 400; color: #ffffff; margin: 0 0 8px 0; line-height: 1; letter-spacing: 2px;">${bandName.toUpperCase()} / ASSETS</h1>
