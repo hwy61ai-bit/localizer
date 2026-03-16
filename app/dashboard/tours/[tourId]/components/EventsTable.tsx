@@ -201,7 +201,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
     ));
   }
 
-  const COLS = "90px 50px 180px 200px 200px 200px 100px 140px 80px";
+  const COLS = "90px 100px 180px 200px 200px 200px 100px 140px 80px";
   const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
   return (
     <>
@@ -239,7 +239,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               onMouseLeave={() => { setHoveredRow(null); setConfirmDelete(null); }}
               style={{ display: "grid", gridTemplateColumns: COLS + " 80px", padding: "10px 16px", borderTop: "1px solid #f0f0f0", alignItems: "center", background: i % 2 === 0 ? "#fff" : "#fafafa", position: "relative" }}>
               <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
-              <Cell event={e} field="day" display={e.day ? e.day.slice(0,3).toUpperCase() : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+              <Cell event={e} field="day" display={e.day ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
               <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <div style={{ opacity: 0.8 }}><Cell event={e} field="promoter_email" display={e.promoter_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
