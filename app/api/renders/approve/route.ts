@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, name, band_tour_label")
+    .select("id, name, band_name, band_tour_label")
     .eq("id", event.tour_id)
     .single();
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Tour not found" }, { status: 404 });
   }
 
-  const bandName = (tour as any).band_tour_label ?? (tour as any).name ?? "Artist";
+  const bandName = (tour as any).band_name ?? (tour as any).band_tour_label ?? (tour as any).name ?? "Artist";
   const dateFormatted = formatDateForOverlay(event.date_iso);
   const venueName = event.venue_name ?? event.venue ?? "";
   const cityState = [event.venue_city ?? event.city, event.venue_state ?? event.state]
@@ -87,16 +87,17 @@ export async function POST(req: NextRequest) {
       to: event.promoter_email,
       subject: `Show assets ready — ${bandName} @ ${venueName}`,
       html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 8px;">Show assets are ready.</h2>
-          <p style="color: #555; margin-bottom: 24px;">
-            ${bandName} — ${dateFormatted}<br/>
-            ${venueName}, ${cityState}
-          </p>
-          <a href="${venueLink}" style="display: inline-block; padding: 14px 28px; background: #111; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 900; font-size: 15px;">
-            View & Download Assets →
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; padding: 40px 32px; border-radius: 12px;">
+          <p style="font-family: sans-serif; font-size: 11px; font-weight: 700; color: #555; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 16px 0;">Show Assets Ready</p>
+          <h1 style="font-family: 'Bebas Neue', Impact, sans-serif; font-size: 64px; font-weight: 400; color: #ffffff; margin: 0 0 8px 0; line-height: 1; letter-spacing: 2px;">${bandName.toUpperCase()} ASSETS</h1>
+          <div style="border-top: 1px solid #222; margin: 20px 0;"></div>
+          <p style="font-family: sans-serif; color: #888; font-size: 14px; margin: 0 0 4px 0;">${dateFormatted}</p>
+          <p style="font-family: sans-serif; color: #888; font-size: 14px; margin: 0 0 32px 0;">${venueName}${cityState ? ", " + cityState : ""}</p>
+          <a href="${venueLink}" style="display: inline-block; padding: 14px 28px; background: #ffffff; color: #000000; text-decoration: none; border-radius: 8px; font-weight: 900; font-size: 14px; letter-spacing: 0.05em;">
+            VIEW & DOWNLOAD ASSETS →
           </a>
-          <p style="margin-top: 32px; font-size: 12px; color: #999;">
+          <p style="margin-top: 40px; font-size: 11px; color: #444; font-family: sans-serif;">
             Powered by Localizer — Tour dates in. Show graphics out.
           </p>
         </div>
