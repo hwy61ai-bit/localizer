@@ -201,7 +201,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
     ));
   }
 
-  const COLS = "90px 100px 180px 200px 200px 200px 100px 140px 80px";
+  const COLS = "90px 70px 130px 1fr 170px 170px 100px 120px 60px";
   const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
   return (
     <>
@@ -224,7 +224,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: COLS, minWidth: 1200, gap: 0, padding: "10px 16px", background: "#fafafa", fontSize: 12, fontWeight: 900, borderBottom: "1px solid #eee" }}>
+        <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 0, padding: "10px 16px", background: "#fafafa", fontSize: 12, fontWeight: 900, borderBottom: "1px solid #eee" }}>
           <div>Date</div><div>Day</div><div>City, ST</div><div>Venue</div>
           <div>Promoter Email</div><div>Manager Email</div>
           <div>Status</div><div>Link</div>
@@ -237,7 +237,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             <div key={e.id}
               onMouseEnter={() => setHoveredRow(e.id)}
               onMouseLeave={() => { setHoveredRow(null); setConfirmDelete(null); }}
-              style={{ display: "grid", gridTemplateColumns: COLS + " 80px", minWidth: 1200, padding: "10px 16px", borderTop: "1px solid #f0f0f0", alignItems: "center", background: i % 2 === 0 ? "#fff" : "#fafafa", position: "relative" }}>
+              style={{ display: "grid", gridTemplateColumns: COLS + " 80px", padding: "10px 16px", borderTop: "1px solid #f0f0f0", alignItems: "center", background: i % 2 === 0 ? "#fff" : "#fafafa", position: "relative" }}>
               <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <Cell event={e} field="day" display={e.day ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
