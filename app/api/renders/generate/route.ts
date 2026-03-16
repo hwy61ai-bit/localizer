@@ -130,7 +130,7 @@ function buildCloudinaryVideoUrl(
   eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string }
 ): string {
   const { w, h } = VIDEO_DIMS[format];
-  const cfg = overlayConfig?.story ?? {};
+  const cfg = overlayConfig?.[format] ?? overlayConfig?.story ?? {};
   const font = "Arial";
   const color = cfg.textColor ?? "ffffff";
 
