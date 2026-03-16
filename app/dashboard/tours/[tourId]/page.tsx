@@ -23,7 +23,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
   const supabase = await supabaseServer();
 
   const { data: tour, error: tourError } = await supabase
-    .from("tours").select("id, org_id, name, band_tour_label, band_name, spotify_url, artist_id, created_at, last_opened_at, overlay_config, image_url, image_square_id, image_story_id, image_landscape_id")
+    .from("tours").select("id, org_id, name, band_tour_label, band_name, artist_id, created_at, last_opened_at, overlay_config, image_url, image_square_id, image_story_id, image_landscape_id")
     .eq("id", tourId).single<TourRow>();
   if (tourError || !tour) throw new Error(tourError?.message ?? "Tour not found");
 
@@ -31,7 +31,6 @@ export default async function TourPage({ params, searchParams }: { params: Promi
   const tourName = tour.name;
   const bandTourLabel = tour.band_tour_label;
   const bandName = tour.band_name;
-  const spotifyUrl = tour.spotify_url;
 
   await supabase.from("tours").update({ last_opened_at: new Date().toISOString() }).eq("id", tourId);
 
@@ -63,12 +62,10 @@ export default async function TourPage({ params, searchParams }: { params: Promi
     "use server";
     const band = String(formData.get("band_name") ?? "").trim();
     const tour_label = String(formData.get("band_tour_label") ?? "").trim();
-    const spotify = String(formData.get("spotify_url") ?? "").trim();
     const supabase = await supabaseServer();
     const { error } = await supabase.from("tours").update({
       band_name: band.length ? band : null,
       band_tour_label: tour_label.length ? tour_label : null,
-      spotify_url: spotify.length ? spotify : null,
     }).eq("id", tourId);
     if (error) throw new Error(error.message);
     redirect(`/dashboard/tours/${tourId}?saved=1`);
@@ -105,7 +102,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
               <input name="band_tour_label" defaultValue={bandTourLabel ?? ""} placeholder="Tour name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", border: "1px solid #ddd", borderRadius: 12, fontSize: 16, fontWeight: 600, outline: "none" }} />
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <input name="spotify_url" defaultValue={spotifyUrl ?? ""} placeholder="Spotify Artist or Playlist URL (optional)" style={{ flex: 1, padding: "10px 14px", border: "1px solid #ddd", borderRadius: 12, fontSize: 13, outline: "none", color: "#555" }} />
+
               <button type="submit" style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid #111", background: justSaved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, cursor: "pointer", transition: "background 0.3s" }}>{justSaved ? "Saved ✓" : "Save"}</button>
             </div>
           </form>

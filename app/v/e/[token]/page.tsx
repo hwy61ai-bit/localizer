@@ -23,7 +23,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: tour } = await supabase
     .from("tours")
-    .select("name, band_name, band_tour_label, spotify_url, image_url, artist_id")
+    .select("name, band_name, band_tour_label, image_url, artist_id")
     .eq("id", event.tour_id)
     .single();
 
@@ -31,13 +31,13 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, spotify_url")
     .eq("id", (tour as any).artist_id)
     .single();
 
   const t = tour as any;
   const bandName = t.band_name ?? t.band_tour_label ?? t.name ?? "Artist";
-  const spotifyUrl: string | null = t.spotify_url ?? null;
+  const spotifyUrl: string | null = (artist as any)?.spotify_url ?? null;
   const spotifyEmbedUrl = spotifyUrl
     ? spotifyUrl.replace("open.spotify.com/", "open.spotify.com/embed/")
     : null;
