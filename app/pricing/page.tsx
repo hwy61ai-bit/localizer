@@ -209,9 +209,7 @@ export default function PricingPage() {
           })}
         </div>
 
-        <div style={{ textAlign: "center", marginTop: 32, fontSize: 12, color: "#aaa" }}>
-          All plans include a 14-day free trial. No credit card required to start.
-        </div>
+
 
       </div>
     </div>
