@@ -242,7 +242,7 @@ export async function POST(req: NextRequest) {
       for (const vformat of VIDEO_FORMATS) {
         const pid = videoPublicIds[vformat];
         if (!pid) continue;
-        const shortDateVideo = !!(tour.overlay_config as any)?.[vformat]?.shortDate ?? !!(tour.overlay_config as any)?.story?.shortDate;
+        const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
         renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData);
       }
