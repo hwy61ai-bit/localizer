@@ -60,7 +60,8 @@ export default async function DashboardPage() {
 
   const isPaid = !!org?.stripe_customer_id && org?.plan_status === "active";
   const trialActive = org?.trial_ends_at ? new Date(org.trial_ends_at) > new Date() : false;
-  const hasAccess = isPaid || trialActive;
+  const isAdmin = user.email === "hwy61ai@gmail.com" || user.email === "hwy61regan@gmail.com";
+  const hasAccess = isPaid || trialActive || isAdmin;
 
   if (!hasAccess) redirect("/pricing?reason=trial_expired");
 
