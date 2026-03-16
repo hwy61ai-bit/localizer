@@ -107,7 +107,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
               <div style={{ borderBottom: "2px solid #111111", marginTop: 6, marginBottom: 6 }} />
               <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>Advance Materials / Tours</div>
             </div>
-            <button onClick={handleSave} disabled={saving} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: saved ? "#22c55e" : "#111", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={handleSave} disabled={saving} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: saved ? "#1a7f4b" : "#111", color: "#fff", fontSize: 13, fontWeight: 900, cursor: "pointer", transition: "background 0.3s" }}>
               {saved ? "Saved" : saving ? "Saving..." : "Save"}
             </button>
           </div>

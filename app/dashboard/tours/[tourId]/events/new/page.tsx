@@ -65,7 +65,7 @@ export default async function NewEventPage({
               <input name="manager_email" type="email" placeholder="manager@example.com" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
             </div>
 
-            <button type="submit" style={{ marginTop: 4, padding: "12px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 900, fontSize: 14, cursor: "pointer" }}>
+            <button type="submit" style={{ marginTop: 4, padding: "12px 24px", borderRadius: 10, border: "none", background: "#111", color: "#fff", fontWeight: 900, fontSize: 14, cursor: "pointer" }}>
               Create Event
             </button>
 

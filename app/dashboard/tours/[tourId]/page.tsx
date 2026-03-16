@@ -103,7 +103,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
 
-              <button type="submit" style={{ padding: "12px 14px", borderRadius: 12, border: "1px solid #111", background: justSaved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, cursor: "pointer", transition: "background 0.3s" }}>{justSaved ? "Saved ✓" : "Save"}</button>
+              <button type="submit" style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: justSaved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, cursor: "pointer", transition: "background 0.3s" }}>{justSaved ? "Saved ✓" : "Save"}</button>
             </div>
           </form>
         </div>

@@ -250,9 +250,9 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                 ) : e.render_status === "rendering" ? (
                   <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff8e1", fontWeight: 900, fontSize: 12 }}>Rendering...</span>
                 ) : e.render_status === "ready" ? (
-                  <button onClick={() => sendEvent(e.id)} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #1a7f4b", background: "#e9f7ef", color: "#1a7f4b", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Send</button>
+                  <button onClick={() => sendEvent(e.id)} style={{ padding: "6px 14px", borderRadius: 10, border: "none", background: "#111", color: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Send</button>
                 ) : e.render_status === "error" ? (
-                  <button onClick={() => reRenderEvent(e.id)} style={{ padding: "6px 10px", borderRadius: 999, border: "1px solid #e00", background: "#fff0f0", cursor: "pointer", fontWeight: 900, fontSize: 12, color: "#c00" }}>Retry</button>
+                  <button onClick={() => reRenderEvent(e.id)} style={{ padding: "6px 14px", borderRadius: 10, border: "1px solid #e00", background: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12, color: "#c00" }}>Retry</button>
                 ) : (
                   <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#f5f5f5", fontWeight: 900, fontSize: 12, color: "#999" }}>Not ready</span>
                 )}
@@ -262,17 +262,17 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                   const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
                   const data = await res.json();
                   if (data.token) window.open(`/v/e/${data.token}`, "_blank");
-                }} style={{ padding: "6px 14px", borderRadius: 999, border: "none", background: "#111", color: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link / Preview</button>
+                }} style={{ padding: "6px 14px", borderRadius: 10, border: "1px solid #111", background: "#fff", color: "#111", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link / Preview</button>
               </div>
               {hoveredRow === e.id && (
                 <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
                   {confirmDelete === e.id ? (
                     <div style={{ display: "flex", gap: 4 }}>
-                      <button onClick={() => deleteEvent(e.id)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #e00", background: "#fff0f0", color: "#c00", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Delete</button>
-                      <button onClick={() => setConfirmDelete(null)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Cancel</button>
+                      <button onClick={() => deleteEvent(e.id)} style={{ padding: "6px 12px", borderRadius: 10, border: "1px solid #e00", background: "#fff", color: "#c00", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Delete</button>
+                      <button onClick={() => setConfirmDelete(null)} style={{ padding: "6px 12px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Cancel</button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", opacity: 0.6 }}>x</button>
+                    <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "6px 12px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", opacity: 0.6 }}>x</button>
                   )}
                 </div>
               )}
