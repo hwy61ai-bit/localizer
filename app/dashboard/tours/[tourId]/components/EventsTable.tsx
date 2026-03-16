@@ -44,23 +44,26 @@ function CityStateCell({ event, editing, saving, drafts, inputRef, onStartEdit, 
   const isStateEditing = editing?.id === event.id && editing?.field === "state";
   const isEditing = isCityEditing || isStateEditing;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 2, border: isEditing ? "1.5px solid #111" : "1.5px solid transparent", borderRadius: 6, padding: "2px 4px", background: isEditing ? "#fff" : "transparent", transition: "border 0.1s" }}
+    <div style={{ cursor: "text", minHeight: 24, padding: "2px 4px", borderRadius: 6, border: isEditing ? "1.5px solid #111" : "1.5px solid transparent", background: isEditing ? "#fff" : "transparent", transition: "border 0.1s, background 0.1s", position: "relative" }}
       onMouseEnter={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "#ddd"; }}
       onMouseLeave={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "transparent"; }}>
-      {isCityEditing ? (
-        <input ref={inputRef} value={drafts.city} onChange={e => onCityChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 110, fontSize: 14, background: "transparent", padding: 0 }} />
-      ) : (
-        <span onClick={() => onStartEdit(event, "city")} style={{ fontSize: 14, cursor: "text" }}>{event.city || <span style={{ color: "#ccc" }}>City</span>}</span>
-      )}
-      <span style={{ fontSize: 14, color: "#999" }}>,</span>
-      {isStateEditing ? (
-        <input ref={inputRef} value={drafts.state} onChange={e => onStateChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 30, fontSize: 14, background: "transparent", padding: 0 }} />
-      ) : (
-        <span onClick={() => onStartEdit(event, "state")} style={{ fontSize: 14, cursor: "text" }}>{event.state || <span style={{ color: "#ccc" }}>ST</span>}</span>
-      )}
+      <span style={{ fontSize: 14 }}>
+        {isCityEditing ? (
+          <input ref={inputRef} value={drafts.city} onChange={e => onCityChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 90, fontSize: 14, background: "transparent", padding: 0 }} />
+        ) : (
+          <span onClick={() => onStartEdit(event, "city")} style={{ cursor: "text" }}>{event.city || <span style={{ color: "#ccc" }}>City</span>}</span>
+        )}
+        <span style={{ color: "#999" }}>, </span>
+        {isStateEditing ? (
+          <input ref={inputRef} value={drafts.state} onChange={e => onStateChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 28, fontSize: 14, background: "transparent", padding: 0 }} />
+        ) : (
+          <span onClick={() => onStartEdit(event, "state")} style={{ cursor: "text" }}>{event.state || <span style={{ color: "#ccc" }}>ST</span>}</span>
+        )}
+      </span>
     </div>
   );
 }
+
 
 type CellProps = {
   event: EventRow;
