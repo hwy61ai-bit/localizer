@@ -15,9 +15,25 @@ const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
 
 const FORMATS: RenderFormat[] = ["square", "story", "landscape"];
 
-function formatDateForRender(iso: string): string {
+function ordinal(n: number): string {
+  if (n >= 11 && n <= 13) return "TH";
+  switch (n % 10) {
+    case 1: return "ST";
+    case 2: return "ND";
+    case 3: return "RD";
+    default: return "TH";
+  }
+}
+
+function formatDateForRender(iso: string, short = false): string {
   try {
     const d = new Date(iso + "T12:00:00");
+    if (short) {
+      const day = d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
+      const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+      const date = d.getDate();
+      return `${day}. ${month} ${date}${ordinal(date)}`;
+    }
     const month = d.toLocaleDateString("en-US", { month: "long" });
     const day = d.getDate();
     const year = d.getFullYear();
@@ -149,17 +165,18 @@ export async function POST(req: NextRequest) {
         landscape: tour.image_landscape_id ?? tour.image_square_id ?? null,
       };
 
-      const eventData = {
-        bandName:      (tour as any).band_name ?? tour.band_tour_label ?? tour.name ?? "Artist",
-        dateFormatted: formatDateForRender(event.date_iso),
-        venueName:     event.venue_name ?? event.venue ?? "",
-        cityState:     [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),
+      const baseEventData = {
+        bandName:  (tour as any).band_name ?? tour.band_tour_label ?? tour.name ?? "Artist",
+        venueName: event.venue_name ?? event.venue ?? "",
+        cityState: [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),
       };
 
       const renderUrls: Record<string, string> = {};
       for (const format of FORMATS) {
         const pid = formatPublicIds[format];
         if (!pid) continue;
+        const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
+        const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
         renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData);
       }
 

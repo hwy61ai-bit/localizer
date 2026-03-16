@@ -23,6 +23,7 @@ type FormatConfig = {
   textColor: string;
   showBandName: boolean;
   bandSize: number;
+  shortDate?: boolean;
   band?: FieldConfig;
   date: FieldConfig;
   venue: FieldConfig;
@@ -34,6 +35,7 @@ const DEFAULT_FORMAT: FormatConfig = {
   textColor: "ffffff",
   showBandName: false,
   bandSize: 48,
+  shortDate: false,
   date:  { x: 0.5, y: 0.84, size: 28 },
   venue: { x: 0.5, y: 0.76, size: 36 },
   city:  { x: 0.5, y: 0.91, size: 28 },
@@ -98,7 +100,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
     ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(bandNameStr ?? "Band Name")},co_rgb:${color}/fl_layer_apply,g_center,x_${Math.round((( cfg.band?.x ?? 0.5) - 0.5) * fmtDims.w)},y_${Math.round(((cfg.band?.y ?? 0.65) - 0.5) * fmtDims.h)}`] : []),
     `l_text:${font}_${cfg.venue.size}_bold:${san(fe?.venue ?? "Stubbs Waller Creek Amphitheater")},co_rgb:${color}/fl_layer_apply,g_center,x_${vp.xPx},y_${vp.yPx}`,
-    `l_text:${font}_${cfg.date.size}:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : "April 25 2026")},co_rgb:${color}/fl_layer_apply,g_center,x_${dp.xPx},y_${dp.yPx}`,
+    `l_text:${font}_${cfg.date.size}:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "SAT. APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_center,x_${dp.xPx},y_${dp.yPx}`,
     `l_text:${font}_${cfg.city.size}:${san(fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_center,x_${cp.xPx},y_${cp.yPx}`,
   ];
 
@@ -362,7 +364,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                       >
                         {firstEvent ? (
                           field === "venue" ? firstEvent.venue :
-                          field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
+                          field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : [,"ST","ND","RD"][n%10] || "TH"; return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
                           [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
                         ) : SAMPLE_TEXT[field]}
                         {field === "venue" && isOverflow(longestVenue, cfg.venue, fmtDims.w) && (
@@ -429,6 +431,20 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                   onChange={(e) => updateCfg("textColor", e.target.value.replace("#", ""))}
                   style={{ width: 40, height: 32, borderRadius: 6, border: "1px solid #ddd", cursor: "pointer", padding: 2 }}
                 />
+              </div>
+            </div>
+
+            {/* Date format */}
+            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700 }}>Short date format</div>
+                  <div style={{ fontSize: 11, color: "#888" }}>e.g. SAT. JUN 26TH</div>
+                </div>
+                <button onClick={() => updateCfg("shortDate", !cfg.shortDate)}
+                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.shortDate ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
+                  <span style={{ position: "absolute", top: 2, left: cfg.shortDate ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+                </button>
               </div>
             </div>
 
