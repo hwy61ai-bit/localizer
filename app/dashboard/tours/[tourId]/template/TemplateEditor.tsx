@@ -167,7 +167,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
       ? `https://res.cloudinary.com/${cloudName}/video/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h},so_0/${publicId}.jpg`
       : `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h}/${publicId}`
     : null;
-  const previewScale = containerWidth / fmtDims.w;
+  const maxPreviewH = 600;
+  const scaleByW = containerWidth / fmtDims.w;
+  const scaleByH = maxPreviewH / fmtDims.h;
+  const previewScale = Math.min(scaleByW, scaleByH);
 
   // Load Google Font
   useEffect(() => {
@@ -306,7 +309,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
             <div style={{ fontSize: 11, color: "#888", marginBottom: 8, fontWeight: 600 }}>DRAG TEXT TO POSITION — snaps to center</div>
             <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ddd", overflow: "hidden" }}>
               {imageUrl ? (
-                <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default" }}>
+                <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default", width: `${Math.round(fmtDims.w * previewScale)}px`, margin: "0 auto" }}>
                   <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
 
                   {/* Center vertical guide */}
