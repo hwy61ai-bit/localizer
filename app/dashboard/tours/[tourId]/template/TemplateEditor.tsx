@@ -127,7 +127,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
 
   function isOverflow(text: string, field: FieldConfig, imgW: number): boolean {
     const availableW = imgW * 0.85;
-    const estimatedW = field.size * 0.6 * text.length;
+    const estimatedW = field.size * 0.45 * text.length;
     return estimatedW > availableW;
   }
 
