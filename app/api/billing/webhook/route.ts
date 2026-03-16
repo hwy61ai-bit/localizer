@@ -31,6 +31,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // Idempotency check — ignore already-processed events
+  const { data: existing } = await supabase
+    .from("stripe_events")
+    .select("id")
+    .eq("id", event.id)
+    .maybeSingle();
+
+  if (existing) {
+    console.log("Duplicate Stripe event ignored:", event.id);
+    return NextResponse.json({ received: true });
+  }
+
+  // Mark event as processed
+  await supabase.from("stripe_events").insert({ id: event.id });
+
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const customerId = session.customer as string;

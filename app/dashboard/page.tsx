@@ -27,7 +27,7 @@ export default async function DashboardPage() {
     const newOrgId = randomUUID();
     const { error: orgError } = await supabase
       .from("orgs")
-      .insert({ id: newOrgId, name: "My Workspace", owner_email: user.email ?? null });
+      .insert({ id: newOrgId, name: "My Workspace", owner_email: user.email ?? null, trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
     if (orgError) throw new Error(orgError.message);
     orgId = newOrgId;
     const { error: memberError } = await supabase.from("org_members").insert({
@@ -50,6 +50,21 @@ export default async function DashboardPage() {
       }
     }
   }
+
+  // Fetch org plan + trial status
+  const { data: org } = await supabase
+    .from("orgs")
+    .select("plan, plan_status, trial_ends_at, stripe_customer_id")
+    .eq("id", orgId)
+    .single();
+
+  console.log("ORG DEBUG:", JSON.stringify(org));
+  console.log("ORG ID USED:", orgId);
+  const isPaid = !!org?.stripe_customer_id && org?.plan_status === "active";
+  const trialActive = org?.trial_ends_at ? new Date(org.trial_ends_at) > new Date() : false;
+  const hasAccess = isPaid || trialActive;
+
+  if (!hasAccess) redirect("/pricing?reason=trial_expired");
 
   const { data: artistsData, error: artistsError } = await supabase
     .from("artists")

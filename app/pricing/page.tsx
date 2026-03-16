@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const PLANS = [
@@ -40,6 +40,10 @@ export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
+  const [trialExpired, setTrialExpired] = useState(false);
+  useEffect(() => {
+    setTrialExpired(new URLSearchParams(window.location.search).get("reason") === "trial_expired");
+  }, []);
 
   async function handleCheckout(priceId: string, planName: string) {
     setLoading(planName);
@@ -69,6 +73,12 @@ export default function PricingPage() {
         <div style={{ marginBottom: 24 }}>
           <a href="/" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>← Back</a>
         </div>
+
+        {trialExpired && (
+          <div style={{ background: "#111", color: "#fff", borderRadius: 12, padding: "16px 24px", marginBottom: 32, textAlign: "center", fontSize: 14, fontWeight: 700 }}>
+            Your 7-day trial has ended. Choose a plan to keep access to your tours and assets.
+          </div>
+        )}
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 48 }}>
