@@ -7,7 +7,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: link } = await supabase
     .from("venue_links")
-    .select("event_id, org_id, is_active, render_square_url, render_story_url, render_landscape_url, render_poster_url")
+    .select("event_id, org_id, is_active, render_square_url, render_story_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url")
     .eq("token", token)
     .maybeSingle();
 
@@ -164,19 +164,33 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         )}
 
         {/* Video */}
-        <div style={{ marginBottom: 48 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
-          <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, padding: 32, textAlign: "center" }}>
-            <div style={{ fontSize: 24, marginBottom: 12 }}>▶</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8 }}>Video Assets Coming Soon</div>
-            <div style={{ fontSize: 13, color: "#555", marginBottom: 16 }}>Optimized video files for every platform will appear here once rendered.</div>
-            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
-              {["YouTube", "Instagram Reels", "TikTok", "Facebook", "Twitter / X"].map((f) => (
-                <span key={f} style={{ padding: "4px 12px", borderRadius: 999, border: "1px solid #1e1e1e", fontSize: 11, color: "#555" }}>{f}</span>
+        {((link as any).render_tiktok_url || (link as any).render_yt_shorts_url) && (
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
+              {[
+                { label: "TikTok / Reels", dims: "1080 × 1920", url: (link as any).render_tiktok_url },
+                { label: "YouTube Shorts", dims: "1080 × 1920", url: (link as any).render_yt_shorts_url },
+              ].filter(v => !!v.url).map((video) => (
+                <div key={video.label} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden" }}>
+                  <div style={{ background: "#1a1a1a" }}>
+                    <video src={video.url} controls playsInline style={{ width: "100%", display: "block" }} />
+                  </div>
+                  <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>{video.label}</div>
+                      <div style={{ fontSize: 11, color: "#555" }}>{video.dims}</div>
+                    </div>
+                    <a href={`/api/download?url=${encodeURIComponent(video.url)}&filename=${encodeURIComponent(video.label.replace(/ /g,"_") + ".mp4")}`} download
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: "#1e1e1e", color: "#fff", textDecoration: "none", fontSize: 16 }}>
+                      ↓
+                    </a>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Spotify */}
         {spotifyEmbedUrl && (
