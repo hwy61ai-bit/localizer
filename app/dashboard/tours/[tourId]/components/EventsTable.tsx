@@ -48,13 +48,13 @@ function CityStateCell({ event, editing, saving, drafts, inputRef, onStartEdit, 
       onMouseEnter={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "#ddd"; }}
       onMouseLeave={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "transparent"; }}>
       {isCityEditing ? (
-        <input ref={inputRef} value={drafts.city} onChange={e => onCityChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 110, fontSize: 14, background: "transparent", padding: 0 }} />
+        <input ref={inputRef} value={drafts.city} onChange={e => onCityChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 90, fontSize: 14, background: "transparent", padding: 0 }} />
       ) : (
         <span onClick={() => onStartEdit(event, "city")} style={{ fontSize: 14, cursor: "text" }}>{event.city || <span style={{ color: "#ccc" }}>City</span>}</span>
       )}
       <span style={{ fontSize: 14, color: "#999" }}>,</span>
       {isStateEditing ? (
-        <input ref={inputRef} value={drafts.state} onChange={e => onStateChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 30, fontSize: 14, background: "transparent", padding: 0 }} />
+        <input ref={inputRef} value={drafts.state} onChange={e => onStateChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 28, fontSize: 14, background: "transparent", padding: 0 }} />
       ) : (
         <span onClick={() => onStartEdit(event, "state")} style={{ fontSize: 14, cursor: "text" }}>{event.state || <span style={{ color: "#ccc" }}>ST</span>}</span>
       )}
@@ -81,7 +81,7 @@ function Cell({ event, field, display, editing, saving, draft, inputRef, onStart
   const isSaving = saving === event.id + field;
   return (
     <div onClick={() => onStartEdit(event, field)} title="Click to edit"
-      style={{ cursor: "text", minHeight: 24, padding: "2px 4px", borderRadius: 6, border: isEditing ? "1.5px solid #111" : "1.5px solid transparent", background: isEditing ? "#fff" : "transparent", opacity: isSaving ? 0.4 : 1, transition: "border 0.1s, background 0.1s", position: "relative" }}
+      style={{ cursor: "text", minHeight: 24, padding: "2px 4px", borderRadius: 6, border: isEditing ? "1.5px solid #111" : "1.5px solid transparent", background: isEditing ? "#fff" : "transparent", opacity: isSaving ? 0.4 : 1, transition: "border 0.1s, background 0.1s" }}
       onMouseEnter={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "#ddd"; }}
       onMouseLeave={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "transparent"; }}>
       {isEditing ? (
@@ -93,6 +93,18 @@ function Cell({ event, field, display, editing, saving, draft, inputRef, onStart
   );
 }
 
+function StatusBadge({ event }: { event: EventRow }) {
+  if (event.sent_at)
+    return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 999, background: "#e9f7ef", border: "1px solid #b7dfcc", fontWeight: 900, fontSize: 11, color: "#1a6640" }}>SENT</span>;
+  if (event.render_status === "rendering")
+    return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 999, background: "#fff8e1", border: "1px solid #ffe082", fontWeight: 900, fontSize: 11, color: "#8a6700" }}>Rendering...</span>;
+  if (event.render_status === "ready")
+    return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 999, background: "#e8f4ff", border: "1px solid #90caf9", fontWeight: 900, fontSize: 11, color: "#0d47a1" }}>Ready</span>;
+  if (event.render_status === "error")
+    return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 999, background: "#fff0f0", border: "1px solid #ffcdd2", fontWeight: 900, fontSize: 11, color: "#b71c1c" }}>Failed</span>;
+  return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 999, background: "#f5f5f5", border: "1px solid #ddd", fontWeight: 900, fontSize: 11, color: "#999" }}>Not ready</span>;
+}
+
 export default function EventsTable({ events: initial, tourId, orgId }: Props) {
   const [events, setEvents] = useState<EventRow[]>(initial);
   const [editing, setEditing] = useState<{ id: string; field: EditableField } | null>(null);
@@ -100,6 +112,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
   const [drafts, setDrafts] = useState<{ city: string; state: string }>({ city: "", state: "" });
   const [saving, setSaving] = useState<string | null>(null);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -201,85 +214,129 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
     ));
   }
 
-  const COLS = "90px 100px 180px 200px 200px 200px 100px 140px 80px";
+  async function openVenueLink(eventId: string) {
+    const res = await fetch("/api/venue-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orgId, eventId }),
+    });
+    const data = await res.json();
+    if (data.token) window.open(`/v/e/${data.token}`, "_blank");
+  }
+
+  const COLS = "110px 55px 1fr 140px 110px";
   const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
+
   return (
-    <>
-      <div style={{ overflowX: "auto" }}>
-        <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#fafafa" }}>
-          <div style={{ fontSize: 13, color: "#888" }}>
-            {events.length === 0 ? "No events yet." : `${events.length} event${events.length !== 1 ? "s" : ""} · ${events.filter(e => !!e.sent_at).length} sent`}
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {generateError && (
-              <span style={{ fontSize: 12, color: "#c00", fontWeight: 700 }}>{generateError}</span>
-            )}
-            <button
-              onClick={generateAll}
-              disabled={generating || events.length === 0}
-              style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: generating ? "#888" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: generating || events.length === 0 ? "not-allowed" : "pointer", opacity: events.length === 0 ? 0.4 : 1, transition: "background 0.2s" }}
-            >
-              {generating ? "Generating..." : allReady ? "4. Re-Generate All" : "4. Generate All"}
-            </button>
-          </div>
+    <div>
+      {/* Header bar */}
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: "#fafafa" }}>
+        <div style={{ fontSize: 13, color: "#888" }}>
+          {events.length === 0 ? "No events yet." : `${events.length} event${events.length !== 1 ? "s" : ""} · ${events.filter(e => !!e.sent_at).length} sent`}
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: COLS, minWidth: 1200, gap: 0, padding: "10px 16px", background: "#fafafa", fontSize: 12, fontWeight: 900, borderBottom: "1px solid #eee" }}>
-          <div>Date</div><div>Day</div><div>City, ST</div><div>Venue</div>
-          <div>Promoter Email</div><div>Manager Email</div>
-          <div>Status</div><div>Link</div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {generateError && <span style={{ fontSize: 12, color: "#c00", fontWeight: 700 }}>{generateError}</span>}
+          <button
+            onClick={generateAll}
+            disabled={generating || events.length === 0}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: generating ? "#888" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: generating || events.length === 0 ? "not-allowed" : "pointer", opacity: events.length === 0 ? 0.4 : 1, transition: "background 0.2s" }}
+          >
+            {generating ? "Generating..." : allReady ? "4. Re-Generate All" : "4. Generate All"}
+          </button>
         </div>
+      </div>
 
-        {events.length === 0 ? (
-          <div style={{ padding: 16, opacity: 0.7 }}>No events yet. Click <b>+ New Event</b> to create one.</div>
-        ) : (
-          events.map((e, i) => (
-            <div key={e.id}
+      {/* Column headers */}
+      <div style={{ display: "grid", gridTemplateColumns: COLS, padding: "8px 16px 8px 36px", background: "#fafafa", fontSize: 11, fontWeight: 900, color: "#aaa", letterSpacing: "0.05em", textTransform: "uppercase", borderBottom: "1px solid #eee" }}>
+        <div>Date</div>
+        <div>Day</div>
+        <div>Venue</div>
+        <div>Location</div>
+        <div>Status</div>
+      </div>
+
+      {events.length === 0 ? (
+        <div style={{ padding: "20px 16px", color: "#aaa", fontSize: 14 }}>No events yet. Click <b>+ New Event</b> to create one.</div>
+      ) : (
+        events.map((e, i) => (
+          <div key={e.id}>
+            {/* Main row */}
+            <div
               onMouseEnter={() => setHoveredRow(e.id)}
               onMouseLeave={() => { setHoveredRow(null); setConfirmDelete(null); }}
-              style={{ display: "grid", gridTemplateColumns: COLS + " 80px", minWidth: 1200, padding: "10px 16px", borderTop: "1px solid #f0f0f0", alignItems: "center", background: i % 2 === 0 ? "#fff" : "#fafafa", position: "relative" }}>
-              <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+              style={{
+                display: "grid",
+                gridTemplateColumns: COLS,
+                padding: "9px 16px 9px 16px",
+                borderTop: "1px solid #f0f0f0",
+                alignItems: "center",
+                background: hoveredRow === e.id ? "#f4f4f4" : (i % 2 === 0 ? "#fff" : "#fafafa"),
+                position: "relative",
+                transition: "background 0.1s",
+              }}
+            >
+              {/* Date + expand chevron */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span
+                  onClick={() => setExpandedRow(expandedRow === e.id ? null : e.id)}
+                  style={{
+                    cursor: "pointer",
+                    fontSize: 8,
+                    color: expandedRow === e.id ? "#555" : "#ccc",
+                    display: "inline-block",
+                    transform: expandedRow === e.id ? "rotate(90deg)" : "rotate(0deg)",
+                    transition: "transform 0.15s, color 0.15s",
+                    userSelect: "none",
+                    lineHeight: 1,
+                    flexShrink: 0,
+                  }}
+                >▶</span>
+                <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+              </div>
+
               <Cell event={e} field="day" display={e.day ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
-              <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
               <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
-              <div style={{ opacity: 0.8 }}><Cell event={e} field="promoter_email" display={e.promoter_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
-              <div style={{ opacity: 0.8 }}><Cell event={e} field="manager_email" display={e.manager_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} /></div>
-                            <div>
-                {e.sent_at ? (
-                  <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#e9f7ef", fontWeight: 900, fontSize: 12 }}>SENT</span>
-                ) : e.render_status === "rendering" ? (
-                  <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#fff8e1", fontWeight: 900, fontSize: 12 }}>Rendering...</span>
-                ) : e.render_status === "ready" ? (
-                  <button onClick={() => sendEvent(e.id)} style={{ padding: "6px 14px", borderRadius: 10, border: "none", background: "#111", color: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Send</button>
-                ) : e.render_status === "error" ? (
-                  <button onClick={() => reRenderEvent(e.id)} style={{ padding: "6px 14px", borderRadius: 10, border: "1px solid #e00", background: "#fff", cursor: "pointer", fontWeight: 900, fontSize: 12, color: "#c00" }}>Retry</button>
-                ) : (
-                  <span style={{ display: "inline-block", padding: "6px 10px", borderRadius: 999, border: "1px solid #ddd", background: "#f5f5f5", fontWeight: 900, fontSize: 12, color: "#999" }}>Not ready</span>
-                )}
-              </div>
-              <div>
-                <button onClick={async () => {
-                  const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
-                  const data = await res.json();
-                  if (data.token) window.open(`/v/e/${data.token}`, "_blank");
-                }} style={{ padding: "6px 14px", borderRadius: 10, border: "1px solid #111", background: "#fff", color: "#111", cursor: "pointer", fontWeight: 900, fontSize: 12 }}>Link / Preview</button>
-              </div>
+              <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
+              <StatusBadge event={e} />
+
+              {/* Hover actions */}
               {hoveredRow === e.id && (
-                <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
+                <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", display: "flex", gap: 6, alignItems: "center" }}>
+                  {e.render_status === "ready" && !e.sent_at && (
+                    <button onClick={() => sendEvent(e.id)} style={{ padding: "5px 12px", borderRadius: 10, border: "none", background: "#111", color: "#fff", fontWeight: 900, fontSize: 11, cursor: "pointer" }}>Send</button>
+                  )}
+                  {e.render_status === "error" && (
+                    <button onClick={() => reRenderEvent(e.id)} style={{ padding: "5px 12px", borderRadius: 10, border: "1px solid #e00", background: "#fff", color: "#c00", fontWeight: 900, fontSize: 11, cursor: "pointer" }}>Retry</button>
+                  )}
+                  <button onClick={() => openVenueLink(e.id)} style={{ padding: "5px 12px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 900, fontSize: 11, cursor: "pointer" }}>Link</button>
                   {confirmDelete === e.id ? (
-                    <div style={{ display: "flex", gap: 4 }}>
-                      <button onClick={() => deleteEvent(e.id)} style={{ padding: "6px 12px", borderRadius: 10, border: "1px solid #e00", background: "#fff", color: "#c00", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Delete</button>
-                      <button onClick={() => setConfirmDelete(null)} style={{ padding: "6px 12px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Cancel</button>
-                    </div>
+                    <>
+                      <button onClick={() => deleteEvent(e.id)} style={{ padding: "5px 10px", borderRadius: 10, border: "1px solid #e00", background: "#fff", color: "#c00", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Delete</button>
+                      <button onClick={() => setConfirmDelete(null)} style={{ padding: "5px 10px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#666", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>Cancel</button>
+                    </>
                   ) : (
-                    <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "6px 12px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", opacity: 0.6 }}>x</button>
+                    <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "3px 8px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#aaa", fontWeight: 700, fontSize: 13, cursor: "pointer", lineHeight: 1 }}>×</button>
                   )}
                 </div>
               )}
             </div>
-          ))
-        )}
-      </div>
-    </>
+
+            {/* Expanded detail panel */}
+            {expandedRow === e.id && (
+              <div style={{ padding: "12px 16px 14px 38px", background: "#f8f8f8", borderTop: "1px solid #ececec", display: "flex", gap: 32, alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 900, color: "#bbb", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>Promoter Email</div>
+                  <Cell event={e} field="promoter_email" display={e.promoter_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 900, color: "#bbb", letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 4 }}>Manager Email</div>
+                  <Cell event={e} field="manager_email" display={e.manager_email ?? ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+                </div>
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
   );
 }
