@@ -15,6 +15,8 @@ const FORMAT_COLUMN: Record<string, string> = {
   ig_post: "image_square_id",
   ig_story: "image_story_id",
   facebook: "image_landscape_id",
+  tiktok: "video_tiktok_id",
+  yt_shorts: "video_yt_shorts_id",
 };
 
 export async function POST(

@@ -28,7 +28,7 @@ export default function AssetsPage() {
     async function loadExisting() {
       const { data } = await supabase
         .from("tours")
-        .select("image_url, image_square_id, image_story_id, image_landscape_id")
+        .select("image_url, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id")
         .eq("id", tourId)
         .single();
       if (!data) return;
@@ -39,6 +39,9 @@ export default function AssetsPage() {
       if (data.image_square_id) loaded.push({ formatId: "ig_post", url: `${base}${data.image_square_id}` });
       if (data.image_story_id) loaded.push({ formatId: "ig_story", url: `${base}${data.image_story_id}` });
       if (data.image_landscape_id) loaded.push({ formatId: "facebook", url: `${base}${data.image_landscape_id}` });
+      const videoBase = `https://res.cloudinary.com/${cloudName}/video/upload/`;
+      if (data.video_tiktok_id) loaded.push({ formatId: "tiktok", url: `${videoBase}${data.video_tiktok_id}` });
+      if (data.video_yt_shorts_id) loaded.push({ formatId: "yt_shorts", url: `${videoBase}${data.video_yt_shorts_id}` });
       if (loaded.length) setAssets(loaded);
     }
     loadExisting();
@@ -54,11 +57,13 @@ export default function AssetsPage() {
     try {
       // All photo formats upload directly to Cloudinary
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const isVideo = formatId === "tiktok" || formatId === "yt_shorts";
       const fd = new FormData();
       fd.append("file", file);
       fd.append("upload_preset", "localizer_tours");
       fd.append("public_id", `tour_${tourId}_${formatId}_${Date.now()}`);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      const resourceType = isVideo ? "video" : "image";
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
         method: "POST",
         body: fd,
       });
@@ -109,7 +114,11 @@ export default function AssetsPage() {
           >
             {asset ? (
               <>
-                <img src={asset.url} alt={fmt.label} style={{ width: "100%", height: "auto", display: "block" }} />
+                {(fmt.id === "tiktok" || fmt.id === "yt_shorts") ? (
+                  <video src={asset.url} controls style={{ width: "100%", height: "auto", display: "block" }} />
+                ) : (
+                  <img src={asset.url} alt={fmt.label} style={{ width: "100%", height: "auto", display: "block" }} />
+                )}
                 <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, opacity: 0, transition: "opacity 0.15s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = "0")}>
