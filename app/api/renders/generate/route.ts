@@ -15,6 +15,13 @@ const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
 
 const FORMATS: RenderFormat[] = ["square", "story", "landscape"];
 
+type VideoFormat = "tiktok" | "yt_shorts";
+const VIDEO_DIMS: Record<VideoFormat, { w: number; h: number }> = {
+  tiktok:    { w: 1080, h: 1920 },
+  yt_shorts: { w: 1080, h: 1920 },
+};
+const VIDEO_FORMATS: VideoFormat[] = ["tiktok", "yt_shorts"];
+
 function ordinal(n: number): string {
   if (n >= 11 && n <= 13) return "TH";
   switch (n % 10) {
@@ -115,6 +122,50 @@ function buildCloudinaryUrl(
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
 }
 
+function buildCloudinaryVideoUrl(
+  publicId: string,
+  cloudName: string,
+  format: VideoFormat,
+  overlayConfig: any,
+  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string }
+): string {
+  const { w, h } = VIDEO_DIMS[format];
+  const cfg = overlayConfig?.story ?? {};
+  const font = "Arial";
+  const color = cfg.textColor ?? "ffffff";
+
+  const venueSize = cfg.venue?.size ?? 36;
+  const dateSize  = cfg.date?.size  ?? 28;
+  const citySize  = cfg.city?.size  ?? 28;
+
+  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
+  const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
+  const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
+  const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * h);
+  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
+  const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
+
+  const venueName = sanitize(eventData.venueName);
+  const dateStr   = sanitize(eventData.dateFormatted);
+  const cityState = sanitize(eventData.cityState);
+
+  const showBand = cfg.showBandName ?? false;
+  const bandSize = cfg.bandSize ?? 48;
+  const bandName = sanitize(eventData.bandName);
+  const bandX = Math.round(((cfg.band?.x ?? 0.5) - 0.5) * w);
+  const bandY = Math.round(((cfg.band?.y ?? 0.65) - 0.5) * h);
+
+  const layers = [
+    `c_fill,g_center,h_${h},w_${w}`,
+    ...(showBand ? [`l_text:${font}_${bandSize}_bold:${bandName},co_rgb:${color}/fl_layer_apply,g_center,x_${bandX},y_${bandY}`] : []),
+    `l_text:${font}_${venueSize}_bold_center:${venueName},co_rgb:${color}/fl_layer_apply,g_center,x_${venueX},y_${venueY}`,
+    `l_text:${font}_${dateSize}_center:${dateStr},co_rgb:${color}/fl_layer_apply,g_center,x_${dateX},y_${dateY}`,
+    `l_text:${font}_${citySize}_center:${cityState},co_rgb:${color}/fl_layer_apply,g_center,x_${cityX},y_${cityY}`,
+  ];
+
+  return `https://res.cloudinary.com/${cloudName}/video/upload/${layers.join("/")}/${publicId}`;
+}
+
 export async function POST(req: NextRequest) {
   const { tourId, eventId, orgId } = await req.json();
   if (!orgId) return NextResponse.json({ error: "Missing orgId" }, { status: 400 });
@@ -132,7 +183,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, overlay_config")
+    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config")
     .eq("id", tourId_resolved)
     .eq("org_id", orgId)
     .single();
@@ -178,6 +229,19 @@ export async function POST(req: NextRequest) {
         const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
         renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData);
+      }
+
+      // Generate video render URLs
+      const videoPublicIds: Record<VideoFormat, string | null> = {
+        tiktok:    (tour as any).video_tiktok_id ?? null,
+        yt_shorts: (tour as any).video_yt_shorts_id ?? null,
+      };
+
+      for (const vformat of VIDEO_FORMATS) {
+        const pid = videoPublicIds[vformat];
+        if (!pid) continue;
+        const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, false) };
+        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData);
       }
 
       // Upsert venue_link

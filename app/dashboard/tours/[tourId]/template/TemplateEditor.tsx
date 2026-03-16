@@ -14,7 +14,7 @@ const FONTS = [
 ];
 
 type FieldKey = "date" | "venue" | "city";
-type FormatKey = "square" | "story" | "landscape";
+type FormatKey = "square" | "story" | "landscape" | "tiktok" | "yt_shorts";
 
 type FieldConfig = { x: number; y: number; size: number };
 
@@ -42,9 +42,11 @@ const DEFAULT_FORMAT: FormatConfig = {
 };
 
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
-  { key: "square",    label: "IG Square", w: 1080, h: 1080 },
-  { key: "story",     label: "IG Story",  w: 1080, h: 1350 },
-  { key: "landscape", label: "FB Cover",  w: 1920, h: 1080 },
+  { key: "square",    label: "IG Square",     w: 1080, h: 1080 },
+  { key: "story",     label: "IG Story",      w: 1080, h: 1350 },
+  { key: "landscape", label: "FB Cover",      w: 1920, h: 1080 },
+  { key: "tiktok",    label: "TikTok/Reels",  w: 1080, h: 1920 },
+  { key: "yt_shorts", label: "YT Shorts",     w: 1080, h: 1920 },
 ];
 
 const FIELD_LABELS: Record<FieldKey, string> = {
@@ -70,6 +72,8 @@ type Tour = {
   image_square_id: string | null;
   image_story_id: string | null;
   image_landscape_id: string | null;
+  video_tiktok_id: string | null;
+  video_yt_shorts_id: string | null;
   overlay_config: Record<FormatKey, FormatConfig> | null;
 };
 
@@ -78,6 +82,8 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
     square:    { w: 1080, h: 1080 },
     story:     { w: 1080, h: 1350 },
     landscape: { w: 1920, h: 1080 },
+    tiktok:    { w: 1080, h: 1920 },
+    yt_shorts: { w: 1080, h: 1920 },
   }[format];
   const font = cfg.fontFamily.replace(/ /g, "%20");
   const maxW = Math.round(fmtDims.w * 0.85);
@@ -130,6 +136,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
     square:    { ...DEFAULT_FORMAT, ...saved0.square },
     story:     { ...DEFAULT_FORMAT, ...saved0.story },
     landscape: { ...DEFAULT_FORMAT, ...saved0.landscape },
+    tiktok:    { ...DEFAULT_FORMAT, ...saved0.tiktok },
+    yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts },
   });
   const [dragging, setDragging] = useState<FieldKey | "band" | null>(null);
   const [containerWidth, setContainerWidth] = useState(700);
@@ -146,12 +154,19 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
     square:    tour.image_square_id,
     story:     tour.image_story_id ?? tour.image_square_id,
     landscape: tour.image_landscape_id ?? tour.image_square_id,
+    tiktok:    tour.video_tiktok_id ?? tour.image_story_id ?? tour.image_square_id,
+    yt_shorts: tour.video_yt_shorts_id ?? tour.image_story_id ?? tour.image_square_id,
   };
 
   const cfg = configs[activeFormat];
   const publicId = formatImageIds[activeFormat];
   const fmtDims = FORMATS.find(f => f.key === activeFormat)!;
-  const imageUrl = publicId ? `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h}/${publicId}` : null;
+  const isVideoFormat = activeFormat === "tiktok" || activeFormat === "yt_shorts";
+  const imageUrl = publicId
+    ? isVideoFormat
+      ? `https://res.cloudinary.com/${cloudName}/video/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h},so_0/${publicId}.jpg`
+      : `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h}/${publicId}`
+    : null;
   const previewScale = containerWidth / fmtDims.w;
 
   // Load Google Font
