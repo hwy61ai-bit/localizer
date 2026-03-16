@@ -58,8 +58,6 @@ export default async function DashboardPage() {
     .eq("id", orgId)
     .single();
 
-  console.log("ORG DEBUG:", JSON.stringify(org));
-  console.log("ORG ID USED:", orgId);
   const isPaid = !!org?.stripe_customer_id && org?.plan_status === "active";
   const trialActive = org?.trial_ends_at ? new Date(org.trial_ends_at) > new Date() : false;
   const hasAccess = isPaid || trialActive;
