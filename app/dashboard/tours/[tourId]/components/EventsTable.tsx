@@ -201,7 +201,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
     ));
   }
 
-  const COLS = "90px 70px 130px 1fr 170px 170px 100px 120px 60px";
+  const COLS = "90px 100px 180px 200px 200px 200px 100px 140px 80px";
   const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
   return (
     <>
