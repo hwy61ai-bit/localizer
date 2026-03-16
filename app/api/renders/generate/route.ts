@@ -130,6 +130,8 @@ function buildCloudinaryVideoUrl(
   eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string }
 ): string {
   const { w, h } = VIDEO_DIMS[format];
+  const storyH = 1350; // positions were set in story editor
+  const yScale = h / storyH;
   const cfg = overlayConfig?.[format] ?? overlayConfig?.story ?? {};
   const font = "Arial";
   const color = cfg.textColor ?? "ffffff";
@@ -139,11 +141,11 @@ function buildCloudinaryVideoUrl(
   const citySize  = cfg.city?.size  ?? 28;
 
   const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
-  const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
+  const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * storyH * yScale);
   const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
-  const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * h);
+  const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * storyH * yScale);
   const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
-  const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
+  const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * storyH * yScale);
 
   const venueName = sanitize(eventData.venueName);
   const dateStr   = sanitize(eventData.dateFormatted);
@@ -153,7 +155,7 @@ function buildCloudinaryVideoUrl(
   const bandSize = cfg.bandSize ?? 48;
   const bandName = sanitize(eventData.bandName);
   const bandX = Math.round(((cfg.band?.x ?? 0.5) - 0.5) * w);
-  const bandY = Math.round(((cfg.band?.y ?? 0.65) - 0.5) * h);
+  const bandY = Math.round(((cfg.band?.y ?? 0.65) - 0.5) * storyH * yScale);
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
