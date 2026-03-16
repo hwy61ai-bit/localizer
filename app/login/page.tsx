@@ -55,7 +55,7 @@ export default function LoginPage() {
             LOCALIZER
           </div>
           <div style={{ marginTop: 10, fontSize: 13, opacity: 0.7 }}>
-            We'll email you a secure login link.
+            Enter your email and we'll send you a sign-in link. No password needed.
           </div>
         </div>
 
@@ -112,7 +112,7 @@ export default function LoginPage() {
           ) : (
             <>
               <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 8 }}>
-                Check your email
+                Check your inbox
               </div>
               <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 16 }}>
                 We sent a login link to <strong>{email}</strong>. Click it to sign in — it expires in 1 hour.
