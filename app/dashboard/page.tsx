@@ -40,6 +40,19 @@ export default async function DashboardPage() {
       .from("orgs")
       .update({ owner_email: user.email })
       .eq("id", orgId);
+
+    // Send welcome email
+    if (user.email) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/welcome`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email }),
+        });
+      } catch {
+        // Non-blocking — don't fail onboarding if email fails
+      }
+    }
   }
 
   const { data: artistsData, error: artistsError } = await supabase
