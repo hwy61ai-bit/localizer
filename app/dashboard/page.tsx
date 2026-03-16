@@ -27,7 +27,7 @@ export default async function DashboardPage() {
     const newOrgId = randomUUID();
     const { error: orgError } = await supabase
       .from("orgs")
-      .insert({ id: newOrgId, name: "My Workspace" });
+      .insert({ id: newOrgId, name: "My Workspace", owner_email: user.email ?? null });
     if (orgError) throw new Error(orgError.message);
     orgId = newOrgId;
     const { error: memberError } = await supabase.from("org_members").insert({
@@ -36,10 +36,6 @@ export default async function DashboardPage() {
       role: "owner",
     });
     if (memberError) throw new Error(memberError.message);
-    await supabase
-      .from("orgs")
-      .update({ owner_email: user.email })
-      .eq("id", orgId);
 
     // Send welcome email
     if (user.email) {
