@@ -127,10 +127,20 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
     return cs.length > max.length ? cs : max;
   }, firstEvent ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ") : "");
 
+  function maxCharsForFormat(fontSize: number, imgW: number): number {
+    return Math.floor((imgW * 0.85) / (fontSize * 0.45));
+  }
+
   function isOverflow(text: string, field: FieldConfig, imgW: number): boolean {
-    const availableW = imgW * 0.85;
-    const estimatedW = field.size * 0.45 * text.length;
-    return estimatedW > availableW;
+    return text.length > maxCharsForFormat(field.size, imgW);
+  }
+
+  function suggestedSize(text: string, imgW: number): number {
+    // Find largest font size where text fits
+    for (let size = 72; size >= 12; size -= 2) {
+      if (text.length <= maxCharsForFormat(size, imgW)) return size;
+    }
+    return 12;
   }
 
   const [activeFormat, setActiveFormat] = useState<FormatKey>("square");
@@ -390,10 +400,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                           cfg.allCaps ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ").toUpperCase() : [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
                         ) : SAMPLE_TEXT[field]}
                         {field === "venue" && isOverflow(longestVenue, cfg.venue, fmtDims.w) && (
-                          <span title={`"${longestVenue}" may overflow — reduce font size or the text will wrap`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
+                          <span title={`"${longestVenue}" (${longestVenue.length} chars) may overflow at ${cfg.venue.size}px on ${fmtDims.label} — suggested max: ${suggestedSize(longestVenue, fmtDims.w)}px`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
                         )}
                         {field === "city" && isOverflow(longestCity, cfg.city, fmtDims.w) && (
-                          <span title={`"${longestCity}" may overflow — reduce font size or the text will wrap`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
+                          <span title={`"${longestCity}" (${longestCity.length} chars) may overflow at ${cfg.city.size}px on ${fmtDims.label} — suggested max: ${suggestedSize(longestCity, fmtDims.w)}px`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
                         )}
                       </div>
                     );
