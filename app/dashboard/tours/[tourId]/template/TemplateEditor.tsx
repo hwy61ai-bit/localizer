@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 const FONTS = [
   { label: "Oswald", value: "Oswald" },
@@ -132,7 +133,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
 
 type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string } | null;
 
-export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: { tour: Tour; tourId: string; firstEvent: FirstEvent; allEvents: NonNullable<FirstEvent>[] }) {
+export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, orgId }: { tour: Tour; tourId: string; firstEvent: FirstEvent; allEvents: NonNullable<FirstEvent>[]; orgId: string }) {
   const saved0 = (tour.overlay_config ?? {}) as Partial<Record<FormatKey, FormatConfig>>;
 
   const longestVenue = allEvents.reduce((max, e) => e.venue.length > max.length ? e.venue : max, firstEvent?.venue ?? "");
@@ -179,6 +180,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
   const [containerWidth, setContainerWidth] = useState(700);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [customFonts, setCustomFonts] = useState<{ label: string; value: string }[]>([]);
+  const [uploadingFont, setUploadingFont] = useState(false);
+  const fontFileRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const SNAP = 0.04;  // ~4% snap zone for center alignment
@@ -336,6 +340,63 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
     );
   }
 
+  async function handleFontUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.name.endsWith(".ttf") && !file.name.endsWith(".otf")) {
+      alert("Only .ttf and .otf font files are supported");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Font file must be under 5MB");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "FONT LICENSE AGREEMENT\n\n" +
+      "By uploading this font, you confirm that:\n\n" +
+      "• You own the font or have a valid license to use it\n" +
+      "• You have the right to use this font for commercial purposes\n" +
+      "• You will comply with all font licensing terms\n\n" +
+      "Uploading unlicensed fonts may violate copyright law.\n\n" +
+      "Do you want to continue?"
+    );
+    
+    if (!confirmed) {
+      if (fontFileRef.current) fontFileRef.current.value = "";
+      return;
+    }
+
+    setUploadingFont(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("orgId", orgId);
+
+      const res = await fetch("/api/fonts/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error);
+      }
+
+      const { fontName } = await res.json();
+      setCustomFonts(prev => [...prev, { label: fontName, value: fontName }]);
+      alert(`Font "${fontName}" uploaded successfully!`);
+    } catch (err: any) {
+      console.error("Font upload failed:", err);
+      alert(`Upload failed: ${err.message}`);
+    } finally {
+      setUploadingFont(false);
+      if (fontFileRef.current) fontFileRef.current.value = "";
+    }
+  }
+
   return (
     <div style={{ background: "#F7F7F5", minHeight: "100vh", padding: 32 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -412,6 +473,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                     const fc = cfg[field];
                     const align = fc.align ?? "center";
                     const isActive = dragging === field;
+
                     return (
                       <div key={field} onMouseDown={(e) => { 
                         e.preventDefault(); 

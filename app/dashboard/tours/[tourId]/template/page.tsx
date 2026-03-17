@@ -23,5 +23,5 @@ export default async function TemplatePage({ params }: { params: Promise<{ tourI
   const allEvents = events ?? [];
   const firstEvent = allEvents[0] ?? null;
 
-  return <TemplateEditor tour={tour} tourId={tourId} firstEvent={firstEvent} allEvents={allEvents} />;
+  return <TemplateEditor tour={tour} tourId={tourId} firstEvent={firstEvent} allEvents={allEvents} orgId={tour.org_id} />;
 }
