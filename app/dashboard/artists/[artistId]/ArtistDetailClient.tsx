@@ -44,7 +44,13 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
     setSaving(true);
     const { error } = await supabase.from("artists").update(form).eq("id", artistId);
     setSaving(false);
-    if (!error) { setSaved(true); setTimeout(() => setSaved(false), 2000); }
+    if (error) {
+      console.error("Save failed:", error);
+      alert(`Save failed: ${error.message}`);
+      return;
+    }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   async function handleCreateTour() {
