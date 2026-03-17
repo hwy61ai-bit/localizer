@@ -400,10 +400,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                           cfg.allCaps ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ").toUpperCase() : [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
                         ) : SAMPLE_TEXT[field]}
                         {field === "venue" && isOverflow(longestVenue, cfg.venue, fmtDims.w) && (
-                          <span title={`"${longestVenue}" (${longestVenue.length} chars) may overflow at ${cfg.venue.size}px on ${fmtDims.label} — suggested max: ${suggestedSize(longestVenue, fmtDims.w)}px`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
+                          <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginTop: 4, lineHeight: 1.4 }}>
+                            ⚠️ "{longestVenue}" ({longestVenue.length} chars) may overflow — try {suggestedSize(longestVenue, fmtDims.w)}px max on {fmtDims.label}
+                          </div>
                         )}
                         {field === "city" && isOverflow(longestCity, cfg.city, fmtDims.w) && (
-                          <span title={`"${longestCity}" (${longestCity.length} chars) may overflow at ${cfg.city.size}px on ${fmtDims.label} — suggested max: ${suggestedSize(longestCity, fmtDims.w)}px`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
+                          <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginTop: 4, lineHeight: 1.4 }}>
+                            ⚠️ "{longestCity}" ({longestCity.length} chars) may overflow — try {suggestedSize(longestCity, fmtDims.w)}px max on {fmtDims.label}
+                          </div>
                         )}
                       </div>
                     );
