@@ -117,7 +117,7 @@ function buildCloudinaryUrl(
 ): string {
   const { w, h } = FORMAT_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
-  const font = "Arial";
+  const font = (cfg.fontFamily ?? "Oswald").replace(/ /g, "_");
   const color = cfg.textColor ?? "ffffff";
   const maxW = Math.round(w * 0.85);
 
@@ -173,7 +173,7 @@ function buildCloudinaryVideoUrl(
 ): string {
   const { w, h } = VIDEO_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
-  const font = "Arial";
+  const font = (cfg.fontFamily ?? "Oswald").replace(/ /g, "_");
   const color = cfg.textColor ?? "ffffff";
 
   const venueSizeMax = cfg.venue?.size ?? 36;
