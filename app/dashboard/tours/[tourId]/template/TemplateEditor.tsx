@@ -525,7 +525,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 ))}
                 {customFonts.length > 0 && (
                   <>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#999", marginTop: 8, marginBottom: 4, letterSpacing: "0.05em" }}>CUSTOM FONTS</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, marginBottom: 4 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#999", letterSpacing: "0.05em" }}>CUSTOM FONTS</div>
+                      <div style={{ fontSize: 8, fontWeight: 900, color: "#fff", background: "#666", padding: "2px 6px", borderRadius: 4, letterSpacing: "0.08em" }}>BETA</div>
+                    </div>
                     {customFonts.map(f => (
                       <button key={f.value} onClick={() => updateCfg("fontFamily", f.value)}
                         style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid", borderColor: cfg.fontFamily === f.value ? "#111" : "#ddd", background: cfg.fontFamily === f.value ? "#111" : "#fff", color: cfg.fontFamily === f.value ? "#fff" : "#111", fontWeight: 700, fontSize: 12, cursor: "pointer", textAlign: "left" }}>
@@ -541,25 +544,31 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   style={{ display: "none" }}
                   onChange={handleFontUpload}
                 />
-                <button
-                  onClick={() => fontFileRef.current?.click()}
-                  disabled={uploadingFont}
-                  style={{
-                    marginTop: 8,
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    border: "1px dashed #ccc",
-                    background: "#fafafa",
-                    color: "#666",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    cursor: uploadingFont ? "not-allowed" : "pointer",
-                    textAlign: "center",
-                    letterSpacing: "0.05em"
-                  }}
-                >
-                  {uploadingFont ? "Uploading..." : "+ Upload Custom Font"}
-                </button>
+                <div style={{ position: "relative", marginTop: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
+                    <div style={{ fontSize: 8, fontWeight: 900, color: "#fff", background: "#666", padding: "2px 6px", borderRadius: 4, letterSpacing: "0.08em" }}>BETA</div>
+                    <div style={{ fontSize: 9, color: "#999", fontStyle: "italic" }}>Requires Cloudinary Advanced plan</div>
+                  </div>
+                  <button
+                    disabled
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: "1px dashed #ddd",
+                      background: "#f5f5f5",
+                      color: "#aaa",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "not-allowed",
+                      textAlign: "center",
+                      letterSpacing: "0.05em",
+                      opacity: 0.5
+                    }}
+                  >
+                    + Upload Custom Font
+                  </button>
+                </div>
               </div>
             </div>
 
