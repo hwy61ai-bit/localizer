@@ -183,8 +183,8 @@ function buildCloudinaryVideoUrl(
   const bandXF  = cfg.band?.x  ?? 0.5;
   const bandYF  = cfg.band?.y  ?? 0.65;
 
-  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w));
-  const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w));
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
+  const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
 
   const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
