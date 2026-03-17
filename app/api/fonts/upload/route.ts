@@ -63,7 +63,8 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Extract font name (without extension)
+    // Extract font name and extension
+    const fileExt = file.name.endsWith(".otf") ? "otf" : "ttf";
     const fontName = file.name.replace(/\.(ttf|otf)$/i, "");
     const publicId = `custom-fonts/${orgId}/${fontName}`;
 
@@ -90,6 +91,7 @@ export async function POST(req: NextRequest) {
         org_id: orgId,
         font_name: fontName,
         cloudinary_public_id: uploadResult.public_id,
+        file_extension: fileExt,
       });
 
     if (dbError) throw dbError;

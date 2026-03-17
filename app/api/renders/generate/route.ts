@@ -243,11 +243,11 @@ export async function POST(req: NextRequest) {
   // Load custom fonts for this org
   const { data: customFontsData } = await supabase
     .from("custom_fonts")
-    .select("font_name, cloudinary_public_id")
+    .select("font_name, cloudinary_public_id, file_extension")
     .eq("org_id", orgId);
   
   const customFontsMap = new Map(
-    (customFontsData || []).map(f => [f.font_name, f.cloudinary_public_id])
+    (customFontsData || []).map(f => [f.font_name, `${f.cloudinary_public_id}.${f.file_extension}`])
   );
 
   // Fetch tour
