@@ -79,22 +79,33 @@ function wrapText(text: string, fontSize: number, canvasW: number): string {
 
 function fitFontSize(text: string, maxSize: number, availableW: number): number {
   for (let size = maxSize; size >= 12; size -= 2) {
-    const estimatedW = size * 0.45 * text.length;
+    // Use 0.55 for safer width estimation (Arial is wider than condensed fonts)
+    const estimatedW = size * 0.55 * text.length;
     if (estimatedW <= availableW) return size;
   }
   return 12;
 }
 
 function buildTextLayer(font: string, size: number, text: string, color: string, xFrac: number, yFrac: number, canvasW: number, canvasH: number, align: string): string {
-  const xPx = Math.round((xFrac - 0.5) * canvasW);
   const yPx = Math.round((yFrac - 0.5) * canvasH);
-  return `l_text:${font}_${size}_bold_${align}:${text},co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
+  let gravity = "center";
+  let xPx = Math.round((xFrac - 0.5) * canvasW);
+  if (align === "left") {
+    gravity = "west";
+    xPx = Math.round(xFrac * canvasW);
+  } else if (align === "right") {
+    gravity = "east";
+    xPx = Math.round((1 - xFrac) * canvasW);
+  }
+  return `l_text:${font}_${size}_bold_${align}:${text},co_rgb:${color}/fl_layer_apply,g_${gravity},x_${xPx},y_${yPx}`;
 }
 
 function availableWidth(xFrac: number, canvasW: number, align: string): number {
-  if (align === "left")  return (1 - xFrac) * canvasW * 0.92;
-  if (align === "right") return xFrac * canvasW * 0.92;
-  return canvasW * 0.72;
+  const margin = 0.90;
+  if (align === "left")  return (1 - xFrac) * canvasW * margin;
+  if (align === "right") return xFrac * canvasW * margin;
+  // Center: constrained by whichever edge is closer
+  return Math.min(xFrac, 1 - xFrac) * 2 * canvasW * margin;
 }
 
 function buildCloudinaryUrl(
@@ -129,7 +140,7 @@ function buildCloudinaryUrl(
   const venueAlign = cfg.venue?.align ?? "center";
   const dateAlign  = cfg.date?.align  ?? "center";
   const cityAlign  = cfg.city?.align  ?? "center";
-  const bandAlign  = cfg.band?.align  ?? "center";
+  const bandAlign  = cfg.band?.align ?? "center";
 
   const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
   const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
@@ -161,9 +172,7 @@ function buildCloudinaryVideoUrl(
   eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string }
 ): string {
   const { w, h } = VIDEO_DIMS[format];
-  const storyH = 1350; // positions were set in story editor
-  const yScale = h / storyH;
-  const cfg = overlayConfig?.[format] ?? overlayConfig?.story ?? {};
+  const cfg = overlayConfig?.[format] ?? {};
   const font = "Arial";
   const color = cfg.textColor ?? "ffffff";
 
@@ -186,7 +195,7 @@ function buildCloudinaryVideoUrl(
   const venueAlign = cfg.venue?.align ?? "center";
   const dateAlign  = cfg.date?.align  ?? "center";
   const cityAlign  = cfg.city?.align  ?? "center";
-  const bandAlign  = cfg.band?.align  ?? "center";
+  const bandAlign  = cfg.band?.align ?? "center";
 
   const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
   const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
@@ -201,10 +210,10 @@ function buildCloudinaryVideoUrl(
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF * (storyH / h), w, h, bandAlign)] : []),
-    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF * (storyH / h), w, h, venueAlign),
-    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF  * (storyH / h), w, h, dateAlign),
-    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF  * (storyH / h), w, h, cityAlign),
+    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
+    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign),
+    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign),
+    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/video/upload/${layers.join("/")}/${publicId}`;

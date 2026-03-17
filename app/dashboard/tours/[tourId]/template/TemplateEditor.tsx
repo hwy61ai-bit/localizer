@@ -98,27 +98,35 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
   const color = cfg.textColor;
   const san = (t: string) => { const clean = t.replace(/[/?&#%]/g, "").trim(); return clean.split(",").map(part => encodeURIComponent(part.trim())).join("%252C%20"); };
 
-  function toPixel(field: FieldConfig) {
-    return {
-      xPx: Math.round((field.x - 0.5) * fmtDims.w),
-      yPx: Math.round((field.y - 0.5) * fmtDims.h),
-    };
+  function toLayerParams(field: FieldConfig): { gravity: string; xPx: number; yPx: number } {
+    const align = field.align ?? "center";
+    const yPx = Math.round((field.y - 0.5) * fmtDims.h);
+    if (align === "left") {
+      return { gravity: "west", xPx: Math.round(field.x * fmtDims.w), yPx };
+    } else if (align === "right") {
+      return { gravity: "east", xPx: Math.round((1 - field.x) * fmtDims.w), yPx };
+    }
+    return { gravity: "center", xPx: Math.round((field.x - 0.5) * fmtDims.w), yPx };
   }
 
-  const vp = toPixel(cfg.venue);
-  const dp = toPixel(cfg.date);
-  const cp = toPixel(cfg.city);
+  const vp = toLayerParams(cfg.venue);
+  const dp = toLayerParams(cfg.date);
+  const cp = toLayerParams(cfg.city);
 
   const va = cfg.venue.align ?? "center";
   const da = cfg.date.align ?? "center";
   const ca = cfg.city.align ?? "center";
 
+  const bandField = cfg.band ?? { x: 0.5, y: 0.65, size: 80, align: "center" as Align };
+  const bp = toLayerParams(bandField);
+  const ba = bandField.align ?? "center";
+
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
-    ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold_center:${san(bandNameStr ?? "Band Name")},co_rgb:${color}/fl_layer_apply,g_center,x_${Math.round(((cfg.band?.x ?? 0.5) - 0.5) * fmtDims.w)},y_${Math.round(((cfg.band?.y ?? 0.65) - 0.5) * fmtDims.h)}`] : []),
-    `l_text:${font}_${cfg.venue.size}_bold_${va}:${san(fe?.venue ?? "Stubbs Waller Creek Amphitheater")},co_rgb:${color}/fl_layer_apply,g_center,x_${vp.xPx},y_${vp.yPx}`,
-    `l_text:${font}_${cfg.date.size}_bold_${da}:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "SAT. APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_center,x_${dp.xPx},y_${dp.yPx}`,
-    `l_text:${font}_${cfg.city.size}_bold_${ca}:${san(fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_center,x_${cp.xPx},y_${cp.yPx}`,
+    ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold_${ba}:${san(bandNameStr ?? "Band Name")},co_rgb:${color}/fl_layer_apply,g_${bp.gravity},x_${bp.xPx},y_${bp.yPx}`] : []),
+    `l_text:${font}_${cfg.venue.size}_bold_${va}:${san(fe?.venue ?? "Stubbs Waller Creek Amphitheater")},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`,
+    `l_text:${font}_${cfg.date.size}_bold_${da}:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "SAT. APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`,
+    `l_text:${font}_${cfg.city.size}_bold_${ca}:${san(fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR")},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`,
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -137,13 +145,15 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
 
   function availableWidthForField(field: FieldConfig, canvasW: number): number {
     const align = field.align ?? "center";
-    if (align === "left")  return (1 - field.x) * canvasW * 0.92;
-    if (align === "right") return field.x * canvasW * 0.92;
-    return canvasW * 0.72;
+    const margin = 0.90;
+    if (align === "left")  return (1 - field.x) * canvasW * margin;
+    if (align === "right") return field.x * canvasW * margin;
+    // Center: constrained by whichever edge is closer
+    return Math.min(field.x, 1 - field.x) * 2 * canvasW * margin;
   }
 
   function maxCharsForField(field: FieldConfig, canvasW: number): number {
-    return Math.floor(availableWidthForField(field, canvasW) / (field.size * 0.45));
+    return Math.floor(availableWidthForField(field, canvasW) / (field.size * 0.55));
   }
 
   function isOverflow(text: string, field: FieldConfig, canvasW: number): boolean {
@@ -153,7 +163,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
   function suggestedSize(text: string, field: FieldConfig, canvasW: number): number {
     const avail = availableWidthForField(field, canvasW);
     for (let size = 72; size >= 12; size -= 2) {
-      if (text.length <= Math.floor(avail / (size * 0.45))) return size;
+      if (text.length <= Math.floor(avail / (size * 0.55))) return size;
     }
     return 12;
   }
@@ -167,12 +177,13 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
     yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts },
   });
   const [dragging, setDragging] = useState<FieldKey | "band" | null>(null);
+  const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [containerWidth, setContainerWidth] = useState(700);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
-  const SNAP = 0.025;
+  const SNAP = 0.04;  // ~4% snap zone for center alignment
 
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
   const bandName = tour.band_name ?? tour.name ?? "Artist";
@@ -225,16 +236,28 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
       if (!dragging || !containerRef.current) return;
       const el = imgRef.current ?? containerRef.current;
       const rect = el.getBoundingClientRect();
-      let x = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
-      const y = Math.max(0.02, Math.min(0.98, (e.clientY - rect.top) / rect.height));
+      const mouseX = (e.clientX - rect.left) / rect.width;
+      const mouseY = (e.clientY - rect.top) / rect.height;
+      let x = Math.max(0.05, Math.min(0.95, mouseX - dragOffset.x));
+      const y = Math.max(0.02, Math.min(0.98, mouseY - dragOffset.y));
       if (Math.abs(x - 0.5) < SNAP) x = 0.5;
-      setConfigs(prev => ({
-        ...prev,
-        [activeFormat]: {
-          ...prev[activeFormat],
-          [dragging]: { ...prev[activeFormat][dragging as FieldKey], x, y },
-        },
-      }));
+      if (dragging === "band") {
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            band: { ...(prev[activeFormat].band ?? BAND_DEFAULT), x, y },
+          },
+        }));
+      } else {
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            [dragging]: { ...prev[activeFormat][dragging], x, y },
+          },
+        }));
+      }
       setSaved(false);
     }
     function onMouseUp() { setDragging(null); }
@@ -244,7 +267,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [dragging, activeFormat]);
+  }, [dragging, activeFormat, dragOffset]);
 
   function updateField(field: FieldKey, key: keyof FieldConfig, value: number | string) {
     setConfigs(prev => ({
@@ -286,12 +309,27 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
     }
   }
 
-  function AlignButtons({ field }: { field: FieldKey }) {
-    const current = cfg[field].align ?? "center";
+  function AlignButtons({ field }: { field: FieldKey | "band" }) {
+    const fc = field === "band" ? (cfg.band ?? BAND_DEFAULT) : cfg[field];
+    const current = fc.align ?? "center";
+    const handleClick = (a: Align) => {
+      if (field === "band") {
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            band: { ...(prev[activeFormat].band ?? BAND_DEFAULT), align: a },
+          },
+        }));
+        setSaved(false);
+      } else {
+        updateField(field, "align", a);
+      }
+    };
     return (
       <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
         {(["left", "center", "right"] as Align[]).map(a => (
-          <button key={a} onClick={() => updateField(field, "align", a)}
+          <button key={a} onClick={() => handleClick(a)}
             style={{ flex: 1, padding: "4px 0", borderRadius: 6, border: "1px solid", borderColor: current === a ? "#111" : "#ddd", background: current === a ? "#111" : "#fff", color: current === a ? "#fff" : "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
             {a === "left" ? "⬅" : a === "center" ? "↔" : "➡"}
           </button>
@@ -329,7 +367,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
 
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           {FORMATS.map(f => (
-            <button key={f.key} onClick={() => setActiveFormat(f.key)}
+            <button key={f.key} onClick={() => { setActiveFormat(f.key); setSaved(false); }}
               style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid", borderColor: activeFormat === f.key ? "#111" : "#ddd", background: activeFormat === f.key ? "#111" : "#fff", color: activeFormat === f.key ? "#fff" : "#111", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
               {f.label}
             </button>
@@ -358,7 +396,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                     const fc = cfg.band ?? BAND_DEFAULT;
                     const align = fc.align ?? "center";
                     return (
-                      <div key="band" onMouseDown={(e) => { e.preventDefault(); setDragging("band"); }}
+                      <div key="band" onMouseDown={(e) => { 
+                        e.preventDefault(); 
+                        const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
+                        const mouseX = (e.clientX - rect.left) / rect.width;
+                        const mouseY = (e.clientY - rect.top) / rect.height;
+                        setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
+                        setDragging("band"); 
+                      }}
                         style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: cfg.fontFamily, fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textShadow: "0 1px 4px rgba(0,0,0,0.9)", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
                         {bandName.toUpperCase()}
                       </div>
@@ -370,7 +415,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                     const align = fc.align ?? "center";
                     const isActive = dragging === field;
                     return (
-                      <div key={field} onMouseDown={(e) => { e.preventDefault(); setDragging(field); }}
+                      <div key={field} onMouseDown={(e) => { 
+                        e.preventDefault(); 
+                        const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
+                        const mouseX = (e.clientX - rect.left) / rect.width;
+                        const mouseY = (e.clientY - rect.top) / rect.height;
+                        setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
+                        setDragging(field); 
+                      }}
                         style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: cfg.fontFamily, fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textShadow: "0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7)", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
                         {firstEvent ? (
                           field === "venue" ? (cfg.allCaps ? firstEvent.venue.toUpperCase() : firstEvent.venue) :
@@ -433,6 +485,35 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
             </div>
 
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: cfg.showBandName ? 12 : 0 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 900, color: "#555" }}>BAND NAME</div>
+                  <div style={{ fontSize: 11, color: "#888" }}>If not baked into image</div>
+                </div>
+                <button onClick={() => updateCfg("showBandName", !cfg.showBandName)}
+                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.showBandName ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
+                  <span style={{ position: "absolute", top: 2, left: cfg.showBandName ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+                </button>
+              </div>
+              {cfg.showBandName && (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>Size</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#555" }}>{cfg.bandSize}px</span>
+                  </div>
+                  <input type="range" min={20} max={200} step={2} value={cfg.bandSize}
+                    onChange={(e) => updateCfg("bandSize", parseInt(e.target.value))}
+                    style={{ width: "100%", cursor: "pointer" }}
+                  />
+                  <div style={{ marginTop: 10 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>Alignment</span>
+                    <AlignButtons field="band" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 900, color: "#555" }}>TEXT COLOR</div>
@@ -469,31 +550,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                   <span style={{ position: "absolute", top: 2, left: cfg.allCaps ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
                 </button>
               </div>
-            </div>
-
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: cfg.showBandName ? 12 : 0 }}>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>Show band name</div>
-                  <div style={{ fontSize: 11, color: "#888" }}>If not baked into image</div>
-                </div>
-                <button onClick={() => updateCfg("showBandName", !cfg.showBandName)}
-                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.showBandName ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
-                  <span style={{ position: "absolute", top: 2, left: cfg.showBandName ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-                </button>
-              </div>
-              {cfg.showBandName && (
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Band Name Size</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#555" }}>{cfg.bandSize}px</span>
-                  </div>
-                  <input type="range" min={20} max={200} step={2} value={cfg.bandSize}
-                    onChange={(e) => updateCfg("bandSize", parseInt(e.target.value))}
-                    style={{ width: "100%", cursor: "pointer" }}
-                  />
-                </div>
-              )}
             </div>
 
           </div>
