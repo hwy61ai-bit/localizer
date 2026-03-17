@@ -43,12 +43,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
     : null;
 
   const a = artist as any;
-  const advMaterials: { label: string; url: string }[] = [
-    { label: "Stage Plot", url: a?.adv_stage_plot_url },
-    { label: "Hospitality Rider", url: a?.adv_hospitality_url },
-    { label: "FOH Requirements", url: a?.adv_foh_url },
-    { label: "W-9", url: a?.adv_w9_url },
-  ].filter((m) => !!m.url) as { label: string; url: string }[];
+  const advMaterials: { label: string; url: string | null }[] = [
+    { label: "Stage Plot", url: a?.adv_stage_plot_url ?? null },
+    { label: "Hospitality Rider", url: a?.adv_hospitality_url ?? null },
+    { label: "FOH Requirements", url: a?.adv_foh_url ?? null },
+    { label: "W-9", url: a?.adv_w9_url ?? null },
+  ];
 
   const venueName = event.venue_name ?? event.venue ?? "";
   const city = event.venue_city ?? event.city ?? "";
@@ -114,8 +114,10 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         </div>
 
         {/* Photos */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 48 }}>
+        {photoAssets.some(a => a.url) && (
+          <>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 48 }}>
           {photoAssets.map((asset) => (
             <div key={asset.label} style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden" }}>
               <div style={{ background: "#1a1a1a" }}>
@@ -141,7 +143,9 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
               </div>
             </div>
           ))}
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Tour Poster */}
         {posterUrl && (
@@ -192,6 +196,31 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           </div>
         )}
 
+        {/* Advance Materials - Always show */}
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+            {advMaterials.map((mat) => (
+              mat.url ? (
+                <a key={mat.label} href={mat.url} target="_blank" rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", background: "#0d2b1a", border: "1px solid #1a4d2e", borderRadius: 12, textDecoration: "none", color: "#4ade80", fontWeight: 700, fontSize: 15 }}>
+                  <span style={{ fontSize: 20 }}>↓</span>
+                  {mat.label}
+                </a>
+              ) : (
+                <div key={mat.label}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", background: "#111", border: "1px solid #1e1e1e", borderRadius: 12, color: "#555", fontWeight: 700, fontSize: 15, cursor: "not-allowed" }}>
+                  <span style={{ fontSize: 20, opacity: 0.3 }}>↓</span>
+                  <div>
+                    <div>{mat.label}</div>
+                    <div style={{ fontSize: 11, fontWeight: 400, fontStyle: "italic", marginTop: 2 }}>Not uploaded yet</div>
+                  </div>
+                </div>
+              )
+            ))}
+          </div>
+        </div>
+
         {/* Spotify */}
         {spotifyEmbedUrl && (
           <div style={{ marginBottom: 48 }}>
@@ -199,22 +228,6 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy" style={{ borderRadius: 16 }} />
-          </div>
-        )}
-
-        {/* Advance Materials */}
-        {advMaterials.length > 0 && (
-          <div style={{ marginBottom: 48 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-              {advMaterials.map((mat) => (
-                <a key={mat.label} href={mat.url} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "20px 24px", background: "#0d2b1a", border: "1px solid #1a4d2e", borderRadius: 12, textDecoration: "none", color: "#4ade80", fontWeight: 700, fontSize: 15 }}>
-                  <span style={{ fontSize: 20 }}>↓</span>
-                  {mat.label}
-                </a>
-              ))}
-            </div>
           </div>
         )}
 
