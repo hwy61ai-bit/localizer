@@ -51,8 +51,10 @@ function formatDateForRender(iso: string, short = false): string {
 }
 
 function sanitize(t: string): string {
+  // Remove dangerous chars, normalize spaces, but DON'T use encodeURIComponent
+  // Cloudinary needs manual encoding: spaces -> %20, commas -> %252C
   const clean = t.replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim();
-  return clean.split(",").map(part => encodeURIComponent(part.trim())).join("%252C%20");
+  return clean.replace(/ /g, "%20").replace(/,/g, "%252C");
 }
 
 function wrapText(text: string, fontSize: number, canvasW: number): string {
