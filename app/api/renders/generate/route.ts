@@ -77,8 +77,10 @@ function wrapText(text: string, fontSize: number, canvasW: number): string {
   return lines.join("%0A");
 }
 
-function fitFontSize(text: string, maxSize: number, canvasW: number): number {
-  const usableW = canvasW * 0.75;
+function fitFontSize(text: string, maxSize: number, canvasW: number, xFraction = 0.5): number {
+  // Calculate usable width based on distance from text position to nearest edge
+  const distToEdge = Math.min(xFraction, 1 - xFraction);
+  const usableW = distToEdge * 2 * canvasW * 0.88;
   for (let size = maxSize; size >= 12; size -= 2) {
     const estimatedW = size * 0.45 * text.length;
     if (estimatedW <= usableW) return size;
@@ -106,14 +108,16 @@ function buildCloudinaryUrl(
   const caps = cfg.allCaps ?? false;
   const rawVenue    = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
   const rawCity     = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-  const venueSize   = fitFontSize(rawVenue, venueSizeMax, w);
-  const citySize    = fitFontSize(rawCity, citySizeMax, w);
+  const venueXFrac = cfg.venue?.x ?? 0.5;
+  const cityXFrac  = cfg.city?.x  ?? 0.5;
+  const venueSize  = fitFontSize(rawVenue, venueSizeMax, w, venueXFrac);
+  const citySize   = fitFontSize(rawCity, citySizeMax, w, cityXFrac);
 
-  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
+  const venueX = Math.round((venueXFrac - 0.5) * w);
   const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
   const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
   const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * h);
-  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
+  const cityX  = Math.round((cityXFrac - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
 
   const venueName = sanitize(rawVenue);
@@ -158,14 +162,16 @@ function buildCloudinaryVideoUrl(
   const caps = cfg.allCaps ?? false;
   const rawVenue  = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
   const rawCity   = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-  const venueSize = fitFontSize(rawVenue, venueSizeMax, w);
-  const citySize  = fitFontSize(rawCity, citySizeMax, w);
+  const venueXFrac = cfg.venue?.x ?? 0.5;
+  const cityXFrac  = cfg.city?.x  ?? 0.5;
+  const venueSize  = fitFontSize(rawVenue, venueSizeMax, w, venueXFrac);
+  const citySize   = fitFontSize(rawCity, citySizeMax, w, cityXFrac);
 
-  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
+  const venueX = Math.round((venueXFrac - 0.5) * w);
   const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * storyH * yScale);
   const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
   const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * storyH * yScale);
-  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
+  const cityX  = Math.round((cityXFrac - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * storyH * yScale);
 
   const venueName = sanitize(rawVenue);
