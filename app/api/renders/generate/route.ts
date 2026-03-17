@@ -129,8 +129,13 @@ function buildCloudinaryUrl(
   const bandXF  = cfg.band?.x  ?? 0.5;
   const bandYF  = cfg.band?.y  ?? 0.65;
 
-  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w));
-  const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w));
+  const venueAlign = cfg.venue?.align ?? "center";
+  const dateAlign  = cfg.date?.align  ?? "center";
+  const cityAlign  = cfg.city?.align  ?? "center";
+  const bandAlign  = cfg.band?.align  ?? "center";
+
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
+  const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
 
   const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
@@ -142,10 +147,10 @@ function buildCloudinaryUrl(
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h)] : []),
-    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h),
-    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h),
-    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h),
+    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
+    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign),
+    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign),
+    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -192,12 +197,17 @@ function buildCloudinaryVideoUrl(
   const bandSize = cfg.bandSize ?? 48;
   const bandName = sanitize(eventData.bandName);
 
+  const venueAlign = cfg.venue?.align ?? "center";
+  const dateAlign  = cfg.date?.align  ?? "center";
+  const cityAlign  = cfg.city?.align  ?? "center";
+  const bandAlign  = cfg.band?.align  ?? "center";
+
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF * (storyH / h), w, h)] : []),
-    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF * (storyH / h), w, h),
-    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF  * (storyH / h), w, h),
-    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF  * (storyH / h), w, h),
+    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF * (storyH / h), w, h, bandAlign)] : []),
+    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF * (storyH / h), w, h, venueAlign),
+    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF  * (storyH / h), w, h, dateAlign),
+    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF  * (storyH / h), w, h, cityAlign),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/video/upload/${layers.join("/")}/${publicId}`;
