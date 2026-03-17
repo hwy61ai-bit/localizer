@@ -78,9 +78,8 @@ function wrapText(text: string, fontSize: number, canvasW: number): string {
 }
 
 function fitFontSize(text: string, maxSize: number, canvasW: number, xFraction = 0.5): number {
-  // Calculate usable width based on distance from text position to nearest edge
-  const distToEdge = Math.min(xFraction, 1 - xFraction);
-  const usableW = distToEdge * 2 * canvasW * 0.88;
+  // Cloudinary centers text at x position - use canvas width with safe margin
+  const usableW = canvasW * 0.72;
   for (let size = maxSize; size >= 12; size -= 2) {
     const estimatedW = size * 0.45 * text.length;
     if (estimatedW <= usableW) return size;
