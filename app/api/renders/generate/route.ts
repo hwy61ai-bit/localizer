@@ -3,7 +3,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
 
 // Set to false to disable auto line-wrapping for long venue/city names
-const ENABLE_TEXT_WRAP = true;
+const ENABLE_TEXT_WRAP = false;
 
 type RenderFormat = "square" | "story" | "landscape";
 
@@ -77,6 +77,15 @@ function wrapText(text: string, fontSize: number, canvasW: number): string {
   return lines.join("%0A");
 }
 
+function fitFontSize(text: string, maxSize: number, canvasW: number): number {
+  const usableW = canvasW * 0.85;
+  for (let size = maxSize; size >= 12; size -= 2) {
+    const estimatedW = size * 0.45 * text.length;
+    if (estimatedW <= usableW) return size;
+  }
+  return 12;
+}
+
 function buildCloudinaryUrl(
   publicId: string,
   cloudName: string,
@@ -90,9 +99,15 @@ function buildCloudinaryUrl(
   const color = cfg.textColor ?? "ffffff";
   const maxW = Math.round(w * 0.85);
 
-  const venueSize  = cfg.venue?.size  ?? 36;
-  const dateSize   = cfg.date?.size   ?? 28;
-  const citySize   = cfg.city?.size   ?? 28;
+  const venueSizeMax = cfg.venue?.size ?? 36;
+  const dateSize     = cfg.date?.size   ?? 28;
+  const citySizeMax  = cfg.city?.size   ?? 28;
+
+  const caps = cfg.allCaps ?? false;
+  const rawVenue    = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
+  const rawCity     = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
+  const venueSize   = fitFontSize(rawVenue, venueSizeMax, w);
+  const citySize    = fitFontSize(rawCity, citySizeMax, w);
 
   const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
   const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
@@ -101,10 +116,9 @@ function buildCloudinaryUrl(
   const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
 
-  const caps = cfg.allCaps ?? false;
-  const venueName = wrapText(sanitize(caps ? eventData.venueName.toUpperCase() : eventData.venueName), venueSize, w);
+  const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
-  const cityState = wrapText(sanitize(caps ? eventData.cityState.toUpperCase() : eventData.cityState), citySize, w);
+  const cityState = sanitize(rawCity);
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
@@ -137,9 +151,15 @@ function buildCloudinaryVideoUrl(
   const font = "Arial";
   const color = cfg.textColor ?? "ffffff";
 
-  const venueSize = cfg.venue?.size ?? 36;
-  const dateSize  = cfg.date?.size  ?? 28;
-  const citySize  = cfg.city?.size  ?? 28;
+  const venueSizeMax = cfg.venue?.size ?? 36;
+  const dateSize     = cfg.date?.size  ?? 28;
+  const citySizeMax  = cfg.city?.size  ?? 28;
+
+  const caps = cfg.allCaps ?? false;
+  const rawVenue  = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
+  const rawCity   = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, w);
+  const citySize  = fitFontSize(rawCity, citySizeMax, w);
 
   const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
   const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * storyH * yScale);
@@ -148,10 +168,9 @@ function buildCloudinaryVideoUrl(
   const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * storyH * yScale);
 
-  const caps = cfg.allCaps ?? false;
-  const venueName = sanitize(caps ? eventData.venueName.toUpperCase() : eventData.venueName);
+  const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
-  const cityState = sanitize(caps ? eventData.cityState.toUpperCase() : eventData.cityState);
+  const cityState = sanitize(rawCity);
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
