@@ -97,7 +97,9 @@ function buildTextLayer(font: string, size: number, text: string, color: string,
     gravity = "east";
     xPx = Math.round((1 - xFrac) * canvasW);
   }
-  return `l_text:${font}_${size}_bold_${align}:${text},co_rgb:${color}/fl_layer_apply,g_${gravity},x_${xPx},y_${yPx}`;
+  // Ensure font name has underscores, not spaces (double-check in case it wasn't done earlier)
+  const cleanFont = font.replace(/ /g, "_");
+  return `l_text:${cleanFont}_${size}_bold_${align}:${text},co_rgb:${color}/fl_layer_apply,g_${gravity},x_${xPx},y_${yPx}`;
 }
 
 function availableWidth(xFrac: number, canvasW: number, align: string): number {
