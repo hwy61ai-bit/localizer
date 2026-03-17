@@ -64,8 +64,11 @@ export async function POST(req: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Extract font name and extension
+    // CRITICAL: Cloudinary doesn't support underscores or spaces in custom font names
     const fileExt = file.name.endsWith(".otf") ? "otf" : "ttf";
-    const fontName = file.name.replace(/\.(ttf|otf)$/i, "");
+    const fontName = file.name
+      .replace(/\.(ttf|otf)$/i, "")
+      .replace(/[_\s]/g, "-");  // Replace underscores and spaces with hyphens
     const publicId = `custom-fonts/${orgId}/${fontName}`;
 
     // Upload to Cloudinary as authenticated raw asset

@@ -247,7 +247,11 @@ export async function POST(req: NextRequest) {
     .eq("org_id", orgId);
   
   const customFontsMap = new Map(
-    (customFontsData || []).map(f => [f.font_name, `${f.cloudinary_public_id}.${f.file_extension}`])
+    (customFontsData || []).map(f => {
+      // Cloudinary requires slashes to be replaced with colons in font paths
+      const cloudinaryPath = `${f.cloudinary_public_id}.${f.file_extension}`.replace(/\//g, ":");
+      return [f.font_name, cloudinaryPath];
+    })
   );
 
   // Fetch tour
