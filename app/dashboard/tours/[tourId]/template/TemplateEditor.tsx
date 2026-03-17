@@ -5,12 +5,10 @@ import Link from "next/link";
 
 const FONTS = [
   { label: "Oswald", value: "Oswald" },
-  { label: "Bebas Neue", value: "Bebas Neue" },
-  { label: "League Gothic", value: "League Gothic" },
   { label: "Anton", value: "Anton" },
   { label: "Barlow Condensed", value: "Barlow Condensed" },
-  { label: "Staatliches", value: "Staatliches" },
-  { label: "Big Shoulders Display", value: "Big Shoulders Display" },
+  { label: "Teko", value: "Teko" },
+  { label: "Russo One", value: "Russo One" },
 ];
 
 type FieldKey = "date" | "venue" | "city";
