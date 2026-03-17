@@ -41,6 +41,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Not a member of this org" }, { status: 403 });
     }
 
+    // Check plan - custom fonts are Pro/Agency only
+    const { data: org } = await supabase
+      .from("orgs")
+      .select("plan")
+      .eq("id", orgId)
+      .single();
+
+    if (org?.plan !== "pro" && org?.plan !== "agency") {
+      return NextResponse.json({ 
+        error: "Custom fonts require Pro or Agency plan. Upgrade at /pricing" 
+      }, { status: 403 });
+    }
+
     // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
