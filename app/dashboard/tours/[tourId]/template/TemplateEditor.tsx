@@ -24,6 +24,7 @@ type FormatConfig = {
   showBandName: boolean;
   bandSize: number;
   shortDate?: boolean;
+  allCaps?: boolean;
   band?: FieldConfig;
   date: FieldConfig;
   venue: FieldConfig;
@@ -36,6 +37,7 @@ const DEFAULT_FORMAT: FormatConfig = {
   showBandName: false,
   bandSize: 48,
   shortDate: false,
+  allCaps: false,
   date:  { x: 0.5, y: 0.84, size: 28 },
   venue: { x: 0.5, y: 0.76, size: 36 },
   city:  { x: 0.5, y: 0.91, size: 28 },
@@ -275,14 +277,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
             <h1 className="brand-title" style={{ margin: 0 }}>LOCALIZER</h1>
             <div style={{ display: "flex", gap: 8 }}>
 
-              <button
-                onClick={() => {
-                  const pid = formatImageIds[activeFormat];
-                  if (!pid) { alert("No image uploaded for this format."); return; }
-                  window.open(buildPreviewUrl(pid, cloudName, cfg, activeFormat, bandName, firstEvent), "_blank");
-                }}
-                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
-              >Preview Render</button>
+              {!isVideoFormat && (
+                <button
+                  onClick={() => {
+                    const pid = formatImageIds[activeFormat];
+                    if (!pid) { alert("No image uploaded for this format."); return; }
+                    window.open(buildPreviewUrl(pid, cloudName, cfg, activeFormat, bandName, firstEvent), "_blank");
+                  }}
+                  style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
+                >Preview Render</button>
+              )}
               <button
                 onClick={save}
                 disabled={saving}
@@ -462,6 +466,20 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                 <button onClick={() => updateCfg("shortDate", !cfg.shortDate)}
                   style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.shortDate ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
                   <span style={{ position: "absolute", top: 2, left: cfg.shortDate ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+                </button>
+              </div>
+            </div>
+
+            {/* All caps */}
+            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700 }}>All caps</div>
+                  <div style={{ fontSize: 11, color: "#888" }}>Venue, city & state in uppercase</div>
+                </div>
+                <button onClick={() => updateCfg("allCaps", !cfg.allCaps)}
+                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.allCaps ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
+                  <span style={{ position: "absolute", top: 2, left: cfg.allCaps ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
                 </button>
               </div>
             </div>

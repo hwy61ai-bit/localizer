@@ -101,9 +101,10 @@ function buildCloudinaryUrl(
   const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
 
-  const venueName = wrapText(sanitize(eventData.venueName), venueSize, w);
+  const caps = cfg.allCaps ?? false;
+  const venueName = wrapText(sanitize(caps ? eventData.venueName.toUpperCase() : eventData.venueName), venueSize, w);
   const dateStr   = sanitize(eventData.dateFormatted);
-  const cityState = wrapText(sanitize(eventData.cityState), citySize, w);
+  const cityState = wrapText(sanitize(caps ? eventData.cityState.toUpperCase() : eventData.cityState), citySize, w);
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
@@ -147,9 +148,10 @@ function buildCloudinaryVideoUrl(
   const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * storyH * yScale);
 
-  const venueName = sanitize(eventData.venueName);
+  const caps = cfg.allCaps ?? false;
+  const venueName = sanitize(caps ? eventData.venueName.toUpperCase() : eventData.venueName);
   const dateStr   = sanitize(eventData.dateFormatted);
-  const cityState = sanitize(eventData.cityState);
+  const cityState = sanitize(caps ? eventData.cityState.toUpperCase() : eventData.cityState);
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
