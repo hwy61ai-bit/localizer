@@ -461,6 +461,43 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                     {f.label}
                   </button>
                 ))}
+                {customFonts.length > 0 && (
+                  <>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#999", marginTop: 8, marginBottom: 4, letterSpacing: "0.05em" }}>CUSTOM FONTS</div>
+                    {customFonts.map(f => (
+                      <button key={f.value} onClick={() => updateCfg("fontFamily", f.value)}
+                        style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid", borderColor: cfg.fontFamily === f.value ? "#111" : "#ddd", background: cfg.fontFamily === f.value ? "#111" : "#fff", color: cfg.fontFamily === f.value ? "#fff" : "#111", fontWeight: 700, fontSize: 12, cursor: "pointer", textAlign: "left" }}>
+                        {f.label}
+                      </button>
+                    ))}
+                  </>
+                )}
+                <input
+                  ref={fontFileRef}
+                  type="file"
+                  accept=".ttf,.otf"
+                  style={{ display: "none" }}
+                  onChange={handleFontUpload}
+                />
+                <button
+                  onClick={() => fontFileRef.current?.click()}
+                  disabled={uploadingFont}
+                  style={{
+                    marginTop: 8,
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    border: "1px dashed #ccc",
+                    background: "#fafafa",
+                    color: "#666",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    cursor: uploadingFont ? "not-allowed" : "pointer",
+                    textAlign: "center",
+                    letterSpacing: "0.05em"
+                  }}
+                >
+                  {uploadingFont ? "Uploading..." : "+ Upload Custom Font"}
+                </button>
               </div>
             </div>
 
