@@ -88,20 +88,10 @@ function fitFontSize(text: string, maxSize: number, availableW: number): number 
 function buildTextLayer(font: string, size: number, text: string, color: string, xFrac: number, yFrac: number, canvasW: number, canvasH: number): string {
   const isLeft  = xFrac < 0.45;
   const isRight = xFrac > 0.55;
-
-  if (isLeft) {
-    const xPx = Math.round(xFrac * canvasW);
-    const yPx = Math.round(yFrac * canvasH);
-    return `l_text:${font}_${size}_bold_left:${text},co_rgb:${color}/fl_layer_apply,g_north_west,x_${xPx},y_${yPx}`;
-  } else if (isRight) {
-    const xPx = Math.round((1 - xFrac) * canvasW);
-    const yPx = Math.round(yFrac * canvasH);
-    return `l_text:${font}_${size}_bold_right:${text},co_rgb:${color}/fl_layer_apply,g_north_east,x_${xPx},y_${yPx}`;
-  } else {
-    const xPx = Math.round((xFrac - 0.5) * canvasW);
-    const yPx = Math.round((yFrac - 0.5) * canvasH);
-    return `l_text:${font}_${size}_bold_center:${text},co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
-  }
+  const align   = isLeft ? "left" : isRight ? "right" : "center";
+  const xPx = Math.round((xFrac - 0.5) * canvasW);
+  const yPx = Math.round((yFrac - 0.5) * canvasH);
+  return `l_text:${font}_${size}_bold_${align}:${text},co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
 }
 
 function availableWidth(xFrac: number, canvasW: number): number {
@@ -202,13 +192,12 @@ function buildCloudinaryVideoUrl(
   const bandSize = cfg.bandSize ?? 48;
   const bandName = sanitize(eventData.bandName);
 
-  const videoH = h;
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF * (storyH / h) + (1 - storyH/h)/2, w, videoH)] : []),
-    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF * (storyH / h) + (1 - storyH/h)/2, w, videoH),
-    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF  * (storyH / h) + (1 - storyH/h)/2, w, videoH),
-    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF  * (storyH / h) + (1 - storyH/h)/2, w, videoH),
+    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF * (storyH / h), w, h)] : []),
+    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF * (storyH / h), w, h),
+    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF  * (storyH / h), w, h),
+    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF  * (storyH / h), w, h),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/video/upload/${layers.join("/")}/${publicId}`;
