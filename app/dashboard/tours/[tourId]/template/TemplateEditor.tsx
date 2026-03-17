@@ -385,9 +385,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents }: 
                         }}
                       >
                         {firstEvent ? (
-                          field === "venue" ? firstEvent.venue :
+                          field === "venue" ? (cfg.allCaps ? firstEvent.venue.toUpperCase() : firstEvent.venue) :
                           field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : [,"ST","ND","RD"][n%10] || "TH"; return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
-                          [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
+                          cfg.allCaps ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ").toUpperCase() : [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
                         ) : SAMPLE_TEXT[field]}
                         {field === "venue" && isOverflow(longestVenue, cfg.venue, fmtDims.w) && (
                           <span title={`"${longestVenue}" may overflow — reduce font size or the text will wrap`} style={{ marginLeft: 4, fontSize: 11, cursor: "help" }}>⚠️</span>
