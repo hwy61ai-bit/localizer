@@ -77,13 +77,37 @@ function wrapText(text: string, fontSize: number, canvasW: number): string {
   return lines.join("%0A");
 }
 
-function fitFontSize(text: string, maxSize: number, canvasW: number): number {
-  const usableW = canvasW * 0.72;
+function fitFontSize(text: string, maxSize: number, availableW: number): number {
   for (let size = maxSize; size >= 12; size -= 2) {
     const estimatedW = size * 0.45 * text.length;
-    if (estimatedW <= usableW) return size;
+    if (estimatedW <= availableW) return size;
   }
   return 12;
+}
+
+function buildTextLayer(font: string, size: number, text: string, color: string, xFrac: number, yFrac: number, canvasW: number, canvasH: number): string {
+  const isLeft  = xFrac < 0.45;
+  const isRight = xFrac > 0.55;
+
+  if (isLeft) {
+    const xPx = Math.round(xFrac * canvasW);
+    const yPx = Math.round(yFrac * canvasH);
+    return `l_text:${font}_${size}_bold_left:${text},co_rgb:${color}/fl_layer_apply,g_north_west,x_${xPx},y_${yPx}`;
+  } else if (isRight) {
+    const xPx = Math.round((1 - xFrac) * canvasW);
+    const yPx = Math.round(yFrac * canvasH);
+    return `l_text:${font}_${size}_bold_right:${text},co_rgb:${color}/fl_layer_apply,g_north_east,x_${xPx},y_${yPx}`;
+  } else {
+    const xPx = Math.round((xFrac - 0.5) * canvasW);
+    const yPx = Math.round((yFrac - 0.5) * canvasH);
+    return `l_text:${font}_${size}_bold_center:${text},co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
+  }
+}
+
+function availableWidth(xFrac: number, canvasW: number): number {
+  if (xFrac < 0.45) return (1 - xFrac) * canvasW * 0.92;
+  if (xFrac > 0.55) return xFrac * canvasW * 0.92;
+  return canvasW * 0.72;
 }
 
 function buildCloudinaryUrl(
@@ -106,15 +130,17 @@ function buildCloudinaryUrl(
   const caps = cfg.allCaps ?? false;
   const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
   const rawCity  = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-  const venueSize = fitFontSize(rawVenue, venueSizeMax, w);
-  const citySize  = fitFontSize(rawCity, citySizeMax, w);
+  const venueXF = cfg.venue?.x ?? 0.5;
+  const venueYF = cfg.venue?.y ?? 0.76;
+  const dateXF  = cfg.date?.x  ?? 0.5;
+  const dateYF  = cfg.date?.y  ?? 0.84;
+  const cityXF  = cfg.city?.x  ?? 0.5;
+  const cityYF  = cfg.city?.y  ?? 0.91;
+  const bandXF  = cfg.band?.x  ?? 0.5;
+  const bandYF  = cfg.band?.y  ?? 0.65;
 
-  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
-  const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
-  const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
-  const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * h);
-  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
-  const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w));
+  const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w));
 
   const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
@@ -123,15 +149,13 @@ function buildCloudinaryUrl(
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
   const bandName = sanitize(eventData.bandName);
-  const bandX = Math.round(((cfg.band?.x ?? 0.5) - 0.5) * w);
-  const bandY = Math.round(((cfg.band?.y ?? 0.65) - 0.5) * h);
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showBand ? [`l_text:${font}_${bandSize}_bold:${bandName},co_rgb:${color}/fl_layer_apply,g_center,x_${bandX},y_${bandY}`] : []),
-    `l_text:${font}_${venueSize}_bold_center:${venueName},co_rgb:${color}/fl_layer_apply,g_center,x_${venueX},y_${venueY}`,
-    `l_text:${font}_${dateSize}_bold_center:${dateStr},co_rgb:${color}/fl_layer_apply,g_center,x_${dateX},y_${dateY}`,
-    `l_text:${font}_${citySize}_bold_center:${cityState},co_rgb:${color}/fl_layer_apply,g_center,x_${cityX},y_${cityY}`,
+    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h)] : []),
+    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h),
+    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h),
+    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -158,15 +182,17 @@ function buildCloudinaryVideoUrl(
   const caps = cfg.allCaps ?? false;
   const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
   const rawCity  = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-  const venueSize = fitFontSize(rawVenue, venueSizeMax, w);
-  const citySize  = fitFontSize(rawCity, citySizeMax, w);
+  const venueXF = cfg.venue?.x ?? 0.5;
+  const venueYF = cfg.venue?.y ?? 0.76;
+  const dateXF  = cfg.date?.x  ?? 0.5;
+  const dateYF  = cfg.date?.y  ?? 0.84;
+  const cityXF  = cfg.city?.x  ?? 0.5;
+  const cityYF  = cfg.city?.y  ?? 0.91;
+  const bandXF  = cfg.band?.x  ?? 0.5;
+  const bandYF  = cfg.band?.y  ?? 0.65;
 
-  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
-  const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * storyH * yScale);
-  const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
-  const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * storyH * yScale);
-  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
-  const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * storyH * yScale);
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w));
+  const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w));
 
   const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
@@ -175,15 +201,14 @@ function buildCloudinaryVideoUrl(
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
   const bandName = sanitize(eventData.bandName);
-  const bandX = Math.round(((cfg.band?.x ?? 0.5) - 0.5) * w);
-  const bandY = Math.round(((cfg.band?.y ?? 0.65) - 0.5) * storyH * yScale);
 
+  const videoH = h;
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showBand ? [`l_text:${font}_${bandSize}_bold:${bandName},co_rgb:${color}/fl_layer_apply,g_center,x_${bandX},y_${bandY}`] : []),
-    `l_text:${font}_${venueSize}_bold_center:${venueName},co_rgb:${color}/fl_layer_apply,g_center,x_${venueX},y_${venueY}`,
-    `l_text:${font}_${dateSize}_bold_center:${dateStr},co_rgb:${color}/fl_layer_apply,g_center,x_${dateX},y_${dateY}`,
-    `l_text:${font}_${citySize}_bold_center:${cityState},co_rgb:${color}/fl_layer_apply,g_center,x_${cityX},y_${cityY}`,
+    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF * (storyH / h) + (1 - storyH/h)/2, w, videoH)] : []),
+    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF * (storyH / h) + (1 - storyH/h)/2, w, videoH),
+    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF  * (storyH / h) + (1 - storyH/h)/2, w, videoH),
+    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF  * (storyH / h) + (1 - storyH/h)/2, w, videoH),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/video/upload/${layers.join("/")}/${publicId}`;
