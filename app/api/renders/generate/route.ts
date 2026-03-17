@@ -104,18 +104,16 @@ function buildCloudinaryUrl(
   const citySizeMax  = cfg.city?.size   ?? 28;
 
   const caps = cfg.allCaps ?? false;
-  const rawVenue    = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
-  const rawCity     = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-  const venueXFrac = cfg.venue?.x ?? 0.5;
-  const cityXFrac  = cfg.city?.x  ?? 0.5;
-  const venueSize  = fitFontSize(rawVenue, venueSizeMax, w);
-  const citySize   = fitFontSize(rawCity, citySizeMax, w);
+  const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
+  const rawCity  = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, w);
+  const citySize  = fitFontSize(rawCity, citySizeMax, w);
 
-  const venueX = Math.round((venueXFrac - 0.5) * w);
+  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
   const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * h);
   const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
   const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * h);
-  const cityX  = Math.round((cityXFrac - 0.5) * w);
+  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * h);
 
   const venueName = sanitize(rawVenue);
@@ -158,18 +156,16 @@ function buildCloudinaryVideoUrl(
   const citySizeMax  = cfg.city?.size  ?? 28;
 
   const caps = cfg.allCaps ?? false;
-  const rawVenue  = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
-  const rawCity   = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-  const venueXFrac = cfg.venue?.x ?? 0.5;
-  const cityXFrac  = cfg.city?.x  ?? 0.5;
-  const venueSize  = fitFontSize(rawVenue, venueSizeMax, w);
-  const citySize   = fitFontSize(rawCity, citySizeMax, w);
+  const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
+  const rawCity  = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, w);
+  const citySize  = fitFontSize(rawCity, citySizeMax, w);
 
-  const venueX = Math.round((venueXFrac - 0.5) * w);
+  const venueX = Math.round(((cfg.venue?.x ?? 0.5) - 0.5) * w);
   const venueY = Math.round(((cfg.venue?.y ?? 0.76) - 0.5) * storyH * yScale);
   const dateX  = Math.round(((cfg.date?.x  ?? 0.5) - 0.5) * w);
   const dateY  = Math.round(((cfg.date?.y  ?? 0.84) - 0.5) * storyH * yScale);
-  const cityX  = Math.round((cityXFrac - 0.5) * w);
+  const cityX  = Math.round(((cfg.city?.x  ?? 0.5) - 0.5) * w);
   const cityY  = Math.round(((cfg.city?.y  ?? 0.91) - 0.5) * storyH * yScale);
 
   const venueName = sanitize(rawVenue);
