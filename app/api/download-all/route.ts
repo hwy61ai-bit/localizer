@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   const { data: tour } = await supabase
     .from("tours")
-    .select("artist_id")
+    .select("artist_id, band_name, name")
     .eq("id", event.tour_id)
     .single();
 
@@ -38,24 +38,24 @@ export async function GET(req: NextRequest) {
     .eq("id", tour.artist_id)
     .single() : { data: null };
 
-  const slug = [event.venue, event.date_iso]
-    .filter(Boolean)
-    .join("_")
-    .replace(/[^a-zA-Z0-9_-]/g, "_")
-    .slice(0, 40);
+  const bandName = (tour?.band_name ?? tour?.name ?? "Artist").replace(/[^a-zA-Z0-9_-]/g, "_");
+  const cleanVenue = event.venue?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "Venue";
+  const cleanDate = event.date_iso?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "";
+  const slug = [bandName, cleanVenue, cleanDate].filter(Boolean).join("+");
+  const rootFolder = slug + "/";
 
   const imageAssets: { filename: string; url: string }[] = [
-    { filename: "Social/IG_Post.jpg",     url: link.render_square_url },
-    { filename: "Social/IG_Story.jpg",    url: link.render_story_url },
-    { filename: "Social/FB_Cover.jpg",    url: link.render_landscape_url },
-    { filename: "Social/Tour_Poster.jpg", url: link.render_poster_url },
+    { filename: rootFolder + "Social/IG_Post.jpg",     url: link.render_square_url },
+    { filename: rootFolder + "Social/IG_Story.jpg",    url: link.render_story_url },
+    { filename: rootFolder + "Social/FB_Cover.jpg",    url: link.render_landscape_url },
+    { filename: rootFolder + "Social/Tour_Poster.jpg", url: link.render_poster_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const advAssets: { filename: string; url: string }[] = [
-    { filename: "Advance/Stage_Plot.pdf",        url: artist?.adv_stage_plot_url },
-    { filename: "Advance/Hospitality_Rider.pdf", url: artist?.adv_hospitality_url },
-    { filename: "Advance/FOH_Requirements.pdf",  url: artist?.adv_foh_url },
-    { filename: "Advance/W9.pdf",                url: artist?.adv_w9_url },
+    { filename: rootFolder + `Advance/${bandName}+Stage_Plot.pdf`,        url: artist?.adv_stage_plot_url },
+    { filename: rootFolder + `Advance/${bandName}+Hospitality_Rider.pdf`, url: artist?.adv_hospitality_url },
+    { filename: rootFolder + `Advance/${bandName}+FOH_Requirements.pdf`,  url: artist?.adv_foh_url },
+    { filename: rootFolder + `Advance/${bandName}+W-9.pdf`,                url: artist?.adv_w9_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const allAssets = [...imageAssets, ...advAssets];
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(zipBuffer, {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="${slug}_assets.zip"`,
+      "Content-Disposition": `attachment; filename="${slug}.zip"`,
       "Cache-Control": "no-store",
     },
   });
