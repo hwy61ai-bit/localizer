@@ -85,18 +85,15 @@ function fitFontSize(text: string, maxSize: number, availableW: number): number 
   return 12;
 }
 
-function buildTextLayer(font: string, size: number, text: string, color: string, xFrac: number, yFrac: number, canvasW: number, canvasH: number): string {
-  const isLeft  = xFrac < 0.45;
-  const isRight = xFrac > 0.55;
-  const align   = isLeft ? "left" : isRight ? "right" : "center";
+function buildTextLayer(font: string, size: number, text: string, color: string, xFrac: number, yFrac: number, canvasW: number, canvasH: number, align: string): string {
   const xPx = Math.round((xFrac - 0.5) * canvasW);
   const yPx = Math.round((yFrac - 0.5) * canvasH);
   return `l_text:${font}_${size}_bold_${align}:${text},co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
 }
 
-function availableWidth(xFrac: number, canvasW: number): number {
-  if (xFrac < 0.45) return (1 - xFrac) * canvasW * 0.92;
-  if (xFrac > 0.55) return xFrac * canvasW * 0.92;
+function availableWidth(xFrac: number, canvasW: number, align: string): number {
+  if (align === "left")  return (1 - xFrac) * canvasW * 0.92;
+  if (align === "right") return xFrac * canvasW * 0.92;
   return canvasW * 0.72;
 }
 
