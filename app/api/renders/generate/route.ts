@@ -117,11 +117,16 @@ function buildCloudinaryUrl(
   cloudName: string,
   format: RenderFormat,
   overlayConfig: any,
-  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string }
+  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string },
+  customFontsMap: Map<string, string>
 ): string {
   const { w, h } = FORMAT_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
-  const font = (cfg.fontFamily ?? "Oswald").replace(/ /g, "_");
+  const fontFamily = cfg.fontFamily ?? "Oswald";
+  // Check if it's a custom font, otherwise use standard font with underscores
+  const font = customFontsMap.has(fontFamily) 
+    ? customFontsMap.get(fontFamily)! 
+    : fontFamily.replace(/ /g, "_");
   const color = cfg.textColor ?? "ffffff";
   const maxW = Math.round(w * 0.85);
 
@@ -173,11 +178,15 @@ function buildCloudinaryVideoUrl(
   cloudName: string,
   format: VideoFormat,
   overlayConfig: any,
-  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string }
+  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string },
+  customFontsMap: Map<string, string>
 ): string {
   const { w, h } = VIDEO_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
-  const font = (cfg.fontFamily ?? "Oswald").replace(/ /g, "_");
+  const fontFamily = cfg.fontFamily ?? "Oswald";
+  const font = customFontsMap.has(fontFamily) 
+    ? customFontsMap.get(fontFamily)! 
+    : fontFamily.replace(/ /g, "_");
   const color = cfg.textColor ?? "ffffff";
 
   const venueSizeMax = cfg.venue?.size ?? 36;
@@ -230,6 +239,16 @@ export async function POST(req: NextRequest) {
 
   const supabase = await supabaseServer();
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
+
+  // Load custom fonts for this org
+  const { data: customFontsData } = await supabase
+    .from("custom_fonts")
+    .select("font_name, cloudinary_public_id")
+    .eq("org_id", orgId);
+  
+  const customFontsMap = new Map(
+    (customFontsData || []).map(f => [f.font_name, f.cloudinary_public_id])
+  );
 
   // Fetch tour
   let tourId_resolved = tourId;
@@ -285,7 +304,7 @@ export async function POST(req: NextRequest) {
         if (!pid) continue;
         const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
-        renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData);
+        renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap);
       }
 
       // Generate video render URLs
@@ -299,7 +318,7 @@ export async function POST(req: NextRequest) {
         if (!pid) continue;
         const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
-        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData);
+        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap);
       }
 
       // Upsert venue_link
