@@ -476,6 +476,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragging("band"); 
                       }}
                         style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: cfg.fontFamily, fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textShadow: "0 1px 4px rgba(0,0,0,0.9)", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
+                        {(fc.x < 0.4 && align !== "left") && (
+                          <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
+                            ⚠️ Use left align
+                          </div>
+                        )}
+                        {(fc.x > 0.6 && align !== "right") && (
+                          <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
+                            ⚠️ Use right align
+                          </div>
+                        )}
                         {bandName.toUpperCase()}
                       </div>
                     );
@@ -502,6 +512,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           cfg.allCaps ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ").toUpperCase() : [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
                         ) : SAMPLE_TEXT[field]}
 
+                        {(fc.x < 0.4 && align !== "left") && (
+                          <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
+                            ⚠️ Use left align
+                          </div>
+                        )}
+                        {(fc.x > 0.6 && align !== "right") && (
+                          <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
+                            ⚠️ Use right align
+                          </div>
+                        )}
                         {field === "city" && isOverflow(longestCity, cfg.city, fmtDims.w) && (
                           <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginTop: 4, lineHeight: 1.4 }}>
                             ⚠️ "{longestCity}" ({longestCity.length} chars) may overflow — try {suggestedSize(longestCity, cfg.city, fmtDims.w)}px max
