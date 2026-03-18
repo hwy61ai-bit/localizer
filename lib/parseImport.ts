@@ -53,7 +53,7 @@ Return ONLY a valid JSON object in this exact shape, no explanation, no markdown
   "warnings": []
 }
 
-Only add to the "warnings" array if something is genuinely ambiguous or missing — for example, a date you couldn't parse, a city with no state, or conflicting information. Do NOT add warnings to confirm that correct data is correct.
+Only add to the "warnings" array if something is genuinely ambiguous or missing — for example, a date you couldn't parse, a city with no state, or conflicting information. Do NOT add warnings about date gaps or missing dates between shows. Do NOT add warnings to confirm that correct data is correct.
 
 Here is the raw tour schedule:
 ---
