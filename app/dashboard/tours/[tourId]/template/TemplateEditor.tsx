@@ -529,7 +529,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 10 }}>FONT</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 240, overflowY: "auto" }}>
                 {FONTS.map(f => (
                   <button key={f.value} onClick={() => updateCfg("fontFamily", f.value)}
                     style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid", borderColor: cfg.fontFamily === f.value ? "#111" : "#ddd", background: cfg.fontFamily === f.value ? "#111" : "#fff", color: cfg.fontFamily === f.value ? "#fff" : "#111", fontWeight: 700, fontSize: 12, cursor: "pointer", textAlign: "left" }}>
