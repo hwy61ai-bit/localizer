@@ -77,7 +77,11 @@ ${rawText}
   let parsed: ParseImportResult;
   try {
     parsed = JSON.parse(clean);
-  } catch {
+  } catch (parseErr) {
+    console.error("Failed to parse AI response:");
+    console.error("Raw response:", raw);
+    console.error("Cleaned response:", clean);
+    console.error("Parse error:", parseErr);
     throw new Error(
       "AI returned unexpected format. Please try again or simplify your input."
     );
