@@ -501,11 +501,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : [,"ST","ND","RD"][n%10] || "TH"; return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${d.toLocaleDateString("en-US",{month:"short"}).toUpperCase()} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
                           cfg.allCaps ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ").toUpperCase() : [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")
                         ) : SAMPLE_TEXT[field]}
-                        {field === "venue" && isOverflow(longestVenue, cfg.venue, fmtDims.w) && (
-                          <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginTop: 4, lineHeight: 1.4 }}>
-                            ⚠️ "{longestVenue}" ({longestVenue.length} chars) may overflow — try {suggestedSize(longestVenue, cfg.venue, fmtDims.w)}px max
-                          </div>
-                        )}
+
                         {field === "city" && isOverflow(longestCity, cfg.city, fmtDims.w) && (
                           <div style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginTop: 4, lineHeight: 1.4 }}>
                             ⚠️ "{longestCity}" ({longestCity.length} chars) may overflow — try {suggestedSize(longestCity, cfg.city, fmtDims.w)}px max
