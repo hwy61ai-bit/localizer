@@ -45,15 +45,15 @@ export async function GET(req: NextRequest) {
   const rootFolder = slug + "/";
 
   const imageAssets: { filename: string; url: string }[] = [
-    { filename: rootFolder + "Social/IG_Post.jpg",     url: link.render_square_url },
-    { filename: rootFolder + "Social/IG_Story.jpg",    url: link.render_story_url },
-    { filename: rootFolder + "Social/FB_Cover.jpg",    url: link.render_landscape_url },
-    { filename: rootFolder + "Social/Tour_Poster.jpg", url: link.render_poster_url },
+    { filename: rootFolder + `Social/${bandName}+IG_Post.jpg`,   url: link.render_square_url },
+    { filename: rootFolder + `Social/${bandName}+IG_Story.jpg`,  url: link.render_story_url },
+    { filename: rootFolder + `Social/${bandName}+FB_Cover.jpg`,  url: link.render_landscape_url },
+    { filename: rootFolder + `Social/${bandName}+Tour_Poster.jpg`, url: link.render_poster_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const videoAssets: { filename: string; url: string }[] = [
-    { filename: rootFolder + "Video/TikTok_Reels.mp4",   url: link.render_tiktok_url },
-    { filename: rootFolder + "Video/YouTube_Shorts.mp4", url: link.render_yt_shorts_url },
+    { filename: rootFolder + `Video/${bandName}+TikTok_Reels.mp4`,   url: link.render_tiktok_url },
+    { filename: rootFolder + `Video/${bandName}+YouTube_Shorts.mp4`, url: link.render_yt_shorts_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const advAssets: { filename: string; url: string }[] = [
