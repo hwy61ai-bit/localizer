@@ -18,7 +18,6 @@ const FONTS = [
   { label: "Fjalla One", value: "Fjalla One" },
   { label: "Work Sans", value: "Work Sans" },
   { label: "Raleway", value: "Raleway" },
-  { label: "Alfa Slab One", value: "Alfa Slab One" },
   { label: "Bungee", value: "Bungee" },
   { label: "Righteous", value: "Righteous" },
   { label: "Permanent Marker", value: "Permanent Marker" },
