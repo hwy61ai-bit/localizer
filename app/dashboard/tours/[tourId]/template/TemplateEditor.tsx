@@ -10,6 +10,18 @@ const FONTS = [
   { label: "Barlow Condensed", value: "Barlow Condensed" },
   { label: "Teko", value: "Teko" },
   { label: "Russo One", value: "Russo One" },
+  { label: "Roboto", value: "Roboto" },
+  { label: "Montserrat", value: "Montserrat" },
+  { label: "Poppins", value: "Poppins" },
+  { label: "Lato", value: "Lato" },
+  { label: "Open Sans", value: "Open Sans" },
+  { label: "Fjalla One", value: "Fjalla One" },
+  { label: "Work Sans", value: "Work Sans" },
+  { label: "Raleway", value: "Raleway" },
+  { label: "Alfa Slab One", value: "Alfa Slab One" },
+  { label: "Bungee", value: "Bungee" },
+  { label: "Righteous", value: "Righteous" },
+  { label: "Permanent Marker", value: "Permanent Marker" },
 ];
 
 type FieldKey = "date" | "venue" | "city";
