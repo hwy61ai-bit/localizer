@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
   const { data: link } = await supabase
     .from("venue_links")
-    .select("render_square_url, render_story_url, render_landscape_url, render_poster_url, event_id, org_id")
+    .select("render_square_url, render_story_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url, event_id, org_id")
     .eq("token", token)
     .maybeSingle();
 
@@ -51,6 +51,11 @@ export async function GET(req: NextRequest) {
     { filename: rootFolder + "Social/Tour_Poster.jpg", url: link.render_poster_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
+  const videoAssets: { filename: string; url: string }[] = [
+    { filename: rootFolder + "Video/TikTok_Reels.mp4",   url: link.render_tiktok_url },
+    { filename: rootFolder + "Video/YouTube_Shorts.mp4", url: link.render_yt_shorts_url },
+  ].filter((a) => !!a.url) as { filename: string; url: string }[];
+
   const advAssets: { filename: string; url: string }[] = [
     { filename: rootFolder + `Advance/${bandName}+Stage_Plot.pdf`,        url: artist?.adv_stage_plot_url },
     { filename: rootFolder + `Advance/${bandName}+Hospitality_Rider.pdf`, url: artist?.adv_hospitality_url },
@@ -58,7 +63,7 @@ export async function GET(req: NextRequest) {
     { filename: rootFolder + `Advance/${bandName}+W-9.pdf`,                url: artist?.adv_w9_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
-  const allAssets = [...imageAssets, ...advAssets];
+  const allAssets = [...imageAssets, ...videoAssets, ...advAssets];
 
   if (!allAssets.length) return NextResponse.json({ error: "No assets available" }, { status: 404 });
 
