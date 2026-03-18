@@ -114,7 +114,7 @@ function buildTextLayer(font: string, size: number, text: string, color: string,
 }
 
 function availableWidth(xFrac: number, canvasW: number, align: string): number {
-  const margin = 0.90;
+  const margin = 0.85;
   if (align === "left")  return (1 - xFrac) * canvasW * margin;
   if (align === "right") return xFrac * canvasW * margin;
   // Center: constrained by whichever edge is closer
