@@ -169,7 +169,8 @@ function buildCloudinaryUrl(
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
-  const bandName = sanitize(eventData.bandName);
+  const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
+  const bandName = sanitize(rawBandName);
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
@@ -228,7 +229,8 @@ function buildCloudinaryVideoUrl(
 
   const showBand = cfg.showBandName ?? false;
   const bandSize = cfg.bandSize ?? 48;
-  const bandName = sanitize(eventData.bandName);
+  const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
+  const bandName = sanitize(rawBandName);
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
