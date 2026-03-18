@@ -106,10 +106,10 @@ function buildTextLayer(font: string, size: number, text: string, color: string,
   
   if (isCustomFont) {
     // Custom fonts: no _bold modifier (the font file IS the weight)
-    return `l_text:${cleanFont}_${size}_${align}:${text},co_rgb:${color}/fl_layer_apply,g_${gravity},x_${xPx},y_${yPx}`;
+    return `l_text:${cleanFont}_${size}:${text},co_rgb:${color}/fl_layer_apply,g_${gravity},x_${xPx},y_${yPx}`;
   } else {
     // Standard fonts: include _bold
-    return `l_text:${cleanFont}_${size}_bold_${align}:${text},co_rgb:${color}/fl_layer_apply,g_${gravity},x_${xPx},y_${yPx}`;
+    return `l_text:${cleanFont}_${size}_bold:${text},co_rgb:${color}/fl_layer_apply,g_${gravity},x_${xPx},y_${yPx}`;
   }
 }
 
