@@ -57,14 +57,13 @@ function sanitize(t: string): string {
   return clean.replace(/ /g, "%20").replace(/,/g, "%252C");
 }
 
-function wrapLongText(text: string, minLength: number): { text: string; lines: string[] } {
-  if (text.length <= minLength) return { text, lines: [text] };
+function wrapLongText(text: string, minLength: number): { lines: string[] } {
+  if (text.length <= minLength) return { lines: [text] };
   
   // Find word boundary near middle
   const words = text.split(" ");
   let line1 = "";
   let line2 = "";
-  let bestSplit = 0;
   const target = text.length / 2;
   
   for (let i = 0; i < words.length; i++) {
@@ -72,14 +71,12 @@ function wrapLongText(text: string, minLength: number): { text: string; lines: s
     if (Math.abs(testLine.length - target) < Math.abs(line1.length - target)) {
       line1 = testLine;
       line2 = words.slice(i + 1).join(" ");
-      bestSplit = i;
     }
   }
   
-  if (!line2) return { text, lines: [text] }; // Couldn't split
+  if (!line2) return { lines: [text] }; // Couldn't split
   
-  const wrapped = line1 + "%0A" + line2;
-  return { text: wrapped, lines: [line1, line2] };
+  return { lines: [line1, line2] };
 }
 
 function wrapText(text: string, fontSize: number, canvasW: number): string {
@@ -207,7 +204,7 @@ function buildCloudinaryUrl(
   
   const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
 
-  const venueName = sanitize(venueWrapped.text);
+  const venueName = venueWrapped.lines.map(l => sanitize(l)).join("%0A");
   const dateStr   = sanitize(eventData.dateFormatted);
   const cityState = sanitize(rawCity);
 
@@ -286,7 +283,7 @@ function buildCloudinaryVideoUrl(
   
   const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
 
-  const venueName = sanitize(venueWrapped.text);
+  const venueName = venueWrapped.lines.map(l => sanitize(l)).join("%0A");
   const dateStr   = sanitize(eventData.dateFormatted);
   const cityState = sanitize(rawCity);
 
