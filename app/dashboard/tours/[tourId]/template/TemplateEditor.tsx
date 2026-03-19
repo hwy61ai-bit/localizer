@@ -312,7 +312,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       if (!res.ok || !data.ok) {
         alert("Save failed — please try again before generating.");
       } else {
-        setSaved(true);
       }
     } catch {
       alert("Save failed — network error.");
