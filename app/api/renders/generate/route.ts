@@ -10,7 +10,7 @@ type RenderFormat = "square" | "story" | "landscape";
 const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
   square:    { w: 1080, h: 1080 },
   story:     { w: 1080, h: 1350 },
-  landscape: { w: 1920, h: 1080 },
+  landscape: { w: 820, h: 312 },
 };
 
 const FORMATS: RenderFormat[] = ["square", "story", "landscape"];
