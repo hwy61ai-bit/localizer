@@ -191,7 +191,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [containerWidth, setContainerWidth] = useState(700);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [savedFormats, setSavedFormats] = useState<Set<string>>(new Set());
   const [customFonts, setCustomFonts] = useState<{ label: string; value: string }[]>([]);
   const [uploadingFont, setUploadingFont] = useState(false);
   const fontFileRef = useRef<HTMLInputElement>(null);
@@ -429,8 +429,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 >Preview Render</button>
               )}
               <button onClick={save} disabled={saving}
-                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: saved ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}>
-                {saving ? "Saving..." : saved ? "Saved ✓" : "Save Template"}
+                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: savedFormats.has(activeFormat) ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}>
+                {saving ? "Saving..." : savedFormats.has(activeFormat) ? "Saved ✓" : "Save Template"}
               </button>
             </div>
           </div>
@@ -438,7 +438,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
         <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
           {FORMATS.map(f => (
-            <button key={f.key} onClick={() => { setActiveFormat(f.key); setSaved(false); }}
+            <button key={f.key} onClick={() => { setActiveFormat(f.key); }}
               style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid", borderColor: activeFormat === f.key ? "#111" : "#ddd", background: activeFormat === f.key ? "#111" : "#fff", color: activeFormat === f.key ? "#fff" : "#111", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
               {f.label}
             </button>
