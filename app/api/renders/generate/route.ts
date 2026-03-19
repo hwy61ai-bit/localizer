@@ -231,7 +231,7 @@ function buildCloudinaryVideoUrl(
   const cityState = sanitize(rawCity);
 
   const showBand = cfg.showBandName ?? false;
-  const bandSize = format === "landscape" ? bandSizeScaled : (cfg.bandSize ?? 48);
+  const bandSize = cfg.bandSize ?? 48;
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
 
