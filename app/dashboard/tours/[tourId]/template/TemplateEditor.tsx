@@ -272,7 +272,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       }
-      setSaved(false);
+
     }
     function onMouseUp() { setDragging(null); }
     window.addEventListener("mousemove", onMouseMove);
@@ -335,7 +335,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             band: { ...(prev[activeFormat].band ?? BAND_DEFAULT), align: a },
           },
         }));
-        setSaved(false);
+  
       } else {
         updateField(field, "align", a);
       }
