@@ -291,7 +291,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         [field]: { ...prev[activeFormat][field], [key]: value },
       },
     }));
-    setSaved(false);
   }
 
   function updateCfg(key: keyof FormatConfig, value: any) {
@@ -299,7 +298,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       ...prev,
       [activeFormat]: { ...prev[activeFormat], [key]: value },
     }));
-    setSaved(false);
   }
 
   async function save() {
