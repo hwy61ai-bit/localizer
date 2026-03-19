@@ -57,28 +57,6 @@ function sanitize(t: string): string {
   return clean.replace(/ /g, "%20").replace(/,/g, "%252C");
 }
 
-function wrapLongText(text: string, minLength: number): { lines: string[] } {
-  if (text.length <= minLength) return { lines: [text] };
-  
-  // Find word boundary near middle
-  const words = text.split(" ");
-  let line1 = "";
-  let line2 = "";
-  const target = text.length / 2;
-  
-  for (let i = 0; i < words.length; i++) {
-    const testLine = words.slice(0, i + 1).join(" ");
-    if (Math.abs(testLine.length - target) < Math.abs(line1.length - target)) {
-      line1 = testLine;
-      line2 = words.slice(i + 1).join(" ");
-    }
-  }
-  
-  if (!line2) return { lines: [text] }; // Couldn't split
-  
-  return { lines: [line1, line2] };
-}
-
 function wrapText(text: string, fontSize: number, canvasW: number): string {
   if (!ENABLE_TEXT_WRAP) return text;
   const maxW = canvasW * 0.85;
@@ -182,29 +160,10 @@ function buildCloudinaryUrl(
   const cityAlign  = cfg.city?.align  ?? "center";
   const bandAlign  = cfg.band?.align ?? "center";
 
-  // Check if venue should wrap
-  const shouldWrapVenue = rawVenue.length > 35;
-  const venueWrapped = shouldWrapVenue ? wrapLongText(rawVenue, 35) : { text: rawVenue, lines: [rawVenue] };
-  const longestVenueLine = venueWrapped.lines.reduce((a, b) => a.length > b.length ? a : b);
-  
-  // Calculate horizontal constraint (based on longest line)
-  const venueHorizontalMax = fitFontSize(longestVenueLine, venueSizeMax, availableWidth(venueXF, w, venueAlign));
-  
-  // Calculate vertical constraint (gap to next field below)
-  const nextFieldY = Math.min(dateYF, cityYF); // Whichever comes first
-  const verticalGap = (nextFieldY - venueYF) * h; // Pixels available
-  const lineHeight = 1.2;
-  const numLines = venueWrapped.lines.length;
-  const venueVerticalMax = Math.floor(verticalGap / (numLines * lineHeight));
-  
-  // Use smaller of horizontal and vertical constraints
-  const venueSize = shouldWrapVenue 
-    ? Math.min(venueHorizontalMax, venueVerticalMax, venueSizeMax)
-    : fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
-  
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
   const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
 
-  const venueName = venueWrapped.lines.map(l => sanitize(l)).join("%0A");
+  const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
   const cityState = sanitize(rawCity);
 
@@ -261,29 +220,10 @@ function buildCloudinaryVideoUrl(
   const cityAlign  = cfg.city?.align  ?? "center";
   const bandAlign  = cfg.band?.align ?? "center";
 
-  // Check if venue should wrap
-  const shouldWrapVenue = rawVenue.length > 35;
-  const venueWrapped = shouldWrapVenue ? wrapLongText(rawVenue, 35) : { text: rawVenue, lines: [rawVenue] };
-  const longestVenueLine = venueWrapped.lines.reduce((a, b) => a.length > b.length ? a : b);
-  
-  // Calculate horizontal constraint (based on longest line)
-  const venueHorizontalMax = fitFontSize(longestVenueLine, venueSizeMax, availableWidth(venueXF, w, venueAlign));
-  
-  // Calculate vertical constraint (gap to next field below)
-  const nextFieldY = Math.min(dateYF, cityYF); // Whichever comes first
-  const verticalGap = (nextFieldY - venueYF) * h; // Pixels available
-  const lineHeight = 1.2;
-  const numLines = venueWrapped.lines.length;
-  const venueVerticalMax = Math.floor(verticalGap / (numLines * lineHeight));
-  
-  // Use smaller of horizontal and vertical constraints
-  const venueSize = shouldWrapVenue 
-    ? Math.min(venueHorizontalMax, venueVerticalMax, venueSizeMax)
-    : fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
-  
+  const venueSize = fitFontSize(rawVenue, venueSizeMax, availableWidth(venueXF, w, venueAlign));
   const citySize  = fitFontSize(rawCity,  citySizeMax,  availableWidth(cityXF,  w, cityAlign));
 
-  const venueName = venueWrapped.lines.map(l => sanitize(l)).join("%0A");
+  const venueName = sanitize(rawVenue);
   const dateStr   = sanitize(eventData.dateFormatted);
   const cityState = sanitize(rawCity);
 
