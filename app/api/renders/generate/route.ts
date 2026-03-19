@@ -81,8 +81,8 @@ function wrapText(text: string, fontSize: number, canvasW: number): string {
 
 function fitFontSize(text: string, maxSize: number, availableW: number): number {
   for (let size = maxSize; size >= 12; size -= 2) {
-    // Use 0.4 for condensed fonts like Oswald
-    const estimatedW = size * 0.4 * text.length;
+    // Use 0.35 for very condensed fonts like Oswald
+    const estimatedW = size * 0.35 * text.length;
     if (estimatedW <= availableW) return size;
   }
   return 12;
