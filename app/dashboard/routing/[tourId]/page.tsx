@@ -1,33 +1,330 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import {
+  getRoadKm,
+  estimateDriveHours,
+  fmtHours,
+  fmtUSD,
+  fmtDist,
+  formatDateDisplay,
+  legCountry,
+  isImperialCountry,
+  getAirport,
+  buildFlightLinks,
+  calcTourFinancials,
+  type TourShow,
+  type FinancialResults,
+  type VehicleType,
+} from "@/lib/tourrouter";
+
+// ── Types ────────────────────────────────────────────────────
 
 type TourData = {
   id: string;
   name: string;
   artist_id: string | null;
+  vehicle_type: VehicleType | null;
+  vehicle_count: number | null;
+  pax: number | null;
+  fuel_price_usd: number | null;
+  flight_threshold_h: number | null;
+  blanket_show_amt: number | null;
+  blanket_off_amt: number | null;
+  blanket_show_label: string | null;
+  blanket_off_label: string | null;
+  currency_rates: Record<string, number> | null;
+  leg_choices: Record<string, string> | null;
 };
 
-const STAT_CARDS = [
-  { label: "Total Shows", value: "\u2014" },
-  { label: "Total Miles", value: "\u2014" },
-  { label: "Total Drive Hours", value: "\u2014" },
-  { label: "Est. Fuel Cost", value: "\u2014" },
+type ShowRow = {
+  id: string;
+  sort_order: number;
+  date: string | null;
+  event_name: string | null;
+  city: string | null;
+  country: string | null;
+  country_normalized: string | null;
+  venue: string | null;
+  offer_raw: string | null;
+  offer_amount: number;
+  offer_currency: string;
+  capacity: number | null;
+  status: string | null;
+  is_off_day: boolean;
+  doors: string | null;
+  showtime: string | null;
+  onstage: string | null;
+  curfew: string | null;
+  merch: string | null;
+  backend: string | null;
+  promoter: string | null;
+  notes: string | null;
+  support: string | null;
+};
+
+type LegInfo = {
+  km: number | null;
+  driveH: number | null;
+  distStr: string;
+  legCtry: string;
+  dayGap: number;
+  fromCity: string;
+  toCity: string;
+};
+
+// ── Drawer field helpers ─────────────────────────────────────
+
+const DRAWER_SECTIONS = [
+  {
+    title: "Venue",
+    fields: [
+      { key: "venue", label: "Venue Name" },
+      { key: "capacity", label: "Capacity", type: "number" },
+    ],
+  },
+  {
+    title: "Schedule",
+    fields: [
+      { key: "doors", label: "Doors" },
+      { key: "showtime", label: "Showtime" },
+      { key: "onstage", label: "Onstage" },
+      { key: "curfew", label: "Curfew" },
+    ],
+  },
+  {
+    title: "Financials",
+    fields: [
+      { key: "offer_raw", label: "Offer" },
+      { key: "offer_currency", label: "Currency" },
+      { key: "backend", label: "Backend / Deal Terms" },
+      { key: "status", label: "Status" },
+    ],
+  },
+  {
+    title: "Contacts",
+    fields: [
+      { key: "promoter", label: "Promoter" },
+    ],
+  },
+  {
+    title: "Support & Merch",
+    fields: [
+      { key: "support", label: "Support / Opener" },
+      { key: "merch", label: "Merch Deal" },
+    ],
+  },
+  {
+    title: "Notes",
+    fields: [
+      { key: "notes", label: "Notes" },
+    ],
+  },
 ];
+
+// ── Component ────────────────────────────────────────────────
 
 export default function RouteTourPage() {
   const { tourId } = useParams<{ tourId: string }>();
   const [tour, setTour] = useState<TourData | null>(null);
+  const [shows, setShows] = useState<ShowRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [legChoices, setLegChoices] = useState<Record<number, string>>({});
+  const [financials, setFinancials] = useState<FinancialResults | null>(null);
+  const [legs, setLegs] = useState<(LegInfo | null)[]>([]);
+
+  // Drawer
+  const [drawerShow, setDrawerShow] = useState<ShowRow | null>(null);
+  const [drawerIdx, setDrawerIdx] = useState(-1);
+  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ── Fetch ──────────────────────────────────────────────────
 
   useEffect(() => {
     fetch(`/api/tourrouter/tours/${tourId}`)
       .then((r) => r.json())
-      .then((data) => { setTour(data.tour); setLoading(false); })
+      .then((data) => {
+        setTour(data.tour);
+        setShows(data.shows || []);
+        // Restore leg_choices from tour settings
+        if (data.tour?.leg_choices) {
+          const restored: Record<number, string> = {};
+          for (const [k, v] of Object.entries(data.tour.leg_choices)) {
+            restored[parseInt(k)] = v as string;
+          }
+          setLegChoices(restored);
+        }
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [tourId]);
+
+  // ── Compute legs & financials ──────────────────────────────
+
+  const compute = useCallback(() => {
+    if (!shows.length || !tour) return;
+
+    const rates = tour.currency_rates || {};
+    const vehicleType = tour.vehicle_type || "van";
+    const vehicleCount = tour.vehicle_count || 1;
+    const pax = tour.pax || 4;
+    const flightThreshold = tour.flight_threshold_h || 6;
+
+    // Build leg info
+    const legInfos: (LegInfo | null)[] = shows.map((s, i) => {
+      if (i === 0) return null;
+      const prev = shows[i - 1];
+      const km = getRoadKm(prev.city, prev.country, s.city, s.country);
+      const driveH = km ? estimateDriveHours(km) : null;
+      // CRITICAL: legCtry not legCountry
+      const legCtry = legCountry(prev.country, s.country);
+      const distStr = km ? fmtDist(km, legCtry === "usa" ? "usa" : "europe") : "?";
+      let dayGap = 0;
+      if (prev.date && s.date) {
+        const d1 = new Date(prev.date);
+        const d2 = new Date(s.date);
+        dayGap = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+      }
+      return { km, driveH, distStr, legCtry, dayGap, fromCity: prev.city || "?", toCity: s.city || "?" };
+    });
+    setLegs(legInfos);
+
+    // Build TourShow array for calcTourFinancials
+    const tourShows: TourShow[] = shows.map((s) => ({
+      date: s.date ? new Date(s.date + "T00:00:00") : null,
+      event: s.event_name || "",
+      city: s.city || "",
+      country: s.country || "",
+      countryNorm: s.country_normalized || "",
+      venue: s.venue || "",
+      offer: {
+        amount: s.offer_amount || 0,
+        currency: s.offer_currency || "USD",
+        display: s.offer_raw || "",
+      },
+      usd: 0,
+      capacity: s.capacity || 0,
+      status: s.status || "",
+      isOff: s.is_off_day,
+      backend: s.backend || undefined,
+      doors: s.doors || undefined,
+      showtime: s.showtime || undefined,
+      merch: s.merch || undefined,
+      notes: s.notes || undefined,
+      support: s.support || undefined,
+      promoter: s.promoter || undefined,
+    }));
+
+    // SINGLE SOURCE OF TRUTH: calcTourFinancials
+    const fin = calcTourFinancials({
+      tourShows,
+      legChoices,
+      showExpenses: {},
+      rates,
+      pax,
+      flightThreshold,
+      blanketShowAmt: tour.blanket_show_amt || 0,
+      blanketOffAmt: tour.blanket_off_amt || 0,
+      blanketShowLabel: tour.blanket_show_label || "Band Pay",
+      blanketOffLabel: tour.blanket_off_label || "Hotel + Per Diem",
+      vehicleType,
+      vehicleCount,
+      fuelPriceOverride: tour.fuel_price_usd || null,
+      flightPriceCache: {},
+    });
+    setFinancials(fin);
+  }, [shows, tour, legChoices]);
+
+  useEffect(() => { compute(); }, [compute]);
+
+  // ── Leg choice toggle ──────────────────────────────────────
+
+  function toggleLeg(idx: number, choice: string) {
+    const next = { ...legChoices, [idx]: choice };
+    setLegChoices(next);
+    // Debounce save to API
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      fetch(`/api/tourrouter/tours/${tourId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leg_choices: next }),
+      });
+    }, 800);
+  }
+
+  // ── Drawer ─────────────────────────────────────────────────
+
+  function openDrawer(idx: number) {
+    setDrawerShow({ ...shows[idx] });
+    setDrawerIdx(idx);
+  }
+
+  function closeDrawer() {
+    setDrawerShow(null);
+    setDrawerIdx(-1);
+  }
+
+  function updateDrawerField(key: string, value: string) {
+    if (!drawerShow) return;
+    const updated = { ...drawerShow, [key]: key === "capacity" ? (parseInt(value) || 0) : value };
+    setDrawerShow(updated);
+    // Debounce save
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      fetch(`/api/tourrouter/tours/${tourId}/shows/${drawerShow.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [key]: key === "capacity" ? (parseInt(value) || 0) : value }),
+      }).then(() => {
+        // Update local shows array
+        setShows((prev) => prev.map((s, i) => i === drawerIdx ? { ...s, [key]: key === "capacity" ? (parseInt(value) || 0) : value } : s));
+      });
+    }, 600);
+  }
+
+  function toggleSection(title: string) {
+    setCollapsedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(title)) next.delete(title); else next.add(title);
+      return next;
+    });
+  }
+
+  // ── Helpers ────────────────────────────────────────────────
+
+  function driveColorBg(h: number | null): string {
+    if (h === null) return "transparent";
+    if (h > 6) return "#fff0ef";
+    if (h > 4) return "#fff8f0";
+    return "#f0faf4";
+  }
+
+  function driveColor(h: number | null): string {
+    if (h === null) return "#888";
+    if (h > 6) return "#c0392b";
+    if (h > 4) return "#b35c00";
+    return "#1a6b3c";
+  }
+
+  function statusDot(status: string | null): { color: string; label: string } {
+    if (!status) return { color: "#ddd", label: "" };
+    const s = status.toLowerCase();
+    if (s.includes("confirm")) return { color: "#1a6b3c", label: "Confirmed" };
+    if (s.includes("cancel")) return { color: "#c0392b", label: "Cancelled" };
+    return { color: "#b35c00", label: "Pending" };
+  }
+
+  function formatShowDate(dateStr: string | null): string {
+    if (!dateStr) return "\u2014";
+    const d = new Date(dateStr + "T00:00:00");
+    return formatDateDisplay(d);
+  }
+
+  // ── Nav ────────────────────────────────────────────────────
 
   const navItems = [
     { num: 1, label: "Import", href: `/dashboard/routing/${tourId}/import`, active: false },
@@ -35,6 +332,36 @@ export default function RouteTourPage() {
     { num: 3, label: "Financials", href: `/dashboard/routing/${tourId}/financials`, active: false },
     { num: 4, label: "Export", href: `/dashboard/routing/${tourId}/export`, active: false },
   ];
+
+  const f = financials;
+  const flightThreshold = tour?.flight_threshold_h || 6;
+
+  // ── Stat cards ─────────────────────────────────────────────
+
+  const totalDriveH = legs.reduce((sum, leg) => {
+    if (!leg) return sum;
+    const idx = legs.indexOf(leg);
+    if (legChoices[idx] === "fly") return sum;
+    return sum + (leg.driveH || 0);
+  }, 0);
+
+  const drivingLegs = legs.filter((leg, idx) => leg && legChoices[idx] !== "fly" && leg.driveH !== null);
+  const avgDriveH = drivingLegs.length ? drivingLegs.reduce((s, l) => s + (l!.driveH || 0), 0) / drivingLegs.length : 0;
+  const longestDriveH = drivingLegs.length ? Math.max(...drivingLegs.map((l) => l!.driveH || 0)) : 0;
+  const brutalLegs = drivingLegs.filter((l) => (l!.driveH || 0) > 6).length;
+
+  const statCards = [
+    { label: "Total Shows", value: f ? String(f.showDayCount) : "\u2014" },
+    { label: "Off Days", value: f ? String(f.offDayCount) : "\u2014" },
+    { label: f?.imperialTour ? "Total Miles" : "Total KM", value: f ? (f.imperialTour ? Math.round(f.totalKm * 0.6214).toLocaleString() : Math.round(f.totalKm).toLocaleString()) : "\u2014" },
+    { label: "Total Drive", value: totalDriveH ? fmtHours(totalDriveH) : "\u2014" },
+    { label: "Est. Fuel", value: f ? fmtUSD(f.totalFuel) : "\u2014", color: "#c0392b" },
+    { label: "Avg Drive", value: avgDriveH ? fmtHours(avgDriveH) : "\u2014" },
+    { label: "Longest Drive", value: longestDriveH ? fmtHours(longestDriveH) : "\u2014", color: longestDriveH > 6 ? "#c0392b" : undefined },
+    { label: "Brutal Legs >6h", value: String(brutalLegs), color: brutalLegs > 0 ? "#b35c00" : undefined },
+  ];
+
+  // ── Render ─────────────────────────────────────────────────
 
   return (
     <div className="fade-in" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
@@ -55,14 +382,11 @@ export default function RouteTourPage() {
                     key={item.num}
                     href={item.href}
                     style={{
-                      padding: "10px 18px",
-                      borderRadius: 10,
+                      padding: "10px 18px", borderRadius: 10,
                       border: item.active ? "1px solid #111" : "1px solid #DDDDDD",
                       background: item.active ? "#111" : "#fff",
                       color: item.active ? "#fff" : "#111",
-                      textDecoration: "none",
-                      fontWeight: item.active ? 900 : 700,
-                      fontSize: 13,
+                      textDecoration: "none", fontWeight: item.active ? 900 : 700, fontSize: 13,
                     }}
                   >{item.num}. {item.label}</Link>
                 ))}
@@ -72,20 +396,269 @@ export default function RouteTourPage() {
         </div>
 
         {/* Stat Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
-          {STAT_CARDS.map((card) => (
-            <div key={card.label} style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: "16px 20px" }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6 }}>{card.label}</div>
-              <div style={{ fontSize: 24, fontWeight: 800, fontFamily: "monospace" }}>{card.value}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
+          {statCards.map((card) => (
+            <div key={card.label} style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: "14px 16px" }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>{card.label}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "monospace", color: card.color || "#111" }}>{card.value}</div>
             </div>
           ))}
         </div>
 
-        {/* Placeholder */}
-        <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#888" }}>Route table coming in Phase 6</div>
-        </div>
+        {/* Empty state */}
+        {!loading && shows.length === 0 && (
+          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#888", marginBottom: 12 }}>No shows imported yet</div>
+            <Link href={`/dashboard/routing/${tourId}/import`} style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Import Shows</Link>
+          </div>
+        )}
+
+        {/* Route Table */}
+        {shows.length > 0 && (
+          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, overflow: "hidden" }}>
+            {/* Table header */}
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>
+                    {["#", "Date", "Event / Venue", "City", "Country", "Offer", "USD", "Status", "Cap"].map((h) => (
+                      <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "2px solid #DDDDDD", whiteSpace: "nowrap", background: "#fafaf8" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {shows.map((s, i) => {
+                    const leg = i > 0 ? legs[i] : null;
+                    const flying = legChoices[i] === "fly";
+                    const suggestFly = leg && leg.driveH !== null && leg.driveH > flightThreshold;
+                    const showNum = shows.slice(0, i + 1).filter((x) => !x.is_off_day).length;
+                    const sd = statusDot(s.status);
+                    const fromAP = i > 0 ? getAirport(shows[i - 1].city, shows[i - 1].country) : null;
+                    const toAP = getAirport(s.city, s.country);
+
+                    return (
+                      <LegAndShowRow
+                        key={s.id}
+                        show={s}
+                        showNum={showNum}
+                        index={i}
+                        leg={leg}
+                        flying={flying}
+                        suggestFly={!!suggestFly}
+                        fromAP={fromAP}
+                        toAP={toAP}
+                        sd={sd}
+                        flightThreshold={flightThreshold}
+                        onToggleLeg={toggleLeg}
+                        onClickRow={openDrawer}
+                        driveColorBg={driveColorBg}
+                        driveColor={driveColor}
+                        formatShowDate={formatShowDate}
+                      />
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* ══════ Slide Drawer ══════ */}
+      {drawerShow !== null && (
+        <>
+          <div onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 900 }} />
+          <div style={{
+            position: "fixed", top: 0, right: 0, bottom: 0, width: 460, maxWidth: "90vw",
+            background: "#fff", zIndex: 901, overflowY: "auto",
+            boxShadow: "-4px 0 24px rgba(0,0,0,0.12)",
+            animation: "slideIn 0.25s ease-out",
+          }}>
+            <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
+            {/* Drawer header */}
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #DDDDDD", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{drawerShow.event_name || "Show Detail"}</div>
+                  <div style={{ fontSize: 13, color: "#888" }}>
+                    {[formatShowDate(drawerShow.date), drawerShow.city, drawerShow.country].filter(Boolean).join(" \u00b7 ")}
+                  </div>
+                </div>
+                <button onClick={closeDrawer} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888", padding: "4px 8px" }}>&times;</button>
+              </div>
+            </div>
+            {/* Drawer sections */}
+            <div style={{ padding: "0 24px 24px" }}>
+              {DRAWER_SECTIONS.map((section) => {
+                const collapsed = collapsedSections.has(section.title);
+                return (
+                  <div key={section.title} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                    <div
+                      onClick={() => toggleSection(section.title)}
+                      style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                    >
+                      <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>{section.title}</div>
+                      <span style={{ fontSize: 12, color: "#aaa" }}>{collapsed ? "\u25b6" : "\u25bc"}</span>
+                    </div>
+                    {!collapsed && (
+                      <div style={{ paddingBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        {section.fields.map((field) => (
+                          <div key={field.key} style={{ gridColumn: field.key === "notes" || field.key === "backend" ? "1 / -1" : undefined }}>
+                            <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>{field.label}</label>
+                            <input
+                              value={String((drawerShow as Record<string, unknown>)[field.key] ?? "")}
+                              onChange={(e) => updateDrawerField(field.key, e.target.value)}
+                              type={field.type || "text"}
+                              style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </div>
+  );
+}
+
+// ── Sub-component for leg + show row ─────────────────────────
+
+function LegAndShowRow({
+  show, showNum, index, leg, flying, suggestFly, fromAP, toAP, sd,
+  flightThreshold, onToggleLeg, onClickRow, driveColorBg, driveColor, formatShowDate,
+}: {
+  show: ShowRow;
+  showNum: number;
+  index: number;
+  leg: LegInfo | null;
+  flying: boolean;
+  suggestFly: boolean;
+  fromAP: ReturnType<typeof getAirport>;
+  toAP: ReturnType<typeof getAirport>;
+  sd: { color: string; label: string };
+  flightThreshold: number;
+  onToggleLeg: (idx: number, choice: string) => void;
+  onClickRow: (idx: number) => void;
+  driveColorBg: (h: number | null) => string;
+  driveColor: (h: number | null) => string;
+  formatShowDate: (d: string | null) => string;
+}) {
+  const hasAP = fromAP && toAP;
+  const links = hasAP ? buildFlightLinks(fromAP.iata, toAP.iata) : null;
+
+  return (
+    <>
+      {/* Drive leg row */}
+      {leg && (
+        <tr>
+          <td colSpan={9} style={{ padding: 0, borderBottom: "1px solid #DDDDDD" }}>
+            <div style={{
+              padding: "8px 16px 8px 28px",
+              background: driveColorBg(flying ? null : leg.driveH),
+              display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
+              fontSize: 12, color: "#666",
+            }}>
+              <span style={{ fontWeight: 600 }}>{leg.fromCity} &rarr; {leg.toCity}</span>
+              {leg.dayGap > 1 && <span style={{ color: "#aaa" }}>(+{leg.dayGap - 1} day{leg.dayGap > 2 ? "s" : ""})</span>}
+              {leg.driveH !== null && !flying && (
+                <span style={{ fontWeight: 700, color: driveColor(leg.driveH) }}>{fmtHours(leg.driveH)}</span>
+              )}
+              {!flying && <span style={{ color: "#aaa" }}>{leg.distStr}</span>}
+              {leg.driveH !== null && leg.driveH > 6 && !flying && (
+                <span style={{ background: "#c0392b", color: "#fff", padding: "1px 8px", borderRadius: 4, fontSize: 10, fontWeight: 800 }}>BRUTAL</span>
+              )}
+
+              {/* Drive / Fly toggle */}
+              <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+                <button
+                  onClick={() => onToggleLeg(index, "drive")}
+                  style={{
+                    padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                    border: !flying ? "1px solid #111" : "1px solid #DDDDDD",
+                    background: !flying ? "#111" : "#fff",
+                    color: !flying ? "#fff" : "#888",
+                  }}
+                >Drive</button>
+                <button
+                  onClick={() => onToggleLeg(index, "fly")}
+                  style={{
+                    padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                    border: flying ? "1px solid #111" : "1px solid #DDDDDD",
+                    background: flying ? "#111" : "#fff",
+                    color: flying ? "#fff" : "#888",
+                  }}
+                >Fly</button>
+              </div>
+
+              {suggestFly && !flying && (
+                <span style={{ fontSize: 11, color: "#b35c00" }}>Long drive — consider flying</span>
+              )}
+
+              {/* Flight info when flying */}
+              {flying && hasAP && (
+                <span style={{ fontSize: 11 }}>
+                  {fromAP.iata} &rarr; {toAP.iata}
+                  {links && (
+                    <span style={{ marginLeft: 8 }}>
+                      <a href={links.google} target="_blank" rel="noopener noreferrer" style={{ color: "#1a5fa6", marginRight: 6, textDecoration: "none" }}>Google</a>
+                      <a href={links.skyscanner} target="_blank" rel="noopener noreferrer" style={{ color: "#1a5fa6", marginRight: 6, textDecoration: "none" }}>Skyscanner</a>
+                      <a href={links.kiwi} target="_blank" rel="noopener noreferrer" style={{ color: "#1a5fa6", textDecoration: "none" }}>Kiwi</a>
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
+          </td>
+        </tr>
+      )}
+
+      {/* Show row */}
+      <tr
+        onClick={() => onClickRow(index)}
+        style={{
+          cursor: "pointer",
+          background: show.is_off_day ? "#fafaf8" : "#fff",
+          color: show.is_off_day ? "#aaa" : "#111",
+          borderBottom: "1px solid #DDDDDD",
+        }}
+        onMouseEnter={(e) => { if (!show.is_off_day) (e.currentTarget as HTMLElement).style.background = "#f8f8f6"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = show.is_off_day ? "#fafaf8" : "#fff"; }}
+      >
+        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, color: "#888" }}>
+          {show.is_off_day ? "\u2014" : showNum}
+        </td>
+        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, whiteSpace: "nowrap" }}>
+          {formatShowDate(show.date)}
+        </td>
+        <td style={{ padding: "10px 12px" }}>
+          <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off_day ? <em>OFF DAY</em> : (show.event_name || "\u2014")}</div>
+          {show.venue && <div style={{ fontSize: 11, color: "#888" }}>{show.venue}</div>}
+        </td>
+        <td style={{ padding: "10px 12px", fontSize: 13 }}>{show.city || "\u2014"}</td>
+        <td style={{ padding: "10px 12px", fontSize: 12 }}>{show.country || "\u2014"}</td>
+        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13 }}>
+          {show.is_off_day ? "\u2014" : (show.offer_raw || "\u2014")}
+        </td>
+        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13, color: show.offer_amount ? "#1a6b3c" : "#aaa" }}>
+          {show.is_off_day ? "\u2014" : (show.offer_amount ? fmtUSD(show.offer_amount) : "\u2014")}
+        </td>
+        <td style={{ padding: "10px 12px" }}>
+          {sd.label && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: sd.color, display: "inline-block" }} />
+              {sd.label}
+            </span>
+          )}
+        </td>
+        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12 }}>
+          {show.capacity ? show.capacity.toLocaleString() : "\u2014"}
+        </td>
+      </tr>
+    </>
   );
 }
