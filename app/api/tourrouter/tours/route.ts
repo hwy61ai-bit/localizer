@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     const { name, artist_id } = body;
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
-    console.log("[TourRouter tours POST] Inserting tour:", { org_id: membership.org_id, name, artist_id, created_by: user.id });
+    console.log("[TourRouter tours POST] Inserting tour:", { org_id: membership.org_id, name, artist_id });
 
     const { data: tour, error } = await supabase
       .from("tours_routing")
@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
         org_id: membership.org_id,
         name,
         artist_id: artist_id || null,
-        created_by: user.id,
       })
       .select()
       .single();

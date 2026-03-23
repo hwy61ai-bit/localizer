@@ -27,12 +27,12 @@ type TourData = {
   name: string;
   artist_id: string | null;
   vehicle_type: VehicleType | null;
-  vehicle_count: number | null;
+  mpg: number | null;
   pax: number | null;
   fuel_price_usd: number | null;
   flight_threshold_h: number | null;
-  blanket_show_amt: number | null;
-  blanket_off_amt: number | null;
+  blanket_show_amount: number | null;
+  blanket_off_amount: number | null;
   blanket_show_label: string | null;
   blanket_off_label: string | null;
   currency_rates: Record<string, number> | null;
@@ -193,7 +193,7 @@ export default function RouteTourPage() {
 
     const rates = tour.currency_rates || {};
     const vehicleType = tour.vehicle_type || "van";
-    const vehicleCount = tour.vehicle_count || 1;
+    const vehicleCount = 1;
     const pax = tour.pax || 4;
     const flightThreshold = tour.flight_threshold_h || 6;
 
@@ -250,8 +250,8 @@ export default function RouteTourPage() {
       rates,
       pax,
       flightThreshold,
-      blanketShowAmt: tour.blanket_show_amt || 0,
-      blanketOffAmt: tour.blanket_off_amt || 0,
+      blanketShowAmt: tour.blanket_show_amount || 0,
+      blanketOffAmt: tour.blanket_off_amount || 0,
       blanketShowLabel: tour.blanket_show_label || "Band Pay",
       blanketOffLabel: tour.blanket_off_label || "Hotel + Per Diem",
       vehicleType,

@@ -53,7 +53,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
   const showsArr = shows || [];
   const rates = (tour.currency_rates as Record<string, number>) || {};
   const vehicleType = (tour.vehicle_type as VehicleType) || "van";
-  const vehicleCount = (tour.vehicle_count as number) || 1;
+  const vehicleCount = 1;
   const pax = (tour.pax as number) || 4;
 
   const legChoices: Record<number, string> = {};
@@ -92,8 +92,8 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     rates,
     pax,
     flightThreshold: (tour.flight_threshold_h as number) || 6,
-    blanketShowAmt: (tour.blanket_show_amt as number) || 0,
-    blanketOffAmt: (tour.blanket_off_amt as number) || 0,
+    blanketShowAmt: (tour.blanket_show_amount as number) || 0,
+    blanketOffAmt: (tour.blanket_off_amount as number) || 0,
     blanketShowLabel: (tour.blanket_show_label as string) || "Band Pay",
     blanketOffLabel: (tour.blanket_off_label as string) || "Hotel + Per Diem",
     vehicleType,

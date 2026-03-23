@@ -52,9 +52,9 @@ export async function PUT(
 
   // Only allow known settings fields
   const allowed = [
-    "name", "artist_id", "vehicle_type", "vehicle_count", "pax",
+    "name", "artist_id", "vehicle_type", "pax", "mpg",
     "fuel_price_usd", "flight_threshold_h",
-    "blanket_show_amt", "blanket_off_amt",
+    "blanket_show_amount", "blanket_off_amount",
     "blanket_show_label", "blanket_off_label",
     "currency_rates", "leg_choices",
   ];

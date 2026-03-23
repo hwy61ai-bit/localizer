@@ -24,12 +24,12 @@ type TourData = {
   id: string;
   name: string;
   vehicle_type: VehicleType | null;
-  vehicle_count: number | null;
+  mpg: number | null;
   pax: number | null;
   fuel_price_usd: number | null;
   flight_threshold_h: number | null;
-  blanket_show_amt: number | null;
-  blanket_off_amt: number | null;
+  blanket_show_amount: number | null;
+  blanket_off_amount: number | null;
   blanket_show_label: string | null;
   blanket_off_label: string | null;
   currency_rates: Record<string, number> | null;
@@ -98,8 +98,8 @@ export default function FinancialsPage() {
         setTour(data.tour);
         setShows(data.shows || []);
         if (data.tour) {
-          setBlanketShowAmt(data.tour.blanket_show_amt || 0);
-          setBlanketOffAmt(data.tour.blanket_off_amt || 0);
+          setBlanketShowAmt(data.tour.blanket_show_amount || 0);
+          setBlanketOffAmt(data.tour.blanket_off_amount || 0);
           setBlanketShowLabel(data.tour.blanket_show_label || "Band Pay");
           setBlanketOffLabel(data.tour.blanket_off_label || "Hotel + Per Diem");
           setRates(data.tour.currency_rates || {});
@@ -156,7 +156,7 @@ export default function FinancialsPage() {
       blanketShowLabel,
       blanketOffLabel,
       vehicleType: tour.vehicle_type || "van",
-      vehicleCount: tour.vehicle_count || 1,
+      vehicleCount: 1,
       fuelPriceOverride: tour.fuel_price_usd || null,
       flightPriceCache: {},
     });
@@ -181,13 +181,13 @@ export default function FinancialsPage() {
   function onBlanketShowAmtChange(val: string) {
     const n = parseFloat(val) || 0;
     setBlanketShowAmt(n);
-    debounceSaveTour({ blanket_show_amt: n });
+    debounceSaveTour({ blanket_show_amount: n });
   }
 
   function onBlanketOffAmtChange(val: string) {
     const n = parseFloat(val) || 0;
     setBlanketOffAmt(n);
-    debounceSaveTour({ blanket_off_amt: n });
+    debounceSaveTour({ blanket_off_amount: n });
   }
 
   function onBlanketShowLabelChange(val: string) {
