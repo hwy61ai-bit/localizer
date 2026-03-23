@@ -22,7 +22,7 @@ export async function POST(
 
   // Fetch routing tour
   const { data: routingTour } = await supabase
-    .from("routing_tours")
+    .from("tours_routing")
     .select("*, artists(name)")
     .eq("id", tourId)
     .eq("org_id", orgId)
@@ -143,7 +143,7 @@ export async function POST(
 
   // Save the Localizer tour ID back to routing tour
   await supabase
-    .from("routing_tours")
+    .from("tours_routing")
     .update({ localizer_tour_id: localizerTourId })
     .eq("id", tourId);
 

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   // Fetch show with tour info
   const { data: show } = await supabase
     .from("tour_shows")
-    .select("*, routing_tours(name, artist_id, artists(name))")
+    .select("*, tours_routing(name, artist_id, artists(name))")
     .eq("id", showId)
     .eq("org_id", profile.org_id)
     .single();
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       .eq("id", showId);
   }
 
-  const tourData = show.routing_tours as Record<string, unknown> | null;
+  const tourData = show.tours_routing as Record<string, unknown> | null;
   const artistData = (tourData?.artists as Record<string, unknown>) || null;
   const artistName = (artistData?.name as string) || (tourData?.name as string) || "Artist";
   const venueName = show.venue || "Venue";

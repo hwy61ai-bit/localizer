@@ -26,7 +26,7 @@ export async function GET(
 
   // Fetch tour + artist name (NO financial fields)
   const { data: tour } = await supabase
-    .from("routing_tours")
+    .from("tours_routing")
     .select("name, artist_id, artists(name)")
     .eq("id", show.routing_tour_id)
     .single();

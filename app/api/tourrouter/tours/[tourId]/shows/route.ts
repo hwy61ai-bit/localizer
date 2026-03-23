@@ -19,7 +19,7 @@ export async function POST(
 
   // Verify tour belongs to org
   const { data: tour } = await supabase
-    .from("routing_tours")
+    .from("tours_routing")
     .select("id")
     .eq("id", tourId)
     .eq("org_id", profile.org_id)

@@ -26,7 +26,7 @@ export async function GET() {
     }
 
     const { data: tours, error } = await supabase
-      .from("routing_tours")
+      .from("tours_routing")
       .select("*, artists(name)")
       .eq("org_id", membership.org_id)
       .order("updated_at", { ascending: false });
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     console.log("[TourRouter tours POST] Inserting tour:", { org_id: membership.org_id, name, artist_id, created_by: user.id });
 
     const { data: tour, error } = await supabase
-      .from("routing_tours")
+      .from("tours_routing")
       .insert({
         org_id: membership.org_id,
         name,

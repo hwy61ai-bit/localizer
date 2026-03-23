@@ -22,7 +22,7 @@ export async function GET(
   if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: tour, error: tourError } = await supabase
-    .from("routing_tours")
+    .from("tours_routing")
     .select("*")
     .eq("id", tourId)
     .eq("org_id", orgId)
@@ -65,7 +65,7 @@ export async function PUT(
   update.updated_at = new Date().toISOString();
 
   const { data: tour, error } = await supabase
-    .from("routing_tours")
+    .from("tours_routing")
     .update(update)
     .eq("id", tourId)
     .eq("org_id", orgId)
@@ -86,7 +86,7 @@ export async function DELETE(
   if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { error } = await supabase
-    .from("routing_tours")
+    .from("tours_routing")
     .delete()
     .eq("id", tourId)
     .eq("org_id", orgId);
