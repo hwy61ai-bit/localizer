@@ -32,12 +32,18 @@ function ordinal(n: number): string {
   }
 }
 
+
+  function shortMonth(d: Date): string {
+    const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+    return months[d.getMonth()];
+  }
+
 function formatDateForRender(iso: string, short = false): string {
   try {
     const d = new Date(iso + "T12:00:00");
     if (short) {
       const day = d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
-      const month = d.toLocaleDateString("en-US", { month: "short" }).toUpperCase();
+      const month = shortMonth(d).toUpperCase();
       const date = d.getDate();
       return `${day}. ${month} ${date}${ordinal(date)}`;
     }

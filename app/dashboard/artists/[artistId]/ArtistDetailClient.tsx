@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { useToast } from "@/app/components/Toast";
 
 type Tour = { id: string; name: string; band_tour_label: string | null; image_url: string | null; };
 
@@ -15,6 +16,8 @@ const ADV_FIELDS = [
 
 export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const router = useRouter();
+  const toast = useToast();
+
   const [tours, setTours] = useState<Tour[]>([]);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -25,6 +28,10 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const [advUploading, setAdvUploading] = useState<string | null>(null);
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const [artistImageUrl, setArtistImageUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoHovered, setLogoHovered] = useState(false);
+  const logoFileRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({ name: "", bio: "", manager_name: "", manager_email: "", booking_agent_name: "", booking_agent_email: "", publicist_name: "", publicist_email: "", agent_name: "", agent_email: "", spotify_url: "" });
 
   useEffect(() => {
@@ -33,9 +40,11 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
       if (!a) { router.push("/dashboard"); return; }
       setForm({ name: a.name ?? "", bio: a.bio ?? "", manager_name: a.manager_name ?? "", manager_email: a.manager_email ?? "", booking_agent_name: a.booking_agent_name ?? "", booking_agent_email: a.booking_agent_email ?? "", publicist_name: a.publicist_name ?? "", publicist_email: a.publicist_email ?? "", agent_name: a.agent_name ?? "", agent_email: a.agent_email ?? "", spotify_url: a.spotify_url ?? "" });
       setArtistImageUrl(a.image_url ?? null);
+      setLogoUrl(a.logo_url && a.logo_url.startsWith("http") ? a.logo_url : null);
       setAdvMaterials({ adv_stage_plot_url: a.adv_stage_plot_url ?? "", adv_hospitality_url: a.adv_hospitality_url ?? "", adv_foh_url: a.adv_foh_url ?? "", adv_w9_url: a.adv_w9_url ?? "" });
       const { data: t } = await supabase.from("tours").select("id, name, band_tour_label, image_url").eq("artist_id", artistId).order("created_at", { ascending: false });
       setTours(t ?? []);
+
     }
     load();
   }, [artistId, router]);
@@ -46,7 +55,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
     setSaving(false);
     if (error) {
       console.error("Save failed:", error);
-      alert(`Save failed: ${error.message}`);
+      toast.error(`Save failed: ${error.message}`);
       return;
     }
     setSaved(true);
@@ -56,12 +65,12 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   async function handleCreateTour() {
     setCreatingTour(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { alert("Not logged in."); setCreatingTour(false); return; }
+    if (!user) { toast.error("Not logged in."); setCreatingTour(false); return; }
     const { data: memberData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).maybeSingle();
-    if (!memberData?.org_id) { alert("Could not find org."); setCreatingTour(false); return; }
+    if (!memberData?.org_id) { toast.error("Could not find org."); setCreatingTour(false); return; }
     const { data, error } = await supabase.from("tours").insert({ name: "New Tour", artist_id: artistId, band_name: form.name, org_id: memberData.org_id }).select("id").single();
-    if (error || !data) { alert("Failed to create tour."); setCreatingTour(false); return; }
-    router.push("/dashboard/tours/" + data.id);
+    if (error || !data) { toast.error("Failed to create tour."); setCreatingTour(false); return; }
+    router.push("/dashboard/tours/" + data.id + "/import");
   }
 
   async function handleAdvUpload(fieldId: string, file: File) {
@@ -74,7 +83,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
       const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
       await supabase.from("artists").update({ [fieldId]: data.publicUrl }).eq("id", artistId);
       setAdvMaterials((prev) => ({ ...prev, [fieldId]: data.publicUrl }));
-    } catch (err) { console.error(err); alert("Upload failed."); }
+    } catch (err) { console.error(err); toast.error("Upload failed."); }
     finally { setAdvUploading(null); }
   }
 
@@ -92,9 +101,31 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
       setTours(prev => prev.filter(t => t.id !== tourId));
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Delete failed. Please try again.");
+      toast.error("Delete failed. Please try again.");
     } finally {
       setDeletingTourId(null);
+    }
+  }
+
+  async function handleLogoUpload(file: File) {
+    if (!file.type.startsWith("image/png")) {
+      toast.error("Please upload a .png file (transparent background recommended)");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      const path = "artist-assets/" + artistId + "/logo.png";
+      const { error: uploadError } = await supabase.storage.from("localizer-assets").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
+      const urlWithBust = data.publicUrl + "?t=" + Date.now();
+      await supabase.from("artists").update({ logo_url: urlWithBust }).eq("id", artistId);
+      setLogoUrl(urlWithBust);
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Logo upload failed: " + err.message);
+    } finally {
+      setUploadingLogo(false);
     }
   }
 
@@ -102,7 +133,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
   const labelStyle: React.CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: "#999", marginBottom: 6, display: "block" };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px 80px" }}>
+    <div className="fade-in" style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 32 }}>
           <button onClick={() => router.push("/dashboard")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#888", marginBottom: 16, padding: 0 }}>Back</button>
@@ -121,9 +152,42 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
 
         <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 28, marginBottom: 32 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999", marginBottom: 20 }}>Artist Info</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px", gap: 16, marginBottom: 16 }}>
             <div><label style={labelStyle}>Artist / Band Name</label><input style={inputStyle} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div><label style={labelStyle}>Spotify URL</label><input style={inputStyle} value={form.spotify_url} onChange={(e) => setForm({ ...form, spotify_url: e.target.value })} placeholder="https://open.spotify.com/artist/..." /></div>
+            <div>
+              <label style={labelStyle}>Band Logo</label>
+              <input ref={logoFileRef} type="file" accept=".png" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
+              <div onMouseEnter={() => setLogoHovered(true)} onMouseLeave={() => setLogoHovered(false)} onClick={() => !logoUrl && logoFileRef.current?.click()} style={{ width: 88, height: 88, background: "#FAFAFA", border: logoUrl ? "1.5px solid #22c55e" : "1.5px dashed #DDDDDD", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", cursor: logoUrl ? "default" : "pointer", overflow: "hidden", position: "relative" }}>
+                {uploadingLogo ? (
+                  <div style={{ fontSize: 11, color: "#aaa", fontWeight: 700 }}>Uploading...</div>
+                ) : logoUrl ? (
+                  <>
+                    <img src={logoUrl} alt="Logo" style={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
+                    {logoHovered && (
+                      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                        <button onClick={(e) => { e.stopPropagation(); logoFileRef.current?.click(); }} style={{ padding: "4px 8px", borderRadius: 6, border: "none", background: "#fff", color: "#111", fontSize: 9, fontWeight: 700, cursor: "pointer" }}>Replace</button>
+                        <button onClick={async (e) => {
+                          e.stopPropagation();
+                          if (!confirm("Delete band logo?")) return;
+                          try {
+                            const path = "artist-assets/" + artistId + "/logo.png";
+                            await supabase.storage.from("localizer-assets").remove([path]);
+                            await supabase.from("artists").update({ logo_url: null }).eq("id", artistId);
+                            setLogoUrl(null);
+                          } catch (err: any) { toast.error("Delete failed: " + err.message); }
+                        }} style={{ padding: "4px 8px", borderRadius: 6, border: "none", background: "#c00", color: "#fff", fontSize: 9, fontWeight: 700, cursor: "pointer" }}>Delete</button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 20, color: "#CCC" }}>&#8593;</div>
+                    <div style={{ fontSize: 8, fontWeight: 800, color: "#BBB", textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.4 }}>Upload<br/>Transparent .png</div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Bio</label>
@@ -179,14 +243,14 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-          {tours.map((tour) => (
-            <div key={tour.id} style={{ position: "relative" }}
+          {tours.map((tour, idx) => (
+            <div key={tour.id} className="card-hover" style={{ position: "relative", animation: `fadeInUp 0.4s ease-out ${idx * 0.1}s both` }}
               onMouseEnter={() => setHoveredTourId(tour.id)}
               onMouseLeave={() => setHoveredTourId(null)}>
               <div onClick={() => router.push("/dashboard/tours/" + tour.id)} style={{ background: (tour.image_url ?? artistImageUrl) ? "transparent" : "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, aspectRatio: "1 / 1", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden", position: "relative", cursor: "pointer", opacity: deletingTourId === tour.id ? 0.4 : 1 }}>
                 {(tour.image_url ?? artistImageUrl) && (
                   <>
-                    <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + (tour.image_url ? (tour.image_url.startsWith("http") ? tour.image_url : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${tour.image_url}`) : artistImageUrl) + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
+                    <div style={{ position: "absolute", inset: 0, backgroundImage: "url(" + (tour.image_url ? (tour.image_url.startsWith("http") ? tour.image_url.replace("/image/upload/", "/image/upload/w_400,q_auto/") : `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/w_400,q_auto/${tour.image_url}`) : (artistImageUrl ? artistImageUrl.replace("/image/upload/", "/image/upload/w_400,q_auto/") : "")) + ")", backgroundSize: "cover", backgroundPosition: "center" }} />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
                   </>
                 )}

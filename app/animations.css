@@ -1,0 +1,120 @@
+/* Page load fade-in */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Apply to any element */
+.fade-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+/* Stagger children — apply .stagger to parent, .stagger-item to children */
+.stagger .stagger-item {
+  opacity: 0;
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+.stagger .stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger .stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger .stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger .stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger .stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger .stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger .stagger-item:nth-child(7) { animation-delay: 0.35s; }
+.stagger .stagger-item:nth-child(8) { animation-delay: 0.4s; }
+.stagger .stagger-item:nth-child(9) { animation-delay: 0.45s; }
+.stagger .stagger-item:nth-child(10) { animation-delay: 0.5s; }
+.stagger .stagger-item:nth-child(n+11) { animation-delay: 0.55s; }
+
+/* Subtle hover lift for cards */
+.card-hover {
+  transition: transform 0.25s ease-out, box-shadow 0.25s ease-out;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* Button interactions */
+.btn-hover {
+  transition: transform 0.15s ease-out;
+}
+.btn-hover:hover {
+  transform: scale(1.02);
+}
+.btn-hover:active {
+  transform: scale(0.98);
+}
+
+/* Save pulse */
+@keyframes savePulse {
+  0% { box-shadow: 0 0 0 0 rgba(26,127,75,0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(26,127,75,0); }
+  100% { box-shadow: 0 0 0 0 rgba(26,127,75,0); }
+}
+.save-pulse {
+  animation: savePulse 0.6s ease-out;
+}
+
+/* Slide-in from left for row highlights */
+.row-highlight {
+  position: relative;
+}
+.row-highlight::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: rgba(0,0,0,0.02);
+  transition: width 0.25s ease-out;
+}
+.row-highlight:hover::before {
+  width: 100%;
+}
+
+/* Progress bar shimmer */
+@keyframes progressShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.progress-shimmer {
+  background: linear-gradient(90deg, #111 0%, #333 50%, #111 100%);
+  background-size: 200% 100%;
+  animation: progressShimmer 1.5s linear infinite;
+}
+
+/* Drag lift shadow */
+.drag-lift {
+  transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
+}
+.drag-lift.dragging {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  transform: scale(1.01);
+}
+
+/* Center snap flash */
+@keyframes snapFlash {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+.snap-flash {
+  animation: snapFlash 0.3s ease-out forwards;
+}
+
+/* Status badge fade */
+@keyframes badgeFadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+.badge-fade {
+  animation: badgeFadeIn 0.3s ease-out forwards;
+}

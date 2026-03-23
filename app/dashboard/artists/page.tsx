@@ -18,7 +18,7 @@ export default async function ArtistsDashboardPage() {
     await supabase.from("orgs").update({ owner_email: user.email }).eq("id", orgId);
   }
 
-  const { data: artistsData } = await supabase.from("artists").select("id, name, logo_url, created_at").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data: artistsData } = await supabase.from("artists").select("id, name, image_url, created_at").eq("org_id", orgId).order("created_at", { ascending: false });
   const artists = artistsData ?? [];
 
   const tourCounts: Record<string, number> = {};
@@ -54,7 +54,7 @@ export default async function ArtistsDashboardPage() {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {artists.map((artist) => (
-            <ArtistTile key={artist.id} artistId={artist.id} artistName={artist.name} tourCount={tourCounts[artist.id] ?? 0} imageUrl={artist.logo_url ?? null} />
+            <ArtistTile key={artist.id} artistId={artist.id} artistName={artist.name} tourCount={tourCounts[artist.id] ?? 0} imageUrl={artist.image_url ?? null} />
           ))}
           <form action={createArtist}>
             <button type="submit" style={{ width: "100%", aspectRatio: "1 / 1", background: "transparent", border: "1.5px dashed #CCCCCC", borderRadius: 14, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", padding: 20 }}>

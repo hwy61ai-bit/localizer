@@ -150,6 +150,13 @@ export default function LoginPage() {
                 </svg>
                 Sign in with Google
               </button>
+
+              <div style={{ marginTop: 16, textAlign: "center", fontSize: 12, color: "#999", lineHeight: 1.5 }}>
+                By continuing, you agree to our{" "}
+                <a href="/terms" style={{ color: "#666", textDecoration: "underline" }}>Terms of Service</a>{" "}
+                and{" "}
+                <a href="/privacy" style={{ color: "#666", textDecoration: "underline" }}>Privacy Policy</a>.
+              </div>
             </>
           ) : (
             <>

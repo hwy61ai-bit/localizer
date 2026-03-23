@@ -1,4 +1,5 @@
 import "./landing.css";
+import AnimatedWordmark from "./components/AnimatedWordmark";
 
 export default function LandingPage() {
   return (
@@ -12,11 +13,11 @@ export default function LandingPage() {
       </nav>
 
       <section className="hero">
-        <div className="hero-wordmark">Localizer.</div>
-        <div className="hero-tagline">Tour dates in.<br />Show graphics out.</div>
+        <AnimatedWordmark />
+        <div className="hero-tagline">Tour dates in.<br />Tour Assets out.</div>
         <div className="hero-bottom">
           <p className="hero-sub">
-            Import your routing sheet and Localizer generates every show graphic — sized for every platform — then sends download links to venues automatically.
+            Import your routing sheet, photo assets, and advance materials and Localizer generates every show graphic — sized for every platform — then sends download links to venues automatically.
           </p>
           <div className="hero-actions">
             <a href="/login" className="btn-primary">Start free trial</a>
@@ -106,7 +107,7 @@ export default function LandingPage() {
 
       <footer className="footer">
         <span className="footer-logo">Localizer</span>
-        <span className="footer-note">Tour dates in. Show graphics out.</span>
+        <span className="footer-note">Tour dates in. Tour Assets out.</span>
       </footer>
     </>
   );

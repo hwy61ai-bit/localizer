@@ -32,7 +32,7 @@ export default function ArtistTile({ artistId, artistName, tourCount, imageUrl }
       const { error: uploadError } = await supabase.storage.from("localizer-assets").upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from("localizer-assets").getPublicUrl(path);
-      await supabase.from("artists").update({ logo_url: urlData.publicUrl }).eq("id", artistId);
+      await supabase.from("artists").update({ image_url: urlData.publicUrl }).eq("id", artistId);
       setCurrentImage(urlData.publicUrl);
     } catch (err) { console.error(err); alert("Upload failed."); }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }

@@ -72,15 +72,20 @@ body {
   padding: 140px 48px 80px;
   background: #0a0a0a;
 }
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
 .hero-wordmark {
   font-family: 'PragmaticaExtended', sans-serif;
   font-weight: 900;
   font-size: clamp(64px, 11.5vw, 156px);
   letter-spacing: -0.05em;
   text-transform: uppercase;
-  color: #f0ede8;
   line-height: 0.88;
   margin-bottom: 20px;
+  color: #f0ede8;
 }
 .hero-tagline {
   font-family: 'PragmaticaExtended', sans-serif;
@@ -103,11 +108,11 @@ body {
   border-top: 1px solid rgba(240,237,232,0.08);
 }
 .hero-sub {
-  font-size: 15px;
+  font-size: 18px;
   color: #f0ede8;
-  opacity: 0.45;
+  opacity: 0.6;
   line-height: 1.7;
-  max-width: 420px;
+  max-width: 520px;
 }
 .hero-actions {
   display: flex;
@@ -155,11 +160,11 @@ body {
   margin: 0 auto;
 }
 .section-eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #aaa;
+  color: #888;
   margin-bottom: 36px;
 }
 .steps {
@@ -204,11 +209,11 @@ body {
   margin: 0 auto;
 }
 .preview-eyebrow {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #aaa;
+  color: #888;
   margin-bottom: 20px;
 }
 .preview-card {

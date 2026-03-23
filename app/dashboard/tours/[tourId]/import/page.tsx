@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 
 type ParsedEvent = {
   date_iso: string | null;
@@ -27,6 +28,7 @@ export default function ImportPage() {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => {
     const prevent = (e: DragEvent) => e.preventDefault();
@@ -84,6 +86,22 @@ export default function ImportPage() {
       }
     };
     reader.readAsDataURL(file);
+  }
+
+  // ── Handle file drop
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    // Reuse the same logic as file input
+    const input = fileRef.current;
+    if (input) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
   }
 
   // ── Parse the schedule
@@ -156,30 +174,41 @@ export default function ImportPage() {
   const s = styles;
 
   return (
-    <div style={s.page}>
+    <div className="fade-in" style={s.page}>
       <div style={s.wrap}>
 
         {/* Header */}
-        <div style={s.header}>
-          <div>
-            <div style={s.eyebrow}>AI Tour Import</div>
-            <h1 style={s.title}>Import Schedule</h1>
-            <div style={s.subtitle}>
-              Paste a tour schedule or upload a file. The AI will extract every
-              date, venue, city, and email automatically.
+        <div style={{ marginBottom: 28 }}>
+          <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>← Back to Tour</Link>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ display: "inline-block" }}>
+                <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</h1>
+                <div style={{ borderBottom: "2px solid #111", marginBottom: 6 }} />
+              </div>
+              <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>Import Schedule</div>
+              <div style={{ marginTop: 8, fontSize: 13, color: "#666", maxWidth: 520, lineHeight: 1.6 }}>
+                Paste a tour schedule or upload a file. The AI will extract every
+                date, venue, city, and email automatically.
+              </div>
+            </div>
+            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #ddd", borderRadius: 12, padding: "8px" }}>
+                <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>1. ↑ Import Schedule</Link>
+                <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>2. ↑ Import Assets</Link>
+                <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>3. Template For Shows</Link>
+                <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>4. Gigs</Link>
+              </div>
             </div>
           </div>
-          <button
-            style={s.backBtn}
-            onClick={() => router.push(`/dashboard/tours/${tourId}`)}
-          >
-            ← Back
-          </button>
         </div>
 
         {/* Input card — hide after parse */}
         {!events && (
-          <div style={s.card} onDragOver={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}>
+          <div style={{ ...s.card, border: dragOver ? "2px dashed #111" : "1px solid #ddd", transition: "border 0.2s" }}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}>
             {/* File upload row */}
             <div style={s.uploadRow}>
               <div style={s.uploadLabel}>Upload a file</div>
@@ -210,7 +239,7 @@ export default function ImportPage() {
               style={s.textarea}
               placeholder={`Paste your tour schedule here. Any format works — itinerary emails, spreadsheet copy/paste, Google Doc text, routing sheets, etc.\n\nExample:\nMay 1 — Detroit, MI — The Fillmore — promo@example.com\nMay 3 — Chicago, IL — Metro — buyer@metro.com`}
               value={rawText}
-              onChange={(e) => setRawText(e.target.value)} onDragOver={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}
+              onChange={(e) => setRawText(e.target.value)}
               rows={14}
             />
 

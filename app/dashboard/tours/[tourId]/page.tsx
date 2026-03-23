@@ -74,17 +74,22 @@ export default async function TourPage({ params, searchParams }: { params: Promi
 
 
   return (
-    <div style={{ padding: 32, background: "#F7F7F5", minHeight: "100vh" }}>
+    <div className="fade-in" style={{ padding: 32, background: "#F7F7F5", minHeight: "100vh" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #ddd" }}>
           <Link href={tour.artist_id ? `/dashboard/artists/${tour.artist_id}` : "/dashboard"} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>← Back</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <h1 className="brand-title" style={{ margin: 0 }}>LOCALIZER</h1>
+            <div>
+              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</h1>
+              <div style={{ borderBottom: "2px solid #111111", marginBottom: 6 }} />
+              <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>GIGS</div>
+            </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #ddd", borderRadius: 12, padding: "8px" }}>
               <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>1. ↑ Import Schedule</Link>
-              <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>2. ↑ Import Assets</Link>
+              <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>2. ↑ Import Assets</Link>
               <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>3. Template For Shows</Link>
+              <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>4. Gigs</Link>
             </div>
             </div>
           </div>
@@ -109,11 +114,9 @@ export default async function TourPage({ params, searchParams }: { params: Promi
         </div>
 
         <div style={{ border: "1px solid #e0e0e0", borderRadius: 16, overflow: "hidden", background: "#fff" }}>
-          <div style={{ padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #eee" }}>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.3px" }}>Events</div>
-            </div>
-            <Link href={`/dashboard/tours/${tourId}/events/new`} style={{ padding: "10px 18px", border: "1px solid #111", borderRadius: 10, background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>+ New Event</Link>
+          <div style={{ padding: 16, display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #eee" }}>
+            <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: "-0.3px" }}>Events</div>
+            <Link href={`/dashboard/tours/${tourId}/events/new`} style={{ padding: "6px 14px", border: "1px solid #111", borderRadius: 10, background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 12 }}>+ New Event</Link>
           </div>
 
           <EventsTable events={eventRows} tourId={tourId} orgId={orgId}  />

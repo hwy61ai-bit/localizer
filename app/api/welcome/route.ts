@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
           GO TO DASHBOARD →
         </a>
         <p style="margin-top: 40px; font-size: 11px; color: #444;">
-          Powered by Localizer — Tour dates in. Show graphics out.
+          Powered by Localizer — Tour dates in. Tour Assets out.
         </p>
       </div>
     `,

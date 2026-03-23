@@ -66,9 +66,9 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
   }
 
   const photoAssets = [
-    { label: "IG Post", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
-    { label: "IG Stories", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
-    { label: "FB Event Cover", dims: "1920 × 1080", aspect: "16/9", url: link.render_landscape_url },
+    { label: "Instagram Post / Facebook Post", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
+    { label: "Instagram Story / Reels / Facebook Story", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
+    { label: "Facebook Cover Image", dims: "820 × 312", aspect: "820/312", url: link.render_landscape_url },
   ];
 
   const posterUrl: string | null = link.render_poster_url ?? (t.image_url ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${t.image_url}` : null);
@@ -150,12 +150,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Tour Poster */}
         {posterUrl && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Tour Poster</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Local Poster For Print</div>
             <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden", maxWidth: 400 }}>
               <img src={posterUrl} alt="Tour Poster" style={{ width: "100%", display: "block" }} />
               <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Full Tour Poster</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Local Poster For Print</div>
                   <div style={{ fontSize: 11, color: "#555" }}>Print quality</div>
                 </div>
                 <a href={`/api/download?url=${encodeURIComponent(posterUrl)}&filename=tour_poster.jpg`} download
@@ -234,7 +234,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Footer */}
         <div style={{ borderTop: "1px solid #1e1e1e", paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, letterSpacing: 2, color: "#333" }}>LOCALIZER</span>
-          <span style={{ fontSize: 11, color: "#333" }}>Tour dates in. Show graphics out.</span>
+          <span style={{ fontSize: 11, color: "#333" }}>Tour dates in. Tour Assets out.</span>
         </div>
       </div>
     </div>

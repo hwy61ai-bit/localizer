@@ -82,9 +82,10 @@ export async function POST(req: NextRequest) {
   const venueLink = `${process.env.NEXT_PUBLIC_APP_URL}/v/e/${token}`;
 
   if (event.promoter_email) {
+    const toEmails = event.promoter_email.split(",").map((e: string) => e.trim()).filter(Boolean);
     await resend.emails.send({
       from: "noreply@hwy61.ai",
-      to: event.promoter_email,
+      to: toEmails,
       subject: `Show assets ready — ${bandName} @ ${venueName}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; padding: 40px 32px; border-radius: 12px;">
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
             VIEW & DOWNLOAD ASSETS →
           </a>
           <p style="margin-top: 40px; font-size: 11px; color: #444; font-family: sans-serif;">
-            Powered by Localizer — Tour dates in. Show graphics out.
+            Powered by Localizer — Tour dates in. Tour Assets out.
           </p>
         </div>
       `,

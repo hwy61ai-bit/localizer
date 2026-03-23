@@ -87,7 +87,7 @@ export default function PricingPage() {
             Simple, transparent pricing
           </div>
           <div style={{ fontSize: 15, color: "#666", marginBottom: 28 }}>
-            Tour dates in. Show graphics out.
+            Tour dates in. Tour Assets out.
           </div>
 
           {/* Toggle */}

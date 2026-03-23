@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing file or orgId" }, { status: 400 });
     }
 
-    // Validate file type
     if (!file.name.endsWith(".ttf") && !file.name.endsWith(".otf")) {
       return NextResponse.json({ error: "Only .ttf and .otf fonts allowed" }, { status: 400 });
     }
@@ -44,7 +36,7 @@ export async function POST(req: NextRequest) {
     // Check plan - custom fonts are Pro/Agency only (admin bypass)
     const { data: { user: authUser } } = await supabase.auth.getUser();
     const isAdmin = authUser?.email === "hwy61ai@gmail.com" || authUser?.email === "hwy61regan@gmail.com";
-    
+
     if (!isAdmin) {
       const { data: org } = await supabase
         .from("orgs")
@@ -53,39 +45,38 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (org?.plan !== "pro" && org?.plan !== "agency") {
-        return NextResponse.json({ 
-          error: "Custom fonts require Pro or Agency plan. Upgrade at /pricing" 
+        return NextResponse.json({
+          error: "Custom fonts require Pro or Agency plan. Upgrade at /pricing"
         }, { status: 403 });
       }
     }
 
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     // Extract font name and extension
-    // CRITICAL: Cloudinary doesn't support underscores or spaces in custom font names
     const fileExt = file.name.endsWith(".otf") ? "otf" : "ttf";
     const fontName = file.name
       .replace(/\.(ttf|otf)$/i, "")
-      .replace(/[_\s]/g, "-");  // Replace underscores and spaces with hyphens
-    const publicId = `custom-fonts/${orgId}/${fontName}`;
+      .replace(/[_\s.]/g, "-");
 
-    // Upload to Cloudinary as authenticated raw asset
-    const uploadResult = await new Promise<any>((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          resource_type: "raw",
-          type: "authenticated",
-          public_id: publicId,
-          overwrite: true,
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      ).end(buffer);
-    });
+    // Upload to Supabase Storage (public bucket)
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const storagePath = `${orgId}/${fontName}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("fonts")
+      .upload(storagePath, buffer, {
+        contentType: fileExt === "otf" ? "font/otf" : "font/ttf",
+        upsert: true,
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("fonts")
+      .getPublicUrl(storagePath);
+
+    const storageUrl = urlData.publicUrl;
 
     // Save to database
     const { error: dbError } = await supabase
@@ -93,8 +84,9 @@ export async function POST(req: NextRequest) {
       .insert({
         org_id: orgId,
         font_name: fontName,
-        cloudinary_public_id: uploadResult.public_id,
+        cloudinary_public_id: storagePath,
         file_extension: fileExt,
+        storage_url: storageUrl,
       });
 
     if (dbError) throw dbError;
@@ -102,7 +94,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       fontName,
-      publicId: uploadResult.public_id,
+      storageUrl,
     });
   } catch (error: any) {
     console.error("Font upload error:", error);

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cloudinary Font Tester</title>
+  <style>
+    body { font-family: system-ui; padding: 40px; background: #0a0a0a; color: #fff; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { margin-bottom: 40px; }
+    .controls { display: flex; gap: 12px; margin-bottom: 30px; }
+    input { padding: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: #fff; font-size: 14px; width: 300px; }
+    button { padding: 10px 20px; border-radius: 6px; border: none; background: #fff; color: #000; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .font-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 20px; }
+    .font-card.working { border-color: #4ade80; }
+    .font-card.failing { border-color: #ef4444; }
+    .font-name { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+    .font-preview { height: 60px; display: flex; align-items: center; justify-content: center; background: #1a1a1a; border-radius: 8px; margin-bottom: 12px; }
+    .font-preview img { max-width: 100%; max-height: 100%; }
+    .status { font-size: 12px; font-weight: 600; }
+    .status.working { color: #4ade80; }
+    .status.failing { color: #ef4444; }
+    .status.testing { color: #fbbf24; }
+    .summary { margin-bottom: 30px; padding: 20px; background: #111; border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cloudinary Font Tester</h1>
+    
+    <div class="controls">
+      <input type="text" id="cloudName" placeholder="Your Cloudinary Cloud Name" value="dlhrc91ne">
+      <input type="text" id="baseImage" placeholder="Base Image Public ID" value="tour_955bc3e6-99bb-442c-aef9-7adf7f2c6330_ig_post_1773777819339">
+      <button id="testBtn" onclick="testFonts()">Test Fonts</button>
+    </div>
+
+    <div class="summary" id="summary" style="display:none;"></div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <script>
+    const fontsToTest = [
+      'Oswald', 'Anton', 'Barlow Condensed', 'Teko', 'Russo One',
+      'Bebas Neue', 'Staatliches', 'League Gothic', 'Big Shoulders Display',
+      'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Raleway',
+      'Poppins', 'Inter', 'Playfair Display', 'Merriweather',
+      'PT Sans', 'Fira Sans', 'Work Sans', 'Nunito', 'DM Sans',
+      'Bitter', 'Crimson Text', 'Archivo', 'Fjalla One',
+      'Alfa Slab One', 'Arvo', 'Bungee', 'Syncopate'
+    ];
+
+    async function testFonts() {
+      const cloudName = document.getElementById('cloudName').value;
+      const baseImage = document.getElementById('baseImage').value;
+      const resultsDiv = document.getElementById('results');
+      const summaryDiv = document.getElementById('summary');
+      const testBtn = document.getElementById('testBtn');
+      
+      if (!cloudName || !baseImage) {
+        alert('Please fill in Cloud Name and Base Image');
+        return;
+      }
+
+      testBtn.disabled = true;
+      resultsDiv.innerHTML = '';
+      summaryDiv.style.display = 'none';
+
+      const results = { working: [], failing: [] };
+
+      for (const font of fontsToTest) {
+        const card = document.createElement('div');
+        card.className = 'font-card';
+        card.innerHTML = \`
+          <div class="font-name">\${font}</div>
+          <div class="font-preview"><span style="color:#555">Testing...</span></div>
+          <div class="status testing">Testing...</div>
+        \`;
+        resultsDiv.appendChild(card);
+
+        const cleanFont = font.replace(/ /g, '%20');
+        const url = \`https://res.cloudinary.com/\${cloudName}/image/upload/l_text:\${cleanFont}_72_bold:TEST,co_rgb:ffffff/g_center/\${baseImage}\`;
+
+        try {
+          const img = new Image();
+          await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = url;
+            setTimeout(reject, 5000);
+          });
+
+          card.className = 'font-card working';
+          card.querySelector('.font-preview').innerHTML = \`<img src="\${url}" alt="\${font}">\`;
+          card.querySelector('.status').className = 'status working';
+          card.querySelector('.status').textContent = '✓ WORKS';
+          results.working.push(font);
+        } catch {
+          card.className = 'font-card failing';
+          card.querySelector('.font-preview').innerHTML = \`<span style="color:#555">Failed to load</span>\`;
+          card.querySelector('.status').className = 'status failing';
+          card.querySelector('.status').textContent = '✗ DOES NOT WORK';
+          results.failing.push(font);
+        }
+      }
+
+      testBtn.disabled = false;
+      summaryDiv.style.display = 'block';
+      summaryDiv.innerHTML = \`
+        <h3>Test Results</h3>
+        <p><strong>\${results.working.length}</strong> fonts working, <strong>\${results.failing.length}</strong> fonts failing</p>
+        <p style="margin-top:12px;"><strong>Working fonts:</strong><br>\${results.working.join(', ') || 'None'}</p>
+        <p style="margin-top:12px;"><strong>Failing fonts:</strong><br>\${results.failing.join(', ') || 'None'}</p>
+      \`;
+    }
+  </script>
+</body>
+</html>
