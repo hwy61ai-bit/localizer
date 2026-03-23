@@ -64,3 +64,5 @@ export {
   autoMapHeaders,
   type MapperField,
 } from './columnMapper';
+
+export { checkTourRouterAccess } from './billingGate';

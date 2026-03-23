@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 type RoutingTour = {
@@ -17,18 +17,37 @@ type RoutingTour = {
 
 export default function RoutingListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tours, setTours] = useState<RoutingTour[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [artistId, setArtistId] = useState("");
+  const [billingToast, setBillingToast] = useState<string | null>(null);
   const [artists, setArtists] = useState<{ id: string; name: string }[]>([]);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetchTours();
     fetchArtists();
-  }, []);
+    // Billing toast from URL params
+    const billing = searchParams.get("billing");
+    if (billing === "success") {
+      setBillingToast("TourRouter subscription activated!");
+      window.history.replaceState({}, "", "/dashboard/routing");
+    } else if (billing === "cancelled") {
+      setBillingToast("Checkout cancelled");
+      window.history.replaceState({}, "", "/dashboard/routing");
+    }
+  }, [searchParams]);
+
+  async function openBillingPortal() {
+    const resp = await fetch("/api/tourrouter/billing/portal", { method: "POST" });
+    if (resp.ok) {
+      const data = await resp.json();
+      window.location.href = data.url;
+    }
+  }
 
   async function fetchTours() {
     const resp = await fetch("/api/tourrouter/tours");
@@ -78,7 +97,24 @@ export default function RoutingListPage() {
             <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>YOUR TOURS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>{tours.length} tour{tours.length !== 1 ? "s" : ""}</div>
           </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+            <button onClick={openBillingPortal} style={{ fontSize: 12, color: "#888", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Manage Subscription</button>
+          </div>
         </div>
+
+        {/* Billing toast */}
+        {billingToast && (
+          <div style={{
+            background: billingToast.includes("activated") ? "#e8f5e9" : "#fff3e0",
+            border: billingToast.includes("activated") ? "1px solid #c8e6c9" : "1px solid #ffe0b2",
+            borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13,
+            color: billingToast.includes("activated") ? "#1a6b3c" : "#b35c00",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <span>{billingToast}</span>
+            <button onClick={() => setBillingToast(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#888" }}>&times;</button>
+          </div>
+        )}
 
         {loading ? (
           <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading...</div>
