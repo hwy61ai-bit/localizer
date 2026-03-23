@@ -12,6 +12,7 @@ type RoutingTour = {
   created_at: string;
   updated_at: string;
   artists: { name: string } | null;
+  localizer_tour_id: string | null;
 };
 
 export default function RoutingListPage() {
@@ -103,7 +104,12 @@ export default function RoutingListPage() {
                 {tour.artists?.name && (
                   <div style={{ fontSize: 13, color: "#888", marginBottom: 4 }}>{tour.artists.name}</div>
                 )}
-                <div style={{ fontSize: 12, color: "#aaa" }}>Created {formatDate(tour.created_at)}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ fontSize: 12, color: "#aaa" }}>Created {formatDate(tour.created_at)}</div>
+                  {tour.localizer_tour_id && (
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#e8f5e9", color: "#1a6b3c" }}>Localizer &#10003;</span>
+                  )}
+                </div>
               </Link>
             ))}
 

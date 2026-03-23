@@ -37,6 +37,7 @@ type TourData = {
   blanket_off_label: string | null;
   currency_rates: Record<string, number> | null;
   leg_choices: Record<string, string> | null;
+  localizer_tour_id: string | null;
 };
 
 type ShowRow = {
@@ -152,6 +153,10 @@ export default function RouteTourPage() {
   const [advanceName, setAdvanceName] = useState("");
   const [advanceSending, setAdvanceSending] = useState(false);
   const [advanceMsg, setAdvanceMsg] = useState("");
+
+  // Push to Localizer
+  const [pushing, setPushing] = useState(false);
+  const [pushResult, setPushResult] = useState<{ localizerTourId: string; eventCount: number; status: string } | null>(null);
 
   // Guest List
   type GuestEntry = { id: string; guest_name: string; plus_ones: number; pass_type: string; status: string; submitted_by: string | null; notes: string | null };
@@ -373,6 +378,31 @@ export default function RouteTourPage() {
     setGuests((prev) => prev.filter((g) => g.id !== entryId));
   }
 
+  // ── Push to Localizer ────────────────────────────────────────
+
+  async function pushToLocalizer() {
+    setPushing(true);
+    setPushResult(null);
+    try {
+      const resp = await fetch(`/api/tourrouter/tours/${tourId}/push-to-localizer`, {
+        method: "POST",
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        setPushResult({ localizerTourId: "", eventCount: 0, status: "error: " + (err.error || "Failed") });
+        setPushing(false);
+        return;
+      }
+      const data = await resp.json();
+      setPushResult(data);
+      // Update local tour state
+      setTour((prev) => prev ? { ...prev, localizer_tour_id: data.localizerTourId } : prev);
+    } catch {
+      setPushResult({ localizerTourId: "", eventCount: 0, status: "error: Push failed" });
+    }
+    setPushing(false);
+  }
+
   function updateDrawerField(key: string, value: string) {
     if (!drawerShow) return;
     const updated = { ...drawerShow, [key]: key === "capacity" ? (parseInt(value) || 0) : value };
@@ -497,6 +527,33 @@ export default function RouteTourPage() {
                 ))}
               </div>
             </div>
+            {/* Push to Localizer */}
+            {shows.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                <button
+                  onClick={pushToLocalizer}
+                  disabled={pushing}
+                  style={{
+                    padding: "10px 20px", borderRadius: 10,
+                    border: "1px solid #1a6b3c",
+                    background: "#1a6b3c", color: "#fff",
+                    fontWeight: 900, fontSize: 13, cursor: pushing ? "wait" : "pointer",
+                    opacity: pushing ? 0.6 : 1,
+                  }}
+                >{pushing ? "Pushing..." : tour?.localizer_tour_id ? "Update Localizer \u2192" : "Push to Localizer \u2192"}</button>
+                {pushResult && !pushResult.status.startsWith("error") && (
+                  <div style={{ fontSize: 12 }}>
+                    <span style={{ color: "#1a6b3c", fontWeight: 600 }}>{pushResult.eventCount} shows {pushResult.status}</span>
+                    {pushResult.localizerTourId && (
+                      <Link href={`/dashboard/tours/${pushResult.localizerTourId}`} style={{ marginLeft: 8, color: "#1a5fa6", textDecoration: "none", fontWeight: 700 }}>Open in Localizer &rarr;</Link>
+                    )}
+                  </div>
+                )}
+                {pushResult && pushResult.status.startsWith("error") && (
+                  <div style={{ fontSize: 12, color: "#c0392b" }}>{pushResult.status}</div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
