@@ -56,3 +56,11 @@ export {
   type ExportRow,
   type BuildExportRowsParams,
 } from './exports';
+
+export {
+  FIELD_ALIASES,
+  MAPPER_FIELDS,
+  bestGuess,
+  autoMapHeaders,
+  type MapperField,
+} from './columnMapper';
