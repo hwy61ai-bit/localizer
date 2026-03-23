@@ -7,10 +7,10 @@ export async function GET() {
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("org_members")
     .select("org_id")
-    .eq("id", user.id)
-    .single();
+    .eq("user_id", user.id)
+    .maybeSingle();
   if (!profile?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
 
   const { data: tours, error } = await supabase

@@ -30,10 +30,10 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
   if (authError || !user) return null;
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("org_members")
     .select("org_id")
-    .eq("id", user.id)
-    .single();
+    .eq("user_id", user.id)
+    .maybeSingle();
   if (!profile?.org_id) return null;
 
   const { data: tour } = await supabase

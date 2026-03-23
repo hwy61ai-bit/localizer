@@ -5,10 +5,10 @@ async function getAuthOrg(supabase: Awaited<ReturnType<typeof supabaseServer>>) 
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return null;
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("org_members")
     .select("org_id")
-    .eq("id", user.id)
-    .single();
+    .eq("user_id", user.id)
+    .maybeSingle();
   return profile?.org_id ?? null;
 }
 

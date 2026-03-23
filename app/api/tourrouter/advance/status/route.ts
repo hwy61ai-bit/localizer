@@ -10,10 +10,10 @@ export async function GET(req: NextRequest) {
   if (!tourId) return NextResponse.json({ error: "tourId required" }, { status: 400 });
 
   const { data: profile } = await supabase
-    .from("profiles")
+    .from("org_members")
     .select("org_id")
-    .eq("id", user.id)
-    .single();
+    .eq("user_id", user.id)
+    .maybeSingle();
   if (!profile?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
 
   const { data: shows } = await supabase
