@@ -153,6 +153,13 @@ export default function RouteTourPage() {
   const [advanceSending, setAdvanceSending] = useState(false);
   const [advanceMsg, setAdvanceMsg] = useState("");
 
+  // Guest List
+  type GuestEntry = { id: string; guest_name: string; plus_ones: number; pass_type: string; status: string; submitted_by: string | null; notes: string | null };
+  const [guests, setGuests] = useState<GuestEntry[]>([]);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [addingGuest, setAddingGuest] = useState(false);
+  const [newGuest, setNewGuest] = useState({ name: "", plusOnes: 0, passType: "GA", notes: "" });
+
   // ── Fetch ──────────────────────────────────────────────────
 
   useEffect(() => {
@@ -277,6 +284,9 @@ export default function RouteTourPage() {
     setAdvanceEmail(s.advance_recipient_email || "");
     setAdvanceName("");
     setAdvanceMsg("");
+    setGuests([]);
+    setAddingGuest(false);
+    if (!s.is_off_day) fetchGuests(s.id);
   }
 
   function closeDrawer() {
@@ -318,6 +328,49 @@ export default function RouteTourPage() {
       setAdvanceMsg("Send failed");
     }
     setAdvanceSending(false);
+  }
+
+  // ── Guest list ─────────────────────────────────────────────
+
+  async function fetchGuests(showId: string) {
+    setGuestLoading(true);
+    const resp = await fetch(`/api/tourrouter/guest-list?showId=${showId}`);
+    if (resp.ok) {
+      const data = await resp.json();
+      setGuests(data.entries);
+    }
+    setGuestLoading(false);
+  }
+
+  async function addGuest() {
+    if (!drawerShow || !newGuest.name.trim()) return;
+    const resp = await fetch("/api/tourrouter/guest-list", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ showId: drawerShow.id, guestName: newGuest.name, plusOnes: newGuest.plusOnes, passType: newGuest.passType, notes: newGuest.notes }),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      setGuests((prev) => [...prev, data.entry]);
+      setNewGuest({ name: "", plusOnes: 0, passType: "GA", notes: "" });
+      setAddingGuest(false);
+    }
+  }
+
+  async function updateGuestStatus(entryId: string, status: string) {
+    const resp = await fetch(`/api/tourrouter/guest-list/${entryId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (resp.ok) {
+      setGuests((prev) => prev.map((g) => g.id === entryId ? { ...g, status } : g));
+    }
+  }
+
+  async function deleteGuest(entryId: string) {
+    await fetch(`/api/tourrouter/guest-list/${entryId}`, { method: "DELETE" });
+    setGuests((prev) => prev.filter((g) => g.id !== entryId));
   }
 
   function updateDrawerField(key: string, value: string) {
@@ -669,6 +722,95 @@ export default function RouteTourPage() {
                             >Copy</button>
                           </div>
                         </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Guest List Section */}
+              {drawerShow && !drawerShow.is_off_day && (
+                <div style={{ borderBottom: "1px solid #f0f0f0" }}>
+                  <div
+                    onClick={() => toggleSection("Guest List")}
+                    style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>Guest List</div>
+                      {guests.length > 0 && (
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#f0f0f0", color: "#666" }}>
+                          {guests.length} guest{guests.length !== 1 ? "s" : ""} + {guests.reduce((s, g) => s + g.plus_ones, 0)} = {guests.reduce((s, g) => s + 1 + g.plus_ones, 0)} total
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 12, color: "#aaa" }}>{collapsedSections.has("Guest List") ? "\u25b6" : "\u25bc"}</span>
+                  </div>
+                  {!collapsedSections.has("Guest List") && (
+                    <div style={{ paddingBottom: 14 }}>
+                      {guestLoading ? (
+                        <div style={{ fontSize: 12, color: "#888" }}>Loading...</div>
+                      ) : (
+                        <>
+                          {guests.length > 0 && (
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 10 }}>
+                              <thead>
+                                <tr>
+                                  {["Name", "+", "Pass", "Status", ""].map((h) => (
+                                    <th key={h} style={{ padding: "4px 6px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#aaa", borderBottom: "1px solid #eee" }}>{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {guests.map((g) => (
+                                  <tr key={g.id} style={{ borderBottom: "1px solid #f5f5f5" }}>
+                                    <td style={{ padding: "5px 6px", fontWeight: 600 }}>{g.guest_name}</td>
+                                    <td style={{ padding: "5px 6px", fontFamily: "monospace" }}>{g.plus_ones}</td>
+                                    <td style={{ padding: "5px 6px" }}>{g.pass_type}</td>
+                                    <td style={{ padding: "5px 6px" }}>
+                                      <span style={{
+                                        fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
+                                        background: g.status === "approved" ? "#e8f5e9" : g.status === "denied" ? "#ffebee" : "#fff3e0",
+                                        color: g.status === "approved" ? "#1a6b3c" : g.status === "denied" ? "#c0392b" : "#b35c00",
+                                      }}>{g.status}</span>
+                                    </td>
+                                    <td style={{ padding: "5px 6px", whiteSpace: "nowrap" }}>
+                                      {g.status !== "approved" && (
+                                        <button onClick={() => updateGuestStatus(g.id, "approved")} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#1a6b3c", fontWeight: 700, marginRight: 4 }}>&#10003;</button>
+                                      )}
+                                      {g.status !== "denied" && (
+                                        <button onClick={() => updateGuestStatus(g.id, "denied")} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#c0392b", fontWeight: 700, marginRight: 4 }}>&#10007;</button>
+                                      )}
+                                      <button onClick={() => deleteGuest(g.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 10, color: "#aaa" }}>&times;</button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          )}
+
+                          {addingGuest ? (
+                            <div style={{ display: "flex", gap: 6, alignItems: "flex-end", flexWrap: "wrap" }}>
+                              <div style={{ flex: 1, minWidth: 100 }}>
+                                <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>Name</label>
+                                <input value={newGuest.name} onChange={(e) => setNewGuest((p) => ({ ...p, name: e.target.value }))} placeholder="Guest name" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none" }} />
+                              </div>
+                              <div style={{ width: 40 }}>
+                                <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>+</label>
+                                <input type="number" value={newGuest.plusOnes} onChange={(e) => setNewGuest((p) => ({ ...p, plusOnes: parseInt(e.target.value) || 0 }))} min={0} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none" }} />
+                              </div>
+                              <div style={{ width: 70 }}>
+                                <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>Pass</label>
+                                <select value={newGuest.passType} onChange={(e) => setNewGuest((p) => ({ ...p, passType: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, background: "#fff", outline: "none" }}>
+                                  {["GA", "VIP", "AAA", "Photo", "Press"].map((t) => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                              </div>
+                              <button onClick={addGuest} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #111", background: "#111", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Add</button>
+                              <button onClick={() => setAddingGuest(false)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+                            </div>
+                          ) : (
+                            <button onClick={() => setAddingGuest(true)} style={{ padding: "6px 14px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>+ Add Guest</button>
+                          )}
+                        </>
                       )}
                     </div>
                   )}

@@ -77,6 +77,13 @@ export default function FinancialsPage() {
   const [rates, setRates] = useState<Record<string, number>>({});
   const [ratesLoading, setRatesLoading] = useState(false);
 
+  // Expenses
+  type Expense = { id: string; date: string; category: string; amount: number; currency: string; description: string | null; paid_by: string | null; needs_reimbursement: boolean; receipt_url: string | null };
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expFilter, setExpFilter] = useState("All");
+  const [addingExp, setAddingExp] = useState(false);
+  const [newExp, setNewExp] = useState({ date: "", category: "Transport", amount: "", currency: "USD", description: "", paidBy: "", needsReimbursement: false, receiptUrl: "" });
+
   // Computed
   const [fin, setFin] = useState<FinancialResults | null>(null);
 
@@ -98,6 +105,11 @@ export default function FinancialsPage() {
           setRates(data.tour.currency_rates || {});
         }
         setLoading(false);
+        // Fetch expenses
+        fetch(`/api/tourrouter/expenses?tourId=${tourId}`)
+          .then((r) => r.json())
+          .then((d) => setExpenses(d.expenses || []))
+          .catch(() => {});
       })
       .catch(() => setLoading(false));
   }, [tourId]);
@@ -252,6 +264,40 @@ export default function FinancialsPage() {
       }
     }
   });
+
+  // ── Expense CRUD ────────────────────────────────────────────
+
+  const CATEGORIES = ["Transport", "Accommodation", "Food", "Gear", "Misc", "Merch", "Promo", "Other"];
+
+  async function addExpense() {
+    if (!newExp.amount || !tourId) return;
+    const resp = await fetch("/api/tourrouter/expenses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tourId, date: newExp.date || new Date().toISOString().split("T")[0],
+        category: newExp.category, amount: newExp.amount, currency: newExp.currency,
+        description: newExp.description, paidBy: newExp.paidBy,
+        needsReimbursement: newExp.needsReimbursement, receiptUrl: newExp.receiptUrl,
+      }),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      setExpenses((prev) => [...prev, data.expense]);
+      setNewExp({ date: "", category: "Transport", amount: "", currency: "USD", description: "", paidBy: "", needsReimbursement: false, receiptUrl: "" });
+      setAddingExp(false);
+    }
+  }
+
+  async function deleteExpense(id: string) {
+    await fetch(`/api/tourrouter/expenses/${id}`, { method: "DELETE" });
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
+  }
+
+  const filteredExpenses = expFilter === "All" ? expenses : expenses.filter((e) => e.category === expFilter);
+  const expTotalByCategory: Record<string, number> = {};
+  expenses.forEach((e) => { expTotalByCategory[e.category] = (expTotalByCategory[e.category] || 0) + e.amount; });
+  const expGrandTotal = expenses.reduce((s, e) => s + e.amount, 0);
 
   // ── Nav ────────────────────────────────────────────────────
 
@@ -522,6 +568,99 @@ export default function FinancialsPage() {
                 <div style={{ fontSize: 12, color: "#888", marginTop: 6, textAlign: "right" }}>
                   {fmtUSD((fin.totalFuel + fin.totalFlights) / fin.showDayCount)} per show average
                 </div>
+              )}
+            </div>
+
+            {/* ══════ Section 5: Actual Expenses ══════ */}
+            <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, overflow: "hidden", marginTop: 20 }}>
+              <div style={{ padding: "16px 20px", borderBottom: "1px solid #DDDDDD", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.3px" }}>Actual Expenses</div>
+                  <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>{expenses.length} expense{expenses.length !== 1 ? "s" : ""} &middot; {fmtUSD(expGrandTotal)} total</div>
+                </div>
+                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #111", background: "#111", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Add Expense</button>
+              </div>
+
+              {/* Category filters */}
+              <div style={{ padding: "10px 20px", display: "flex", gap: 6, flexWrap: "wrap", borderBottom: "1px solid #f0f0f0" }}>
+                {["All", ...CATEGORIES].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setExpFilter(cat)}
+                    style={{
+                      padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                      border: expFilter === cat ? "1px solid #111" : "1px solid #DDDDDD",
+                      background: expFilter === cat ? "#111" : "#fff",
+                      color: expFilter === cat ? "#fff" : "#888",
+                    }}
+                  >{cat}{cat !== "All" && expTotalByCategory[cat] ? ` (${fmtUSD(expTotalByCategory[cat])})` : ""}</button>
+                ))}
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      {["Date", "Category", "Description", "Amount", "Paid By", "Reimb.", ""].map((h) => (
+                        <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "2px solid #DDDDDD", background: "#fafaf8" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Add row */}
+                    {addingExp && (
+                      <tr style={{ borderBottom: "1px solid #f0f0f0", background: "#fafff8" }}>
+                        <td style={{ padding: "6px 8px" }}><input type="date" value={newExp.date} onChange={(e) => setNewExp((p) => ({ ...p, date: e.target.value }))} style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none", width: 110 }} /></td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <select value={newExp.category} onChange={(e) => setNewExp((p) => ({ ...p, category: e.target.value }))} style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, background: "#fff", outline: "none" }}>
+                            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </td>
+                        <td style={{ padding: "6px 8px" }}><input value={newExp.description} onChange={(e) => setNewExp((p) => ({ ...p, description: e.target.value }))} placeholder="Description" style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none", width: 140 }} /></td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                            <span style={{ fontSize: 12, color: "#888" }}>$</span>
+                            <input type="number" value={newExp.amount} onChange={(e) => setNewExp((p) => ({ ...p, amount: e.target.value }))} placeholder="0" style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none", width: 70 }} />
+                          </div>
+                        </td>
+                        <td style={{ padding: "6px 8px" }}><input value={newExp.paidBy} onChange={(e) => setNewExp((p) => ({ ...p, paidBy: e.target.value }))} placeholder="Who" style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none", width: 80 }} /></td>
+                        <td style={{ padding: "6px 8px" }}><input type="checkbox" checked={newExp.needsReimbursement} onChange={(e) => setNewExp((p) => ({ ...p, needsReimbursement: e.target.checked }))} /></td>
+                        <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>
+                          <button onClick={addExpense} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#1a6b3c", fontWeight: 700 }}>Save</button>
+                          <button onClick={() => setAddingExp(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#888", marginLeft: 4 }}>Cancel</button>
+                        </td>
+                      </tr>
+                    )}
+
+                    {filteredExpenses.map((exp) => (
+                      <tr key={exp.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                        <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "monospace" }}>{exp.date}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12 }}>
+                          <span style={{ padding: "2px 8px", borderRadius: 4, background: "#f0f0f0", fontSize: 10, fontWeight: 700 }}>{exp.category}</span>
+                        </td>
+                        <td style={{ padding: "8px 12px", fontSize: 13 }}>{exp.description || "\u2014"}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "monospace", fontWeight: 600, color: "#c0392b" }}>{fmtUSD(exp.amount)}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.paid_by || "\u2014"}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.needs_reimbursement ? "Yes" : ""}</td>
+                        <td style={{ padding: "8px 12px" }}>
+                          <button onClick={() => deleteExpense(exp.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#aaa" }}>&times;</button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {/* Totals */}
+                    {expenses.length > 0 && (
+                      <tr style={{ borderTop: "2px solid #DDDDDD", background: "#fafaf8" }}>
+                        <td colSpan={3} style={{ padding: "10px 12px", fontSize: 12, fontWeight: 800, textTransform: "uppercase" }}>Total</td>
+                        <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "monospace", fontWeight: 800, color: "#c0392b" }}>{fmtUSD(expFilter === "All" ? expGrandTotal : filteredExpenses.reduce((s, e) => s + e.amount, 0))}</td>
+                        <td colSpan={3}></td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {expenses.length === 0 && !addingExp && (
+                <div style={{ padding: 32, textAlign: "center", color: "#888", fontSize: 13 }}>No expenses recorded yet</div>
               )}
             </div>
           </>
