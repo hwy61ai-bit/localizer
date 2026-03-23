@@ -50,7 +50,10 @@ export default async function ArtistsDashboardPage() {
             <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>{artists.length} artist{artists.length !== 1 ? "s" : ""}</div>
           </div>
-          <div style={{ fontSize: 12, color: "#aaa" }}>{user.email}</div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+            <div style={{ fontSize: 12, color: "#aaa" }}>{user.email}</div>
+            <a href="/dashboard/routing" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>TourRouter &rarr;</a>
+          </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {artists.map((artist) => (
