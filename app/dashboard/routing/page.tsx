@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -16,6 +16,14 @@ type RoutingTour = {
 };
 
 export default function RoutingListPage() {
+  return (
+    <Suspense fallback={null}>
+      <RoutingListInner />
+    </Suspense>
+  );
+}
+
+function RoutingListInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tours, setTours] = useState<RoutingTour[]>([]);
