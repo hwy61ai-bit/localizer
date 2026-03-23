@@ -26,3 +26,28 @@
 - Phase 2: Port v35 utility functions to lib/tourrouter/ using Claude Code
 - Paste HWY61_MASTER_CONTEXT_FOR_DREW.md + Phase 2 section from build plan into Claude Code
 - Claude Code will read reference/tour-manager_35.html for the v35 source
+
+## Session March 23, 2026 — Phases 1-12
+
+### Completed
+- [x] Phase 1: Created 8 database tables + RLS policies + crew-safe view in Supabase
+- [x] Phase 2: Ported v35 utility functions to lib/tourrouter/ (8 TypeScript modules)
+- [x] Phase 3: Created 10 API routes (tours CRUD, shows, import, flights, currency, venues)
+- [x] Phase 4: Built 5 page shells (tour list, route, import, financials, export)
+- [x] Phase 5: Built full import layer (CSV/Excel/PDF + column mapper + review/save)
+- [x] Phase 6: Built route table with stat cards, drive legs, drive/fly toggle, show detail drawer
+- [x] Phase 7: Built financial panel with summary cards, blanket expenses, per-show P&L, currency, transport
+- [x] Phase 8: Built export system with PDF, Excel, CSV generation + download page
+- [x] Phase 9: Built advancing system with email sending, public venue form, status tracking
+- [x] Phase 10: Added guest list to show drawer + expense tracking to financials page
+- [x] Phase 11: Built Localizer integration — push-to-localizer, read-only API, tour card badges
+- [x] Phase 12: Added Stripe billing routes, billing gate, checkout/portal/status
+
+### Not Done
+- Phase 13: Crew mobile app (React Native/Expo — separate project, needs own planning session)
+
+### Next Session Should Start With
+- Deploy to Vercel and test TourRouter pages in browser
+- Fix any runtime errors / broken imports
+- Start testing the import → route → financials → export flow with real data
+- Plan Phase 13 (crew mobile app) as a separate project
