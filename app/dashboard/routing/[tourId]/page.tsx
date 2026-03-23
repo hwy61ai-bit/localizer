@@ -63,6 +63,12 @@ type ShowRow = {
   promoter: string | null;
   notes: string | null;
   support: string | null;
+  advance_status: string | null;
+  advance_sent_at: string | null;
+  advance_form_token: string | null;
+  advance_form_submitted_at: string | null;
+  advance_form_submitted_by: string | null;
+  advance_recipient_email: string | null;
 };
 
 type LegInfo = {
@@ -140,6 +146,12 @@ export default function RouteTourPage() {
   const [drawerIdx, setDrawerIdx] = useState(-1);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Advancing
+  const [advanceEmail, setAdvanceEmail] = useState("");
+  const [advanceName, setAdvanceName] = useState("");
+  const [advanceSending, setAdvanceSending] = useState(false);
+  const [advanceMsg, setAdvanceMsg] = useState("");
 
   // ── Fetch ──────────────────────────────────────────────────
 
@@ -259,13 +271,53 @@ export default function RouteTourPage() {
   // ── Drawer ─────────────────────────────────────────────────
 
   function openDrawer(idx: number) {
-    setDrawerShow({ ...shows[idx] });
+    const s = shows[idx];
+    setDrawerShow({ ...s });
     setDrawerIdx(idx);
+    setAdvanceEmail(s.advance_recipient_email || "");
+    setAdvanceName("");
+    setAdvanceMsg("");
   }
 
   function closeDrawer() {
     setDrawerShow(null);
     setDrawerIdx(-1);
+    setAdvanceEmail("");
+    setAdvanceName("");
+    setAdvanceMsg("");
+  }
+
+  async function sendAdvance(emailType: string = "initial") {
+    if (!drawerShow || !advanceEmail.trim()) return;
+    setAdvanceSending(true);
+    setAdvanceMsg("");
+    try {
+      const resp = await fetch("/api/tourrouter/advance/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          showId: drawerShow.id,
+          recipientEmail: advanceEmail.trim(),
+          recipientName: advanceName.trim(),
+          emailType,
+        }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        setAdvanceMsg(err.error || "Send failed");
+      } else {
+        const data = await resp.json();
+        setAdvanceMsg("Advance sent!");
+        // Update local show
+        setShows((prev) => prev.map((s) =>
+          s.id === drawerShow.id ? { ...s, advance_status: "sent", advance_sent_at: new Date().toISOString(), advance_form_token: data.token, advance_recipient_email: advanceEmail.trim() } : s
+        ));
+        setDrawerShow((prev) => prev ? { ...prev, advance_status: "sent", advance_sent_at: new Date().toISOString(), advance_form_token: data.token, advance_recipient_email: advanceEmail.trim() } : null);
+      }
+    } catch {
+      setAdvanceMsg("Send failed");
+    }
+    setAdvanceSending(false);
   }
 
   function updateDrawerField(key: string, value: string) {
@@ -421,7 +473,7 @@ export default function RouteTourPage() {
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
-                    {["#", "Date", "Event / Venue", "City", "Country", "Offer", "USD", "Status", "Cap"].map((h) => (
+                    {["#", "Date", "Event / Venue", "City", "Country", "Offer", "USD", "Status", "Cap", "Adv"].map((h) => (
                       <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "2px solid #DDDDDD", whiteSpace: "nowrap", background: "#fafaf8" }}>{h}</th>
                     ))}
                   </tr>
@@ -518,6 +570,110 @@ export default function RouteTourPage() {
                   </div>
                 );
               })}
+
+              {/* Advancing Section */}
+              {drawerShow && !drawerShow.is_off_day && (
+                <div style={{ borderBottom: "1px solid #f0f0f0" }}>
+                  <div
+                    onClick={() => toggleSection("Advancing")}
+                    style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>Advancing</div>
+                      {drawerShow.advance_status && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
+                          background: drawerShow.advance_status === "submitted" ? "#e8f5e9" : drawerShow.advance_status?.includes("sent") ? "#fff3e0" : "#f5f5f5",
+                          color: drawerShow.advance_status === "submitted" ? "#1a6b3c" : drawerShow.advance_status?.includes("sent") ? "#b35c00" : "#888",
+                        }}>{drawerShow.advance_status === "submitted" ? "Submitted" : drawerShow.advance_status?.includes("sent") ? "Sent" : drawerShow.advance_status}</span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 12, color: "#aaa" }}>{collapsedSections.has("Advancing") ? "\u25b6" : "\u25bc"}</span>
+                  </div>
+                  {!collapsedSections.has("Advancing") && (
+                    <div style={{ paddingBottom: 14 }}>
+                      {/* Status info */}
+                      {drawerShow.advance_sent_at && (
+                        <div style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>
+                          Sent: {new Date(drawerShow.advance_sent_at).toLocaleDateString()} to {drawerShow.advance_recipient_email}
+                        </div>
+                      )}
+                      {drawerShow.advance_form_submitted_at && (
+                        <div style={{ fontSize: 12, color: "#1a6b3c", marginBottom: 8, fontWeight: 600 }}>
+                          Form submitted: {new Date(drawerShow.advance_form_submitted_at).toLocaleDateString()}
+                          {drawerShow.advance_form_submitted_by ? ` by ${drawerShow.advance_form_submitted_by}` : ""}
+                        </div>
+                      )}
+
+                      {/* Send form */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                        <div>
+                          <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Recipient Email</label>
+                          <input
+                            value={advanceEmail || drawerShow.advance_recipient_email || ""}
+                            onChange={(e) => setAdvanceEmail(e.target.value)}
+                            placeholder="promoter@venue.com"
+                            type="email"
+                            style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Recipient Name</label>
+                          <input
+                            value={advanceName}
+                            onChange={(e) => setAdvanceName(e.target.value)}
+                            placeholder="Contact name"
+                            style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => sendAdvance(drawerShow.advance_sent_at ? "followup" : "initial")}
+                          disabled={advanceSending || !(advanceEmail.trim() || drawerShow.advance_recipient_email)}
+                          style={{
+                            padding: "8px 16px", borderRadius: 8, border: "1px solid #111",
+                            background: "#111", color: "#fff", fontWeight: 700, fontSize: 12,
+                            cursor: "pointer", opacity: advanceSending ? 0.5 : 1,
+                          }}
+                        >{advanceSending ? "Sending..." : drawerShow.advance_sent_at ? "Resend / Follow-up" : "Send Advance"}</button>
+
+                        {drawerShow.advance_sent_at && (
+                          <button
+                            onClick={() => sendAdvance("final")}
+                            disabled={advanceSending}
+                            style={{
+                              padding: "8px 16px", borderRadius: 8, border: "1px solid #c0392b",
+                              background: "#fff", color: "#c0392b", fontWeight: 700, fontSize: 12, cursor: "pointer",
+                            }}
+                          >Final Request</button>
+                        )}
+
+                        {advanceMsg && <span style={{ fontSize: 12, color: advanceMsg.includes("failed") ? "#c0392b" : "#1a6b3c", fontWeight: 600 }}>{advanceMsg}</span>}
+                      </div>
+
+                      {/* Advance form link */}
+                      {drawerShow.advance_form_token && (
+                        <div style={{ marginTop: 10 }}>
+                          <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Advance Form Link</label>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <input
+                              readOnly
+                              value={`${window.location.origin}/advance/${drawerShow.advance_form_token}`}
+                              style={{ flex: 1, padding: "6px 10px", border: "1px solid #eee", borderRadius: 8, fontSize: 11, fontFamily: "monospace", color: "#888", outline: "none" }}
+                            />
+                            <button
+                              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/advance/${drawerShow.advance_form_token}`)}
+                              style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+                            >Copy</button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -556,7 +712,7 @@ function LegAndShowRow({
       {/* Drive leg row */}
       {leg && (
         <tr>
-          <td colSpan={9} style={{ padding: 0, borderBottom: "1px solid #DDDDDD" }}>
+          <td colSpan={10} style={{ padding: 0, borderBottom: "1px solid #DDDDDD" }}>
             <div style={{
               padding: "8px 16px 8px 28px",
               background: driveColorBg(flying ? null : leg.driveH),
@@ -657,6 +813,14 @@ function LegAndShowRow({
         </td>
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12 }}>
           {show.capacity ? show.capacity.toLocaleString() : "\u2014"}
+        </td>
+        <td style={{ padding: "10px 8px", textAlign: "center" }}>
+          {!show.is_off_day && show.advance_status === "submitted" && (
+            <span title="Advance submitted" style={{ fontSize: 14 }}>{"\u2705"}</span>
+          )}
+          {!show.is_off_day && show.advance_status && show.advance_status.includes("sent") && show.advance_status !== "submitted" && (
+            <span title="Advance sent" style={{ fontSize: 14 }}>{"\u2709\uFE0F"}</span>
+          )}
         </td>
       </tr>
     </>
