@@ -51,3 +51,24 @@
 - Fix any runtime errors / broken imports
 - Start testing the import → route → financials → export flow with real data
 - Plan Phase 13 (crew mobile app) as a separate project
+
+## Session March 23, 2026 — Bug Fixes + Polish
+
+### Completed After Phases
+- [x] Fixed useSearchParams Suspense boundary error
+- [x] Fixed table name: routing_tours → tours_routing in all API routes
+- [x] Fixed org lookup: profiles → org_members in 14 API routes
+- [x] Fixed column names: created_by, blanket_show_amt, blanket_off_amt mismatches
+- [x] Added TourRouter ↔ Localizer navigation links
+- [x] Added error logging to tours route for debugging
+
+### Known Bugs Still Open
+- Tour creation may still have issues — needs testing after latest deploy
+- All TourRouter features need end-to-end testing with real data
+- localhost vs production URL confusion — test on production
+
+### Next Session Should Start With
+- Test tour creation on production URL
+- If 500 persists, check Vercel logs for exact error
+- Import a real CSV/PDF and test the full flow
+- Fix any runtime errors found during testing
