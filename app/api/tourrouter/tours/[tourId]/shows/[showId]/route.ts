@@ -24,9 +24,9 @@ export async function PUT(
   const body = await req.json();
 
   const allowed = [
-    "sort_order", "date_iso", "event_name", "city", "country", "country_norm",
-    "venue", "offer_raw", "offer_amount", "offer_currency", "capacity",
-    "status", "is_off_day", "doors", "showtime", "merch", "backend",
+    "sort_order", "date_iso", "event", "city", "country", "country_norm",
+    "venue", "offer_display", "offer_amount", "offer_currency", "capacity",
+    "status", "is_off", "doors", "showtime", "merch", "backend",
     "promoter", "notes", "support",
   ];
   const update: Record<string, unknown> = {};
@@ -38,7 +38,7 @@ export async function PUT(
     .from("tour_shows")
     .update(update)
     .eq("id", showId)
-    .eq("routing_tour_id", tourId)
+    .eq("tour_id", tourId)
     .eq("org_id", orgId)
     .select()
     .single();
@@ -60,7 +60,7 @@ export async function DELETE(
     .from("tour_shows")
     .delete()
     .eq("id", showId)
-    .eq("routing_tour_id", tourId)
+    .eq("tour_id", tourId)
     .eq("org_id", orgId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

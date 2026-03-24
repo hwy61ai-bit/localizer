@@ -40,17 +40,17 @@ type ShowRow = {
   id: string;
   sort_order: number;
   date_iso: string | null;
-  event_name: string | null;
+  event: string | null;
   city: string | null;
   country: string | null;
   country_norm: string | null;
   venue: string | null;
-  offer_raw: string | null;
+  offer_display: string | null;
   offer_amount: number;
   offer_currency: string;
   capacity: number | null;
   status: string | null;
-  is_off_day: boolean;
+  is_off: boolean;
   doors: string | null;
   showtime: string | null;
   merch: string | null;
@@ -128,16 +128,16 @@ export default function FinancialsPage() {
 
     const tourShows: TourShow[] = shows.map((s) => ({
       date: s.date_iso ? new Date(s.date_iso + "T00:00:00") : null,
-      event: s.event_name || "",
+      event: s.event || "",
       city: s.city || "",
       country: s.country || "",
       countryNorm: s.country_norm || "",
       venue: s.venue || "",
-      offer: { amount: s.offer_amount || 0, currency: s.offer_currency || "USD", display: s.offer_raw || "" },
+      offer: { amount: s.offer_amount || 0, currency: s.offer_currency || "USD", display: s.offer_display || "" },
       usd: 0,
       capacity: s.capacity || 0,
       status: s.status || "",
-      isOff: s.is_off_day,
+      isOff: s.is_off,
       backend: s.backend || undefined,
       doors: s.doors || undefined,
       showtime: s.showtime || undefined,
@@ -227,7 +227,7 @@ export default function FinancialsPage() {
 
   // ── Per-show breakdown data ────────────────────────────────
 
-  const showOnlyRows = shows.filter((s) => !s.is_off_day);
+  const showOnlyRows = shows.filter((s) => !s.is_off);
   const perShowData = showOnlyRows.map((s, idx) => {
     const globalIdx = shows.indexOf(s);
     const usd = toUSD(
@@ -440,7 +440,7 @@ export default function FinancialsPage() {
                         </td>
                         <td style={{ padding: "9px 12px", fontSize: 13, fontWeight: 600 }}>{row.show.venue || "\u2014"}</td>
                         <td style={{ padding: "9px 12px", fontSize: 13 }}>{row.show.city || "\u2014"}</td>
-                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace" }}>{row.show.offer_raw || "\u2014"}</td>
+                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace" }}>{row.show.offer_display || "\u2014"}</td>
                         <td style={{ padding: "9px 12px", fontSize: 11, color: "#888" }}>{row.show.offer_currency}</td>
                         <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace", color: "#1a6b3c", fontWeight: 600 }}>{fmtUSD(row.usd)}</td>
                         <td style={{ padding: "9px 12px" }}>
@@ -492,7 +492,7 @@ export default function FinancialsPage() {
                   </thead>
                   <tbody>
                     {Object.entries(fin.byCurrency).map(([currency, amount]) => {
-                      const showCount = shows.filter((s) => s.offer_currency === currency && !s.is_off_day).length;
+                      const showCount = shows.filter((s) => s.offer_currency === currency && !s.is_off).length;
                       const rate = rates[currency] || 1;
                       const usdTotal = amount * rate;
                       return (

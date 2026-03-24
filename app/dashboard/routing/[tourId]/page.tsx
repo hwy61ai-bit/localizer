@@ -44,17 +44,17 @@ type ShowRow = {
   id: string;
   sort_order: number;
   date_iso: string | null;
-  event_name: string | null;
+  event: string | null;
   city: string | null;
   country: string | null;
   country_norm: string | null;
   venue: string | null;
-  offer_raw: string | null;
+  offer_display: string | null;
   offer_amount: number;
   offer_currency: string;
   capacity: number | null;
   status: string | null;
-  is_off_day: boolean;
+  is_off: boolean;
   doors: string | null;
   showtime: string | null;
   onstage: string | null;
@@ -104,7 +104,7 @@ const DRAWER_SECTIONS = [
   {
     title: "Financials",
     fields: [
-      { key: "offer_raw", label: "Offer" },
+      { key: "offer_display", label: "Offer" },
       { key: "offer_currency", label: "Currency" },
       { key: "backend", label: "Backend / Deal Terms" },
       { key: "status", label: "Status" },
@@ -219,7 +219,7 @@ export default function RouteTourPage() {
     // Build TourShow array for calcTourFinancials
     const tourShows: TourShow[] = shows.map((s) => ({
       date: s.date_iso ? new Date(s.date_iso + "T00:00:00") : null,
-      event: s.event_name || "",
+      event: s.event || "",
       city: s.city || "",
       country: s.country || "",
       countryNorm: s.country_norm || "",
@@ -227,12 +227,12 @@ export default function RouteTourPage() {
       offer: {
         amount: s.offer_amount || 0,
         currency: s.offer_currency || "USD",
-        display: s.offer_raw || "",
+        display: s.offer_display || "",
       },
       usd: 0,
       capacity: s.capacity || 0,
       status: s.status || "",
-      isOff: s.is_off_day,
+      isOff: s.is_off,
       backend: s.backend || undefined,
       doors: s.doors || undefined,
       showtime: s.showtime || undefined,
@@ -291,7 +291,7 @@ export default function RouteTourPage() {
     setAdvanceMsg("");
     setGuests([]);
     setAddingGuest(false);
-    if (!s.is_off_day) fetchGuests(s.id);
+    if (!s.is_off) fetchGuests(s.id);
   }
 
   function closeDrawer() {
@@ -593,7 +593,7 @@ export default function RouteTourPage() {
                     const leg = i > 0 ? legs[i] : null;
                     const flying = legChoices[i] === "fly";
                     const suggestFly = leg && leg.driveH !== null && leg.driveH > flightThreshold;
-                    const showNum = shows.slice(0, i + 1).filter((x) => !x.is_off_day).length;
+                    const showNum = shows.slice(0, i + 1).filter((x) => !x.is_off).length;
                     const sd = statusDot(s.status);
                     const fromAP = i > 0 ? getAirport(shows[i - 1].city, shows[i - 1].country) : null;
                     const toAP = getAirport(s.city, s.country);
@@ -641,7 +641,7 @@ export default function RouteTourPage() {
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #DDDDDD", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{drawerShow.event_name || "Show Detail"}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{drawerShow.event || "Show Detail"}</div>
                   <div style={{ fontSize: 13, color: "#888" }}>
                     {[formatShowDate(drawerShow.date_iso), drawerShow.city, drawerShow.country].filter(Boolean).join(" \u00b7 ")}
                   </div>
@@ -682,7 +682,7 @@ export default function RouteTourPage() {
               })}
 
               {/* Advancing Section */}
-              {drawerShow && !drawerShow.is_off_day && (
+              {drawerShow && !drawerShow.is_off && (
                 <div style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <div
                     onClick={() => toggleSection("Advancing")}
@@ -786,7 +786,7 @@ export default function RouteTourPage() {
               )}
 
               {/* Guest List Section */}
-              {drawerShow && !drawerShow.is_off_day && (
+              {drawerShow && !drawerShow.is_off && (
                 <div style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <div
                     onClick={() => toggleSection("Guest List")}
@@ -977,30 +977,30 @@ function LegAndShowRow({
         onClick={() => onClickRow(index)}
         style={{
           cursor: "pointer",
-          background: show.is_off_day ? "#fafaf8" : "#fff",
-          color: show.is_off_day ? "#aaa" : "#111",
+          background: show.is_off ? "#fafaf8" : "#fff",
+          color: show.is_off ? "#aaa" : "#111",
           borderBottom: "1px solid #DDDDDD",
         }}
-        onMouseEnter={(e) => { if (!show.is_off_day) (e.currentTarget as HTMLElement).style.background = "#f8f8f6"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = show.is_off_day ? "#fafaf8" : "#fff"; }}
+        onMouseEnter={(e) => { if (!show.is_off) (e.currentTarget as HTMLElement).style.background = "#f8f8f6"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = show.is_off ? "#fafaf8" : "#fff"; }}
       >
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, color: "#888" }}>
-          {show.is_off_day ? "\u2014" : showNum}
+          {show.is_off ? "\u2014" : showNum}
         </td>
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, whiteSpace: "nowrap" }}>
           {formatShowDate(show.date_iso)}
         </td>
         <td style={{ padding: "10px 12px" }}>
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off_day ? <em>OFF DAY</em> : (show.event_name || "\u2014")}</div>
+          <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off ? <em>OFF DAY</em> : (show.event || "\u2014")}</div>
           {show.venue && <div style={{ fontSize: 11, color: "#888" }}>{show.venue}</div>}
         </td>
         <td style={{ padding: "10px 12px", fontSize: 13 }}>{show.city || "\u2014"}</td>
         <td style={{ padding: "10px 12px", fontSize: 12 }}>{show.country || "\u2014"}</td>
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13 }}>
-          {show.is_off_day ? "\u2014" : (show.offer_raw || "\u2014")}
+          {show.is_off ? "\u2014" : (show.offer_display || "\u2014")}
         </td>
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13, color: show.offer_amount ? "#1a6b3c" : "#aaa" }}>
-          {show.is_off_day ? "\u2014" : (show.offer_amount ? fmtUSD(show.offer_amount) : "\u2014")}
+          {show.is_off ? "\u2014" : (show.offer_amount ? fmtUSD(show.offer_amount) : "\u2014")}
         </td>
         <td style={{ padding: "10px 12px" }}>
           {sd.label && (
@@ -1014,10 +1014,10 @@ function LegAndShowRow({
           {show.capacity ? show.capacity.toLocaleString() : "\u2014"}
         </td>
         <td style={{ padding: "10px 8px", textAlign: "center" }}>
-          {!show.is_off_day && show.advance_status === "submitted" && (
+          {!show.is_off && show.advance_status === "submitted" && (
             <span title="Advance submitted" style={{ fontSize: 14 }}>{"\u2705"}</span>
           )}
-          {!show.is_off_day && show.advance_status && show.advance_status.includes("sent") && show.advance_status !== "submitted" && (
+          {!show.is_off && show.advance_status && show.advance_status.includes("sent") && show.advance_status !== "submitted" && (
             <span title="Advance sent" style={{ fontSize: 14 }}>{"\u2709\uFE0F"}</span>
           )}
         </td>

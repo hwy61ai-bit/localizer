@@ -47,7 +47,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
   const { data: shows } = await supabase
     .from("tour_shows")
     .select("*")
-    .eq("routing_tour_id", tourId)
+    .eq("tour_id", tourId)
     .order("sort_order");
 
   const showsArr = shows || [];
@@ -65,7 +65,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
 
   const tourShows: TourShow[] = showsArr.map((s: Record<string, unknown>) => ({
     date: s.date_iso ? new Date((s.date_iso as string) + "T00:00:00") : null,
-    event: (s.event_name as string) || "",
+    event: (s.event as string) || "",
     city: (s.city as string) || "",
     country: (s.country as string) || "",
     countryNorm: (s.country_norm as string) || "",
@@ -73,12 +73,12 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     offer: {
       amount: (s.offer_amount as number) || 0,
       currency: (s.offer_currency as string) || "USD",
-      display: (s.offer_raw as string) || "",
+      display: (s.offer_display as string) || "",
     },
     usd: 0,
     capacity: (s.capacity as number) || 0,
     status: (s.status as string) || "",
-    isOff: (s.is_off_day as boolean) || false,
+    isOff: (s.is_off as boolean) || false,
     backend: (s.backend as string) || undefined,
     doors: (s.doors as string) || undefined,
     showtime: (s.showtime as string) || undefined,

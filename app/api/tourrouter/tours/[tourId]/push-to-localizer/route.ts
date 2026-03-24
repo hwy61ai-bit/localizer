@@ -34,8 +34,8 @@ export async function POST(
   const { data: shows } = await supabase
     .from("tour_shows")
     .select("*")
-    .eq("routing_tour_id", tourId)
-    .eq("is_off_day", false)
+    .eq("tour_id", tourId)
+    .eq("is_off", false)
     .order("sort_order");
 
   const showsArr = shows || [];
@@ -124,7 +124,7 @@ export async function POST(
       day,
       city: (s.city as string) || "",
       state: (s.country as string) || null,
-      venue: (s.venue as string) || (s.event_name as string) || "",
+      venue: (s.venue as string) || (s.event as string) || "",
       venue_name: (s.venue as string) || null,
       venue_city: (s.city as string) || null,
       venue_state: (s.country as string) || null,

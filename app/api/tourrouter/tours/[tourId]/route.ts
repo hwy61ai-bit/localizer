@@ -33,7 +33,7 @@ export async function GET(
   const { data: shows } = await supabase
     .from("tour_shows")
     .select("*")
-    .eq("routing_tour_id", tourId)
+    .eq("tour_id", tourId)
     .order("sort_order");
 
   return NextResponse.json({ tour, shows: shows ?? [] });

@@ -20,17 +20,17 @@ type RawRow = Record<string, string>;
 
 type ParsedShow = {
   date_iso: string | null;
-  event_name: string;
+  event: string;
   city: string;
   country: string;
   country_norm: string;
   venue: string;
-  offer_raw: string;
+  offer_display: string;
   offer_amount: number;
   offer_currency: string;
   capacity: number;
   status: string;
-  is_off_day: boolean;
+  is_off: boolean;
   doors: string;
   showtime: string;
   merch: string;
@@ -256,17 +256,17 @@ export default function ImportPage() {
           const dateObj = parseDate(s.date as string);
           return {
             date_iso: dateObj ? dateObj.toISOString().split("T")[0] : null,
-            event_name: String(s.event || "").trim(),
+            event: String(s.event || "").trim(),
             city: String(s.city || "").trim(),
             country: String(s.country || "").trim(),
             country_norm: normalizeCountry(String(s.country || "")),
             venue: String(s.venue || "").trim(),
-            offer_raw: String(s.offer || ""),
+            offer_display: String(s.offer || ""),
             offer_amount: offerParsed.amount,
             offer_currency: offerParsed.currency,
             capacity: parseInt(String(s.capacity || "0")) || 0,
             status: String(s.status || "").trim(),
-            is_off_day: false,
+            is_off: false,
             doors: String(s.doors || "").trim(),
             showtime: String(s.showtime || "").trim(),
             merch: String(s.merch || "").trim(),
@@ -325,17 +325,17 @@ export default function ImportPage() {
 
       built.push({
         date_iso: `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`,
-        event_name: eventStr,
+        event: eventStr,
         city: cityStr,
         country: countryRaw,
         country_norm: normalizeCountry(countryRaw),
         venue: String(row.venue || "").trim(),
-        offer_raw: String(row.offer || "").trim(),
+        offer_display: String(row.offer || "").trim(),
         offer_amount: offerParsed.amount,
         offer_currency: offerParsed.currency,
         capacity: parseInt(row.capacity) || 0,
         status: String(row.status || "").trim(),
-        is_off_day: isOff,
+        is_off: isOff,
         doors: String(row.doors || "").trim(),
         showtime: String(row.showtime || "").trim(),
         merch: String(row.merch || "").trim(),
@@ -609,10 +609,10 @@ export default function ImportPage() {
                 </thead>
                 <tbody>
                   {shows.map((s, i) => (
-                    <tr key={i} style={{ background: s.is_off_day ? "#fafaf8" : "#fff" }}>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", color: s.is_off_day ? "#aaa" : "#111" }}>{s.is_off_day ? "OFF" : i + 1}</td>
+                    <tr key={i} style={{ background: s.is_off ? "#fafaf8" : "#fff" }}>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", color: s.is_off ? "#aaa" : "#111" }}>{s.is_off ? "OFF" : i + 1}</td>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", whiteSpace: "nowrap" }}>{s.date_iso || "\u2014"}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", fontWeight: 600 }}>{s.event_name}</td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", fontWeight: 600 }}>{s.event}</td>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.city}</td>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.country}</td>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.venue}</td>

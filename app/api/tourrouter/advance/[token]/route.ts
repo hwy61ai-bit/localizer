@@ -18,7 +18,7 @@ export async function GET(
 
   const { data: show } = await supabase
     .from("tour_shows")
-    .select("id, date_iso, event_name, city, country, venue, doors, showtime, onstage, curfew, routing_tour_id, advance_form_submitted_at")
+    .select("id, date_iso, event, city, country, venue, doors, showtime, onstage, curfew, tour_id, advance_form_submitted_at")
     .eq("advance_form_token", token)
     .single();
 
@@ -28,7 +28,7 @@ export async function GET(
   const { data: tour } = await supabase
     .from("tours_routing")
     .select("name, artist_id, artists(name)")
-    .eq("id", show.routing_tour_id)
+    .eq("id", show.tour_id)
     .single();
 
   const tourData = tour as Record<string, unknown> | null;
@@ -46,7 +46,7 @@ export async function GET(
     showId: show.id,
     date: formattedDate,
     dateRaw: show.date_iso,
-    eventName: show.event_name,
+    eventName: show.event,
     city: show.city,
     country: show.country,
     venue: show.venue,
