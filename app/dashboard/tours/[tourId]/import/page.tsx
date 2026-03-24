@@ -248,25 +248,21 @@ export default function ImportPage() {
             <button
               style={{
                 ...s.parseBtn,
-                opacity: !rawText.trim() || parsing || extracting ? 0.5 : 1,
+                position: "relative" as const,
+                overflow: "hidden",
+                opacity: !rawText.trim() || extracting ? 0.5 : 1,
                 cursor: !rawText.trim() || parsing || extracting ? "not-allowed" : "pointer",
               }}
               disabled={!rawText.trim() || parsing || extracting}
               onClick={handleParse}
             >
-              {extracting ? "Extracting file…" : parsing ? "Parsing with AI…" : "Parse Schedule →"}
+              {parsing && (
+                <div className="progress-shimmer" style={{ position: "absolute", inset: 0, borderRadius: 12 }} />
+              )}
+              <span style={{ position: "relative", zIndex: 1 }}>
+                {extracting ? "Extracting file\u2026" : parsing ? "Parsing\u2026" : "Parse Schedule \u2192"}
+              </span>
             </button>
-
-            {parsing && (
-              <div style={{ marginTop: 16 }}>
-                <div style={{ width: "100%", height: 6, background: "#e0e0e0", borderRadius: 3, overflow: "hidden" }}>
-                  <div className="progress-shimmer" style={{ width: "100%", height: "100%", borderRadius: 3 }} />
-                </div>
-                <div style={{ marginTop: 8, fontSize: 12, color: "#888", textAlign: "center" }}>
-                  Parsing your schedule…
-                </div>
-              </div>
-            )}
           </div>
         )}
 
