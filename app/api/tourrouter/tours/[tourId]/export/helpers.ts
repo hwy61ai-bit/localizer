@@ -64,7 +64,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
   }
 
   const tourShows: TourShow[] = showsArr.map((s: Record<string, unknown>) => ({
-    date: s.date ? new Date((s.date as string) + "T00:00:00") : null,
+    date: s.date_iso ? new Date((s.date_iso as string) + "T00:00:00") : null,
     event: (s.event_name as string) || "",
     city: (s.city as string) || "",
     country: (s.country as string) || "",

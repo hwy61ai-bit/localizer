@@ -19,7 +19,7 @@ type TourData = { id: string; name: string };
 type RawRow = Record<string, string>;
 
 type ParsedShow = {
-  date: string | null;
+  date_iso: string | null;
   event_name: string;
   city: string;
   country: string;
@@ -255,7 +255,7 @@ export default function ImportPage() {
           const offerParsed = parseOffer(s.offer as string, s.country as string);
           const dateObj = parseDate(s.date as string);
           return {
-            date: dateObj ? dateObj.toISOString().split("T")[0] : null,
+            date_iso: dateObj ? dateObj.toISOString().split("T")[0] : null,
             event_name: String(s.event || "").trim(),
             city: String(s.city || "").trim(),
             country: String(s.country || "").trim(),
@@ -324,7 +324,7 @@ export default function ImportPage() {
       const offerParsed = parseOffer(row.offer, countryRaw);
 
       built.push({
-        date: `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`,
+        date_iso: `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`,
         event_name: eventStr,
         city: cityStr,
         country: countryRaw,
@@ -346,7 +346,7 @@ export default function ImportPage() {
     }
 
     // Sort by date
-    built.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+    built.sort((a, b) => (a.date_iso || "").localeCompare(b.date_iso || ""));
     setShows(built);
     setStep(3);
     setError("");
@@ -611,7 +611,7 @@ export default function ImportPage() {
                   {shows.map((s, i) => (
                     <tr key={i} style={{ background: s.is_off_day ? "#fafaf8" : "#fff" }}>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", color: s.is_off_day ? "#aaa" : "#111" }}>{s.is_off_day ? "OFF" : i + 1}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", whiteSpace: "nowrap" }}>{s.date || "\u2014"}</td>
+                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", whiteSpace: "nowrap" }}>{s.date_iso || "\u2014"}</td>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", fontWeight: 600 }}>{s.event_name}</td>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.city}</td>
                       <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.country}</td>

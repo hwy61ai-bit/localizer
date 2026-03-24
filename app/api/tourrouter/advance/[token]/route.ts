@@ -18,7 +18,7 @@ export async function GET(
 
   const { data: show } = await supabase
     .from("tour_shows")
-    .select("id, date, event_name, city, country, venue, doors, showtime, onstage, curfew, routing_tour_id, advance_form_submitted_at")
+    .select("id, date_iso, event_name, city, country, venue, doors, showtime, onstage, curfew, routing_tour_id, advance_form_submitted_at")
     .eq("advance_form_token", token)
     .single();
 
@@ -34,10 +34,10 @@ export async function GET(
   const tourData = tour as Record<string, unknown> | null;
   const artistData = (tourData?.artists as Record<string, unknown>) || null;
 
-  let formattedDate = show.date || "";
-  if (show.date) {
+  let formattedDate = show.date_iso || "";
+  if (show.date_iso) {
     try {
-      const d = new Date(show.date + "T12:00:00");
+      const d = new Date(show.date_iso + "T12:00:00");
       formattedDate = d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
     } catch { /* use raw */ }
   }
@@ -45,7 +45,7 @@ export async function GET(
   return NextResponse.json({
     showId: show.id,
     date: formattedDate,
-    dateRaw: show.date,
+    dateRaw: show.date_iso,
     eventName: show.event_name,
     city: show.city,
     country: show.country,

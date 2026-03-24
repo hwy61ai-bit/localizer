@@ -106,7 +106,7 @@ export async function POST(
   // Map routing shows → Localizer events
   // CRITICAL: Only dates, venues, cities — NEVER financial data
   const events = showsArr.map((s: Record<string, unknown>, i: number) => {
-    const dateIso = (s.date as string) || null;
+    const dateIso = (s.date_iso as string) || null;
     let day: string | null = null;
     if (dateIso) {
       try {

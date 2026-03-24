@@ -43,7 +43,7 @@ type TourData = {
 type ShowRow = {
   id: string;
   sort_order: number;
-  date: string | null;
+  date_iso: string | null;
   event_name: string | null;
   city: string | null;
   country: string | null;
@@ -207,9 +207,9 @@ export default function RouteTourPage() {
       const legCtry = legCountry(prev.country, s.country);
       const distStr = km ? fmtDist(km, legCtry === "usa" ? "usa" : "europe") : "?";
       let dayGap = 0;
-      if (prev.date && s.date) {
-        const d1 = new Date(prev.date);
-        const d2 = new Date(s.date);
+      if (prev.date_iso && s.date_iso) {
+        const d1 = new Date(prev.date_iso);
+        const d2 = new Date(s.date_iso);
         dayGap = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
       }
       return { km, driveH, distStr, legCtry, dayGap, fromCity: prev.city || "?", toCity: s.city || "?" };
@@ -218,7 +218,7 @@ export default function RouteTourPage() {
 
     // Build TourShow array for calcTourFinancials
     const tourShows: TourShow[] = shows.map((s) => ({
-      date: s.date ? new Date(s.date + "T00:00:00") : null,
+      date: s.date_iso ? new Date(s.date_iso + "T00:00:00") : null,
       event: s.event_name || "",
       city: s.city || "",
       country: s.country || "",
@@ -643,7 +643,7 @@ export default function RouteTourPage() {
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{drawerShow.event_name || "Show Detail"}</div>
                   <div style={{ fontSize: 13, color: "#888" }}>
-                    {[formatShowDate(drawerShow.date), drawerShow.city, drawerShow.country].filter(Boolean).join(" \u00b7 ")}
+                    {[formatShowDate(drawerShow.date_iso), drawerShow.city, drawerShow.country].filter(Boolean).join(" \u00b7 ")}
                   </div>
                 </div>
                 <button onClick={closeDrawer} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888", padding: "4px 8px" }}>&times;</button>
@@ -988,7 +988,7 @@ function LegAndShowRow({
           {show.is_off_day ? "\u2014" : showNum}
         </td>
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, whiteSpace: "nowrap" }}>
-          {formatShowDate(show.date)}
+          {formatShowDate(show.date_iso)}
         </td>
         <td style={{ padding: "10px 12px" }}>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off_day ? <em>OFF DAY</em> : (show.event_name || "\u2014")}</div>

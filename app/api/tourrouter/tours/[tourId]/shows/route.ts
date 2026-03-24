@@ -35,7 +35,7 @@ export async function POST(
     routing_tour_id: tourId,
     org_id: profile.org_id,
     sort_order: i,
-    date: s.date || null,
+    date_iso: s.date_iso || s.date || null,
     event_name: s.event_name || s.event || null,
     city: s.city || null,
     country: s.country || null,

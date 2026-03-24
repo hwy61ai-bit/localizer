@@ -39,7 +39,7 @@ type TourData = {
 type ShowRow = {
   id: string;
   sort_order: number;
-  date: string | null;
+  date_iso: string | null;
   event_name: string | null;
   city: string | null;
   country: string | null;
@@ -127,7 +127,7 @@ export default function FinancialsPage() {
     }
 
     const tourShows: TourShow[] = shows.map((s) => ({
-      date: s.date ? new Date(s.date + "T00:00:00") : null,
+      date: s.date_iso ? new Date(s.date_iso + "T00:00:00") : null,
       event: s.event_name || "",
       city: s.city || "",
       country: s.country || "",
@@ -436,7 +436,7 @@ export default function FinancialsPage() {
                     {perShowData.map((row, i) => (
                       <tr key={row.show.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
                         <td style={{ padding: "9px 12px", fontSize: 12, fontFamily: "monospace", whiteSpace: "nowrap" }}>
-                          {row.show.date ? formatDateDisplay(new Date(row.show.date + "T00:00:00")) : "\u2014"}
+                          {row.show.date_iso ? formatDateDisplay(new Date(row.show.date_iso + "T00:00:00")) : "\u2014"}
                         </td>
                         <td style={{ padding: "9px 12px", fontSize: 13, fontWeight: 600 }}>{row.show.venue || "\u2014"}</td>
                         <td style={{ padding: "9px 12px", fontSize: 13 }}>{row.show.city || "\u2014"}</td>

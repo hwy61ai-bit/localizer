@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   const artistName = (artistData?.name as string) || (tourData?.name as string) || "Artist";
   const venueName = show.venue || "Venue";
   const city = show.city || "";
-  const showDate = show.date || "";
+  const showDate = show.date_iso || "";
 
   let formattedDate = showDate;
   if (showDate) {
