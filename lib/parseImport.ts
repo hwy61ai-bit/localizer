@@ -33,8 +33,10 @@ Rules:
 - city and state should be separate fields. Use 2-letter state abbreviation for US states
 - promoter_email: any email address associated with the show promoter or buyer
 - manager_email: any email address for a manager, agent, or tour manager
-- notes: anything else relevant (ticket link, opener, special instructions, etc.)
+- notes: ALWAYS set to null. Do NOT put any data in notes.
 - If a field is not present, use null — do not guess
+
+IMPORTANT: ONLY extract the fields listed above. Completely IGNORE all other data in the source file including: financial data, ticket prices, offers, guarantees, capacity, age limits, set times, door times, curfews, hospitality info, production notes, contract details, backend deals, merch percentages, support acts, and any other fields. Do NOT include any of this data in any field, especially not in notes.
 
 Return ONLY a valid JSON object in this exact shape, no explanation, no markdown:
 {
