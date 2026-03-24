@@ -213,12 +213,12 @@ export default function ImportPage() {
             <div style={s.uploadRow}>
               <div style={s.uploadLabel}>Upload a file</div>
               <div style={s.uploadFormats}>
-                PDF · DOCX · CSV · TXT · JPG · PNG
+                PDF · DOCX · XLSX · CSV · TXT · JPG · PNG
               </div>
               <input
                 ref={fileRef}
                 type="file"
-                accept=".pdf,.doc,.docx,.csv,.txt,.jpg,.jpeg,.png,.gif,.webp"
+                accept=".pdf,.doc,.docx,.csv,.txt,.jpg,.jpeg,.png,.gif,.webp,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                 style={{ display: "none" }}
                 onChange={handleFile}
               />

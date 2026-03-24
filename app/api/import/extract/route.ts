@@ -14,7 +14,18 @@ export async function POST(request: Request) {
     const ext = filename.split(".").pop()?.toLowerCase();
     let extractedText = "";
 
-    if (ext === "docx" || ext === "doc") {
+    if (ext === "xlsx" || ext === "xls") {
+      const XLSX = await import("xlsx");
+      const buffer = Buffer.from(base64, "base64");
+      const wb = XLSX.read(buffer, { type: "buffer", raw: true, cellDates: true });
+      const lines: string[] = [];
+      for (const sheetName of wb.SheetNames) {
+        const ws = wb.Sheets[sheetName];
+        const csv = XLSX.utils.sheet_to_csv(ws, { FS: "\t", RS: "\n" });
+        lines.push(csv);
+      }
+      extractedText = lines.join("\n\n");
+    } else if (ext === "docx" || ext === "doc") {
       const mammoth = await import("mammoth");
       const buffer = Buffer.from(base64, "base64");
       const result = await mammoth.extractRawText({ buffer });
