@@ -72,3 +72,14 @@
 - If 500 persists, check Vercel logs for exact error
 - Import a real CSV/PDF and test the full flow
 - Fix any runtime errors found during testing
+
+### UI Polish
+- [x] TourRouter tour tiles now match Localizer square tile design
+- [x] Hover shows photo upload + delete buttons
+- [x] Artist image background with dark overlay
+- [x] Codebase health check: all clean (zero TS errors, no broken imports, no wrong table/column names)
+
+### Coming Back To
+- Test tour creation on production
+- Test full flow: create tour → import CSV → route table → financials → export
+- Fix any runtime bugs found during testing
