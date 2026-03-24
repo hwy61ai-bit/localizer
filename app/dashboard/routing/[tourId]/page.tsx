@@ -499,6 +499,7 @@ export default function RouteTourPage() {
   // ── Render ─────────────────────────────────────────────────
 
   return (
+    <>
     <div className="fade-in" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
@@ -625,6 +626,7 @@ export default function RouteTourPage() {
           </div>
         )}
       </div>
+    </div>
 
       {/* ══════ Slide Drawer ══════ */}
       {drawerShow !== null && (
@@ -877,7 +879,7 @@ export default function RouteTourPage() {
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
 
