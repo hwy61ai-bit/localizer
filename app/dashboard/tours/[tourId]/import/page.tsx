@@ -250,6 +250,7 @@ export default function ImportPage() {
                 ...s.parseBtn,
                 position: "relative" as const,
                 overflow: "hidden",
+                background: parsing ? "#222" : "#111",
                 opacity: !rawText.trim() || extracting ? 0.5 : 1,
                 cursor: !rawText.trim() || parsing || extracting ? "not-allowed" : "pointer",
               }}
@@ -257,7 +258,12 @@ export default function ImportPage() {
               onClick={handleParse}
             >
               {parsing && (
-                <div className="progress-shimmer" style={{ position: "absolute", inset: 0, borderRadius: 12 }} />
+                <div style={{
+                  position: "absolute", inset: 0, borderRadius: 12,
+                  background: "linear-gradient(90deg, #222 0%, #444 50%, #222 100%)",
+                  backgroundSize: "200% 100%",
+                  animation: "progressShimmer 1.5s linear infinite",
+                }} />
               )}
               <span style={{ position: "relative", zIndex: 1 }}>
                 {extracting ? "Extracting file\u2026" : parsing ? "Parsing\u2026" : "Parse Schedule \u2192"}
