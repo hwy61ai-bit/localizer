@@ -39,7 +39,7 @@ export async function POST(
     event_name: s.event_name || s.event || null,
     city: s.city || null,
     country: s.country || null,
-    country_normalized: s.country_normalized || null,
+    country_norm: s.country_norm || null,
     venue: s.venue || null,
     offer_raw: s.offer_raw || s.offer || null,
     offer_amount: s.offer_amount ?? 0,

@@ -23,7 +23,7 @@ type ParsedShow = {
   event_name: string;
   city: string;
   country: string;
-  country_normalized: string;
+  country_norm: string;
   venue: string;
   offer_raw: string;
   offer_amount: number;
@@ -259,7 +259,7 @@ export default function ImportPage() {
             event_name: String(s.event || "").trim(),
             city: String(s.city || "").trim(),
             country: String(s.country || "").trim(),
-            country_normalized: normalizeCountry(String(s.country || "")),
+            country_norm: normalizeCountry(String(s.country || "")),
             venue: String(s.venue || "").trim(),
             offer_raw: String(s.offer || ""),
             offer_amount: offerParsed.amount,
@@ -328,7 +328,7 @@ export default function ImportPage() {
         event_name: eventStr,
         city: cityStr,
         country: countryRaw,
-        country_normalized: normalizeCountry(countryRaw),
+        country_norm: normalizeCountry(countryRaw),
         venue: String(row.venue || "").trim(),
         offer_raw: String(row.offer || "").trim(),
         offer_amount: offerParsed.amount,

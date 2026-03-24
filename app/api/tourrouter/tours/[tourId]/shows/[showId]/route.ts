@@ -24,7 +24,7 @@ export async function PUT(
   const body = await req.json();
 
   const allowed = [
-    "sort_order", "date", "event_name", "city", "country", "country_normalized",
+    "sort_order", "date", "event_name", "city", "country", "country_norm",
     "venue", "offer_raw", "offer_amount", "offer_currency", "capacity",
     "status", "is_off_day", "doors", "showtime", "merch", "backend",
     "promoter", "notes", "support",

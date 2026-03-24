@@ -47,7 +47,7 @@ type ShowRow = {
   event_name: string | null;
   city: string | null;
   country: string | null;
-  country_normalized: string | null;
+  country_norm: string | null;
   venue: string | null;
   offer_raw: string | null;
   offer_amount: number;
@@ -222,7 +222,7 @@ export default function RouteTourPage() {
       event: s.event_name || "",
       city: s.city || "",
       country: s.country || "",
-      countryNorm: s.country_normalized || "",
+      countryNorm: s.country_norm || "",
       venue: s.venue || "",
       offer: {
         amount: s.offer_amount || 0,

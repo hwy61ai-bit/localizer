@@ -68,7 +68,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     event: (s.event_name as string) || "",
     city: (s.city as string) || "",
     country: (s.country as string) || "",
-    countryNorm: (s.country_normalized as string) || "",
+    countryNorm: (s.country_norm as string) || "",
     venue: (s.venue as string) || "",
     offer: {
       amount: (s.offer_amount as number) || 0,
