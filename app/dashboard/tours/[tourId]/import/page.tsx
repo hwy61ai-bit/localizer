@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -29,6 +29,34 @@ export default function ImportPage() {
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [parseProgress, setParseProgress] = useState(0);
+  const parseIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const parseStartRef = useRef<number>(0);
+
+  const startParseProgress = useCallback(() => {
+    setParseProgress(0);
+    parseStartRef.current = Date.now();
+    if (parseIntervalRef.current) clearInterval(parseIntervalRef.current);
+    parseIntervalRef.current = setInterval(() => {
+      const elapsed = (Date.now() - parseStartRef.current) / 1000;
+      let pct: number;
+      if (elapsed < 5) {
+        pct = (elapsed / 5) * 70; // 0-70% in first 5s
+      } else if (elapsed < 15) {
+        pct = 70 + ((elapsed - 5) / 10) * 20; // 70-90% over next 10s
+      } else {
+        pct = 90; // cap at 90%
+      }
+      setParseProgress(Math.min(Math.round(pct), 90));
+    }, 100);
+  }, []);
+
+  const stopParseProgress = useCallback(() => {
+    if (parseIntervalRef.current) clearInterval(parseIntervalRef.current);
+    parseIntervalRef.current = null;
+    setParseProgress(100);
+    setTimeout(() => setParseProgress(0), 500);
+  }, []);
 
   useEffect(() => {
     const prevent = (e: DragEvent) => e.preventDefault();
@@ -111,6 +139,7 @@ export default function ImportPage() {
     setEvents(null);
     setWarnings([]);
     setParsing(true);
+    startParseProgress();
 
     try {
       const res = await fetch("/api/import", {
@@ -131,6 +160,7 @@ export default function ImportPage() {
     } catch {
       setError("Network error. Please try again.");
     } finally {
+      stopParseProgress();
       setParsing(false);
     }
   }
@@ -245,18 +275,20 @@ export default function ImportPage() {
 
             {error && <div style={s.errorBox}>{error}</div>}
 
-            {(() => { console.log("PARSING STATE:", parsing); return null; })()}
             <button
               style={{
                 ...s.parseBtn,
-                background: parsing ? "#444" : "#111",
-                opacity: !rawText.trim() || extracting ? 0.5 : parsing ? 0.8 : 1,
+                background: parsing
+                  ? `linear-gradient(to right, #1a6b3c ${parseProgress}%, #333 ${parseProgress}%)`
+                  : "#111",
+                opacity: !rawText.trim() || extracting ? 0.5 : 1,
                 cursor: !rawText.trim() || parsing || extracting ? "not-allowed" : "pointer",
+                transition: "background 0.15s",
               }}
               disabled={!rawText.trim() || parsing || extracting}
               onClick={handleParse}
             >
-              {extracting ? "Extracting file\u2026" : parsing ? "\u23f3 Parsing..." : "Parse Schedule \u2192"}
+              {extracting ? "Extracting file\u2026" : parsing ? `Parsing... ${parseProgress}%` : "Parse Schedule \u2192"}
             </button>
           </div>
         )}
