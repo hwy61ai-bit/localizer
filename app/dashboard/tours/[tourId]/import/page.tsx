@@ -245,29 +245,18 @@ export default function ImportPage() {
 
             {error && <div style={s.errorBox}>{error}</div>}
 
+            {(() => { console.log("PARSING STATE:", parsing); return null; })()}
             <button
               style={{
                 ...s.parseBtn,
-                position: "relative" as const,
-                overflow: "hidden",
-                background: parsing ? "#222" : "#111",
-                opacity: !rawText.trim() || extracting ? 0.5 : 1,
+                background: parsing ? "#444" : "#111",
+                opacity: !rawText.trim() || extracting ? 0.5 : parsing ? 0.8 : 1,
                 cursor: !rawText.trim() || parsing || extracting ? "not-allowed" : "pointer",
               }}
               disabled={!rawText.trim() || parsing || extracting}
               onClick={handleParse}
             >
-              {parsing && (
-                <div style={{
-                  position: "absolute", inset: 0, borderRadius: 12,
-                  background: "linear-gradient(90deg, #222 0%, #444 50%, #222 100%)",
-                  backgroundSize: "200% 100%",
-                  animation: "progressShimmer 1.5s linear infinite",
-                }} />
-              )}
-              <span style={{ position: "relative", zIndex: 1 }}>
-                {extracting ? "Extracting file\u2026" : parsing ? "Parsing\u2026" : "Parse Schedule \u2192"}
-              </span>
+              {extracting ? "Extracting file\u2026" : parsing ? "\u23f3 Parsing..." : "Parse Schedule \u2192"}
             </button>
           </div>
         )}
