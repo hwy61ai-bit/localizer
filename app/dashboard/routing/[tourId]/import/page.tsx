@@ -63,8 +63,22 @@ export default function ImportPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const [dragOverSpreadsheet, setDragOverSpreadsheet] = useState(false);
+  const [dragOverPdf, setDragOverPdf] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
+
+  // Prevent browser from opening dropped files
+  useEffect(() => {
+    const prevent = (e: DragEvent) => e.preventDefault();
+    window.addEventListener("dragover", prevent);
+    window.addEventListener("drop", prevent);
+    return () => {
+      window.removeEventListener("dragover", prevent);
+      window.removeEventListener("drop", prevent);
+    };
+  }, []);
 
   useEffect(() => {
     fetch(`/api/tourrouter/tours/${tourId}`)
@@ -72,6 +86,35 @@ export default function ImportPage() {
       .then((data) => setTour(data.tour))
       .catch(() => {});
   }, [tourId]);
+
+  // ── Handle file drops ────────────────────────────────────────
+  function handleSpreadsheetDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOverSpreadsheet(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const input = fileInputRef.current;
+    if (input) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  function handlePdfDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOverPdf(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    const input = pdfInputRef.current;
+    if (input) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
 
   // ── STEP 1: Parse sources ──────────────────────────────────
 
@@ -413,23 +456,31 @@ export default function ImportPage() {
 
             <div
               onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragOverSpreadsheet(true); }}
+              onDragLeave={() => setDragOverSpreadsheet(false)}
+              onDrop={handleSpreadsheetDrop}
               className="card-hover"
-              style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 32, textAlign: "center", cursor: "pointer" }}
+              style={{ background: "#fff", border: dragOverSpreadsheet ? "2px dashed #fff" : "1px solid #DDDDDD", borderRadius: 14, padding: 32, textAlign: "center", cursor: "pointer", transition: "border 0.2s" }}
             >
               <div style={{ fontSize: 36, marginBottom: 12 }}>{"\u{1F4CA}"}</div>
               <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>Upload Spreadsheet</div>
               <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>Upload a .csv, .xlsx, or .xls file with your tour schedule</div>
+              <div style={{ fontSize: 12, color: "#aaa", marginTop: 10 }}>or drag and drop</div>
               <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={handleFileUpload} />
             </div>
 
             <div
               onClick={() => pdfInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setDragOverPdf(true); }}
+              onDragLeave={() => setDragOverPdf(false)}
+              onDrop={handlePdfDrop}
               className="card-hover"
-              style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 32, textAlign: "center", cursor: pdfLoading ? "wait" : "pointer", opacity: pdfLoading ? 0.6 : 1 }}
+              style={{ background: "#fff", border: dragOverPdf ? "2px dashed #fff" : "1px solid #DDDDDD", borderRadius: 14, padding: 32, textAlign: "center", cursor: pdfLoading ? "wait" : "pointer", opacity: pdfLoading ? 0.6 : 1, transition: "border 0.2s" }}
             >
               <div style={{ fontSize: 36, marginBottom: 12 }}>{pdfLoading ? "\u23F3" : "\u{1F4C4}"}</div>
               <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>{pdfLoading ? "Parsing PDF..." : "Upload Deal Memo (PDF)"}</div>
               <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>Upload a deal memo PDF — AI will extract show data automatically</div>
+              <div style={{ fontSize: 12, color: "#aaa", marginTop: 10 }}>or drag and drop</div>
               <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={handlePdfUpload} />
             </div>
           </div>
