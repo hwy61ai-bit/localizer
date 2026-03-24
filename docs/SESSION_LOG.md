@@ -83,3 +83,56 @@
 - Test tour creation on production
 - Test full flow: create tour → import CSV → route table → financials → export
 - Fix any runtime bugs found during testing
+
+## Session March 23, 2026 — Full TourRouter Build
+
+### Phases Completed (0-12)
+- [x] Phase 0: Security & setup — git commit, .gitignore, security scans, v35 reference file
+- [x] Phase 1: 8 database tables + RLS policies + crew-safe view in Supabase
+- [x] Phase 2: Ported v35 utility functions to lib/tourrouter/ (8 TypeScript modules)
+- [x] Phase 3: 14 API route files (tours, shows, import, flights, currency, venues, advance, guest list, expenses, export, billing)
+- [x] Phase 4: 5 page shells (tour list, route, import, financials, export)
+- [x] Phase 5: Import layer (CSV/Excel/PDF + column mapper + review/save)
+- [x] Phase 6: Route table + stat cards + drive legs + drive/fly toggle + show detail drawer
+- [x] Phase 7: Financial panel + blanket expenses + per-show P&L + currency + transport
+- [x] Phase 8: Export system (PDF/Excel/CSV routes + download page)
+- [x] Phase 9: Advancing system (email sending, public venue form, status tracking)
+- [x] Phase 10: Guest list in drawer + expense tracking on financials page
+- [x] Phase 11: Localizer integration (push-to-localizer, read-only API, tour card badges)
+- [x] Phase 12: Stripe billing (checkout, portal, status, billing gate)
+
+### Bug Fixes
+- [x] useSearchParams Suspense boundary error
+- [x] Table name: routing_tours → tours_routing in all API routes
+- [x] Org lookup: profiles → org_members in 14 API routes
+- [x] Column names: created_by, blanket_show_amt, blanket_off_amt mismatches
+- [x] Added image_url column to tours_routing table
+- [x] Tour image upload not persisting (added to PUT whitelist)
+- [x] Added TourRouter ↔ Localizer nav links
+- [x] Fixed ← Localizer link pointing to wrong route
+
+### Localizer Improvements
+- [x] .xlsx file upload support on import page
+- [x] AI parser restricted to core fields only (no junk in notes)
+- [x] International tour support (European dates, foreign cities, countries)
+- [x] Date display format: MM/DD/YYYY throughout UI
+- [x] Parse button loading state
+- [x] TourRouter import: drag and drop, country auto-detection
+
+### Codebase Health Check — All Clean
+- [x] TypeScript: zero errors
+- [x] No broken imports
+- [x] All API routes: correct table/column names
+- [x] No v35 DOM references in lib/tourrouter/
+
+### Not Done
+- Phase 13: Crew mobile app (React Native/Expo — separate project)
+- TourRouter landing page
+- Print poster PDF export (300 DPI vector text)
+- Full end-to-end runtime testing
+
+### Next Session Should Start With
+- Test tour creation on production with real data
+- Import a real CSV/Excel and test the full flow: import → route table → financials → export
+- Fix any runtime bugs found during testing
+- Plan crew mobile app as separate project
