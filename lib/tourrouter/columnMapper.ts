@@ -26,10 +26,10 @@ export interface MapperField {
 
 export const MAPPER_FIELDS: MapperField[] = [
   { key: 'date', label: 'Date', required: true },
-  { key: 'event', label: 'Event / Show Name', required: true },
+  { key: 'event', label: 'Event / Show Name', required: false },
   { key: 'city', label: 'City', required: true },
-  { key: 'country', label: 'Country', required: true },
-  { key: 'offer', label: 'Offer / Guarantee', required: true },
+  { key: 'country', label: 'Country', required: false },
+  { key: 'offer', label: 'Offer / Guarantee', required: false },
   { key: 'venue', label: 'Venue', required: false },
   { key: 'capacity', label: 'Capacity', required: false },
   { key: 'status', label: 'Status', required: false },

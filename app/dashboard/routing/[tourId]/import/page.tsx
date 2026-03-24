@@ -12,6 +12,7 @@ import {
   parseOffer,
   cellStr,
   normalizeCountry,
+  detectCountry,
 } from "@/lib/tourrouter";
 
 type TourData = { id: string; name: string };
@@ -291,12 +292,13 @@ export default function ImportPage() {
   }
 
   function applyMapping() {
-    const required = ["date", "event", "city", "country", "offer"];
+    const required = ["date", "city"];
     const missing = required.filter((f) => !mapping[f]);
     if (missing.length > 0) {
       setError(`Map required fields: ${missing.join(", ")}`);
       return;
     }
+    const countryMapped = !!mapping.country;
     // CRITICAL: buildShows — declare row={} INSIDE the loop
     const built: ParsedShow[] = [];
     for (const rawRow of rawRows) {
@@ -315,13 +317,16 @@ export default function ImportPage() {
 
       const eventStr = String(row.event || "").trim();
       const isOff = /\bOFF\b|OFF DAY|DAY OFF/i.test(eventStr) || /\bOFF\b|OFF DAY|DAY OFF/i.test(String(row.city || ""));
-      const countryRaw = String(row.country || "").trim();
+      const cityStr = String(row.city || "").trim();
+      const countryRaw = countryMapped
+        ? String(row.country || "").trim()
+        : detectCountry(cityStr);
       const offerParsed = parseOffer(row.offer, countryRaw);
 
       built.push({
         date: `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`,
         event_name: eventStr,
-        city: String(row.city || "").trim(),
+        city: cityStr,
         country: countryRaw,
         country_normalized: normalizeCountry(countryRaw),
         venue: String(row.venue || "").trim(),

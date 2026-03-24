@@ -2,10 +2,12 @@
 
 export {
   CITY_COORDS,
+  CITY_COUNTRY,
   CITY_AIRPORTS,
   AIRPORT_COORDS,
   VEHICLE_MPG,
   VEHICLE_L100,
+  detectCountry,
   type VehicleType,
 } from './constants';
 

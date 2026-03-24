@@ -76,6 +76,108 @@ export const CITY_COORDS: Record<string, [number, number]> = {
 };
 
 // ============================================================
+// CITY → COUNTRY LOOKUP (derived from CITY_COORDS regions)
+// ============================================================
+
+export const CITY_COUNTRY: Record<string, string> = {
+  // USA
+  ...Object.fromEntries([
+    'new york','los angeles','chicago','houston','phoenix','philadelphia','san antonio','san diego',
+    'dallas','san jose','austin','jacksonville','fort worth','columbus','charlotte','indianapolis',
+    'san francisco','seattle','denver','nashville','oklahoma city','el paso','boston','portland',
+    'las vegas','louisville','memphis','baltimore','milwaukee','albuquerque','tucson','fresno',
+    'sacramento','mesa','kansas city','atlanta','omaha','colorado springs','raleigh','long beach',
+    'virginia beach','minneapolis','tampa','new orleans','orlando','miami','cleveland','pittsburgh',
+    'cincinnati','st. louis','st louis','richmond','buffalo','salt lake city','detroit','boise',
+    'spokane','chattanooga','knoxville','birmingham','montgomery','jackson','little rock','tulsa',
+    'wichita','madison','grand rapids','fargo','sioux falls','lincoln','des moines','columbia',
+    'charleston','savannah','asheville','greenville','lexington','dayton','akron','toledo',
+    'anchorage','honolulu','brooklyn','queens','bronx',
+  ].map(c => [c, 'usa'])),
+  // Canada
+  ...Object.fromEntries([
+    'toronto','montreal','vancouver','calgary','edmonton','ottawa','winnipeg','quebec city',
+    'hamilton','victoria','halifax',
+  ].map(c => [c, 'canada'])),
+  // UK
+  ...Object.fromEntries([
+    'london','manchester','birmingham uk','glasgow','edinburgh','leeds','bristol','liverpool',
+    'sheffield','cardiff','belfast','brighton','nottingham','leicester','exeter',
+  ].map(c => [c, 'uk'])),
+  // Europe
+  ...Object.fromEntries([
+    'paris','lyon','marseille','bordeaux','toulouse','nantes','strasbourg',
+  ].map(c => [c, 'france'])),
+  ...Object.fromEntries([
+    'berlin','hamburg','munich','cologne','frankfurt','dusseldorf','stuttgart','leipzig','dresden',
+  ].map(c => [c, 'germany'])),
+  ...Object.fromEntries([
+    'amsterdam','rotterdam','utrecht',
+  ].map(c => [c, 'netherlands'])),
+  ...Object.fromEntries([
+    'brussels','antwerp','ghent',
+  ].map(c => [c, 'belgium'])),
+  ...Object.fromEntries([
+    'madrid','barcelona','seville','valencia','bilbao','san sebastian',
+  ].map(c => [c, 'spain'])),
+  ...Object.fromEntries([
+    'rome','milan','florence','naples','turin','bologna','venice',
+  ].map(c => [c, 'italy'])),
+  ...Object.fromEntries([
+    'vienna',
+  ].map(c => [c, 'austria'])),
+  'stockholm': 'sweden', 'oslo': 'norway', 'copenhagen': 'denmark', 'helsinki': 'finland',
+  'zurich': 'switzerland', 'geneva': 'switzerland', 'bern': 'switzerland', 'basel': 'switzerland',
+  'prague': 'czech republic', 'budapest': 'hungary', 'warsaw': 'poland', 'krakow': 'poland',
+  'lisbon': 'portugal', 'porto': 'portugal', 'athens': 'greece', 'bucharest': 'romania',
+  'sofia': 'bulgaria', 'zagreb': 'croatia', 'belgrade': 'serbia', 'ljubljana': 'slovenia',
+  'bratislava': 'slovakia', 'riga': 'latvia', 'tallinn': 'estonia', 'vilnius': 'lithuania',
+  'reykjavik': 'iceland', 'dublin': 'ireland', 'cork': 'ireland', 'galway': 'ireland',
+  // Australia
+  ...Object.fromEntries([
+    'sydney','melbourne','brisbane','perth','adelaide',
+  ].map(c => [c, 'australia'])),
+  // Other
+  'tokyo': 'japan', 'mexico city': 'mexico', 'sao paulo': 'brazil',
+  'buenos aires': 'argentina', 'bogota': 'colombia',
+};
+
+const US_STATE_ABBRS = new Set([
+  'al','ak','az','ar','ca','co','ct','de','fl','ga','hi','id','il','in','ia','ks','ky',
+  'la','me','md','ma','mi','mn','ms','mo','mt','ne','nv','nh','nj','nm','ny','nc','nd',
+  'oh','ok','or','pa','ri','sc','sd','tn','tx','ut','vt','va','wa','wv','wi','wy','dc',
+]);
+
+/**
+ * Detect country from city string.
+ * Checks CITY_COUNTRY lookup, then falls back to US state abbreviation detection,
+ * then defaults to "usa" for unrecognized cities.
+ */
+export function detectCountry(cityRaw: string): string {
+  const city = cityRaw.toLowerCase().trim();
+
+  // Direct lookup
+  const direct = CITY_COUNTRY[city];
+  if (direct) return direct;
+
+  // Check if city string contains a US state abbreviation (e.g. "Austin, TX" → "tx")
+  const parts = city.split(/[,\s]+/).map(p => p.replace(/[^a-z]/g, ''));
+  for (const part of parts) {
+    if (US_STATE_ABBRS.has(part)) return 'usa';
+  }
+
+  // Try matching just the first part before comma (e.g. "Los Angeles, CA" → "los angeles")
+  const beforeComma = city.split(',')[0].trim();
+  if (beforeComma !== city) {
+    const lookup = CITY_COUNTRY[beforeComma];
+    if (lookup) return lookup;
+  }
+
+  // Default to usa for unrecognized cities
+  return 'usa';
+}
+
+// ============================================================
 // AIRPORT DATA
 // ============================================================
 
