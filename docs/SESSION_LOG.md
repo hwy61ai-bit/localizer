@@ -136,3 +136,63 @@
 - Import a real CSV/Excel and test the full flow: import → route table → financials → export
 - Fix any runtime bugs found during testing
 - Plan crew mobile app as separate project
+
+## Session — March 25, 2026
+
+### What Got Done
+
+**300 DPI Print Poster — On-Demand PDF Generation (Major Feature)**
+- Added `image_print_id` column to `tours` table (run in Supabase SQL editor)
+- New upload slot on assets page: "Local Poster For Print (PDF)" — 11×17 / 300 DPI / 3300×5100px
+- New PRINT tab in template editor with higher max slider values (360px text, 600px band name, 1800px logo) to account for the larger canvas
+- New API route: `GET /api/renders/print-pdf?eventId={id}` — generates PDF on-demand using pdf-lib with vector text overlays
+- New utility: `lib/fetchFont.ts` — fetches .ttf bytes from Supabase Storage (custom fonts) or Google Fonts API (with User-Agent trick to get .ttf instead of .woff2)
+- New client component: `PrintDownloadButton.tsx` on venue link page — "Download Print Poster (11×17 PDF)" with loading spinner
+- Installed `pdf-lib` and `@pdf-lib/fontkit`
+
+**Removed Old Tour Poster Format**
+- Removed `tour_poster` from: assets page, template editor (FORMATS array, FormatKey type, configs init, formatImageIds), venue link page, upload-image route, EventsTable.tsx render loops, clientRender.ts FORMAT_DIMS/SCALE_FACTORS
+- The "Local Poster For Print" PDF replaces the old tour poster entirely
+
+**Bugs Fixed Along the Way**
+- pdf-lib + @pdf-lib/fontkit webpack bundling error — dynamic import for fontkit inside handler function
+- Canvas-to-PDF coordinate mismatch — canvas uses textBaseline: "middle", pdf-lib draws from baseline. Fixed with actual font.heightAtSize() metrics
+- Next.js 14 fetch caching — Supabase queries in the print-pdf route were returning stale cached data. Fixed with `cache: "no-store"` on the Supabase client fetch options
+- RLS silent write failure — overlay_config PATCH route returned 200 with error: null while writing zero rows. Added .select().maybeSingle() check and service role fallback
+- Double-save guard — added savingRef (useRef) to prevent duplicate PATCH calls
+- Text shadow in template editor preview — removed so editor matches rendered output
+- .next cache corruption — required rm -rf .next multiple times during session
+
+### Key Lessons
+- `cache: "no-store"` is REQUIRED on any Supabase query in a Next.js API route that reads data the user just wrote. Next.js 14 caches fetch() by default on the server.
+- RLS rule #9 is real: missing policies return empty results with NO errors. Always check if the update actually affected a row.
+- pdf-lib coordinate system is bottom-left origin (opposite of canvas). Every y-coordinate: yPt = pageHeight - (fraction * pageHeight)
+- Google Fonts returns .woff2 by default. Send User-Agent: "Mozilla/5.0" to get .ttf for pdf-lib embedding.
+- fontkit must be registered via pdfDoc.registerFontkit(fontkit) before embedding custom fonts.
+
+### Files Created
+- `app/api/renders/print-pdf/route.ts` — PDF generation endpoint
+- `lib/fetchFont.ts` — Font byte fetcher for pdf-lib
+- `app/v/e/[token]/PrintDownloadButton.tsx` — Venue page PDF download button
+
+### Files Modified
+- `app/dashboard/tours/[tourId]/assets/page.tsx` — added print upload card, removed tour_poster
+- `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx` — added PRINT tab, removed tour_poster, higher slider maxes, shadow removal, double-save guard
+- `app/dashboard/tours/[tourId]/template/page.tsx` — added image_print_id to query
+- `app/api/renders/tour-data/route.ts` — added image_print_id to response
+- `app/api/tours/[tourId]/upload-image/route.ts` — added print to FORMAT_COLUMN, removed tour_poster
+- `app/api/tours/[tourId]/overlay-config/route.ts` — RLS fallback fix, row-affected check
+- `app/v/e/[token]/page.tsx` — removed old tour poster display, added PrintDownloadButton
+- `app/dashboard/tours/[tourId]/components/EventsTable.tsx` — removed poster from render loops
+- `lib/clientRender.ts` — removed poster from FORMAT_DIMS/SCALE_FACTORS
+
+### Database
+- `ALTER TABLE tours ADD COLUMN IF NOT EXISTS image_print_id text;`
+
+### What Didn't Get Done
+- Tim's v2 master context (HWY61 expansion to 6 products) — analyzed but not started. Waiting on reference spec docs from Tim.
+
+### Next Session Should Start With
+- Review Tim's numbered spec docs (01-14) when available
+- Begin Phase 1 of HWY61 expansion: new Supabase tables for TourRouter
+- Consider removing debug console.logs if any remain in production code
