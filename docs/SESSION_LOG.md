@@ -198,3 +198,5 @@
 - Consider removing debug console.logs if any remain in production code
 
 ToS/Privacy Policy with April 1 dates committed, Stripe pricing corrected (Basic $39, Pro $69, Agency $139 monthly + annual tiers), Supabase redirect URLs updated, Vercel custom domain localizer.hwy61.ai configured and live, final deploy pushed. Still pending: DMCA registration (copyright.gov login issues),
+
+ ToS/Privacy Policy committed (April 1 date), all 6 Stripe price IDs corrected to price_ format, added STRIPE_PRICE_ID_PRO and STRIPE_PRICE_ID_AGENCY webhook vars, updated NEXT_PUBLIC_APP_URL to https://localizer.hwy61.ai, Vercel custom domain configured, Supabase redirects updated, Resend already verified. DMCA still pending. Next session: Tim testing, DMCA registration, then Phase 2 TourRouter stabilization.
