@@ -196,3 +196,5 @@
 - Review Tim's numbered spec docs (01-14) when available
 - Begin Phase 1 of HWY61 expansion: new Supabase tables for TourRouter
 - Consider removing debug console.logs if any remain in production code
+
+ToS/Privacy Policy with April 1 dates committed, Stripe pricing corrected (Basic $39, Pro $69, Agency $139 monthly + annual tiers), Supabase redirect URLs updated, Vercel custom domain localizer.hwy61.ai configured and live, final deploy pushed. Still pending: DMCA registration (copyright.gov login issues),
