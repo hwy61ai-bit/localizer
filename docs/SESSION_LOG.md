@@ -230,3 +230,5 @@ ToS/Privacy Policy with April 1 dates committed, Stripe pricing corrected (Basic
 - Flag Tim to start collecting deal memos and settlement docs for Phase 4 AI intake
 
  Phase 2 complete — runtime testing, Add Show/Delete Show/Vehicle Settings/Drawer editing built, fuel calc fixed (off days + 24 cities added), billing gate with real Stripe checks, 45 new tour_shows columns, 4 new columns on artists/orgs, 5 new tables with RLS, 3 storage buckets, TourRouter $29/mo Stripe product. Next: Phase 3 settlement system.
+
+ Phase 3 progress — hotel management UI, guest list UI with modal, deposit tracking with status colors, day sheet PDF generation (single + batch), advance sheet PDF (6 sections, single + batch). Fuel calc fixed ($270→$2,401). Remaining: settlement system + personnel pay (blocked on spec docs from Tim). Next: get spec docs 03 and 11 from Tim, then build settlement + deal types.
