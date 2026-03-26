@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { checkTourRouterAccess } from "@/lib/tourrouter";
+import { checkTourRouterAccess } from "@/lib/tourrouter/billingGate";
 
 export async function GET() {
   const supabase = await supabaseServer();

@@ -67,4 +67,5 @@ export {
   type MapperField,
 } from './columnMapper';
 
-export { checkTourRouterAccess, type BillingAccess } from './billingGate';
+// billingGate is server-only (uses next/headers via supabaseServer)
+// Import directly: import { checkTourRouterAccess } from '@/lib/tourrouter/billingGate'
