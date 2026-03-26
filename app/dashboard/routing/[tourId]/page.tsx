@@ -198,7 +198,7 @@ export default function RouteTourPage() {
   const [guests, setGuests] = useState<GuestEntry[]>([]);
   const [guestLoading, setGuestLoading] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);
-  const [newGuest, setNewGuest] = useState({ name: "", plusOnes: 0, passType: "GA", notes: "" });
+  const [newGuest, setNewGuest] = useState({ name: "", plusOnes: 0, passType: "Guest", notes: "" });
 
   // ── Fetch ──────────────────────────────────────────────────
 
@@ -392,7 +392,7 @@ export default function RouteTourPage() {
     if (resp.ok) {
       const data = await resp.json();
       setGuests((prev) => [...prev, data.entry]);
-      setNewGuest({ name: "", plusOnes: 0, passType: "GA", notes: "" });
+      setNewGuest({ name: "", plusOnes: 0, passType: "Guest", notes: "" });
       setAddingGuest(false);
     }
   }
@@ -995,7 +995,7 @@ export default function RouteTourPage() {
                       <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>Guest List</div>
                       {guests.length > 0 && (
                         <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#f0f0f0", color: "#666" }}>
-                          {guests.length} guest{guests.length !== 1 ? "s" : ""} + {guests.reduce((s, g) => s + g.plus_ones, 0)} = {guests.reduce((s, g) => s + 1 + g.plus_ones, 0)} total
+                          {guests.reduce((s, g) => s + 1 + g.plus_ones, 0)} total
                         </span>
                       )}
                     </div>
@@ -1003,6 +1003,17 @@ export default function RouteTourPage() {
                   </div>
                   {!collapsedSections.has("Guest List") && (
                     <div style={{ paddingBottom: 14 }}>
+                      {/* Guest list cutoff */}
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Guest List Cutoff</label>
+                        <input
+                          type="datetime-local"
+                          value={String((drawerShow as Record<string, unknown>).guest_list_cutoff ?? "")}
+                          onChange={(e) => updateDrawerField("guest_list_cutoff", e.target.value)}
+                          style={{ padding: "6px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 12, outline: "none" }}
+                        />
+                      </div>
+
                       {guestLoading ? (
                         <div style={{ fontSize: 12, color: "#888" }}>Loading...</div>
                       ) : (
@@ -1011,57 +1022,64 @@ export default function RouteTourPage() {
                             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 10 }}>
                               <thead>
                                 <tr>
-                                  {["Name", "+", "Pass", "Status", ""].map((h) => (
+                                  {["Name", "Party", "Pass", "Notes", "Status", ""].map((h) => (
                                     <th key={h} style={{ padding: "4px 6px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#aaa", borderBottom: "1px solid #eee" }}>{h}</th>
                                   ))}
                                 </tr>
                               </thead>
                               <tbody>
-                                {guests.map((g) => (
-                                  <tr key={g.id} style={{ borderBottom: "1px solid #f5f5f5" }}>
-                                    <td style={{ padding: "5px 6px", fontWeight: 600 }}>{g.guest_name}</td>
-                                    <td style={{ padding: "5px 6px", fontFamily: "monospace" }}>{g.plus_ones}</td>
-                                    <td style={{ padding: "5px 6px" }}>{g.pass_type}</td>
-                                    <td style={{ padding: "5px 6px" }}>
-                                      <span style={{
-                                        fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
-                                        background: g.status === "approved" ? "#e8f5e9" : g.status === "denied" ? "#ffebee" : "#fff3e0",
-                                        color: g.status === "approved" ? "#1a6b3c" : g.status === "denied" ? "#c0392b" : "#b35c00",
-                                      }}>{g.status}</span>
-                                    </td>
-                                    <td style={{ padding: "5px 6px", whiteSpace: "nowrap" }}>
-                                      {g.status !== "approved" && (
-                                        <button onClick={() => updateGuestStatus(g.id, "approved")} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#1a6b3c", fontWeight: 700, marginRight: 4 }}>&#10003;</button>
-                                      )}
-                                      {g.status !== "denied" && (
-                                        <button onClick={() => updateGuestStatus(g.id, "denied")} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#c0392b", fontWeight: 700, marginRight: 4 }}>&#10007;</button>
-                                      )}
-                                      <button onClick={() => deleteGuest(g.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 10, color: "#aaa" }}>&times;</button>
-                                    </td>
-                                  </tr>
-                                ))}
+                                {guests.map((g) => {
+                                  const stColor = g.status === "confirmed" ? "#1a6b3c" : g.status === "declined" ? "#c0392b" : "#b35c00";
+                                  const stBg = g.status === "confirmed" ? "#e8f5e9" : g.status === "declined" ? "#ffebee" : "#fff3e0";
+                                  return (
+                                    <tr key={g.id} style={{ borderBottom: "1px solid #f5f5f5" }}>
+                                      <td style={{ padding: "5px 6px", fontWeight: 600 }}>{g.guest_name}</td>
+                                      <td style={{ padding: "5px 6px", fontFamily: "monospace" }}>{1 + g.plus_ones}</td>
+                                      <td style={{ padding: "5px 6px" }}>{g.pass_type}</td>
+                                      <td style={{ padding: "5px 6px", fontSize: 11, color: "#888", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={g.notes || ""}>{g.notes || "\u2014"}</td>
+                                      <td style={{ padding: "5px 6px" }}>
+                                        <select
+                                          value={g.status}
+                                          onChange={(e) => updateGuestStatus(g.id, e.target.value)}
+                                          style={{ fontSize: 10, fontWeight: 700, padding: "2px 4px", borderRadius: 4, border: "none", background: stBg, color: stColor, cursor: "pointer", outline: "none" }}
+                                        >
+                                          {["pending", "confirmed", "declined"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                        </select>
+                                      </td>
+                                      <td style={{ padding: "5px 6px" }}>
+                                        <button onClick={() => deleteGuest(g.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#ccc", padding: "2px 4px" }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#c0392b"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#ccc"; }}>&times;</button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
                               </tbody>
                             </table>
                           )}
 
                           {addingGuest ? (
-                            <div style={{ display: "flex", gap: 6, alignItems: "flex-end", flexWrap: "wrap" }}>
-                              <div style={{ flex: 1, minWidth: 100 }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 6, alignItems: "end" }}>
+                              <div>
                                 <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>Name</label>
-                                <input value={newGuest.name} onChange={(e) => setNewGuest((p) => ({ ...p, name: e.target.value }))} placeholder="Guest name" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none" }} />
+                                <input value={newGuest.name} onChange={(e) => setNewGuest((p) => ({ ...p, name: e.target.value }))} placeholder="Guest name" onKeyDown={(e) => e.key === "Enter" && addGuest()} style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none" }} />
                               </div>
-                              <div style={{ width: 40 }}>
-                                <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>+</label>
+                              <div style={{ width: 44 }}>
+                                <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>Party</label>
                                 <input type="number" value={newGuest.plusOnes} onChange={(e) => setNewGuest((p) => ({ ...p, plusOnes: parseInt(e.target.value) || 0 }))} min={0} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none" }} />
                               </div>
-                              <div style={{ width: 70 }}>
+                              <div style={{ width: 80 }}>
                                 <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>Pass</label>
                                 <select value={newGuest.passType} onChange={(e) => setNewGuest((p) => ({ ...p, passType: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, background: "#fff", outline: "none" }}>
-                                  {["GA", "VIP", "AAA", "Photo", "Press"].map((t) => <option key={t} value={t}>{t}</option>)}
+                                  {["Guest", "VIP", "Photo", "Working", "Will Call"].map((t) => <option key={t} value={t}>{t}</option>)}
                                 </select>
                               </div>
-                              <button onClick={addGuest} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #111", background: "#111", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Add</button>
-                              <button onClick={() => setAddingGuest(false)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+                              <div style={{ display: "flex", gap: 4 }}>
+                                <button onClick={addGuest} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #111", background: "#111", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Add</button>
+                                <button onClick={() => setAddingGuest(false)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+                              </div>
+                              <div style={{ gridColumn: "1 / -1" }}>
+                                <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>Notes</label>
+                                <input value={newGuest.notes} onChange={(e) => setNewGuest((p) => ({ ...p, notes: e.target.value }))} placeholder="Optional notes" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none" }} />
+                              </div>
                             </div>
                           ) : (
                             <button onClick={() => setAddingGuest(true)} style={{ padding: "6px 14px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>+ Add Guest</button>

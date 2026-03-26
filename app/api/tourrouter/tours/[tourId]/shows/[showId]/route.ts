@@ -31,7 +31,7 @@ export async function PUT(
     "hotel_name", "hotel_address", "hotel_checkin", "hotel_checkout",
     "hotel_rooms", "hotel_rate", "hotel_currency", "hotel_confirmation",
     "hotel_notes", "hotel_block", "hotel_block_size", "hotel_block_rate",
-    "hotel_cutoff_date", "hotel_attrition_pct", "notes", "support",
+    "hotel_cutoff_date", "hotel_attrition_pct", "guest_list_cutoff", "notes", "support",
   ];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
