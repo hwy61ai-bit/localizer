@@ -503,7 +503,7 @@ export default function RouteTourPage() {
 
   function updateDrawerField(key: string, value: string) {
     if (!drawerShow) return;
-    const numFields = ["capacity", "offer_amount", "hotel_rooms", "hotel_rate", "hotel_block_size", "hotel_block_rate", "hotel_attrition_pct"];
+    const numFields = ["capacity", "offer_amount", "hotel_rooms", "hotel_rate", "hotel_block_size", "hotel_block_rate", "hotel_attrition_pct", "deposit_amount"];
     const boolFields = ["hotel_block"];
     const parsed: unknown = boolFields.includes(key) ? !!value : numFields.includes(key) ? (parseFloat(value) || 0) : value;
     const updated = { ...drawerShow, [key]: parsed };
@@ -874,6 +874,62 @@ export default function RouteTourPage() {
                       <div>
                         <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Attrition %</label>
                         <input type="number" value={String((drawerShow as Record<string, unknown>).hotel_attrition_pct ?? "")} onChange={(e) => updateDrawerField("hotel_attrition_pct", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Deposits Section */}
+              {drawerShow && !drawerShow.is_off && (
+                <div style={{ borderBottom: "1px solid #f0f0f0" }}>
+                  <div
+                    onClick={() => toggleSection("Deposits")}
+                    style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>Deposits</div>
+                      {(() => {
+                        const ds = String((drawerShow as Record<string, unknown>).deposit_status || "");
+                        if (!ds) return null;
+                        const c = ds === "Received" ? "#1a6b3c" : ds === "Returned" ? "#c0392b" : ds === "Requested" ? "#b35c00" : "#888";
+                        return <span style={{ width: 7, height: 7, borderRadius: "50%", background: c, display: "inline-block" }} />;
+                      })()}
+                    </div>
+                    <span style={{ fontSize: 12, color: "#aaa" }}>{collapsedSections.has("Deposits") ? "\u25b6" : "\u25bc"}</span>
+                  </div>
+                  {!collapsedSections.has("Deposits") && (
+                    <div style={{ paddingBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Amount</label>
+                        <input type="number" value={String((drawerShow as Record<string, unknown>).deposit_amount ?? "")} onChange={(e) => updateDrawerField("deposit_amount", e.target.value)} placeholder="0" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Currency</label>
+                        <input value={String((drawerShow as Record<string, unknown>).deposit_currency ?? "USD")} onChange={(e) => updateDrawerField("deposit_currency", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Status</label>
+                        {(() => {
+                          const val = String((drawerShow as Record<string, unknown>).deposit_status || "Not Received");
+                          const dotColor = val === "Received" ? "#1a6b3c" : val === "Returned" ? "#c0392b" : val === "Requested" ? "#b35c00" : "#888";
+                          return (
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ width: 8, height: 8, borderRadius: "50%", background: dotColor, flexShrink: 0 }} />
+                              <select value={val} onChange={(e) => updateDrawerField("deposit_status", e.target.value)} style={{ flex: 1, padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}>
+                                {["Not Received", "Requested", "Received", "Returned"].map((s) => <option key={s} value={s}>{s}</option>)}
+                              </select>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Collected By</label>
+                        <input value={String((drawerShow as Record<string, unknown>).deposit_collected_by ?? "")} onChange={(e) => updateDrawerField("deposit_collected_by", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                      <div style={{ gridColumn: "1 / -1" }}>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Notes</label>
+                        <input value={String((drawerShow as Record<string, unknown>).deposit_notes ?? "")} onChange={(e) => updateDrawerField("deposit_notes", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
                       </div>
                     </div>
                   )}
