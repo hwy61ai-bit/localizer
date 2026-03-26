@@ -67,4 +67,4 @@ export {
   type MapperField,
 } from './columnMapper';
 
-export { checkTourRouterAccess } from './billingGate';
+export { checkTourRouterAccess, type BillingAccess } from './billingGate';

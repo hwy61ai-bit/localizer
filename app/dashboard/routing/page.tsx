@@ -35,6 +35,7 @@ function RoutingListInner() {
   const [billingToast, setBillingToast] = useState<string | null>(null);
   const [artists, setArtists] = useState<{ id: string; name: string }[]>([]);
   const [creating, setCreating] = useState(false);
+  const [needsSubscription, setNeedsSubscription] = useState(false);
 
   useEffect(() => {
     fetchTours();
@@ -62,6 +63,11 @@ function RoutingListInner() {
     if (resp.ok) {
       const data = await resp.json();
       setTours(data.tours);
+    } else if (resp.status === 403) {
+      const data = await resp.json();
+      if (data.error === "subscription_required") {
+        setNeedsSubscription(true);
+      }
     }
     setLoading(false);
   }
@@ -128,7 +134,28 @@ function RoutingListInner() {
           </div>
         )}
 
-        {loading ? (
+        {needsSubscription ? (
+          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>TourRouter requires a subscription</div>
+            <div style={{ fontSize: 13, color: "#888", marginBottom: 20, maxWidth: 400, margin: "0 auto 20px" }}>
+              Subscribe to TourRouter to create and manage tour routing, financials, and advancing.
+            </div>
+            <button
+              onClick={async () => {
+                const resp = await fetch("/api/tourrouter/billing/checkout", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ plan: "standalone" }),
+                });
+                if (resp.ok) {
+                  const data = await resp.json();
+                  window.location.href = data.url;
+                }
+              }}
+              style={{ padding: "12px 28px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 900, fontSize: 14, cursor: "pointer" }}
+            >Subscribe</button>
+          </div>
+        ) : loading ? (
           <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading...</div>
         ) : (
           <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>

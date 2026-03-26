@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { checkTourRouterAccess } from "@/lib/tourrouter";
 
 export async function GET() {
   const supabase = await supabaseServer();
@@ -13,21 +14,19 @@ export async function GET() {
     .maybeSingle();
   if (!membership?.org_id) return NextResponse.json({ error: "No org found" }, { status: 404 });
 
+  const access = await checkTourRouterAccess(membership.org_id, user.email);
+
   const { data: org } = await supabase
     .from("orgs")
-    .select("stripe_customer_id, plan, plan_status, tourrouter_plan, tourrouter_plan_status, tourrouter_current_period_end")
+    .select("plan, plan_status, tourrouter_plan, tourrouter_plan_status, tourrouter_current_period_end")
     .eq("id", membership.org_id)
     .single();
 
-  if (!org) return NextResponse.json({ error: "Org not found" }, { status: 404 });
-
-  const active = org.tourrouter_plan_status === "active";
-  const plan = org.tourrouter_plan || null;
-
   return NextResponse.json({
-    active,
-    plan,
-    currentPeriodEnd: org.tourrouter_current_period_end || null,
-    hasLocalizerSubscription: org.plan_status === "active",
+    active: access.allowed,
+    plan: access.plan,
+    reason: access.reason || null,
+    currentPeriodEnd: org?.tourrouter_current_period_end || null,
+    hasLocalizerSubscription: org?.plan_status === "active",
   });
 }

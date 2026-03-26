@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { checkTourRouterAccess } from "@/lib/tourrouter";
 
 export async function GET() {
   try {
@@ -23,6 +24,12 @@ export async function GET() {
     if (!membership?.org_id) {
       console.error("[TourRouter tours GET] No org found for user:", user.id);
       return NextResponse.json({ error: "No org" }, { status: 403 });
+    }
+
+    // Billing gate
+    const access = await checkTourRouterAccess(membership.org_id, user.email);
+    if (!access.allowed) {
+      return NextResponse.json({ error: "subscription_required", reason: access.reason }, { status: 403 });
     }
 
     const { data: tours, error } = await supabase
