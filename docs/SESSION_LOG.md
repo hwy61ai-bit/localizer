@@ -200,3 +200,31 @@
 ToS/Privacy Policy with April 1 dates committed, Stripe pricing corrected (Basic $39, Pro $69, Agency $139 monthly + annual tiers), Supabase redirect URLs updated, Vercel custom domain localizer.hwy61.ai configured and live, final deploy pushed. Still pending: DMCA registration (copyright.gov login issues),
 
  ToS/Privacy Policy committed (April 1 date), all 6 Stripe price IDs corrected to price_ format, added STRIPE_PRICE_ID_PRO and STRIPE_PRICE_ID_AGENCY webhook vars, updated NEXT_PUBLIC_APP_URL to https://localizer.hwy61.ai, Vercel custom domain configured, Supabase redirects updated, Resend already verified. DMCA still pending. Next session: Tim testing, DMCA registration, then Phase 2 TourRouter stabilization.
+
+## Session — March 25, 2026
+
+### What Got Done
+- Created and committed Terms of Service + Privacy Policy (.docx, effective April 1, 2026)
+- Archived incorrect $29/mo Stripe product
+- Created correct Stripe products: Basic $39/mo, Pro $69/mo, Agency $139/mo
+- Created annual tiers: Basic $420/yr, Pro $745/yr, Agency $1,500/yr
+- Fixed critical bug: all 6 Stripe price IDs were wrong format (not price_), would have broken checkout
+- Added STRIPE_PRICE_ID_PRO and STRIPE_PRICE_ID_AGENCY webhook env vars in Vercel
+- Updated NEXT_PUBLIC_APP_URL to https://localizer.hwy61.ai
+- Configured localizer.hwy61.ai custom domain on Vercel + CNAME in Squarespace DNS
+- Updated Supabase Site URL and redirect URLs for new domain
+- Confirmed Resend domain verification already active for hwy61.ai
+- Confirmed email forwarding works for dmca@, support@, privacy@hwy61.ai
+- Upgraded Resend to Pro ($20/mo) for custom domain emails
+- Completed DMCA agent registration at copyright.gov ($6)
+- Audited full Stripe integration: pricing page, checkout route, webhook, billing portal
+- Deployed to production at localizer.hwy61.ai
+- Analyzed 28-week HWY61 build plan
+
+### What Didn't Get Done
+- End-to-end testing with Tim (next step)
+
+### Next Session Should Start With
+- Get Tim testing at localizer.hwy61.ai with real tour schedules
+- Begin Phase 2: TourRouter stabilization — runtime testing, column name fixes, DB migrations
+- Flag Tim to start collecting deal memos and settlement docs for Phase 4 AI intake
