@@ -696,7 +696,7 @@ export default function RouteTourPage() {
               </div>
               <div>
                 <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Fuel $/gal</label>
-                <input type="number" value={tour.fuel_price_usd ?? ""} onChange={(e) => updateTourSetting("fuel_price_usd", parseFloat(e.target.value) || null)} step="0.01" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} placeholder="Auto" />
+                <input type="number" value={tour.fuel_price_usd ?? 3.50} onChange={(e) => updateTourSetting("fuel_price_usd", parseFloat(e.target.value) || null)} step="0.01" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
               </div>
               <div>
                 <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Fly threshold (h)</label>

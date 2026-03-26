@@ -53,7 +53,7 @@ function calcFuelCostForExport(
   if (legCtry === 'usa') {
     const mpg = VEHICLE_MPG[vehicleType] || 20;
     const miles = km * 0.6214;
-    const pricePerGal = fuelPriceOverride || 3.40;
+    const pricePerGal = fuelPriceOverride || 3.50;
     return (miles / mpg) * pricePerGal * vehicleCount;
   } else {
     const l100 = VEHICLE_L100[vehicleType] || 11.8;
