@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import IntakeDropZone from "../IntakeDropZone";
 import {
   getRoadKm,
   estimateDriveHours,
@@ -599,9 +600,22 @@ export default function RouteTourPage() {
     { label: "Brutal Legs >6h", value: String(brutalLegs), color: brutalLegs > 0 ? "#b35c00" : undefined },
   ];
 
+  // ── Show options for intake drop zone ─────────────────────
+  const intakeShowOptions = shows.filter((s) => !s.is_off).map((s) => ({
+    id: s.id,
+    label: [formatShowDate(s.date_iso), s.city, s.venue].filter(Boolean).join(" \u2014 "),
+  }));
+
+  function reloadTour() {
+    fetch(`/api/tourrouter/tours/${tourId}`)
+      .then((r) => r.json())
+      .then((data) => { setTour(data.tour); setShows(data.shows || []); });
+  }
+
   // ── Render ─────────────────────────────────────────────────
 
   return (
+    <IntakeDropZone tourId={tourId} showId={drawerShow?.id} shows={intakeShowOptions} onSaved={reloadTour}>
     <>
     <div className="fade-in" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
@@ -1225,6 +1239,7 @@ export default function RouteTourPage() {
         </>
       )}
     </>
+    </IntakeDropZone>
   );
 }
 
