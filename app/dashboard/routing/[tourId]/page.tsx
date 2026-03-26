@@ -128,6 +128,13 @@ const DRAWER_SECTIONS = [
     fields: [
       { key: "hotel_name", label: "Hotel Name" },
       { key: "hotel_address", label: "Hotel Address" },
+      { key: "hotel_checkin", label: "Check-in" },
+      { key: "hotel_checkout", label: "Check-out" },
+      { key: "hotel_rooms", label: "Rooms", type: "number" },
+      { key: "hotel_rate", label: "Rate ($)", type: "number" },
+      { key: "hotel_currency", label: "Currency" },
+      { key: "hotel_confirmation", label: "Confirmation #" },
+      { key: "hotel_notes", label: "Notes" },
     ],
   },
   {
@@ -496,8 +503,9 @@ export default function RouteTourPage() {
 
   function updateDrawerField(key: string, value: string) {
     if (!drawerShow) return;
-    const numFields = ["capacity", "offer_amount"];
-    const parsed = numFields.includes(key) ? (parseFloat(value) || 0) : value;
+    const numFields = ["capacity", "offer_amount", "hotel_rooms", "hotel_rate", "hotel_block_size", "hotel_block_rate", "hotel_attrition_pct"];
+    const boolFields = ["hotel_block"];
+    const parsed: unknown = boolFields.includes(key) ? !!value : numFields.includes(key) ? (parseFloat(value) || 0) : value;
     const updated = { ...drawerShow, [key]: parsed };
     setDrawerShow(updated);
     setDrawerSaved(false);
@@ -821,7 +829,7 @@ export default function RouteTourPage() {
                     {!collapsed && (
                       <div style={{ paddingBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                         {section.fields.map((field) => (
-                          <div key={field.key} style={{ gridColumn: field.key === "notes" || field.key === "backend" ? "1 / -1" : undefined }}>
+                          <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address"].includes(field.key) ? "1 / -1" : undefined }}>
                             <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>{field.label}</label>
                             <input
                               value={String((drawerShow as Record<string, unknown>)[field.key] ?? "")}
@@ -836,6 +844,41 @@ export default function RouteTourPage() {
                   </div>
                 );
               })}
+
+              {/* Hotel Block (conditional fields) */}
+              {drawerShow && !collapsedSections.has("Hotel") && (
+                <div style={{ paddingBottom: 14, marginTop: -10 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer", padding: "8px 0" }}>
+                    <input
+                      type="checkbox"
+                      checked={!!(drawerShow as Record<string, unknown>).hotel_block}
+                      onChange={(e) => updateDrawerField("hotel_block", e.target.checked ? "true" : "")}
+                      style={{ width: 16, height: 16, accentColor: "#111" }}
+                    />
+                    <span style={{ fontWeight: 600 }}>Room Block</span>
+                  </label>
+                  {!!(drawerShow as Record<string, unknown>).hotel_block && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 6, paddingLeft: 24 }}>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Block Size</label>
+                        <input type="number" value={String((drawerShow as Record<string, unknown>).hotel_block_size ?? "")} onChange={(e) => updateDrawerField("hotel_block_size", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Block Rate ($)</label>
+                        <input type="number" value={String((drawerShow as Record<string, unknown>).hotel_block_rate ?? "")} onChange={(e) => updateDrawerField("hotel_block_rate", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Cutoff Date</label>
+                        <input value={String((drawerShow as Record<string, unknown>).hotel_cutoff_date ?? "")} onChange={(e) => updateDrawerField("hotel_cutoff_date", e.target.value)} placeholder="e.g. 2026-05-01" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Attrition %</label>
+                        <input type="number" value={String((drawerShow as Record<string, unknown>).hotel_attrition_pct ?? "")} onChange={(e) => updateDrawerField("hotel_attrition_pct", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Advancing Section */}
               {drawerShow && !drawerShow.is_off && (

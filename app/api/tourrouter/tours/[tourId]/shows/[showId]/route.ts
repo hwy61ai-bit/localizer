@@ -28,7 +28,10 @@ export async function PUT(
     "venue", "offer_display", "offer_amount", "offer_currency", "capacity",
     "status", "billing", "age_limit", "is_off", "doors", "showtime", "onstage", "curfew",
     "merch", "backend", "promoter", "promoter_contact", "production_contact",
-    "hotel_name", "hotel_address", "notes", "support",
+    "hotel_name", "hotel_address", "hotel_checkin", "hotel_checkout",
+    "hotel_rooms", "hotel_rate", "hotel_currency", "hotel_confirmation",
+    "hotel_notes", "hotel_block", "hotel_block_size", "hotel_block_rate",
+    "hotel_cutoff_date", "hotel_attrition_pct", "notes", "support",
   ];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
