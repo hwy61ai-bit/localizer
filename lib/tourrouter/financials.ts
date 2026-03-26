@@ -154,7 +154,7 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     }
 
     // Fuel / flight for this leg
-    if (i > 0) {
+    if (i > 0 && !s.isOff && !tourShows[i - 1].isOff) {
       const prev = tourShows[i - 1];
       const km = getRoadKm(prev.city, prev.country, s.city, s.country);
       if (!km && typeof window !== 'undefined') {

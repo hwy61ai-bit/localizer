@@ -33,6 +33,15 @@ export const CITY_COORDS: Record<string, [number, number]> = {
   'dayton': [39.7589, -84.1916], 'akron': [41.0814, -81.5190], 'toledo': [41.6528, -83.5379],
   'anchorage': [61.2181, -149.9003], 'honolulu': [21.3069, -157.8583],
   'brooklyn': [40.6782, -73.9442], 'queens': [40.7282, -73.7949], 'bronx': [40.8448, -73.8648],
+  'iowa city': [41.6611, -91.5302], 'wisconsin dells': [43.6275, -89.7710], 'appleton': [44.2619, -88.4154],
+  'ferndale': [42.4606, -83.1346], 'fredericksburg': [30.2752, -98.8720], 'san juan capistrano': [33.5017, -117.6626],
+  'thousand oaks': [34.1706, -118.8376], 'san luis obispo': [35.2828, -120.6596], 'felton': [37.0514, -122.0730],
+  'lake tahoe': [39.0968, -120.0324], 'reno': [39.5296, -119.8138], 'camino': [38.7330, -120.6760],
+  'redding': [40.5865, -122.3917], 'tacoma': [47.2529, -122.4443], 'blaine': [48.9937, -122.7471],
+  'grand junction': [39.0639, -108.5506], 'steamboat springs': [40.4850, -106.8317], 'aspen': [39.1911, -106.8175],
+  'boulder': [40.0150, -105.2705], 'gainesville': [33.6259, -97.1333],
+  'missoula': [46.8721, -113.9940], 'bozeman': [45.6770, -111.0429], 'harlowtown': [46.4372, -109.8340],
+  'great falls': [47.5002, -111.3008],
   // Canada
   'toronto': [43.6532, -79.3832], 'montreal': [45.5017, -73.5673], 'vancouver': [49.2827, -123.1207],
   'calgary': [51.0447, -114.0719], 'edmonton': [53.5461, -113.4938], 'ottawa': [45.4215, -75.6972],
@@ -93,6 +102,10 @@ export const CITY_COUNTRY: Record<string, string> = {
     'wichita','madison','grand rapids','fargo','sioux falls','lincoln','des moines','columbia',
     'charleston','savannah','asheville','greenville','lexington','dayton','akron','toledo',
     'anchorage','honolulu','brooklyn','queens','bronx',
+    'iowa city','wisconsin dells','appleton','ferndale','fredericksburg','san juan capistrano',
+    'thousand oaks','san luis obispo','felton','lake tahoe','reno','camino','redding',
+    'tacoma','blaine','grand junction','steamboat springs','aspen','boulder','gainesville',
+    'missoula','bozeman','harlowtown','great falls',
   ].map(c => [c, 'usa'])),
   // Canada
   ...Object.fromEntries([
