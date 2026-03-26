@@ -365,7 +365,7 @@ export default function ImportPage() {
       });
       if (!resp.ok) {
         const err = await resp.json();
-        setError(err.error || "Save failed");
+        setError([err.error, err.details, err.hint].filter(Boolean).join(" — ") || "Save failed");
         setSaving(false);
         return;
       }

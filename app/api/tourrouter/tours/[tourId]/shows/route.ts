@@ -61,6 +61,9 @@ export async function POST(
     .insert(rows)
     .select();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("tour_shows insert error:", error.message, error.details, error.hint, "rows[0]:", JSON.stringify(rows[0]));
+    return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
+  }
   return NextResponse.json({ shows: inserted }, { status: 201 });
 }
