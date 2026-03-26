@@ -232,3 +232,74 @@ ToS/Privacy Policy with April 1 dates committed, Stripe pricing corrected (Basic
  Phase 2 complete — runtime testing, Add Show/Delete Show/Vehicle Settings/Drawer editing built, fuel calc fixed (off days + 24 cities added), billing gate with real Stripe checks, 45 new tour_shows columns, 4 new columns on artists/orgs, 5 new tables with RLS, 3 storage buckets, TourRouter $29/mo Stripe product. Next: Phase 3 settlement system.
 
  Phase 3 progress — hotel management UI, guest list UI with modal, deposit tracking with status colors, day sheet PDF generation (single + batch), advance sheet PDF (6 sections, single + batch). Fuel calc fixed ($270→$2,401). Remaining: settlement system + personnel pay (blocked on spec docs from Tim). Next: get spec docs 03 and 11 from Tim, then build settlement + deal types.
+
+## Session — March 26, 2026
+
+### PHASE 1 — Ship Localizer ✅ COMPLETE
+- Terms of Service + Privacy Policy (.docx, April 1, 2026 effective date) committed
+- Archived incorrect $29/mo Stripe product
+- Created 3 Stripe products: Basic $39, Pro $69, Agency $139 (monthly + annual)
+- Fixed critical bug: all 6 Stripe price IDs were in wrong format
+- Added STRIPE_PRICE_ID_PRO + STRIPE_PRICE_ID_AGENCY webhook env vars
+- Updated NEXT_PUBLIC_APP_URL to https://localizer.hwy61.ai
+- Configured custom domain on Vercel + CNAME in Squarespace DNS
+- Updated Supabase Site URL + redirect URLs for new domain
+- Confirmed Resend Pro domain verification for hwy61.ai
+- Confirmed email forwarding for dmca@, support@, privacy@hwy61.ai
+- Upgraded Resend to Pro ($20/mo)
+- DMCA agent registration at copyright.gov ($6)
+- Deployed to production at localizer.hwy61.ai
+
+### PHASE 2 — TourRouter Stabilization ✅ COMPLETE
+- Save/load state verified working
+- Runtime testing across all TourRouter pages
+- Built Add Show modal, Delete Show with confirmation
+- Built Vehicle Settings panel (collapsible, MPG auto-fill by vehicle type)
+- Built full Drawer panel editing (replaced inline editing)
+- Fixed .next cache corruption bug
+- Fixed fuel calculation: off days breaking leg chain, added 24 missing cities + typo alias
+- Fuel estimate corrected: $270 → $2,401
+- Built real billing gate with Stripe subscription checks + admin bypass
+- Fixed barrel export bug (billingGate server code in client component)
+- DB migration: 45 new columns on tour_shows (hotel, advance, venue, settlement, deposit, production)
+- DB migration: 4 new columns on artists + orgs
+- Created 5 new tables: field_aliases, shared_contacts, account_contacts, finance_report_links, intake_documents
+- RLS policies on all 5 new tables
+- Created 3 Supabase Storage buckets: tour-documents, tour-expenses, tour-exports
+- Created TourRouter $29/mo Stripe product
+- Default fuel price set to $3.50/gal
+
+### PHASE 3 — Band Must-Haves (5 of 7 done)
+- Hotel management UI (14 fields, room block conditional section)
+- Guest list UI (modal, pass types, status colors, add/delete)
+- Deposit tracking UI (status with color-coded dots)
+- Day sheet PDF generation (single + batch, US Letter, 7 sections)
+- Advance sheet PDF export (single + batch, 6 sections)
+- BLOCKED: Settlement system — needs 03_PERSONNEL_PAY_SETTLEMENT_SPEC.docx from Tim
+- BLOCKED: Personnel & pay — needs spec doc from Tim
+
+### PHASE 4 — Differentiators (3 of 5 done)
+- Universal AI Intake: global drop zone, 4-layer pipeline (detect → match → parse → review), confirm API, 7 document type prompts
+- Advance Automation Engine: state machine, daily cron (Vercel), 4 email templates, Resend webhook handler, daily digest, advance status badges
+- Alias Library: 3-layer lookup, batch Claude mapping, human confirmation + learning, global promotion logic
+- Created advance_emails table + RLS
+- Vercel cron configured (daily 10am UTC)
+- BLOCKED: Deal types engine — needs 11_DEAL_TYPES_CALCULATION_ENGINE.docx from Tim
+- TODO: Venue confirmation portal
+
+### Updated Master Context
+- v4.1 created with all Phase 1 completion updates, correct URLs, Stripe env vars documented
+
+### What Didn't Get Done
+- Settlement system + personnel pay (blocked on spec docs)
+- Deal types calculation engine (blocked on spec doc)
+- Venue confirmation portal
+- Finance dashboard (Phase 5)
+
+### Next Session Should Start With
+- Get spec docs 03 and 11 from Tim
+- Build settlement system + deal types engine
+- Build venue confirmation portal
+- Start Phase 5: finance dashboard, commissions, end-of-tour report
+- Tim should begin end-to-end testing at localizer.hwy61.ai
+- Tim should start collecting real deal memos + settlement sheets for AI intake testing
