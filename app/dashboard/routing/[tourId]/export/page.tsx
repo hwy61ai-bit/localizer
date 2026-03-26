@@ -19,7 +19,7 @@ export default function ExportPage() {
       .catch(() => {});
   }, [tourId]);
 
-  async function downloadExport(format: "csv" | "excel" | "pdf" | "daysheet") {
+  async function downloadExport(format: "csv" | "excel" | "pdf" | "daysheet" | "advance") {
     setDownloading(format);
     setError("");
     try {
@@ -33,7 +33,7 @@ export default function ExportPage() {
       const blob = await resp.blob();
       const disposition = resp.headers.get("Content-Disposition") || "";
       const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
-      const extMap: Record<string, string> = { excel: "xlsx", daysheet: "pdf" };
+      const extMap: Record<string, string> = { excel: "xlsx", daysheet: "pdf", advance: "pdf" };
       const filename = filenameMatch ? filenameMatch[1] : `export.${extMap[format] || format}`;
 
       const url = URL.createObjectURL(blob);
@@ -85,6 +85,13 @@ export default function ExportPage() {
       icon: "\u{1F4CB}",
       desc: "One-page-per-show printable day sheets with venue, schedule, hotel, contacts, and travel info",
       button: "Download All Day Sheets",
+    },
+    {
+      key: "advance" as const,
+      title: "Advance Sheets",
+      icon: "\u{1F4E8}",
+      desc: "Venue advance documents with production, hospitality, merch, hotel, and guest list details",
+      button: "Download All Advances",
     },
   ];
 
