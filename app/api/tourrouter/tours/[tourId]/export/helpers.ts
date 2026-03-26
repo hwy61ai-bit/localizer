@@ -38,7 +38,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
 
   const { data: tour } = await supabase
     .from("tours_routing")
-    .select("*")
+    .select("*, artists(name)")
     .eq("id", tourId)
     .eq("org_id", profile.org_id)
     .single();

@@ -19,7 +19,7 @@ export default function ExportPage() {
       .catch(() => {});
   }, [tourId]);
 
-  async function downloadExport(format: "csv" | "excel" | "pdf") {
+  async function downloadExport(format: "csv" | "excel" | "pdf" | "daysheet") {
     setDownloading(format);
     setError("");
     try {
@@ -33,7 +33,8 @@ export default function ExportPage() {
       const blob = await resp.blob();
       const disposition = resp.headers.get("Content-Disposition") || "";
       const filenameMatch = disposition.match(/filename="?([^"]+)"?/);
-      const filename = filenameMatch ? filenameMatch[1] : `export.${format === "excel" ? "xlsx" : format}`;
+      const extMap: Record<string, string> = { excel: "xlsx", daysheet: "pdf" };
+      const filename = filenameMatch ? filenameMatch[1] : `export.${extMap[format] || format}`;
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -78,6 +79,13 @@ export default function ExportPage() {
       desc: "Simple comma-separated file with financial summary and show data for custom analysis",
       button: "Download CSV",
     },
+    {
+      key: "daysheet" as const,
+      title: "Day Sheets",
+      icon: "\u{1F4CB}",
+      desc: "One-page-per-show printable day sheets with venue, schedule, hotel, contacts, and travel info",
+      button: "Download All Day Sheets",
+    },
   ];
 
   return (
@@ -116,7 +124,7 @@ export default function ExportPage() {
         )}
 
         {/* Export Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
           {exportOptions.map((opt) => {
             const isLoading = downloading === opt.key;
             return (

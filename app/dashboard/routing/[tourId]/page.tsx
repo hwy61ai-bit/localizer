@@ -809,6 +809,11 @@ export default function RouteTourPage() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   {drawerSaved && <span style={{ fontSize: 11, fontWeight: 600, color: "#1a6b3c" }}>Saved</span>}
+                  <a
+                    href={`/api/tourrouter/tours/${tourId}/export/daysheet?showId=${drawerShow.id}`}
+                    download
+                    style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #DDDDDD", background: "#fff", fontSize: 11, fontWeight: 700, color: "#888", textDecoration: "none", cursor: "pointer" }}
+                  >Day Sheet</a>
                   <button onClick={closeDrawer} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888", padding: "4px 8px" }}>&times;</button>
                 </div>
               </div>
