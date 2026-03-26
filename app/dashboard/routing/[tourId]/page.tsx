@@ -86,10 +86,24 @@ type LegInfo = {
 
 const DRAWER_SECTIONS = [
   {
-    title: "Venue",
+    title: "Show Info",
     fields: [
-      { key: "venue", label: "Venue Name" },
-      { key: "capacity", label: "Capacity", type: "number" },
+      { key: "date_iso", label: "Date", type: "date" },
+      { key: "event", label: "Event Name" },
+      { key: "venue", label: "Venue" },
+      { key: "city", label: "City" },
+      { key: "country", label: "Country" },
+    ],
+  },
+  {
+    title: "Financials",
+    fields: [
+      { key: "offer_amount", label: "Offer Amount", type: "number" },
+      { key: "offer_currency", label: "Currency" },
+      { key: "status", label: "Status" },
+      { key: "billing", label: "Billing" },
+      { key: "age_limit", label: "Age Limit" },
+      { key: "backend", label: "Backend / Deal Terms" },
     ],
   },
   {
@@ -102,18 +116,18 @@ const DRAWER_SECTIONS = [
     ],
   },
   {
-    title: "Financials",
-    fields: [
-      { key: "offer_display", label: "Offer" },
-      { key: "offer_currency", label: "Currency" },
-      { key: "backend", label: "Backend / Deal Terms" },
-      { key: "status", label: "Status" },
-    ],
-  },
-  {
     title: "Contacts",
     fields: [
       { key: "promoter", label: "Promoter" },
+      { key: "promoter_contact", label: "Promoter Contact" },
+      { key: "production_contact", label: "Production Contact" },
+    ],
+  },
+  {
+    title: "Hotel",
+    fields: [
+      { key: "hotel_name", label: "Hotel Name" },
+      { key: "hotel_address", label: "Hotel Address" },
     ],
   },
   {
@@ -169,11 +183,8 @@ export default function RouteTourPage() {
   // Settings panel
   const [showSettings, setShowSettings] = useState(false);
 
-  // Inline editing
-  const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null);
-  const [editValue, setEditValue] = useState("");
-  const [savedCell, setSavedCell] = useState<string | null>(null);
-  const inlineRef = useRef<HTMLInputElement>(null);
+  // Drawer save indicator
+  const [drawerSaved, setDrawerSaved] = useState(false);
 
   // Guest List
   type GuestEntry = { id: string; guest_name: string; plus_ones: number; pass_type: string; status: string; submitted_by: string | null; notes: string | null };
@@ -483,45 +494,24 @@ export default function RouteTourPage() {
     }, 600);
   }
 
-  // ── Inline Editing ───────────────────────────────────────────
-
-  function startInlineEdit(showId: string, field: string, currentValue: string) {
-    setEditingCell({ id: showId, field });
-    setEditValue(currentValue);
-    setTimeout(() => inlineRef.current?.focus(), 0);
-  }
-
-  async function commitInlineEdit() {
-    if (!editingCell) return;
-    const { id, field } = editingCell;
-    const value = field === "offer_amount" ? (parseFloat(editValue) || 0) : editValue;
-    setEditingCell(null);
-    setShows((prev) => prev.map((s) => s.id === id ? { ...s, [field]: value } : s));
-    setSavedCell(`${id}-${field}`);
-    setTimeout(() => setSavedCell(null), 1200);
-    try {
-      await fetch(`/api/tourrouter/tours/${tourId}/shows/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [field]: value }),
-      });
-    } catch { /* ignore */ }
-  }
-
   function updateDrawerField(key: string, value: string) {
     if (!drawerShow) return;
-    const updated = { ...drawerShow, [key]: key === "capacity" ? (parseInt(value) || 0) : value };
+    const numFields = ["capacity", "offer_amount"];
+    const parsed = numFields.includes(key) ? (parseFloat(value) || 0) : value;
+    const updated = { ...drawerShow, [key]: parsed };
     setDrawerShow(updated);
+    setDrawerSaved(false);
     // Debounce save
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       fetch(`/api/tourrouter/tours/${tourId}/shows/${drawerShow.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: key === "capacity" ? (parseInt(value) || 0) : value }),
+        body: JSON.stringify({ [key]: parsed }),
       }).then(() => {
-        // Update local shows array
-        setShows((prev) => prev.map((s, i) => i === drawerIdx ? { ...s, [key]: key === "capacity" ? (parseInt(value) || 0) : value } : s));
+        setShows((prev) => prev.map((s, i) => i === drawerIdx ? { ...s, [key]: parsed } : s));
+        setDrawerSaved(true);
+        setTimeout(() => setDrawerSaved(false), 1500);
       });
     }, 600);
   }
@@ -685,7 +675,12 @@ export default function RouteTourPage() {
                 <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Vehicle</label>
                 <select
                   value={tour.vehicle_type || "van"}
-                  onChange={(e) => updateTourSetting("vehicle_type", e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    updateTourSetting("vehicle_type", v);
+                    const mpgDefaults: Record<string, number> = { van: 18, e350: 14, minibus: 12, bus: 6, truck: 10, car: 28 };
+                    if (mpgDefaults[v]) updateTourSetting("mpg", mpgDefaults[v]);
+                  }}
                   style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}
                 >
                   {["van", "e350", "minibus", "bus", "truck", "car"].map((v) => <option key={v} value={v}>{v}</option>)}
@@ -773,13 +768,6 @@ export default function RouteTourPage() {
                         driveColor={driveColor}
                         formatShowDate={formatShowDate}
                         onDelete={(id) => setDeleteConfirmId(id)}
-                        editingCell={editingCell}
-                        editValue={editValue}
-                        inlineRef={inlineRef}
-                        onStartEdit={startInlineEdit}
-                        onEditChange={setEditValue}
-                        onCommitEdit={commitInlineEdit}
-                        savedCell={savedCell}
                       />
                     );
                   })}
@@ -811,7 +799,10 @@ export default function RouteTourPage() {
                     {[formatShowDate(drawerShow.date_iso), drawerShow.city, drawerShow.country].filter(Boolean).join(" \u00b7 ")}
                   </div>
                 </div>
-                <button onClick={closeDrawer} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888", padding: "4px 8px" }}>&times;</button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {drawerSaved && <span style={{ fontSize: 11, fontWeight: 600, color: "#1a6b3c" }}>Saved</span>}
+                  <button onClick={closeDrawer} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888", padding: "4px 8px" }}>&times;</button>
+                </div>
               </div>
             </div>
             {/* Drawer sections */}
@@ -1115,7 +1106,7 @@ export default function RouteTourPage() {
 function LegAndShowRow({
   show, showNum, index, leg, flying, suggestFly, fromAP, toAP, sd,
   flightThreshold, onToggleLeg, onClickRow, driveColorBg, driveColor, formatShowDate,
-  onDelete, editingCell, editValue, inlineRef, onStartEdit, onEditChange, onCommitEdit, savedCell,
+  onDelete,
 }: {
   show: ShowRow;
   showNum: number;
@@ -1133,21 +1124,7 @@ function LegAndShowRow({
   driveColor: (h: number | null) => string;
   formatShowDate: (d: string | null) => string;
   onDelete: (id: string) => void;
-  editingCell: { id: string; field: string } | null;
-  editValue: string;
-  inlineRef: React.RefObject<HTMLInputElement | null>;
-  onStartEdit: (id: string, field: string, value: string) => void;
-  onEditChange: (value: string) => void;
-  onCommitEdit: () => void;
-  savedCell: string | null;
 }) {
-  const isEditing = (field: string) => editingCell?.id === show.id && editingCell?.field === field;
-  const isSaved = (field: string) => savedCell === `${show.id}-${field}`;
-  const inlineStyle = (field: string): React.CSSProperties => ({
-    padding: "4px 6px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, outline: "none", width: "100%", boxSizing: "border-box",
-    background: isSaved(field) ? "#f0faf4" : "#fff",
-    transition: "background 0.3s",
-  });
   const hasAP = fromAP && toAP;
   const links = hasAP ? buildFlightLinks(fromAP.iata, toAP.iata) : null;
 
@@ -1232,39 +1209,17 @@ function LegAndShowRow({
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, color: "#888" }}>
           {show.is_off ? "\u2014" : showNum}
         </td>
-        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, whiteSpace: "nowrap" }}
-          onDoubleClick={(e) => { e.stopPropagation(); if (!show.is_off) onStartEdit(show.id, "date_iso", show.date_iso || ""); }}
-        >
-          {isEditing("date_iso")
-            ? <input ref={inlineRef} type="date" value={editValue} onChange={(e) => onEditChange(e.target.value)} onBlur={onCommitEdit} onKeyDown={(e) => e.key === "Enter" && onCommitEdit()} style={inlineStyle("date_iso")} onClick={(e) => e.stopPropagation()} />
-            : <span style={{ background: isSaved("date_iso") ? "#f0faf4" : undefined, transition: "background 0.3s", borderRadius: 4, padding: "0 2px" }}>{formatShowDate(show.date_iso)}</span>
-          }
+        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, whiteSpace: "nowrap" }}>
+          {formatShowDate(show.date_iso)}
         </td>
-        <td style={{ padding: "10px 12px" }}
-          onDoubleClick={(e) => { e.stopPropagation(); if (!show.is_off) onStartEdit(show.id, "venue", show.venue || ""); }}
-        >
+        <td style={{ padding: "10px 12px" }}>
           <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off ? <em>OFF DAY</em> : (show.event || "\u2014")}</div>
-          {isEditing("venue")
-            ? <input ref={inlineRef} value={editValue} onChange={(e) => onEditChange(e.target.value)} onBlur={onCommitEdit} onKeyDown={(e) => e.key === "Enter" && onCommitEdit()} style={{ ...inlineStyle("venue"), fontSize: 11 }} onClick={(e) => e.stopPropagation()} />
-            : show.venue ? <div style={{ fontSize: 11, color: "#888", background: isSaved("venue") ? "#f0faf4" : undefined, transition: "background 0.3s", borderRadius: 4, padding: "0 2px", display: "inline" }}>{show.venue}</div> : null
-          }
+          {show.venue && <div style={{ fontSize: 11, color: "#888" }}>{show.venue}</div>}
         </td>
-        <td style={{ padding: "10px 12px", fontSize: 13 }}
-          onDoubleClick={(e) => { e.stopPropagation(); if (!show.is_off) onStartEdit(show.id, "city", show.city || ""); }}
-        >
-          {isEditing("city")
-            ? <input ref={inlineRef} value={editValue} onChange={(e) => onEditChange(e.target.value)} onBlur={onCommitEdit} onKeyDown={(e) => e.key === "Enter" && onCommitEdit()} style={inlineStyle("city")} onClick={(e) => e.stopPropagation()} />
-            : <span style={{ background: isSaved("city") ? "#f0faf4" : undefined, transition: "background 0.3s", borderRadius: 4, padding: "0 2px" }}>{show.city || "\u2014"}</span>
-          }
-        </td>
+        <td style={{ padding: "10px 12px", fontSize: 13 }}>{show.city || "\u2014"}</td>
         <td style={{ padding: "10px 12px", fontSize: 12 }}>{show.country || "\u2014"}</td>
-        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13 }}
-          onDoubleClick={(e) => { e.stopPropagation(); if (!show.is_off) onStartEdit(show.id, "offer_amount", String(show.offer_amount || "")); }}
-        >
-          {show.is_off ? "\u2014" : isEditing("offer_amount")
-            ? <input ref={inlineRef} type="number" value={editValue} onChange={(e) => onEditChange(e.target.value)} onBlur={onCommitEdit} onKeyDown={(e) => e.key === "Enter" && onCommitEdit()} style={inlineStyle("offer_amount")} onClick={(e) => e.stopPropagation()} />
-            : <span style={{ background: isSaved("offer_amount") ? "#f0faf4" : undefined, transition: "background 0.3s", borderRadius: 4, padding: "0 2px" }}>{show.offer_display || "\u2014"}</span>
-          }
+        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13 }}>
+          {show.is_off ? "\u2014" : (show.offer_display || "\u2014")}
         </td>
         <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13, color: show.offer_amount ? "#1a6b3c" : "#aaa" }}>
           {show.is_off ? "\u2014" : (show.offer_amount ? fmtUSD(show.offer_amount) : "\u2014")}
