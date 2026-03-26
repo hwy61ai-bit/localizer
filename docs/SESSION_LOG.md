@@ -228,3 +228,5 @@ ToS/Privacy Policy with April 1 dates committed, Stripe pricing corrected (Basic
 - Get Tim testing at localizer.hwy61.ai with real tour schedules
 - Begin Phase 2: TourRouter stabilization — runtime testing, column name fixes, DB migrations
 - Flag Tim to start collecting deal memos and settlement docs for Phase 4 AI intake
+
+ Phase 2 complete — runtime testing, Add Show/Delete Show/Vehicle Settings/Drawer editing built, fuel calc fixed (off days + 24 cities added), billing gate with real Stripe checks, 45 new tour_shows columns, 4 new columns on artists/orgs, 5 new tables with RLS, 3 storage buckets, TourRouter $29/mo Stripe product. Next: Phase 3 settlement system.
