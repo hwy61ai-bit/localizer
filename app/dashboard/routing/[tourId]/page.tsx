@@ -445,11 +445,10 @@ export default function RouteTourPage() {
       });
       if (resp.ok) {
         const data = await resp.json();
-        const added = data.shows || [];
-        const updated = [...shows, ...added].sort((a, b) =>
+        const added: ShowRow[] = data.shows || [];
+        setShows((prev) => [...prev, ...added].sort((a, b) =>
           (a.date_iso || "").localeCompare(b.date_iso || "")
-        );
-        setShows(updated);
+        ));
         setShowAddModal(false);
         setNewShow({ date_iso: "", venue: "", city: "", country: "", offer_amount: "", offer_currency: "USD", event: "" });
       }
