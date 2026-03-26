@@ -715,7 +715,7 @@ export default function RouteTourPage() {
           <button
             onClick={() => setShowSettings(!showSettings)}
             style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
-          >{showSettings ? "Hide Settings" : "\u2699 Settings"}</button>
+          >{showSettings ? "Hide Vehicle Settings" : "\u2699 Vehicle Settings"}</button>
         </div>
 
         {/* Empty state */}
