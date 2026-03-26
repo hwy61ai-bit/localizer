@@ -63,6 +63,7 @@ export default function ImportPage() {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [resolving, setResolving] = useState(false);
 
   const [dragOverSpreadsheet, setDragOverSpreadsheet] = useState(false);
   const [dragOverPdf, setDragOverPdf] = useState(false);
@@ -119,13 +120,44 @@ export default function ImportPage() {
 
   // ── STEP 1: Parse sources ──────────────────────────────────
 
-  function onDataParsed(hdrs: string[], rows: RawRow[]) {
+  async function onDataParsed(hdrs: string[], rows: RawRow[]) {
     setHeaders(hdrs);
     setRawRows(rows);
-    const guesses = autoMapHeaders(hdrs);
-    setMapping(guesses);
     setStep(2);
     setError("");
+
+    // Try alias library first, fall back to built-in autoMapHeaders
+    const builtinGuesses = autoMapHeaders(hdrs);
+    setMapping(builtinGuesses);
+
+    // Async: resolve via alias library + Claude (enhances mapping)
+    setResolving(true);
+    try {
+      const resp = await fetch("/api/tourrouter/aliases/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ headers: hdrs, sampleRows: rows.slice(0, 3) }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        const resolved = data.mappings as Record<string, { field: string; confidence: number }>;
+        // Merge: alias library results override builtin when confidence is higher
+        const merged = { ...builtinGuesses };
+        const usedFields = new Set(Object.values(merged).filter(Boolean));
+        for (const [header, match] of Object.entries(resolved)) {
+          if (match.field && match.confidence >= 0.7 && !usedFields.has(header)) {
+            // Find if this field is already mapped to a different header
+            const existingHeader = Object.entries(merged).find(([, f]) => f === match.field)?.[0];
+            if (!existingHeader || !builtinGuesses[existingHeader]) {
+              // Only override if the builtin didn't have a confident match
+              merged[match.field] = header;
+            }
+          }
+        }
+        setMapping(merged);
+      }
+    } catch { /* alias resolve failed, keep builtin */ }
+    setResolving(false);
   }
 
   function handlePasteSubmit() {
@@ -298,6 +330,17 @@ export default function ImportPage() {
       setError(`Map required fields: ${missing.join(", ")}`);
       return;
     }
+    // Save confirmed mappings as aliases (fire-and-forget)
+    for (const [field, header] of Object.entries(mapping)) {
+      if (header) {
+        fetch("/api/tourrouter/aliases", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ header, field }),
+        }).catch(() => {});
+      }
+    }
+
     const countryMapped = !!mapping.country;
     // CRITICAL: buildShows — declare row={} INSIDE the loop
     const built: ParsedShow[] = [];
@@ -521,7 +564,10 @@ export default function ImportPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Map Columns</div>
-                <div style={{ fontSize: 13, color: "#888" }}>{rawRows.length} rows detected &middot; {headers.length} columns</div>
+                <div style={{ fontSize: 13, color: "#888" }}>
+                  {rawRows.length} rows detected &middot; {headers.length} columns
+                  {resolving && <span style={{ marginLeft: 8, color: "#b35c00" }}>&middot; AI mapping headers...</span>}
+                </div>
               </div>
               <button onClick={() => { setStep(1); setPasteMode(false); setError(""); }} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Back</button>
             </div>
