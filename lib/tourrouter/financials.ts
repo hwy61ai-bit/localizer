@@ -1,5 +1,5 @@
 import { VEHICLE_MPG, VEHICLE_L100, type VehicleType } from './constants';
-import { getRoadKm, estimateDriveHours, isImperialCountry, legCountry } from './geography';
+import { getRoadKm, getCityCoords, estimateDriveHours, isImperialCountry, legCountry } from './geography';
 import { getRate, toUSD, type OfferObj } from './currency';
 import { getAirport } from './flights';
 
@@ -157,6 +157,9 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     if (i > 0) {
       const prev = tourShows[i - 1];
       const km = getRoadKm(prev.city, prev.country, s.city, s.country);
+      if (!km && typeof window !== 'undefined') {
+        console.warn(`[TourRouter] No distance: "${prev.city}" → "${s.city}" (coords: ${getCityCoords(prev.city, prev.country) ? 'found' : 'MISSING'} → ${getCityCoords(s.city, s.country) ? 'found' : 'MISSING'})`);
+      }
       const driveH = km ? estimateDriveHours(km) : null;
       const flying = legChoices[i] === 'fly';
 

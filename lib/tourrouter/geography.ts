@@ -14,12 +14,28 @@ export function legCountry(c1: string | null | undefined, c2: string | null | un
 
 export function getCityCoords(city: string | null | undefined, _country?: string | null): [number, number] | null {
   if (!city) return null;
-  const key = city.toLowerCase().trim();
-  if (CITY_COORDS[key]) return CITY_COORDS[key];
-  // Try partial match
+  const raw = city.toLowerCase().trim();
+
+  // Direct lookup
+  if (CITY_COORDS[raw]) return CITY_COORDS[raw];
+
+  // Strip state/province abbreviation — "Nashville, TN" → "nashville"
+  const beforeComma = raw.split(',')[0].trim();
+  if (beforeComma !== raw && CITY_COORDS[beforeComma]) return CITY_COORDS[beforeComma];
+
+  // Strip trailing 2-letter state code — "Nashville TN" → "nashville"
+  const noState = raw.replace(/\s+[a-z]{2}$/i, '').trim();
+  if (noState !== raw && CITY_COORDS[noState]) return CITY_COORDS[noState];
+
+  // Strip leading "the " — "The Bronx" → "bronx"
+  const noThe = raw.replace(/^the\s+/i, '').trim();
+  if (noThe !== raw && CITY_COORDS[noThe]) return CITY_COORDS[noThe];
+
+  // Try matching dictionary keys that start with our cleaned city name
   for (const k in CITY_COORDS) {
-    if (k.startsWith(key.split(',')[0].trim())) return CITY_COORDS[k];
+    if (k === beforeComma || k === noState) return CITY_COORDS[k];
   }
+
   return null;
 }
 
