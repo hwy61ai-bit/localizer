@@ -33,7 +33,7 @@ export const CITY_COORDS: Record<string, [number, number]> = {
   'dayton': [39.7589, -84.1916], 'akron': [41.0814, -81.5190], 'toledo': [41.6528, -83.5379],
   'anchorage': [61.2181, -149.9003], 'honolulu': [21.3069, -157.8583],
   'brooklyn': [40.6782, -73.9442], 'queens': [40.7282, -73.7949], 'bronx': [40.8448, -73.8648],
-  'iowa city': [41.6611, -91.5302], 'wisconsin dells': [43.6275, -89.7710], 'appleton': [44.2619, -88.4154],
+  'iowa city': [41.6611, -91.5302], 'wisconsin dells': [43.6275, -89.7710], 'wisonsin dells': [43.6275, -89.7710], 'appleton': [44.2619, -88.4154],
   'ferndale': [42.4606, -83.1346], 'fredericksburg': [30.2752, -98.8720], 'san juan capistrano': [33.5017, -117.6626],
   'thousand oaks': [34.1706, -118.8376], 'san luis obispo': [35.2828, -120.6596], 'felton': [37.0514, -122.0730],
   'lake tahoe': [39.0968, -120.0324], 'reno': [39.5296, -119.8138], 'camino': [38.7330, -120.6760],
