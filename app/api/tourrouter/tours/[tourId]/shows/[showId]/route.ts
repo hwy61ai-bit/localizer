@@ -33,6 +33,7 @@ export async function PUT(
     "hotel_notes", "hotel_block", "hotel_block_size", "hotel_block_rate",
     "hotel_cutoff_date", "hotel_attrition_pct", "guest_list_cutoff",
     "deposit_amount", "deposit_currency", "deposit_status", "deposit_collected_by", "deposit_notes",
+    "advance_status", "advance_auto_stop",
     "notes", "support",
   ];
   const update: Record<string, unknown> = {};

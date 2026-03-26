@@ -39,6 +39,7 @@ type TourData = {
   currency_rates: Record<string, number> | null;
   leg_choices: Record<string, string> | null;
   localizer_tour_id: string | null;
+  advance_config: { initialSendDays?: number; followup1Days?: number; followup2Days?: number; finalNudgeDays?: number; enabled?: boolean } | null;
 };
 
 type ShowRow = {
@@ -725,6 +726,35 @@ export default function RouteTourPage() {
                 <input type="number" value={tour.flight_threshold_h ?? 6} onChange={(e) => updateTourSetting("flight_threshold_h", parseInt(e.target.value) || 6)} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
               </div>
             </div>
+
+            {/* Advance Settings */}
+            <div style={{ borderTop: "1px solid #DDDDDD", marginTop: 16, paddingTop: 16 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 10 }}>Advance Automation</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Initial (days before)</label>
+                  <input type="number" value={tour.advance_config?.initialSendDays ?? 21} onChange={(e) => updateTourSetting("advance_config", { ...tour.advance_config, initialSendDays: parseInt(e.target.value) || 21 })} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Follow-up 1 (days)</label>
+                  <input type="number" value={tour.advance_config?.followup1Days ?? 5} onChange={(e) => updateTourSetting("advance_config", { ...tour.advance_config, followup1Days: parseInt(e.target.value) || 5 })} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Follow-up 2 (days)</label>
+                  <input type="number" value={tour.advance_config?.followup2Days ?? 5} onChange={(e) => updateTourSetting("advance_config", { ...tour.advance_config, followup2Days: parseInt(e.target.value) || 5 })} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Final nudge (days before)</label>
+                  <input type="number" value={tour.advance_config?.finalNudgeDays ?? 3} onChange={(e) => updateTourSetting("advance_config", { ...tour.advance_config, finalNudgeDays: parseInt(e.target.value) || 3 })} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                </div>
+                <div style={{ display: "flex", alignItems: "flex-end" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, cursor: "pointer", padding: "8px 0" }}>
+                    <input type="checkbox" checked={tour.advance_config?.enabled !== false} onChange={(e) => updateTourSetting("advance_config", { ...tour.advance_config, enabled: e.target.checked })} style={{ width: 16, height: 16, accentColor: "#111" }} />
+                    <span style={{ fontWeight: 600 }}>Enabled</span>
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -961,7 +991,14 @@ export default function RouteTourPage() {
               )}
 
               {/* Advancing Section */}
-              {drawerShow && !drawerShow.is_off && (
+              {drawerShow && !drawerShow.is_off && (() => {
+                const as = drawerShow.advance_status || "not_started";
+                const statusColor = as === "confirmed" ? "#1a6b3c" : as.includes("escalated") || as.includes("bounced") ? "#c0392b" : as.includes("followup") || as.includes("final") ? "#b35c00" : as === "sent" ? "#1a5fa6" : "#888";
+                const statusBg = as === "confirmed" ? "#e8f5e9" : as.includes("escalated") || as.includes("bounced") ? "#ffebee" : as.includes("followup") || as.includes("final") ? "#fff3e0" : as === "sent" ? "#e3f2fd" : "#f5f5f5";
+                const statusLabel = as.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                const isPaused = !!(drawerShow as Record<string, unknown>).advance_auto_stop;
+
+                return (
                 <div style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <div
                     onClick={() => toggleSection("Advancing")}
@@ -969,76 +1006,59 @@ export default function RouteTourPage() {
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>Advancing</div>
-                      {drawerShow.advance_status && (
-                        <span style={{
-                          fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
-                          background: drawerShow.advance_status === "submitted" ? "#e8f5e9" : drawerShow.advance_status?.includes("sent") ? "#fff3e0" : "#f5f5f5",
-                          color: drawerShow.advance_status === "submitted" ? "#1a6b3c" : drawerShow.advance_status?.includes("sent") ? "#b35c00" : "#888",
-                        }}>{drawerShow.advance_status === "submitted" ? "Submitted" : drawerShow.advance_status?.includes("sent") ? "Sent" : drawerShow.advance_status}</span>
-                      )}
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: statusBg, color: statusColor }}>{statusLabel}</span>
+                      {isPaused && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, background: "#f5f5f5", color: "#888" }}>Paused</span>}
                     </div>
                     <span style={{ fontSize: 12, color: "#aaa" }}>{collapsedSections.has("Advancing") ? "\u25b6" : "\u25bc"}</span>
                   </div>
                   {!collapsedSections.has("Advancing") && (
                     <div style={{ paddingBottom: 14 }}>
-                      {/* Status info */}
+                      {/* Timeline */}
                       {drawerShow.advance_sent_at && (
-                        <div style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>
-                          Sent: {new Date(drawerShow.advance_sent_at).toLocaleDateString()} to {drawerShow.advance_recipient_email}
+                        <div style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
+                          Last sent: {new Date(drawerShow.advance_sent_at).toLocaleDateString()} to {drawerShow.advance_recipient_email}
                         </div>
                       )}
                       {drawerShow.advance_form_submitted_at && (
-                        <div style={{ fontSize: 12, color: "#1a6b3c", marginBottom: 8, fontWeight: 600 }}>
+                        <div style={{ fontSize: 12, color: "#1a6b3c", marginBottom: 4, fontWeight: 600 }}>
                           Form submitted: {new Date(drawerShow.advance_form_submitted_at).toLocaleDateString()}
                           {drawerShow.advance_form_submitted_by ? ` by ${drawerShow.advance_form_submitted_by}` : ""}
                         </div>
                       )}
 
+                      {/* Controls */}
+                      <div style={{ display: "flex", gap: 6, marginBottom: 10, marginTop: 8 }}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, cursor: "pointer" }}>
+                          <input type="checkbox" checked={isPaused} onChange={(e) => updateDrawerField("advance_auto_stop", e.target.checked ? "true" : "")} style={{ accentColor: "#111" }} />
+                          Pause auto-advance
+                        </label>
+                        {as !== "confirmed" && (
+                          <button
+                            onClick={() => updateDrawerField("advance_status", "confirmed")}
+                            style={{ padding: "4px 12px", borderRadius: 6, border: "1px solid #1a6b3c", background: "#fff", color: "#1a6b3c", fontWeight: 700, fontSize: 11, cursor: "pointer", marginLeft: 8 }}
+                          >Mark Confirmed</button>
+                        )}
+                      </div>
+
                       {/* Send form */}
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
                         <div>
                           <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Recipient Email</label>
-                          <input
-                            value={advanceEmail || drawerShow.advance_recipient_email || ""}
-                            onChange={(e) => setAdvanceEmail(e.target.value)}
-                            placeholder="promoter@venue.com"
-                            type="email"
-                            style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
-                          />
+                          <input value={advanceEmail || drawerShow.advance_recipient_email || ""} onChange={(e) => setAdvanceEmail(e.target.value)} placeholder="promoter@venue.com" type="email" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
                         </div>
                         <div>
                           <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Recipient Name</label>
-                          <input
-                            value={advanceName}
-                            onChange={(e) => setAdvanceName(e.target.value)}
-                            placeholder="Contact name"
-                            style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
-                          />
+                          <input value={advanceName} onChange={(e) => setAdvanceName(e.target.value)} placeholder="Contact name" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
                         </div>
                       </div>
 
                       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                        <button
-                          onClick={() => sendAdvance(drawerShow.advance_sent_at ? "followup" : "initial")}
-                          disabled={advanceSending || !(advanceEmail.trim() || drawerShow.advance_recipient_email)}
-                          style={{
-                            padding: "8px 16px", borderRadius: 8, border: "1px solid #111",
-                            background: "#111", color: "#fff", fontWeight: 700, fontSize: 12,
-                            cursor: "pointer", opacity: advanceSending ? 0.5 : 1,
-                          }}
-                        >{advanceSending ? "Sending..." : drawerShow.advance_sent_at ? "Resend / Follow-up" : "Send Advance"}</button>
-
+                        <button onClick={() => sendAdvance(drawerShow.advance_sent_at ? "followup" : "initial")} disabled={advanceSending || !(advanceEmail.trim() || drawerShow.advance_recipient_email)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: advanceSending ? 0.5 : 1 }}>
+                          {advanceSending ? "Sending..." : drawerShow.advance_sent_at ? "Resend / Follow-up" : "Send Now"}
+                        </button>
                         {drawerShow.advance_sent_at && (
-                          <button
-                            onClick={() => sendAdvance("final")}
-                            disabled={advanceSending}
-                            style={{
-                              padding: "8px 16px", borderRadius: 8, border: "1px solid #c0392b",
-                              background: "#fff", color: "#c0392b", fontWeight: 700, fontSize: 12, cursor: "pointer",
-                            }}
-                          >Final Request</button>
+                          <button onClick={() => sendAdvance("final")} disabled={advanceSending} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #c0392b", background: "#fff", color: "#c0392b", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Final Request</button>
                         )}
-
                         {advanceMsg && <span style={{ fontSize: 12, color: advanceMsg.includes("failed") ? "#c0392b" : "#1a6b3c", fontWeight: 600 }}>{advanceMsg}</span>}
                       </div>
 
@@ -1047,22 +1067,16 @@ export default function RouteTourPage() {
                         <div style={{ marginTop: 10 }}>
                           <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Advance Form Link</label>
                           <div style={{ display: "flex", gap: 6 }}>
-                            <input
-                              readOnly
-                              value={`${window.location.origin}/advance/${drawerShow.advance_form_token}`}
-                              style={{ flex: 1, padding: "6px 10px", border: "1px solid #eee", borderRadius: 8, fontSize: 11, fontFamily: "monospace", color: "#888", outline: "none" }}
-                            />
-                            <button
-                              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/advance/${drawerShow.advance_form_token}`)}
-                              style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
-                            >Copy</button>
+                            <input readOnly value={`${window.location.origin}/advance/${drawerShow.advance_form_token}`} style={{ flex: 1, padding: "6px 10px", border: "1px solid #eee", borderRadius: 8, fontSize: 11, fontFamily: "monospace", color: "#888", outline: "none" }} />
+                            <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/advance/${drawerShow.advance_form_token}`)} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Copy</button>
                           </div>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               {/* Guest List Section */}
               {drawerShow && !drawerShow.is_off && (
