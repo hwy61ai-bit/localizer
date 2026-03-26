@@ -12,20 +12,20 @@ export async function promoteAliases(): Promise<{ promoted: number }> {
   // that have been confirmed across 3+ different orgs
   const { data: candidates } = await supabase
     .from("field_aliases")
-    .select("header_normalized, field_key, org_id, confirmed_count")
+    .select("raw_header, tourrouter_field, org_id, confirmed_count")
     .eq("scope", "account");
 
   if (!candidates || candidates.length === 0) return { promoted: 0 };
 
-  // Group by (header_normalized, field_key) → count distinct org_ids
+  // Group by (raw_header, tourrouter_field) → count distinct org_ids
   const groups = new Map<string, { header: string; field: string; orgIds: Set<string>; totalCount: number }>();
 
   for (const alias of candidates) {
-    const key = `${alias.header_normalized}::${alias.field_key}`;
+    const key = `${alias.raw_header}::${alias.tourrouter_field}`;
     if (!groups.has(key)) {
       groups.set(key, {
-        header: alias.header_normalized,
-        field: alias.field_key,
+        header: alias.raw_header,
+        field: alias.tourrouter_field,
         orgIds: new Set(),
         totalCount: 0,
       });
@@ -43,8 +43,8 @@ export async function promoteAliases(): Promise<{ promoted: number }> {
     const { data: existing } = await supabase
       .from("field_aliases")
       .select("id")
-      .eq("header_normalized", group.header)
-      .eq("field_key", group.field)
+      .eq("raw_header", group.header)
+      .eq("tourrouter_field", group.field)
       .eq("scope", "global")
       .maybeSingle();
 
@@ -53,9 +53,8 @@ export async function promoteAliases(): Promise<{ promoted: number }> {
         scope: "global",
         org_id: null,
         agency_name: null,
-        header_normalized: group.header,
-        header_original: group.header, // Normalized form as display
-        field_key: group.field,
+        raw_header: group.header,
+        tourrouter_field: group.field,
         confirmed_count: group.totalCount,
       });
       promoted++;

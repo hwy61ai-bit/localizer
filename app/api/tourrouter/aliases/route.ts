@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     .from("field_aliases")
     .select("*")
     .or(`org_id.eq.${membership.org_id},scope.eq.global`)
-    .order("header_normalized");
+    .order("raw_header");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ aliases: aliases ?? [] });

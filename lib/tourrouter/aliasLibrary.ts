@@ -68,8 +68,8 @@ export async function resolveHeaders(
   const supabase = await supabaseServer();
   const { data: aliases } = await supabase
     .from("field_aliases")
-    .select("header_normalized, field_key, scope, org_id, agency_name, confirmed_count")
-    .in("header_normalized", normalized)
+    .select("raw_header, tourrouter_field, scope, org_id, agency_name, confirmed_count")
+    .in("raw_header", normalized)
     .order("scope"); // account first, then agency, then global
 
   // Build lookup map: normalized → best match
@@ -78,15 +78,15 @@ export async function resolveHeaders(
   if (aliases) {
     // Process in priority order: account > agency > global
     for (const alias of aliases) {
-      const key = alias.header_normalized;
+      const key = alias.raw_header;
       if (aliasMap.has(key)) continue; // Already matched at higher priority
 
       if (alias.scope === "account" && alias.org_id === orgId) {
-        aliasMap.set(key, { field: alias.field_key, source: "account" });
+        aliasMap.set(key, { field: alias.tourrouter_field, source: "account" });
       } else if (alias.scope === "agency" && agencyName && alias.agency_name === agencyName) {
-        aliasMap.set(key, { field: alias.field_key, source: "agency" });
+        aliasMap.set(key, { field: alias.tourrouter_field, source: "agency" });
       } else if (alias.scope === "global" && (alias.confirmed_count ?? 0) >= 3) {
-        aliasMap.set(key, { field: alias.field_key, source: "global" });
+        aliasMap.set(key, { field: alias.tourrouter_field, source: "global" });
       }
     }
   }
@@ -178,7 +178,7 @@ export async function saveAlias(
   const { data: existing } = await supabase
     .from("field_aliases")
     .select("id, confirmed_count")
-    .eq("header_normalized", normalized)
+    .eq("raw_header", normalized)
     .eq("scope", scope)
     .eq("org_id", scope === "account" ? orgId : null)
     .maybeSingle();
@@ -187,7 +187,7 @@ export async function saveAlias(
     await supabase
       .from("field_aliases")
       .update({
-        field_key: fieldKey,
+        tourrouter_field: fieldKey,
         confirmed_count: (existing.confirmed_count || 1) + 1,
         updated_at: new Date().toISOString(),
       })
@@ -197,9 +197,8 @@ export async function saveAlias(
       scope,
       org_id: scope === "account" ? orgId : null,
       agency_name: scope === "agency" ? agencyName : null,
-      header_normalized: normalized,
-      header_original: headerOriginal,
-      field_key: fieldKey,
+      raw_header: normalized,
+      tourrouter_field: fieldKey,
       confirmed_count: 1,
     });
   }
