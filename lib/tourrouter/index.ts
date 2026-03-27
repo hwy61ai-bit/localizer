@@ -71,5 +71,7 @@ export { calculateShowIncome, verifySettlement } from './calculateShowIncome';
 
 export { calculatePersonnelCosts, determineDayType, type RosterMember, type PayComponent, type TourStats, type PersonnelCostResult } from './personnelPay';
 
+export { calculateCommissions, canSeeCommissions, stripCommissionDetails, type Commission, type CommissionResult, type CommissionType, COMMISSION_TYPE_LABELS } from './commissions';
+
 // billingGate is server-only (uses next/headers via supabaseServer)
 // Import directly: import { checkTourRouterAccess } from '@/lib/tourrouter/billingGate'
