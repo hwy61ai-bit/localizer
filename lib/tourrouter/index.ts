@@ -67,5 +67,7 @@ export {
   type MapperField,
 } from './columnMapper';
 
+export { calculateShowIncome, verifySettlement } from './calculateShowIncome';
+
 // billingGate is server-only (uses next/headers via supabaseServer)
 // Import directly: import { checkTourRouterAccess } from '@/lib/tourrouter/billingGate'
