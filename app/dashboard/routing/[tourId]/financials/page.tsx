@@ -34,6 +34,7 @@ type TourData = {
   blanket_off_label: string | null;
   currency_rates: Record<string, number> | null;
   leg_choices: Record<string, string> | null;
+  tour_commissions: Record<string, unknown>[] | null;
 };
 
 type ShowRow = {
@@ -159,6 +160,7 @@ export default function FinancialsPage() {
       vehicleCount: 1,
       fuelPriceOverride: tour.fuel_price_usd || null,
       flightPriceCache: {},
+      commissions: (tour.tour_commissions || []) as never[],
     });
     setFin(result);
   }, [shows, tour, blanketShowAmt, blanketOffAmt, blanketShowLabel, blanketOffLabel, showExpenses, rates]);
@@ -357,6 +359,92 @@ export default function FinancialsPage() {
                   <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "monospace", color: c.color || "#111" }}>{c.value}</div>
                 </div>
               ))}
+            </div>
+
+            {/* ══════ Income Waterfall ══════ */}
+            <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, marginBottom: 16 }}>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Income Waterfall</div>
+              {(() => {
+                const gross = fin.totalIncome;
+                const commTotal = fin.totalCommissions;
+                const commItems = (fin.commissionResult as unknown as Record<string, unknown>)?.items as { label: string; recipientName: string; amountUSD: number; type: string }[] ?? [];
+                const labelSupport = fin.labelSupportCredit;
+                const expenses = fin.totalExpenses;
+                const net = fin.netIncome;
+
+                const fmt = (n: number) => `$${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                const rowStyle = (isTotal?: boolean): React.CSSProperties => ({
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "10px 0", borderBottom: isTotal ? "2px solid #1a1a18" : "1px solid #f0f0ec",
+                  fontSize: 14,
+                });
+                const amtStyle = (negative?: boolean): React.CSSProperties => ({
+                  fontFamily: "monospace", fontWeight: 600,
+                  color: negative ? "#c0392b" : "#1a6b3c",
+                });
+                const subRowStyle: React.CSSProperties = {
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  padding: "6px 0 6px 24px", fontSize: 13, color: "#888",
+                  borderBottom: "1px solid #f8f8f5",
+                };
+
+                return (
+                  <>
+                    <div style={rowStyle()}>
+                      <span style={{ fontWeight: 600 }}>Gross Tour Income</span>
+                      <span style={amtStyle()}>{fmt(gross)}</span>
+                    </div>
+
+                    {commItems.length > 0 && (
+                      <>
+                        <div style={rowStyle()}>
+                          <span style={{ fontWeight: 600 }}>Commissions</span>
+                          <span style={amtStyle(true)}>-{fmt(commTotal)}</span>
+                        </div>
+                        {commItems.filter((i) => i.type !== "label_support").map((item, idx) => (
+                          <div key={idx} style={subRowStyle}>
+                            <span>{item.label} ({item.recipientName})</span>
+                            <span style={{ fontFamily: "monospace" }}>-{fmt(item.amountUSD)}</span>
+                          </div>
+                        ))}
+                      </>
+                    )}
+
+                    {commTotal > 0 && (
+                      <div style={rowStyle()}>
+                        <span style={{ fontWeight: 600 }}>Income After Commissions</span>
+                        <span style={amtStyle()}>{fmt(gross - commTotal)}</span>
+                      </div>
+                    )}
+
+                    {labelSupport > 0 && (
+                      <div style={rowStyle()}>
+                        <span>Label Tour Support (credit)</span>
+                        <span style={amtStyle()}>+{fmt(labelSupport)}</span>
+                      </div>
+                    )}
+
+                    <div style={rowStyle()}>
+                      <span style={{ fontWeight: 600 }}>Total Expenses</span>
+                      <span style={amtStyle(true)}>-{fmt(expenses)}</span>
+                    </div>
+
+                    <div style={rowStyle(true)}>
+                      <span style={{ fontSize: 16, fontWeight: 700 }}>Net to Artist</span>
+                      <span style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 700, color: net >= 0 ? "#1a6b3c" : "#c0392b" }}>
+                        {net < 0 ? "-" : ""}{fmt(net)}
+                      </span>
+                    </div>
+
+                    {gross > 0 && (
+                      <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8, fontSize: 13, color: "#888" }}>
+                        Margin: {((net / gross) * 100).toFixed(1)}%
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {/* ══════ Section 1: Blanket Expenses ══════ */}
