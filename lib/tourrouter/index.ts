@@ -69,5 +69,7 @@ export {
 
 export { calculateShowIncome, verifySettlement } from './calculateShowIncome';
 
+export { calculatePersonnelCosts, determineDayType, type RosterMember, type PayComponent, type TourStats, type PersonnelCostResult } from './personnelPay';
+
 // billingGate is server-only (uses next/headers via supabaseServer)
 // Import directly: import { checkTourRouterAccess } from '@/lib/tourrouter/billingGate'
