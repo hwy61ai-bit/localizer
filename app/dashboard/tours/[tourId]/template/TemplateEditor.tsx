@@ -26,7 +26,7 @@ const FONTS = [
 ];
 
 type FieldKey = "date" | "venue" | "city";
-type FormatKey = "square" | "story" | "landscape" | "poster" | "tiktok" | "yt_shorts";
+type FormatKey = "square" | "story" | "landscape" | "print" | "tiktok" | "yt_shorts";
 type Align = "left" | "center" | "right";
 
 type FieldConfig = { x: number; y: number; size: number; align?: Align };
@@ -62,7 +62,7 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "square",    label: "IG Square",     w: 1080, h: 1080 },
   { key: "story",     label: "IG Story",      w: 1080, h: 1350 },
   { key: "landscape", label: "FB Cover",      w: 820,  h: 312 },
-  { key: "poster",    label: "Print Poster", w: 1650, h: 2550 },
+  { key: "print",     label: "LOCAL POSTER FOR PRINT", w: 3300, h: 5100 },
   { key: "tiktok",    label: "TikTok/Reels",  w: 1080, h: 1920 },
   { key: "yt_shorts", label: "YT Shorts",     w: 1080, h: 1920 },
 ];
@@ -87,6 +87,7 @@ type Tour = {
   band_name: string | null;
   band_tour_label: string | null;
   image_url: string | null;
+  image_print_id: string | null;
   image_square_id: string | null;
   image_story_id: string | null;
   image_landscape_id: string | null;
@@ -106,7 +107,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
     square:    { w: 1080, h: 1080 },
     story:     { w: 1080, h: 1350 },
     landscape: { w: 1920, h: 1080 },
-    poster:    { w: 1650, h: 2550 },
+    print:     { w: 3300, h: 5100 },
     tiktok:    { w: 1080, h: 1920 },
     yt_shorts: { w: 1080, h: 1920 },
   }[format];
@@ -198,7 +199,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     square:    { ...DEFAULT_FORMAT, ...saved0.square },
     story:     { ...DEFAULT_FORMAT, ...saved0.story },
     landscape: { ...DEFAULT_FORMAT, ...saved0.landscape },
-    poster:    { ...DEFAULT_FORMAT, ...saved0.poster },
+    print:     { ...DEFAULT_FORMAT, ...saved0.print },
     tiktok:    { ...DEFAULT_FORMAT, ...saved0.tiktok },
     yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts },
   });
@@ -212,6 +213,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [dirtyFormats, setDirtyFormats] = useState<Set<string>>(new Set());
   const [customFonts, setCustomFonts] = useState<{ label: string; value: string }[]>([]);
   const [uploadingFont, setUploadingFont] = useState(false);
+  const savingRef = useRef(false);
   const fontFileRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -266,7 +268,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     square:    tour.image_square_id,
     story:     tour.image_story_id ?? tour.image_square_id,
     landscape: tour.image_landscape_id ?? tour.image_square_id,
-    poster:    tour.image_url ?? tour.image_square_id,
+    print:     tour.image_print_id,
     tiktok:    tour.video_tiktok_id ?? null,
     yt_shorts: tour.video_yt_shorts_id ?? null,
   };
@@ -275,6 +277,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const publicId = formatImageIds[activeFormat];
   const fmtDims = FORMATS.find(f => f.key === activeFormat)!;
   const isVideoFormat = activeFormat === "tiktok" || activeFormat === "yt_shorts";
+  const isPrintFormat = activeFormat === "print";
   const imageUrl = publicId
     ? isVideoFormat
       ? `https://res.cloudinary.com/${cloudName}/video/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h},so_0/${publicId}.jpg`
@@ -375,6 +378,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   }
 
   async function save() {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setSaving(true);
     try {
       const res = await fetch(`/api/tours/${tourId}/overlay-config`, {
@@ -394,6 +399,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     } catch {
       toast.error("Save failed — network error.");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -530,7 +536,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             ))}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            {!isVideoFormat && <button
+            {isPrintFormat && <div style={{ fontSize: 11, color: "#888", fontWeight: 600, padding: "10px 0" }}>Print poster generates as PDF from the venue download page.</div>}
+            {!isVideoFormat && !isPrintFormat && <button
                 onClick={async () => {
                   const pid = formatImageIds[activeFormat];
                   if (!pid) { toast.error('No image uploaded for this format.'); return; }
@@ -606,7 +613,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
                         setDragging("band"); 
                       }}
-                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textShadow: "0 1px 4px rgba(0,0,0,0.9)", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
                         {(fc.x < 0.4 && align !== "left") && (
                           <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
                             ⚠️ Use left align
@@ -653,7 +660,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
                         setDragging(field); 
                       }}
-                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", textShadow: "0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7)", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
                         {firstEvent ? (
                           field === "venue" ? (() => {
                             const raw = previewLongest ? longestVenue : firstEvent.venue;
@@ -787,7 +794,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
-              {(["venue", "date", "city"] as FieldKey[]).map(field => (
+              {(["venue", "date", "city"] as FieldKey[]).map(field => {
+                const textMax = isPrintFormat ? 400 : 120;
+                return (
                 <div key={field} style={{ marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
                     <span style={{ fontSize: 12, fontWeight: 600 }}>{FIELD_LABELS[field]}</span>
@@ -795,7 +804,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       <input
                         type="number"
                         min={16}
-                        max={120}
+                        max={textMax}
                         value={cfg[field].size}
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
@@ -806,14 +815,15 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       <span style={{ fontSize: 11, color: "#999" }}>px</span>
                     </div>
                   </div>
-                  <input type="range" min={16} max={120} step={2}
+                  <input type="range" min={16} max={textMax} step={2}
                     value={cfg[field].size}
                     onChange={(e) => updateField(field, "size", parseInt(e.target.value))}
                     style={{ width: "100%", cursor: "pointer" }}
                   />
                   <AlignButtons field={field} />
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
@@ -835,7 +845,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       <input
                         type="number"
                         min={20}
-                        max={200}
+                        max={isPrintFormat ? 600 : 200}
                         value={cfg.bandSize}
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
@@ -846,7 +856,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       <span style={{ fontSize: 11, color: "#999" }}>px</span>
                     </div>
                   </div>
-                  <input type="range" min={20} max={200} step={2} value={cfg.bandSize}
+                  <input type="range" min={20} max={isPrintFormat ? 600 : 200} step={2} value={cfg.bandSize}
                     onChange={(e) => updateCfg("bandSize", parseInt(e.target.value))}
                     style={{ width: "100%", cursor: "pointer" }}
                   />
@@ -890,7 +900,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       <input
                         type="number"
                         min={20}
-                        max={600}
+                        max={isPrintFormat ? 1800 : 600}
                         value={cfg.logo?.size ?? 80}
                         onChange={(e) => {
                           const val = parseInt(e.target.value);
@@ -907,7 +917,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       <span style={{ fontSize: 11, color: "#999" }}>px</span>
                     </div>
                   </div>
-                  <input type="range" min={20} max={600} step={2} value={cfg.logo?.size ?? 80}
+                  <input type="range" min={20} max={isPrintFormat ? 1800 : 600} step={2} value={cfg.logo?.size ?? 80}
                     onChange={(e) => setConfigs(prev => ({
                       ...prev,
                       [activeFormat]: {

@@ -30,7 +30,6 @@ const FORMAT_DIMS: Record<string, { w: number; h: number }> = {
   square:    { w: 1080, h: 1080 },
   story:     { w: 1080, h: 1350 },
   landscape: { w: 820,  h: 312 },
-  poster:    { w: 1650, h: 2550 },
 };
 
 // Landscape font sizes are stored at 1920x1080 scale in overlay_config,
@@ -39,7 +38,6 @@ const SCALE_FACTORS: Record<string, number> = {
   square: 1.0,
   story: 1.0,
   landscape: 1.0,
-  poster: 1.0,
 };
 
 // Auto-shrink using canvas measureText for pixel-perfect accuracy

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@pdf-lib/fontkit": "^1.1.1",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.98.0",
     "cloudinary": "^2.9.0",
@@ -17,6 +18,7 @@
     "mammoth": "^1.11.0",
     "next": "^14.2.35",
     "papaparse": "^5.5.3",
+    "pdf-lib": "^1.17.1",
     "pdfkit": "^0.18.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

@@ -172,9 +172,9 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
     const overlayConfig = tourData.tour.overlay_config ?? {};
 
     // Load font
-    const formats = ["square", "story", "landscape", "poster"];
+    const formats = ["square", "story", "landscape"];
     const formatDims: Record<string, { w: number; h: number }> = {
-      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, landscape: { w: 820, h: 312 }, poster: { w: 1650, h: 2550 },
+      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, landscape: { w: 820, h: 312 },
     };
 
     const flagged: { eventId: string; venue: string; edited: string }[] = [];
@@ -275,17 +275,15 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
         square: tour.image_square_id,
         story: tour.image_story_id ?? tour.image_square_id,
         landscape: tour.image_landscape_id ?? tour.image_square_id,
-        poster: tour.image_url ?? tour.image_square_id,
       };
 
       const formatDims: Record<string, { w: number; h: number }> = {
         square: { w: 1080, h: 1080 },
         story: { w: 1080, h: 1350 },
         landscape: { w: 820, h: 312 },
-        poster: { w: 1650, h: 2550 },
       };
 
-      const formats = ["square", "story", "landscape", "poster"];
+      const formats = ["square", "story", "landscape"];
       const total = serverEvents.length * formats.length;
       let done = 0;
       setRenderProgress({ done: 0, total });

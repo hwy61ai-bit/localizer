@@ -8,9 +8,9 @@ import { useToast } from "@/app/components/Toast";
 
 const FORMATS = [
   { id: "ig_post",     label: "Instagram Post / Facebook Post",        w: 1080, h: 1080, aspect: "1 / 1",     section: "photo", sub: "SQUARE" },
-  { id: "ig_story",    label: "Instagram Story / Reels / Facebook Story",        w: 1080, h: 1920, aspect: "9 / 16",    section: "photo", sub: "VERTICAL" },
+  { id: "ig_story",    label: "Instagram Story / Reels / Facebook Story",        w: 1080, h: 1350, aspect: "4 / 5",     section: "photo", sub: "PORTRAIT" },
   { id: "facebook",    label: "Facebook Cover Image",  w: 820,  h: 312,  aspect: "820 / 312", section: "photo", sub: "LANDSCAPE" },
-  { id: "tour_poster", label: "Local Poster For Print (11×17)", w: 1650, h: 2550, aspect: "1650 / 2550", section: "photo", sub: "VERTICAL" },
+  { id: "print", label: "Local Poster For Print (PDF)", w: 3300, h: 5100, aspect: "3300 / 5100", section: "photo", sub: "11×17 / 300 DPI" },
   { id: "tiktok",      label: "Instagram Reels / TikTok",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL" },
   { id: "yt_shorts",   label: "YouTube Shorts / FB Stories",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL" },
 ];
@@ -41,17 +41,17 @@ export default function AssetsPage() {
     async function loadExisting() {
       const { data } = await supabase
         .from("tours")
-        .select("image_url, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id")
+        .select("image_url, image_square_id, image_story_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id")
         .eq("id", tourId)
         .single();
       if (!data) return;
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
       const base = `https://res.cloudinary.com/${cloudName}/image/upload/`;
       const loaded: { formatId: string; url: string }[] = [];
-      if (data.image_url) loaded.push({ formatId: "tour_poster", url: `${base}${data.image_url}` });
       if (data.image_square_id) loaded.push({ formatId: "ig_post", url: `${base}${data.image_square_id}` });
       if (data.image_story_id) loaded.push({ formatId: "ig_story", url: `${base}${data.image_story_id}` });
       if (data.image_landscape_id) loaded.push({ formatId: "facebook", url: `${base}${data.image_landscape_id}` });
+      if (data.image_print_id) loaded.push({ formatId: "print", url: `${base}${data.image_print_id}` });
       const videoBase = `https://res.cloudinary.com/${cloudName}/video/upload/`;
       if (data.video_tiktok_id) loaded.push({ formatId: "tiktok", url: `${videoBase}${data.video_tiktok_id}` });
       if (data.video_yt_shorts_id) loaded.push({ formatId: "yt_shorts", url: `${videoBase}${data.video_yt_shorts_id}` });
@@ -64,7 +64,7 @@ export default function AssetsPage() {
     ig_post: "image_square_id",
     ig_story: "image_story_id",
     facebook: "image_landscape_id",
-    tour_poster: "image_url",
+    print: "image_print_id",
     tiktok: "video_tiktok_id",
     yt_shorts: "video_yt_shorts_id",
   };
@@ -128,6 +128,7 @@ export default function AssetsPage() {
           <div style={{ fontSize: 11, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.1em", color: "#888", marginBottom: 10 }}>
             {fmt.label}
             <div style={{ fontSize: 9, fontWeight: 700, color: "#999", marginTop: 3, letterSpacing: "0.1em" }}>{(fmt as any).sub} {fmt.w} × {fmt.h}</div>
+            {fmt.id === "print" && <div style={{ fontSize: 9, fontWeight: 600, color: "#b08000", marginTop: 3 }}>Recommended: 3300×5100px or higher resolution</div>}
           </div>
           <input
             ref={(el) => { fileRefs.current[fmt.id] = el; }}
@@ -146,9 +147,9 @@ export default function AssetsPage() {
               if (file) handleUpload(fmt.id, file);
             }}
             style={{
-              aspectRatio: (fmt.id === "tour_poster" && asset) ? undefined : fmt.aspect, background: "#f5f5f5",
+              aspectRatio: fmt.aspect, background: "#f5f5f5",
               border: dragOverId === fmt.id ? "2px dashed #111" : asset ? "none" : "1.5px dashed #ccc",
-              borderRadius: 12, overflow: (fmt.id === "tour_poster" && asset) ? "visible" : "hidden", position: "relative",
+              borderRadius: 12, overflow: "hidden", position: "relative",
               cursor: asset ? "default" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               boxShadow: "0 2px 8px rgba(0,0,0,0.08)", transition: "border-color 0.15s",

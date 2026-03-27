@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import IntakeDropZone from "../IntakeDropZone";
 import SettlementPanel from "./SettlementPanel";
 import RosterPanel from "./RosterPanel";
+import VehicleManager from "./VehicleManager";
 import {
   getRoadKm,
   estimateDriveHours,
@@ -43,6 +44,7 @@ type TourData = {
   localizer_tour_id: string | null;
   advance_config: { initialSendDays?: number; followup1Days?: number; followup2Days?: number; finalNudgeDays?: number; enabled?: boolean } | null;
   tour_roster: Record<string, unknown>[] | null;
+  tour_vehicles: Record<string, unknown>[] | null;
 };
 
 type ShowRow = {
@@ -197,6 +199,8 @@ export default function RouteTourPage() {
   // Settings panel
   const [showSettings, setShowSettings] = useState(false);
   const [showRoster, setShowRoster] = useState(false);
+  const [showLegacyVehicle, setShowLegacyVehicle] = useState(false);
+  const [blanketDetail, setBlanketDetail] = useState(false);
 
   // Drawer save indicator
   const [drawerSaved, setDrawerSaved] = useState(false);
@@ -700,38 +704,123 @@ export default function RouteTourPage() {
               <div style={{ fontSize: 14, fontWeight: 800 }}>Tour Settings</div>
               <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#888" }}>&times;</button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
-              <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Vehicle</label>
-                <select
-                  value={tour.vehicle_type || "van"}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    updateTourSetting("vehicle_type", v);
-                    const mpgDefaults: Record<string, number> = { van: 18, e350: 14, minibus: 12, bus: 6, truck: 10, car: 28 };
-                    if (mpgDefaults[v]) updateTourSetting("mpg", mpgDefaults[v]);
-                  }}
-                  style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}
+            <VehicleManager
+              tourId={tourId}
+              vehicles={(tour?.tour_vehicles || []) as never[]}
+              defaultFuelPrice={tour?.fuel_price_usd || 3.50}
+              onUpdate={(updated) => setTour((prev) => prev ? { ...prev, tour_vehicles: updated as unknown as Record<string, unknown>[] } : prev)}
+            />
+
+            {/* Legacy single-vehicle settings — show only if no multi-vehicle config */}
+            {(!tour.tour_vehicles || tour.tour_vehicles.length === 0) && (
+              <div style={{ borderTop: "1px solid #eee", marginTop: 12, paddingTop: 8 }}>
+                <div onClick={() => setShowLegacyVehicle(!showLegacyVehicle)} style={{ fontSize: 11, color: "#aaa", cursor: "pointer", marginBottom: showLegacyVehicle ? 10 : 0 }}>
+                  {showLegacyVehicle ? "Hide" : "Show"} legacy single-vehicle settings {showLegacyVehicle ? "\u25bc" : "\u25b6"}
+                </div>
+                {showLegacyVehicle && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Vehicle</label>
+                      <select value={tour.vehicle_type || "van"} onChange={(e) => { const v = e.target.value; updateTourSetting("vehicle_type", v); const mpgDefaults: Record<string, number> = { van: 18, e350: 14, minibus: 12, bus: 6, truck: 10, car: 28 }; if (mpgDefaults[v]) updateTourSetting("mpg", mpgDefaults[v]); }} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}>
+                        {["van", "e350", "minibus", "bus", "truck", "car"].map((v) => <option key={v} value={v}>{v}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Passengers</label>
+                      <input type="number" value={tour.pax ?? 4} onChange={(e) => updateTourSetting("pax", parseInt(e.target.value) || 1)} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>MPG</label>
+                      <input type="number" value={tour.mpg ?? ""} onChange={(e) => updateTourSetting("mpg", parseFloat(e.target.value) || null)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} placeholder="Auto" />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Fuel $/gal</label>
+                      <input type="number" value={tour.fuel_price_usd ?? 3.50} onChange={(e) => updateTourSetting("fuel_price_usd", parseFloat(e.target.value) || null)} step="0.01" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Fly threshold (h)</label>
+                      <input type="number" value={tour.flight_threshold_h ?? 6} onChange={(e) => updateTourSetting("flight_threshold_h", parseInt(e.target.value) || 6)} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Blanket Expenses */}
+            <div style={{ borderTop: "1px solid #e0e0da", paddingTop: 16, marginTop: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>Blanket Expenses</div>
+                <button
+                  onClick={() => setBlanketDetail(!blanketDetail)}
+                  style={{ padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, border: "1px solid #e0e0da", background: "#fff", cursor: "pointer" }}
                 >
-                  {["van", "e350", "minibus", "bus", "truck", "car"].map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
+                  {blanketDetail ? "Summary View" : "Detail View"}
+                </button>
               </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Passengers</label>
-                <input type="number" value={tour.pax ?? 4} onChange={(e) => updateTourSetting("pax", parseInt(e.target.value) || 1)} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 1fr 120px", gap: 8, alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "#888880", marginBottom: 2 }}>Show Day Label</div>
+                  <input
+                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, outline: "none" }}
+                    value={tour?.blanket_show_label || ""}
+                    placeholder="e.g. Band Pay"
+                    onChange={(e) => updateTourSetting("blanket_show_label", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: "#888880", marginBottom: 2 }}>$/Show Day</div>
+                  <input
+                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, fontFamily: "monospace", textAlign: "right" as const, outline: "none" }}
+                    type="number"
+                    value={tour?.blanket_show_amount || ""}
+                    placeholder="0"
+                    onChange={(e) => updateTourSetting("blanket_show_amount", parseFloat(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: "#888880", marginBottom: 2 }}>Off Day Label</div>
+                  <input
+                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, outline: "none" }}
+                    value={tour?.blanket_off_label || ""}
+                    placeholder="e.g. Hotel + Per Diem"
+                    onChange={(e) => updateTourSetting("blanket_off_label", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, color: "#888880", marginBottom: 2 }}>$/Off Day</div>
+                  <input
+                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, fontFamily: "monospace", textAlign: "right" as const, outline: "none" }}
+                    type="number"
+                    value={tour?.blanket_off_amount || ""}
+                    placeholder="0"
+                    onChange={(e) => updateTourSetting("blanket_off_amount", parseFloat(e.target.value) || 0)}
+                  />
+                </div>
               </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>MPG</label>
-                <input type="number" value={tour.mpg ?? ""} onChange={(e) => updateTourSetting("mpg", parseFloat(e.target.value) || null)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} placeholder="Auto" />
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Fuel $/gal</label>
-                <input type="number" value={tour.fuel_price_usd ?? 3.50} onChange={(e) => updateTourSetting("fuel_price_usd", parseFloat(e.target.value) || null)} step="0.01" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
-              </div>
-              <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Fly threshold (h)</label>
-                <input type="number" value={tour.flight_threshold_h ?? 6} onChange={(e) => updateTourSetting("flight_threshold_h", parseInt(e.target.value) || 6)} min={1} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
-              </div>
+
+              {blanketDetail && (
+                <div style={{ marginTop: 12, background: "#f5f5f2", borderRadius: 8, padding: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#888880", marginBottom: 8 }}>BREAKDOWN</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
+                    <span>{tour?.blanket_show_label || "Show Day"} &times; {financials?.showDayCount || 0} show days</span>
+                    <span style={{ fontFamily: "monospace" }}>${((tour?.blanket_show_amount || 0) * (financials?.showDayCount || 0)).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
+                    <span>{tour?.blanket_off_label || "Off Day"} &times; {financials?.offDayCount || 0} off days</span>
+                    <span style={{ fontFamily: "monospace" }}>${((tour?.blanket_off_amount || 0) * (financials?.offDayCount || 0)).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, fontWeight: 700, borderTop: "1px solid #e0e0da", marginTop: 4 }}>
+                    <span>Total Blanket Expenses</span>
+                    <span style={{ fontFamily: "monospace" }}>${(((tour?.blanket_show_amount || 0) * (financials?.showDayCount || 0)) + ((tour?.blanket_off_amount || 0) * (financials?.offDayCount || 0))).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  {tour?.tour_roster && tour.tour_roster.length > 0 && (
+                    <div style={{ marginTop: 8, fontSize: 11, color: "#b35c00", padding: "4px 8px", background: "#fff3e0", borderRadius: 4 }}>
+                      Note: You have a roster with {tour.tour_roster.length} member(s). When roster pay components are set, they replace blanket amounts in the financial calculations.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Advance Settings */}

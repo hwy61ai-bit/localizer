@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
+import PrintDownloadButton from "./PrintDownloadButton";
 
 export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -7,7 +8,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: link } = await supabase
     .from("venue_links")
-    .select("event_id, org_id, is_active, render_square_url, render_story_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url")
+    .select("event_id, org_id, is_active, render_square_url, render_story_url, render_landscape_url, render_tiktok_url, render_yt_shorts_url")
     .eq("token", token)
     .maybeSingle();
 
@@ -23,7 +24,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: tour } = await supabase
     .from("tours")
-    .select("name, band_name, band_tour_label, image_url, artist_id")
+    .select("name, band_name, band_tour_label, image_url, image_print_id, overlay_config, artist_id")
     .eq("id", event.tour_id)
     .single();
 
@@ -71,7 +72,8 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
     { label: "Facebook Cover Image", dims: "820 × 312", aspect: "820/312", url: link.render_landscape_url },
   ];
 
-  const posterUrl: string | null = link.render_poster_url ?? (t.image_url ? `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/${t.image_url}` : null);
+  const overlayConfig = t.overlay_config as Record<string, any> | null;
+  const hasPrintPoster = !!(t.image_print_id && overlayConfig?.print);
 
   return (
     <div style={{ background: "#0a0a0a", minHeight: "100vh", color: "#fff" }}>
@@ -147,23 +149,11 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           </>
         )}
 
-        {/* Tour Poster */}
-        {posterUrl && (
+        {/* Print Poster PDF */}
+        {hasPrintPoster && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Local Poster For Print</div>
-            <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 14, overflow: "hidden", maxWidth: 400 }}>
-              <img src={posterUrl} alt="Tour Poster" style={{ width: "100%", display: "block" }} />
-              <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Local Poster For Print</div>
-                  <div style={{ fontSize: 11, color: "#555" }}>Print quality</div>
-                </div>
-                <a href={`/api/download?url=${encodeURIComponent(posterUrl)}&filename=tour_poster.jpg`} download
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, borderRadius: 8, background: "#1e1e1e", color: "#fff", textDecoration: "none", fontSize: 16 }}>
-                  ↓
-                </a>
-              </div>
-            </div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#555", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
+            <PrintDownloadButton eventId={event.id} venueName={venueName} />
           </div>
         )}
 

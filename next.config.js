@@ -4,6 +4,7 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '20mb',
     },
+    serverComponentsExternalPackages: ['@pdf-lib/fontkit'],
   },
   // Increase API route body size limit
   async headers() {

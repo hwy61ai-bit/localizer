@@ -11,7 +11,7 @@ cloudinary.config({
 export const dynamic = 'force-dynamic';
 
 const FORMAT_COLUMN: Record<string, string> = {
-  tour_poster: "image_url",
+  print: "image_print_id",
   ig_post: "image_square_id",
   ig_story: "image_story_id",
   facebook: "image_landscape_id",
