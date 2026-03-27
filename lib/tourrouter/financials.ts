@@ -2,6 +2,7 @@ import { VEHICLE_MPG, VEHICLE_L100, type VehicleType } from './constants';
 import { getRoadKm, getCityCoords, estimateDriveHours, isImperialCountry, legCountry } from './geography';
 import { getRate, toUSD, type OfferObj } from './currency';
 import { getAirport } from './flights';
+import { calculateShowIncome, type DealTerms, type SettlementData, type ShowForCalc } from './calculateShowIncome';
 
 // ============================================================
 // TYPES
@@ -26,6 +27,8 @@ export interface TourShow {
   notes?: string;
   support?: string;
   promoter?: string;
+  deal?: DealTerms | null;
+  settlement?: SettlementData | null;
 }
 
 export interface FinancialParams {
@@ -132,7 +135,12 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
   let firstDate: Date | null = null, lastDate: Date | null = null;
 
   tourShows.forEach((s, i) => {
-    s.usd = toUSD(s.offer, rates);
+    const showForCalc: ShowForCalc = {
+      offer: { amount: s.offer.amount, currency: s.offer.currency },
+      deal: s.deal ?? null,
+      settlement: s.settlement ?? null,
+    };
+    s.usd = calculateShowIncome(showForCalc, false, rates);
     if (!s.isOff) {
       totalIncome += s.usd;
       totalCapacity += s.capacity || 0;
