@@ -22,7 +22,10 @@ import {
   type TourShow,
   type FinancialResults,
   type VehicleType,
+  COMMISSION_TYPE_LABELS,
+  type CommissionType,
 } from "@/lib/tourrouter";
+import type { Commission } from "@/lib/tourrouter/commissions";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -45,6 +48,7 @@ type TourData = {
   advance_config: { initialSendDays?: number; followup1Days?: number; followup2Days?: number; finalNudgeDays?: number; enabled?: boolean } | null;
   tour_roster: Record<string, unknown>[] | null;
   tour_vehicles: Record<string, unknown>[] | null;
+  tour_commissions: Commission[] | null;
 };
 
 type ShowRow = {
@@ -201,6 +205,7 @@ export default function RouteTourPage() {
   const [showRoster, setShowRoster] = useState(false);
   const [showLegacyVehicle, setShowLegacyVehicle] = useState(false);
   const [blanketDetail, setBlanketDetail] = useState(false);
+  const [showCommissions, setShowCommissions] = useState(false);
 
   // Drawer save indicator
   const [drawerSaved, setDrawerSaved] = useState(false);
@@ -819,6 +824,111 @@ export default function RouteTourPage() {
                       Note: You have a roster with {tour.tour_roster.length} member(s). When roster pay components are set, they replace blanket amounts in the financial calculations.
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* Commissions */}
+            <div style={{ borderTop: "1px solid #e0e0da", paddingTop: 16, marginTop: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showCommissions ? 12 : 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, cursor: "pointer" }} onClick={() => setShowCommissions(!showCommissions)}>
+                  Commissions {showCommissions ? "\u25bc" : "\u25b6"}
+                </div>
+                {showCommissions && (
+                  <button
+                    onClick={() => {
+                      const newC: Commission = {
+                        id: crypto.randomUUID(),
+                        type: "agent_pct" as CommissionType,
+                        label: "",
+                        recipientName: "",
+                        recipientCompany: null,
+                        percentage: null,
+                        flatAmount: null,
+                        flatPeriod: null,
+                        currency: "USD",
+                        isActive: true,
+                        notes: null,
+                      };
+                      const updated = [...(tour?.tour_commissions || []), newC];
+                      updateTourSetting("tour_commissions", updated);
+                    }}
+                    style={{ padding: "4px 12px", borderRadius: 6, border: "1px solid #111", background: "#111", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+                  >+ Add Commission</button>
+                )}
+              </div>
+              {showCommissions && (
+                <div>
+                  {(tour?.tour_commissions || []).length === 0 && (
+                    <div style={{ fontSize: 12, color: "#888", padding: "8px 0" }}>No commissions configured</div>
+                  )}
+                  {(tour?.tour_commissions || []).map((c, idx) => {
+                    const isPct = ["agent_pct", "manager_pct_gross", "manager_pct_net", "bm_pct_gross", "co_manager_pct", "subagent_pct"].includes(c.type);
+                    const isFlat = ["bm_flat_monthly", "label_support"].includes(c.type);
+                    const isCustom = c.type === "custom";
+
+                    function updateCommission(field: string, value: unknown) {
+                      const updated = [...(tour?.tour_commissions || [])];
+                      updated[idx] = { ...updated[idx], [field]: value };
+                      updateTourSetting("tour_commissions", updated);
+                    }
+
+                    function removeCommission() {
+                      const updated = (tour?.tour_commissions || []).filter((_, i) => i !== idx);
+                      updateTourSetting("tour_commissions", updated);
+                    }
+
+                    return (
+                      <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr 140px 1fr 100px 60px 40px 30px", gap: 6, alignItems: "end", marginBottom: 8, padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
+                        <div>
+                          <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>Label</div>
+                          <input value={c.label || ""} onChange={(e) => updateCommission("label", e.target.value)} placeholder="e.g. Booking Agent" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, outline: "none" }} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>Type</div>
+                          <select value={c.type} onChange={(e) => updateCommission("type", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 11, background: "#fff", outline: "none" }}>
+                            {Object.entries(COMMISSION_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>Recipient</div>
+                          <input value={c.recipientName || ""} onChange={(e) => updateCommission("recipientName", e.target.value)} placeholder="Name" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, outline: "none" }} />
+                        </div>
+                        <div>
+                          {(isPct || isCustom) && (
+                            <>
+                              <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>%</div>
+                              <input type="number" step="0.1" value={c.percentage ?? ""} onChange={(e) => updateCommission("percentage", parseFloat(e.target.value) || null)} placeholder="10" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none" }} />
+                            </>
+                          )}
+                          {(isFlat || isCustom) && !isPct && (
+                            <>
+                              <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>$ Flat</div>
+                              <input type="number" value={c.flatAmount ?? ""} onChange={(e) => updateCommission("flatAmount", parseFloat(e.target.value) || null)} placeholder="0" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none" }} />
+                            </>
+                          )}
+                        </div>
+                        <div>
+                          {isFlat && (
+                            <>
+                              <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>Period</div>
+                              <select value={c.flatPeriod || "monthly"} onChange={(e) => updateCommission("flatPeriod", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "6px 2px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 10, background: "#fff", outline: "none" }}>
+                                <option value="monthly">Monthly</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="per_tour">Per Tour</option>
+                              </select>
+                            </>
+                          )}
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", paddingBottom: 2 }}>
+                          <input type="checkbox" checked={c.isActive} onChange={(e) => updateCommission("isActive", e.target.checked)} title="Active" style={{ width: 14, height: 14, accentColor: "#111" }} />
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", paddingBottom: 2 }}>
+                          <button onClick={removeCommission} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#ccc", padding: 0 }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#c0392b"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#ccc"; }}>&times;</button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
