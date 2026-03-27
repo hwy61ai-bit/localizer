@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import IntakeDropZone from "../IntakeDropZone";
+import SettlementPanel from "./SettlementPanel";
 import {
   getRoadKm,
   estimateDriveHours,
@@ -72,6 +73,8 @@ type ShowRow = {
   advance_form_submitted_at: string | null;
   advance_form_submitted_by: string | null;
   advance_recipient_email: string | null;
+  deal?: Record<string, unknown> | null;
+  settlement?: Record<string, unknown> | null;
 };
 
 type LegInfo = {
@@ -194,6 +197,7 @@ export default function RouteTourPage() {
 
   // Drawer save indicator
   const [drawerSaved, setDrawerSaved] = useState(false);
+  const [settlementOpen, setSettlementOpen] = useState(false);
 
   // Guest List
   type GuestEntry = { id: string; guest_name: string; plus_ones: number; pass_type: string; status: string; submitted_by: string | null; notes: string | null };
@@ -930,6 +934,36 @@ export default function RouteTourPage() {
                         <input type="number" value={String((drawerShow as Record<string, unknown>).hotel_attrition_pct ?? "")} onChange={(e) => updateDrawerField("hotel_attrition_pct", e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
                       </div>
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Settlement Section */}
+              {drawerShow && !drawerShow.is_off && (
+                <div style={{ borderBottom: "1px solid #f0f0f0", padding: "0 0 14px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888", padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }} onClick={() => setSettlementOpen(!settlementOpen)}>
+                    Settlement
+                    <span style={{ fontSize: 12, color: "#aaa" }}>{settlementOpen ? "\u25bc" : "\u25b6"}</span>
+                  </div>
+                  {settlementOpen && (
+                    <SettlementPanel
+                      show={{
+                        id: drawerShow.id,
+                        event: drawerShow.event || "",
+                        date_iso: drawerShow.date_iso || "",
+                        city: drawerShow.city || "",
+                        venue: drawerShow.venue || "",
+                        offer_amount: drawerShow.offer_amount || 0,
+                        offer_currency: drawerShow.offer_currency || "USD",
+                        deal: (drawerShow.deal as Record<string, unknown>) as never || null,
+                        settlement: (drawerShow.settlement as Record<string, unknown>) as never || null,
+                      }}
+                      tourId={tourId}
+                      currencyRates={tour?.currency_rates || {}}
+                      onUpdate={(field, value) => {
+                        setDrawerShow((prev) => prev ? { ...prev, [field]: value } : prev);
+                      }}
+                    />
                   )}
                 </div>
               )}
