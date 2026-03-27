@@ -27,6 +27,8 @@
 - Paste HWY61_MASTER_CONTEXT_FOR_DREW.md + Phase 2 section from build plan into Claude Code
 - Claude Code will read reference/tour-manager_35.html for the v35 source
 
+
+
 ## Session March 23, 2026 — Phases 1-12
 
 ### Completed
@@ -369,3 +371,12 @@ Phase 3 is 10/10 — COMPLETE.
 
 That's an absolutely enormous session. Here's the full inventory of what shipped today:
 ItemLinesFile9 parser prompts1,812lib/tourrouter/prompts/Deal types engine480calculateShowIncome.tsSettlement panel640SettlementPanel.tsxPersonnel pay engine448personnelPay.tsRoster panel599RosterPanel.tsxVehicle database450vehicleDatabase.tsVehicle manager451VehicleManager.tsxBuild plan v2264TOURROUTER_CLAUDE_CODE_BUILD_PLAN.mdBlanket toggleinlinepage.tsxWiring + fixesvariousfinancials.ts, index.ts, routes
+
+
+Everything shipped today (March 28, 2026):
+ItemLinesStatusDocument library14 new files (54 total)✅9 AI parser prompts1,812 lines✅Deal types engine480 lines✅Settlement panel640 lines✅Personnel pay engine448 lines✅Roster panel599 lines✅Vehicle database450 lines✅Vehicle manager451 lines✅Blanket expense toggleinline✅Artist profile types327 lines✅Artist profile page682 lines✅Artist API route~80 lines✅Build plan v2264 lines✅Advance portal bug fix~40 lines✅Wiring (financials, index, routes)various✅
+~6,000+ lines of new code. Phase 3 complete. Phase 4 at 5/6.
+Next session:
+
+AI Intake for Artist Profile (final Phase 4 item)
+Phase 5 — Finance dashboard, commissions, end-of-tour report
