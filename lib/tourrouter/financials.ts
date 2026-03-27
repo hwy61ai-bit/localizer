@@ -4,6 +4,7 @@ import { getRate, toUSD, type OfferObj } from './currency';
 import { getAirport } from './flights';
 import { calculateShowIncome, type DealTerms, type SettlementData, type ShowForCalc } from './calculateShowIncome';
 import { calculatePersonnelCosts, determineDayType, type RosterMember, type TourStats, type PersonnelCostResult } from './personnelPay';
+import { calculateCommissions, type Commission, type CommissionResult } from './commissions';
 
 // ============================================================
 // TYPES
@@ -48,6 +49,7 @@ export interface FinancialParams {
   fuelPriceOverride: number | null;
   flightPriceCache: Record<string, number>;
   roster?: RosterMember[];
+  commissions?: Commission[];
 }
 
 export interface FinancialResults {
@@ -86,6 +88,10 @@ export interface FinancialResults {
   totalPersonnel: number;
   totalPerDiems: number;
   personnelResult: PersonnelCostResult | null;
+  commissionResult: CommissionResult | null;
+  totalCommissions: number;
+  incomeAfterCommissions: number;
+  labelSupportCredit: number;
 }
 
 // ============================================================
@@ -128,7 +134,7 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     tourShows, legChoices, showExpenses, rates, pax,
     flightThreshold, blanketShowAmt, blanketOffAmt,
     vehicleType, vehicleCount, fuelPriceOverride, flightPriceCache,
-    blanketShowLabel, blanketOffLabel, roster,
+    blanketShowLabel, blanketOffLabel, roster, commissions,
   } = params;
 
   let totalIncome = 0, totalFuel = 0, totalFlights = 0, totalManual = 0;
@@ -225,7 +231,15 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
   const totalBlanketShow = personnelResult ? 0 : blanketShowAmt * showDayCount;
   const totalBlanketOff = personnelResult ? 0 : blanketOffAmt * offDayCount;
   const totalExpenses = totalFuel + totalFlights + totalManual + totalBlanketShow + totalBlanketOff + totalPersonnel;
-  const netIncome = totalIncome - totalExpenses;
+
+  // Commissions
+  let commissionResult: CommissionResult | null = null;
+  if (commissions && commissions.length > 0) {
+    const tourWeeks = Math.ceil((showDayCount + offDayCount) / 7);
+    commissionResult = calculateCommissions(commissions, totalIncome, totalExpenses, tourWeeks, rates);
+  }
+
+  const netIncome = totalIncome - (commissionResult?.totalCommissions ?? 0) - totalExpenses + (commissionResult?.labelSupportTotal ?? 0);
   const margin = totalIncome ? (netIncome / totalIncome) * 100 : 0;
   const spanDays = (firstDate && lastDate) ? Math.round(((lastDate as Date).getTime() - (firstDate as Date).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 0;
   const avgPerShow = showDayCount ? totalIncome / showDayCount : 0;
@@ -263,5 +277,9 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     firstDate, lastDate, spanDays,
     pax, blanketShowLabel, blanketOffLabel,
     totalPersonnel, totalPerDiems, personnelResult,
+    commissionResult,
+    totalCommissions: commissionResult?.totalCommissions ?? 0,
+    incomeAfterCommissions: commissionResult?.incomeAfterCommissions ?? totalIncome,
+    labelSupportCredit: commissionResult?.labelSupportTotal ?? 0,
   };
 }
