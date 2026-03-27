@@ -324,3 +324,15 @@ Next session should start with:
 Upload remaining 3 document batches (tech specs, marketing, flights)
 Begin drafting parsing prompts in lib/tourrouter/prompts/ starting with dealMemoPrompt.ts
 Integrate Tim's new spec into the build plan timeline
+
+
+Completed this session:
+
+Document library complete — 14 new files across 3 batches (tech specs/parking, marketing plans, flights/travel), bringing the total to ~54 real-world example documents across 11 categories.
+All 9 AI intake parser prompts written and committed — deal memo, settlement sheet, box office, hotel confirmation, expense receipt, advance response, contact list, column mapper, and universal fallback. Every prompt follows the same architecture: function export, JSON-only output, per-field confidence, payment amounts always flagged for TM confirmation.
+
+Still on the agenda (next session):
+
+Integrate Tim's Artist Profile spec (multi-vehicle, master artist profile, blanket expenses, profile AI intake) into the 28-week build plan timeline
+Start testing parsers against real docs from docs/test-documents/ once Claude Code can run them
+
