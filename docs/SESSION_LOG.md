@@ -303,3 +303,24 @@ ToS/Privacy Policy with April 1 dates committed, Stripe pricing corrected (Basic
 - Start Phase 5: finance dashboard, commissions, end-of-tour report
 - Tim should begin end-to-end testing at localizer.hwy61.ai
 - Tim should start collecting real deal memos + settlement sheets for AI intake testing
+
+Session — March 27, 2026
+What got done:
+
+Received and analyzed both blocked spec docs from Tim: 03_PERSONNEL_PAY_SETTLEMENT_SPEC (8 pay structures, settlement fields, live P&L) and 11_DEAL_TYPES_CALCULATION_ENGINE (10 deal types with formulas, settlement verification mode)
+Received and analyzed ~40 real-world example documents from Tim across 5 batches: deal memos (MUSIC·TEAM, Wasserman, WME), settlement sheets (Prism, Live Nation, handwritten, multi-currency, tour P&L), offer sheets (Prism, festival, email, Excel, handwritten, independent promoter), advance docs (venue request, production advance, agent routing sheet), contracts (WME, Wasserman, university), support offers, ticket reports, personnel list
+Mapped deal type detection patterns from real documents (NBOR, GBOR, "from dollar 1", vs, plus, flat, sliding scale, bonus, straight pct)
+Created docs/test-documents/ folder structure with 11 subfolders, added to .gitignore (personal data stays local)
+Organized all ~40 example files into test-documents subfolders
+Received Tim's new spec: HWY61_Build_ToDo_For_Drew_March_26_2026.md — multi-vehicle system, master Artist Profile (10 sections), blanket expense toggle, drag-and-drop AI intake for profile. Committed to repo.
+
+What didn't get done:
+
+Remaining document batches from Tim: Tech Specs + Parking, Marketing Plans + Sales Audit Reports, Flights/Travel
+No parsing prompts written yet
+
+Next session should start with:
+
+Upload remaining 3 document batches (tech specs, marketing, flights)
+Begin drafting parsing prompts in lib/tourrouter/prompts/ starting with dealMemoPrompt.ts
+Integrate Tim's new spec into the build plan timeline
