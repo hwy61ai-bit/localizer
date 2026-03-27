@@ -7,34 +7,24 @@
  *
  * Usage:
  *   import { buildColumnMapperPrompt } from '@/lib/tourrouter/prompts/columnMapperPrompt';
- *   const prompt = buildColumnMapperPrompt({ unknownHeaders, sampleRows, documentType });
+ *   const prompt = buildColumnMapperPrompt(unknownHeaders, sampleRows);
  */
 
-interface ColumnMapperPromptContext {
-  unknownHeaders: string[];
-  sampleRows?: Record<string, string>[];
-  documentType?: string;
-  knownAliases?: Record<string, string>;
-}
-
-export function buildColumnMapperPrompt(context: ColumnMapperPromptContext): string {
-  const headerList = context.unknownHeaders
+export function buildColumnMapperPrompt(
+  unknownHeaders: string[],
+  sampleRows?: Record<string, string>[],
+): string {
+  const headerList = unknownHeaders
     .map((h, i) => `  ${i + 1}. "${h}"`)
     .join('\n');
 
-  const sampleData = context.sampleRows?.length
-    ? `\n\nSAMPLE DATA ROWS (first 3 rows for context):\n${JSON.stringify(context.sampleRows.slice(0, 3), null, 2)}`
+  const sampleData = sampleRows?.length
+    ? `\n\nSAMPLE DATA ROWS (first 3 rows for context):\n${JSON.stringify(sampleRows.slice(0, 3), null, 2)}`
     : '';
 
-  const docType = context.documentType
-    ? `\n\nDOCUMENT TYPE: ${context.documentType}`
-    : '';
+  const docType = '';
 
-  const knownList = context.knownAliases
-    ? `\n\nALREADY MAPPED HEADERS (do not re-map these):\n${Object.entries(context.knownAliases)
-        .map(([raw, field]) => `  "${raw}" -> ${field}`)
-        .join('\n')}`
-    : '';
+  const knownList = '';
 
   return `You are mapping unknown document headers (column names, field labels) from a music industry document to TourRouter database fields.
 
