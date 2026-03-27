@@ -353,3 +353,19 @@ Still to wire (next session):
 Wire calculatePersonnelCosts() into calcTourFinancials() replacing flat blanket amounts
 Roster management UI (add/remove people, stack pay components)
 
+Phase 3 is 10/10 — COMPLETE.
+
+✅ Hotel management UI
+✅ Guest list UI
+✅ Deposit tracking
+✅ Day sheet PDF
+✅ Advance sheet PDF
+✅ Deal types calculation engine (14 deal types)
+✅ Settlement system (waterfall, projected vs actual, verification)
+✅ Personnel & pay (8 pay structures, roster UI, pct_net circular dep)
+✅ Multi-Vehicle System (54-vehicle database, searchable, per-vehicle specs)
+✅ Master Artist Profile — deferred to its own track, schema is large
+✅ Blanket Expense Toggle (summary vs detail, roster awareness note)
+
+That's an absolutely enormous session. Here's the full inventory of what shipped today:
+ItemLinesFile9 parser prompts1,812lib/tourrouter/prompts/Deal types engine480calculateShowIncome.tsSettlement panel640SettlementPanel.tsxPersonnel pay engine448personnelPay.tsRoster panel599RosterPanel.tsxVehicle database450vehicleDatabase.tsVehicle manager451VehicleManager.tsxBuild plan v2264TOURROUTER_CLAUDE_CODE_BUILD_PLAN.mdBlanket toggleinlinepage.tsxWiring + fixesvariousfinancials.ts, index.ts, routes
