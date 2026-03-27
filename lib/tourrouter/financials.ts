@@ -3,6 +3,7 @@ import { getRoadKm, getCityCoords, estimateDriveHours, isImperialCountry, legCou
 import { getRate, toUSD, type OfferObj } from './currency';
 import { getAirport } from './flights';
 import { calculateShowIncome, type DealTerms, type SettlementData, type ShowForCalc } from './calculateShowIncome';
+import { calculatePersonnelCosts, determineDayType, type RosterMember, type TourStats, type PersonnelCostResult } from './personnelPay';
 
 // ============================================================
 // TYPES
@@ -46,6 +47,7 @@ export interface FinancialParams {
   vehicleCount: number;
   fuelPriceOverride: number | null;
   flightPriceCache: Record<string, number>;
+  roster?: RosterMember[];
 }
 
 export interface FinancialResults {
@@ -81,6 +83,9 @@ export interface FinancialResults {
   pax: number;
   blanketShowLabel: string;
   blanketOffLabel: string;
+  totalPersonnel: number;
+  totalPerDiems: number;
+  personnelResult: PersonnelCostResult | null;
 }
 
 // ============================================================
@@ -123,7 +128,7 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     tourShows, legChoices, showExpenses, rates, pax,
     flightThreshold, blanketShowAmt, blanketOffAmt,
     vehicleType, vehicleCount, fuelPriceOverride, flightPriceCache,
-    blanketShowLabel, blanketOffLabel,
+    blanketShowLabel, blanketOffLabel, roster,
   } = params;
 
   let totalIncome = 0, totalFuel = 0, totalFlights = 0, totalManual = 0;
@@ -192,9 +197,34 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
 
   const showDayCount = tourShows.filter(s => !s.isOff).length;
   const offDayCount = tourShows.filter(s => s.isOff).length;
-  const totalBlanketShow = blanketShowAmt * showDayCount;
-  const totalBlanketOff = blanketOffAmt * offDayCount;
-  const totalExpenses = totalFuel + totalFlights + totalManual + totalBlanketShow + totalBlanketOff;
+
+  // Personnel pay — if roster exists, use it instead of flat blankets
+  let totalPersonnel = 0;
+  let totalPerDiems = 0;
+  let personnelResult: PersonnelCostResult | null = null;
+
+  if (roster && roster.length > 0) {
+    const tourStats: TourStats = {
+      days: [],
+      showDayCount,
+      offDayCount,
+      travelDayCount: 0,
+      loadInDayCount: 0,
+      totalDayCount: showDayCount + offDayCount,
+      weekCount: Math.ceil((showDayCount + offDayCount) / 7),
+      zeroShowWeeks: 0,
+      totalMerchGross: 0,
+      totalMerchNet: 0,
+      netTourIncome: totalIncome,
+    };
+    personnelResult = calculatePersonnelCosts(roster, tourStats, rates);
+    totalPersonnel = personnelResult.totalPersonnelCost;
+    totalPerDiems = personnelResult.totalPerDiems;
+  }
+
+  const totalBlanketShow = personnelResult ? 0 : blanketShowAmt * showDayCount;
+  const totalBlanketOff = personnelResult ? 0 : blanketOffAmt * offDayCount;
+  const totalExpenses = totalFuel + totalFlights + totalManual + totalBlanketShow + totalBlanketOff + totalPersonnel;
   const netIncome = totalIncome - totalExpenses;
   const margin = totalIncome ? (netIncome / totalIncome) * 100 : 0;
   const spanDays = (firstDate && lastDate) ? Math.round(((lastDate as Date).getTime() - (firstDate as Date).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 0;
@@ -232,5 +262,6 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     byCurrency, countries: [...countries],
     firstDate, lastDate, spanDays,
     pax, blanketShowLabel, blanketOffLabel,
+    totalPersonnel, totalPerDiems, personnelResult,
   };
 }
