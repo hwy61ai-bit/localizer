@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import IntakeDropZone from "../IntakeDropZone";
 import SettlementPanel from "./SettlementPanel";
+import RosterPanel from "./RosterPanel";
 import {
   getRoadKm,
   estimateDriveHours,
@@ -41,6 +42,7 @@ type TourData = {
   leg_choices: Record<string, string> | null;
   localizer_tour_id: string | null;
   advance_config: { initialSendDays?: number; followup1Days?: number; followup2Days?: number; finalNudgeDays?: number; enabled?: boolean } | null;
+  tour_roster: Record<string, unknown>[] | null;
 };
 
 type ShowRow = {
@@ -194,6 +196,7 @@ export default function RouteTourPage() {
 
   // Settings panel
   const [showSettings, setShowSettings] = useState(false);
+  const [showRoster, setShowRoster] = useState(false);
 
   // Drawer save indicator
   const [drawerSaved, setDrawerSaved] = useState(false);
@@ -772,7 +775,26 @@ export default function RouteTourPage() {
             onClick={() => setShowSettings(!showSettings)}
             style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
           >{showSettings ? "Hide Vehicle Settings" : "\u2699 Vehicle Settings"}</button>
+          <button
+            onClick={() => setShowRoster(!showRoster)}
+            style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+          >{showRoster ? "Hide Roster" : "\u{1F465} Roster"}</button>
         </div>
+
+        {/* Roster Panel */}
+        {showRoster && (
+          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>Tour Roster & Pay</div>
+              <button onClick={() => setShowRoster(false)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#888" }}>&times;</button>
+            </div>
+            <RosterPanel
+              tourId={tourId}
+              roster={(tour?.tour_roster || []) as never[]}
+              onUpdate={(updated) => setTour((prev) => prev ? { ...prev, tour_roster: updated as unknown as Record<string, unknown>[] } : prev)}
+            />
+          </div>
+        )}
 
         {/* Empty state */}
         {!loading && shows.length === 0 && (
