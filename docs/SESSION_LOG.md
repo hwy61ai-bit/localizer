@@ -336,3 +336,20 @@ Still on the agenda (next session):
 Integrate Tim's Artist Profile spec (multi-vehicle, master artist profile, blanket expenses, profile AI intake) into the 28-week build plan timeline
 Start testing parsers against real docs from docs/test-documents/ once Claude Code can run them
 
+Session summary — March 28, 2026:
+
+Document library completed — 14 new files, 54 total across 11 categories
+All 9 AI intake parser prompts written and committed (1,812 lines)
+Build plan v2 updated with Tim's Artist Profile spec integrated
+Deal types calculation engine — calculateShowIncome.ts (480 lines, 14 deal types)
+Wired calculateShowIncome() into calcTourFinancials()
+Settlement panel — SettlementPanel.tsx (640 lines) with waterfall entry, projected vs actual, verification
+Added deal and settlement to PUT whitelist
+Personnel pay engine — personnelPay.ts (448 lines, 8 pay structures, pct_net circular dependency)
+Fixed columnMapperPrompt signature build error
+
+Still to wire (next session):
+
+Wire calculatePersonnelCosts() into calcTourFinancials() replacing flat blanket amounts
+Roster management UI (add/remove people, stack pay components)
+
