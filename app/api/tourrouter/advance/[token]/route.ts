@@ -78,23 +78,48 @@ export async function PUT(
 
   const body = await req.json();
 
-  // Only allow advance-related fields (NEVER financial fields)
-  const allowed = [
-    "doors", "showtime", "onstage", "curfew",
-    "adv_load_in", "adv_soundcheck",
-    "adv_wifi_name", "adv_wifi_password", "adv_parking",
-    "adv_venue_notes",
-    "adv_production_contact_name", "adv_production_contact_email", "adv_production_contact_phone",
-    "adv_backline_notes",
-    "adv_hospitality_notes", "adv_catering", "adv_dressing_room",
-    "adv_settlement_contact_name", "adv_settlement_contact_phone", "adv_settlement_contact_email",
-    "adv_submitted_by_name", "adv_submitted_by_email",
-  ];
+  // Map form field names → actual tour_shows column names
+  const FIELD_MAP: Record<string, string> = {
+    doors: "doors",
+    showtime: "showtime",
+    onstage: "onstage",
+    curfew: "curfew",
+    adv_load_in: "load_in_time",
+    adv_soundcheck: "soundcheck_time",
+    adv_wifi_name: "venue_wifi_name",
+    adv_wifi_password: "venue_wifi_password",
+    adv_production_contact_name: "production_contact",
+    adv_production_contact_email: "production_contact_email",
+    adv_production_contact_phone: "production_contact_phone",
+    adv_settlement_contact_name: "settlement_contact",
+    adv_settlement_contact_phone: "settlement_contact_phone",
+    adv_settlement_contact_email: "settlement_contact_email",
+  };
 
   const update: Record<string, unknown> = {};
-  for (const key of allowed) {
-    if (body[key] !== undefined) update[key] = body[key];
+
+  // Direct 1:1 field mappings
+  for (const [formKey, dbCol] of Object.entries(FIELD_MAP)) {
+    if (body[formKey] !== undefined && body[formKey] !== "") {
+      update[dbCol] = body[formKey];
+    }
   }
+
+  // Concatenated fields: venue_notes (parking + venue notes)
+  const venueNotesParts: string[] = [];
+  if (body.adv_parking?.trim()) venueNotesParts.push(`PARKING: ${body.adv_parking.trim()}`);
+  if (body.adv_venue_notes?.trim()) venueNotesParts.push(`NOTES: ${body.adv_venue_notes.trim()}`);
+  if (venueNotesParts.length > 0) update.venue_notes = venueNotesParts.join("\n");
+
+  // Concatenated fields: advance_notes (backline + hospitality + catering + dressing room)
+  const advNotesParts: string[] = [];
+  if (body.adv_backline_notes?.trim()) advNotesParts.push(`BACKLINE: ${body.adv_backline_notes.trim()}`);
+  if (body.adv_hospitality_notes?.trim()) advNotesParts.push(`HOSPITALITY: ${body.adv_hospitality_notes.trim()}`);
+  if (body.adv_catering?.trim()) advNotesParts.push(`CATERING: ${body.adv_catering.trim()}`);
+  if (body.adv_dressing_room?.trim()) advNotesParts.push(`DRESSING ROOM: ${body.adv_dressing_room.trim()}`);
+  if (advNotesParts.length > 0) update.advance_notes = advNotesParts.join("\n");
+
+  // Status + submission metadata
   update.advance_form_submitted_at = new Date().toISOString();
   update.advance_status = "submitted";
   if (body.adv_submitted_by_name) {
