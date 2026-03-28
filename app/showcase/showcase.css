@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+.sc * { box-sizing: border-box; }
+.sc { min-height: 100vh; background: #0a0a0a; color: #f0ede8; font-family: 'DM Sans', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+.sc-wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+.sc-label { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: #C8A84E; margin-bottom: 28px; }
+.sc-divider { border: none; border-top: 0.5px solid #2a2a2a; margin: 0 1rem; }
+.sc-role-btn { display: inline-block; background: transparent; border: 1px solid #333; color: #f0ede8; border-radius: 14px; padding: 12px 24px; font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: border-color 0.2s; }
+.sc-role-btn:hover { border-color: #C8A84E; }
+.sc-tile { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 14px; padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 1; transition: border-color 0.2s, transform 0.2s; }
+.sc-tile:hover { border-color: #C8A84E; transform: scale(1.02); }
+.sc-step-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(200,168,78,0.15); color: #C8A84E; font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 700; flex-shrink: 0; margin: 0 auto 12px; }
+.sc-audience-row { display: flex; align-items: center; gap: 14px; }
+.sc-audience-circle { width: 40px; height: 40px; border-radius: 50%; background: #1a1a1a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sc-pill { display: inline-block; background: rgba(200,168,78,0.15); color: #C8A84E; padding: 3px 10px; border-radius: 14px; font-size: 11px; font-weight: 500; }
+
+@media (max-width: 640px) {
+  .sc-role-row { flex-direction: column !important; align-items: center !important; }
+  .sc-steps-row { flex-direction: column !important; gap: 28px !important; }
+  .sc-steps-divider { display: none !important; }
+  .sc-tiles-grid { grid-template-columns: 1fr !important; }
+  .sc-pricing-tiles { flex-direction: column !important; }
+}
