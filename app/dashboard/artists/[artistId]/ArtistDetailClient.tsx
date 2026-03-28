@@ -145,7 +145,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
               <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>Advance Materials / Tours</div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => router.push(`/dashboard/artists/${artistId}/profile`)} style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Profile</button>
+              <button onClick={() => router.push(`/dashboard/artists/${artistId}/profile`)} style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.05em", cursor: "pointer" }}>MASTER PROFILE</button>
               <button onClick={handleSave} disabled={saving} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: saved ? "#1a7f4b" : "#111", color: "#fff", fontSize: 13, fontWeight: 900, cursor: "pointer", transition: "background 0.3s" }}>
                 {saved ? "Saved" : saving ? "Saving..." : "Save"}
               </button>
