@@ -1,5 +1,10 @@
 export function parseDate(str: string | number | Date | null | undefined): Date | null {
   if (!str) return null;
+  // Handle JavaScript Date objects (from SheetJS cellDates:true)
+  if (str instanceof Date) {
+    if (isNaN(str.getTime())) return null;
+    return new Date(str.getFullYear(), str.getMonth(), str.getDate());
+  }
   str = String(str).trim();
   // YYYY-MM-DD (from Excel cellDates)
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {

@@ -356,7 +356,12 @@ export default function ImportPage() {
 
       // CRITICAL: parseDate uses new Date(year, month-1, day) — NEVER new Date(string)
       const dateObj = parseDate(row.date);
-      if (!dateObj) continue;
+      if (!dateObj) {
+        if (typeof window !== "undefined") {
+          console.warn("[Import] Row rejected — parseDate returned null for:", JSON.stringify(row.date), "type:", typeof row.date, "row:", JSON.stringify(row));
+        }
+        continue;
+      }
 
       const eventStr = String(row.event || "").trim();
       const isOff = /\bOFF\b|OFF DAY|DAY OFF/i.test(eventStr) || /\bOFF\b|OFF DAY|DAY OFF/i.test(String(row.city || ""));
