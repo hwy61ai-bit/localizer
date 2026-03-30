@@ -92,6 +92,7 @@ export default function LoginPage() {
               <input
                 style={{
                   width: "100%",
+                  boxSizing: "border-box",
                   padding: "12px 14px",
                   borderRadius: 12,
                   border: "1px solid #DDDDDD",
@@ -109,6 +110,7 @@ export default function LoginPage() {
               <button
                 style={{
                   width: "100%",
+                  boxSizing: "border-box",
                   marginTop: 12,
                   padding: "12px 14px",
                   borderRadius: 12,
@@ -130,6 +132,7 @@ export default function LoginPage() {
               <button
                 style={{
                   width: "100%",
+                  boxSizing: "border-box",
                   padding: "12px 14px",
                   borderRadius: 12,
                   border: "1px solid #DDDDDD",
@@ -171,6 +174,7 @@ export default function LoginPage() {
               <button
                 style={{
                   width: "100%",
+                  boxSizing: "border-box",
                   padding: "10px 14px",
                   borderRadius: 12,
                   border: "1px solid #DDDDDD",

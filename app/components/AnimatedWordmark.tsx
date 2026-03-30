@@ -71,7 +71,7 @@ function generateTourSchedule(width: number, height: number): string {
 }
 
 export default function AnimatedWordmark() {
-  const text = "Localizer.";
+  const text = "HWY61 LABS";
   const [stopped, setStopped] = useState<Set<number>>(new Set());
   const [allStopped, setAllStopped] = useState(false);
   const [mapFaded, setMapFaded] = useState(false);
@@ -143,6 +143,7 @@ export default function AnimatedWordmark() {
               style={{
                 display: "inline-block",
                 position: "relative",
+                minWidth: char === " " ? "0.3em" : undefined,
                 animation: isSpinning ? `ySpin ${speeds[i]}s linear infinite` : "none",
                 transform: isSpinning ? undefined : "rotateY(0deg)",
                 filter: isSpinning ? "blur(1.5px)" : "blur(0px)",
