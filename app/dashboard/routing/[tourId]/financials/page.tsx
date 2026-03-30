@@ -13,9 +13,12 @@ import {
   estimateDriveHours,
   legCountry,
   formatDateDisplay,
+  prefetchDriveData,
+  buildDriveDataKey,
   type TourShow,
   type FinancialResults,
   type VehicleType,
+  type DriveDataMap,
 } from "@/lib/tourrouter";
 
 // ── Types ────────────────────────────────────────────────────
@@ -85,6 +88,9 @@ export default function FinancialsPage() {
   const [addingExp, setAddingExp] = useState(false);
   const [newExp, setNewExp] = useState({ date: "", category: "Transport", amount: "", currency: "USD", description: "", paidBy: "", needsReimbursement: false, receiptUrl: "" });
 
+  // Drive data
+  const [driveData, setDriveData] = useState<DriveDataMap>({});
+
   // Computed
   const [fin, setFin] = useState<FinancialResults | null>(null);
 
@@ -114,6 +120,14 @@ export default function FinancialsPage() {
       })
       .catch(() => setLoading(false));
   }, [tourId]);
+
+  // ── Prefetch Mapbox drive data ───────────────────────────────
+
+  useEffect(() => {
+    if (shows.length < 2) return;
+    const showPairs = shows.map((s) => ({ city: s.city || "", country: s.country || "" }));
+    prefetchDriveData(showPairs).then(setDriveData);
+  }, [shows]);
 
   // ── Compute financials — SINGLE SOURCE OF TRUTH ────────────
 
@@ -161,9 +175,10 @@ export default function FinancialsPage() {
       fuelPriceOverride: tour.fuel_price_usd || null,
       flightPriceCache: {},
       commissions: (tour.tour_commissions || []) as never[],
+      driveData,
     });
     setFin(result);
-  }, [shows, tour, blanketShowAmt, blanketOffAmt, blanketShowLabel, blanketOffLabel, showExpenses, rates]);
+  }, [shows, tour, blanketShowAmt, blanketOffAmt, blanketShowLabel, blanketOffLabel, showExpenses, rates, driveData]);
 
   useEffect(() => { compute(); }, [compute]);
 
@@ -254,14 +269,16 @@ export default function FinancialsPage() {
   shows.forEach((s, i) => {
     if (i === 0) return;
     const prev = shows[i - 1];
-    const km = getRoadKm(prev.city, prev.country, s.city, s.country);
+    const driveKey = buildDriveDataKey(prev.city || "", s.city || "");
+    const cached = driveData[driveKey];
+    const km = cached ? cached.distanceKm : getRoadKm(prev.city, prev.country, s.city, s.country);
     if (legChoicesMap[i] === "fly") {
       flyLegs++;
     } else {
       driveLegs++;
       if (km) {
         totalDriveKm += km;
-        const h = estimateDriveHours(km);
+        const h = cached ? cached.driveHours : estimateDriveHours(km);
         if (h) totalDriveH += h;
       }
     }

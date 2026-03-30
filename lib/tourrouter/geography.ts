@@ -64,6 +64,99 @@ export function estimateDriveHours(km: number | null | undefined): number | null
   return km / 80;
 }
 
+// ============================================================
+// Mapbox-powered drive info (async, calls API route)
+// Falls back to haversine estimates if unavailable
+// ============================================================
+
+export type DriveDataMap = Record<string, {
+  distanceKm: number;
+  distanceMiles: number;
+  driveHours: number;
+  driveSeconds: number;
+  routeSummary: string;
+}>;
+
+export function buildDriveDataKey(city1: string, city2: string): string {
+  return city1.toLowerCase().trim() + '|' + city2.toLowerCase().trim();
+}
+
+export interface MapboxDriveInfo {
+  distanceKm: number;
+  distanceMiles: number;
+  driveSeconds: number;
+  driveHours: number;
+  routeSummary: string;
+}
+
+/**
+ * Get real driving distance/time via the drive-info API route (Mapbox-backed).
+ * Returns null if the API call fails — caller should fall back to getRoadKm/estimateDriveHours.
+ */
+export async function getMapboxDriveInfo(
+  originCity: string,
+  destCity: string
+): Promise<MapboxDriveInfo | null> {
+  try {
+    const resp = await fetch('/api/tourrouter/drive-info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ originCity, destCity }),
+    });
+
+    if (!resp.ok) return null;
+
+    const data = await resp.json();
+    return {
+      distanceKm: data.distanceKm,
+      distanceMiles: data.distanceMiles,
+      driveSeconds: data.driveSeconds,
+      driveHours: data.driveHours,
+      routeSummary: data.routeSummary,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Client-side prefetch: calls /api/tourrouter/drive-info for each consecutive pair.
+ * Use in client components.
+ */
+export async function prefetchDriveData(
+  shows: { city: string; country: string }[]
+): Promise<DriveDataMap> {
+  const map: DriveDataMap = {};
+  const pairs: { from: string; to: string }[] = [];
+
+  for (let i = 1; i < shows.length; i++) {
+    const from = shows[i - 1].city;
+    const to = shows[i].city;
+    if (from && to) pairs.push({ from, to });
+  }
+
+  const results = await Promise.all(
+    pairs.map(async ({ from, to }) => {
+      const info = await getMapboxDriveInfo(from, to);
+      return { from, to, info };
+    })
+  );
+
+  for (const { from, to, info } of results) {
+    if (info) {
+      map[buildDriveDataKey(from, to)] = {
+        distanceKm: info.distanceKm,
+        distanceMiles: info.distanceMiles,
+        driveHours: info.driveHours,
+        driveSeconds: info.driveSeconds,
+        routeSummary: info.routeSummary,
+      };
+    }
+  }
+
+  return map;
+}
+
 export function fmtHours(h: number | null | undefined): string {
   if (h === null || h === undefined) return '?';
   const hh = Math.floor(h);

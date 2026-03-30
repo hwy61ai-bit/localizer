@@ -7,6 +7,7 @@ import {
   formatDateDisplay,
   getRoadKm,
   estimateDriveHours,
+  buildDriveDataKey,
 } from "../helpers";
 
 export async function GET(
@@ -17,7 +18,7 @@ export async function GET(
   const data = await getExportData(tourId);
   if (!data) return NextResponse.json({ error: "Unauthorized or not found" }, { status: 401 });
 
-  const { rows, fin, tourName, shows, legChoices } = data;
+  const { rows, fin, tourName, shows, legChoices, driveData } = data;
   const wb = XLSX.utils.book_new();
 
   // Sheet 1: Budget Summary
@@ -69,8 +70,10 @@ export async function GET(
   shows.forEach((s, i) => {
     if (i === 0) return;
     const prev = shows[i - 1];
-    const km = getRoadKm(prev.city as string, prev.country as string, s.city as string, s.country as string);
-    const h = km ? estimateDriveHours(km) : null;
+    const driveKey = buildDriveDataKey(prev.city as string, s.city as string);
+    const cached = driveData[driveKey];
+    const km = cached ? cached.distanceKm : getRoadKm(prev.city as string, prev.country as string, s.city as string, s.country as string);
+    const h = cached ? cached.driveHours : (km ? estimateDriveHours(km) : null);
     const flying = legChoices[i] === "fly";
     if (flying) {
       flagData.push([prev.city as string, s.city as string, "FLY", "\u2014", "FLIGHT"]);

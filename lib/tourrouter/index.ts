@@ -20,6 +20,9 @@ export {
   estimateDriveHours,
   fmtHours,
   formatDateDisplay,
+  buildDriveDataKey,
+  prefetchDriveData,
+  type DriveDataMap,
 } from './geography';
 
 export {

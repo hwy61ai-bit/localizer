@@ -19,9 +19,12 @@ import {
   getAirport,
   buildFlightLinks,
   calcTourFinancials,
+  prefetchDriveData,
+  buildDriveDataKey,
   type TourShow,
   type FinancialResults,
   type VehicleType,
+  type DriveDataMap,
   COMMISSION_TYPE_LABELS,
   type CommissionType,
 } from "@/lib/tourrouter";
@@ -175,6 +178,7 @@ export default function RouteTourPage() {
   const [legChoices, setLegChoices] = useState<Record<number, string>>({});
   const [financials, setFinancials] = useState<FinancialResults | null>(null);
   const [legs, setLegs] = useState<(LegInfo | null)[]>([]);
+  const [driveData, setDriveData] = useState<DriveDataMap>({});
 
   // Drawer
   const [drawerShow, setDrawerShow] = useState<ShowRow | null>(null);
@@ -239,6 +243,14 @@ export default function RouteTourPage() {
       .catch(() => setLoading(false));
   }, [tourId]);
 
+  // ── Prefetch Mapbox drive data ───────────────────────────────
+
+  useEffect(() => {
+    if (shows.length < 2) return;
+    const showPairs = shows.map((s) => ({ city: s.city || "", country: s.country || "" }));
+    prefetchDriveData(showPairs).then(setDriveData);
+  }, [shows]);
+
   // ── Compute legs & financials ──────────────────────────────
 
   const compute = useCallback(() => {
@@ -254,8 +266,10 @@ export default function RouteTourPage() {
     const legInfos: (LegInfo | null)[] = shows.map((s, i) => {
       if (i === 0) return null;
       const prev = shows[i - 1];
-      const km = getRoadKm(prev.city, prev.country, s.city, s.country);
-      const driveH = km ? estimateDriveHours(km) : null;
+      const driveKey = buildDriveDataKey(prev.city || "", s.city || "");
+      const cached = driveData[driveKey];
+      const km = cached ? cached.distanceKm : getRoadKm(prev.city, prev.country, s.city, s.country);
+      const driveH = cached ? cached.driveHours : (km ? estimateDriveHours(km) : null);
       // CRITICAL: legCtry not legCountry
       const legCtry = legCountry(prev.country, s.country);
       const distStr = km ? fmtDist(km, legCtry === "usa" ? "usa" : "europe") : "?";
@@ -311,9 +325,10 @@ export default function RouteTourPage() {
       vehicleCount,
       fuelPriceOverride: tour.fuel_price_usd || null,
       flightPriceCache: {},
+      driveData,
     });
     setFinancials(fin);
-  }, [shows, tour, legChoices]);
+  }, [shows, tour, legChoices, driveData]);
 
   useEffect(() => { compute(); }, [compute]);
 

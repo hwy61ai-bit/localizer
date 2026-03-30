@@ -9,11 +9,14 @@ import {
   fmtDist,
   formatDateDisplay,
   legCountry,
+  buildDriveDataKey,
   type TourShow,
   type VehicleType,
   type ExportRow,
   type FinancialResults,
+  type DriveDataMap,
 } from "@/lib/tourrouter";
+import { prefetchDriveDataServer } from "@/lib/tourrouter/mapbox";
 
 export type ExportData = {
   tour: Record<string, unknown>;
@@ -22,6 +25,7 @@ export type ExportData = {
   fin: FinancialResults;
   tourName: string;
   legChoices: Record<number, string>;
+  driveData: DriveDataMap;
 };
 
 export async function getExportData(tourId: string): Promise<ExportData | null> {
@@ -85,6 +89,14 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     merch: (s.merch as string) || undefined,
   }));
 
+  // Prefetch Mapbox drive data for all consecutive pairs
+  const driveData = await prefetchDriveDataServer(
+    showsArr.map((s: Record<string, unknown>) => ({
+      city: (s.city as string) || "",
+      country: (s.country as string) || "",
+    }))
+  );
+
   const fin = calcTourFinancials({
     tourShows,
     legChoices,
@@ -100,6 +112,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     vehicleCount,
     fuelPriceOverride: (tour.fuel_price_usd as number) || null,
     flightPriceCache: {},
+    driveData,
   });
 
   const rows = buildExportRows({
@@ -112,6 +125,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     fuelPriceOverride: (tour.fuel_price_usd as number) || null,
     rates,
     flightPriceCache: {},
+    driveData,
   });
 
   return {
@@ -121,8 +135,9 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     fin,
     tourName: (tour.name as string) || "tour",
     legChoices,
+    driveData,
   };
 }
 
 // Re-export utilities needed by export routes
-export { fmtUSD, fmtHours, fmtDist, formatDateDisplay, getRoadKm, estimateDriveHours, legCountry };
+export { fmtUSD, fmtHours, fmtDist, formatDateDisplay, getRoadKm, estimateDriveHours, legCountry, buildDriveDataKey, type DriveDataMap };

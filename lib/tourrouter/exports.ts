@@ -1,7 +1,7 @@
 import type { TourShow } from './financials';
 import type { VehicleType } from './constants';
 import { VEHICLE_MPG, VEHICLE_L100 } from './constants';
-import { getRoadKm, legCountry, formatDateDisplay } from './geography';
+import { getRoadKm, legCountry, formatDateDisplay, buildDriveDataKey, type DriveDataMap } from './geography';
 import { getRate } from './currency';
 import { getAirport } from './flights';
 
@@ -35,6 +35,7 @@ export interface BuildExportRowsParams {
   fuelPriceOverride: number | null;
   rates: Record<string, number>;
   flightPriceCache: Record<string, number>;
+  driveData?: DriveDataMap;
 }
 
 function calcFuelCostForExport(
@@ -67,7 +68,7 @@ function calcFuelCostForExport(
 export function buildExportRows(params: BuildExportRowsParams): ExportRow[] {
   const {
     tourShows, legChoices, showExpenses, pax,
-    vehicleType, vehicleCount, fuelPriceOverride, rates, flightPriceCache,
+    vehicleType, vehicleCount, fuelPriceOverride, rates, flightPriceCache, driveData,
   } = params;
 
   const rows: ExportRow[] = [];
@@ -79,7 +80,9 @@ export function buildExportRows(params: BuildExportRowsParams): ExportRow[] {
 
     if (i > 0) {
       const prev = tourShows[i - 1];
-      const km = getRoadKm(prev.city, prev.country, s.city, s.country);
+      const driveKey = buildDriveDataKey(prev.city, s.city);
+      const cached = driveData?.[driveKey];
+      const km = cached ? cached.distanceKm : getRoadKm(prev.city, prev.country, s.city, s.country);
       const flying = legChoices[i] === 'fly';
 
       if (flying) {

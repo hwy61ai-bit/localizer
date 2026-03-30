@@ -1,0 +1,78 @@
+import { NextRequest, NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabaseServer";
+import {
+  geocodeCity,
+  cacheGeocode,
+  getDriveInfo,
+  cacheDriveInfo,
+} from "@/lib/tourrouter/mapbox";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(req: NextRequest) {
+  const supabase = await supabaseServer();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { originCity, destCity } = await req.json();
+  if (!originCity || !destCity) {
+    return NextResponse.json(
+      { error: "originCity and destCity required" },
+      { status: 400 }
+    );
+  }
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  try {
+    // Geocode both cities (checks CITY_COORDS → cache → Mapbox)
+    const [origin, dest] = await Promise.all([
+      geocodeCity(originCity),
+      geocodeCity(destCity),
+    ]);
+
+    // Cache geocode results if we have service role key
+    if (serviceRoleKey) {
+      // Fire and forget — don't block the response
+      cacheGeocode(
+        originCity,
+        origin.lat,
+        origin.lng,
+        origin.formattedName,
+        serviceRoleKey
+      );
+      cacheGeocode(
+        destCity,
+        dest.lat,
+        dest.lng,
+        dest.formattedName,
+        serviceRoleKey
+      );
+    }
+
+    // Get drive info (checks cache → Mapbox Directions)
+    const info = await getDriveInfo(originCity, destCity);
+
+    // Cache drive result if we have service role key
+    if (serviceRoleKey) {
+      cacheDriveInfo(originCity, destCity, origin, dest, info, serviceRoleKey);
+    }
+
+    return NextResponse.json({
+      ...info,
+      origin: origin.formattedName,
+      destination: dest.formattedName,
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Drive info lookup failed", details: msg },
+      { status: 500 }
+    );
+  }
+}

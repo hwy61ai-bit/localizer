@@ -8,6 +8,7 @@ import {
   fmtHours,
   fmtDist,
   legCountry,
+  buildDriveDataKey,
 } from "../helpers";
 
 export async function GET(
@@ -18,7 +19,7 @@ export async function GET(
   const data = await getExportData(tourId);
   if (!data) return NextResponse.json({ error: "Unauthorized or not found" }, { status: 401 });
 
-  const { shows, tourName, tour } = data;
+  const { shows, tourName, tour, driveData } = data;
   const showId = req.nextUrl.searchParams.get("showId");
   const artistName = (tour as Record<string, unknown>).artist_id
     ? ((tour as Record<string, unknown>).artists as Record<string, unknown>)?.name as string || ""
@@ -125,8 +126,10 @@ export async function GET(
     const showIdx = (shows as Show[]).indexOf(show);
     if (showIdx > 0) {
       const prev = (shows as Show[])[showIdx - 1];
-      const km = getRoadKm(prev.city as string, prev.country as string, show.city as string, show.country as string);
-      const driveH = km ? estimateDriveHours(km) : null;
+      const driveKey = buildDriveDataKey(prev.city as string, show.city as string);
+      const cachedDrive = driveData[driveKey];
+      const km = cachedDrive ? cachedDrive.distanceKm : getRoadKm(prev.city as string, prev.country as string, show.city as string, show.country as string);
+      const driveH = cachedDrive ? cachedDrive.driveHours : (km ? estimateDriveHours(km) : null);
       const lc = legCountry(prev.country as string, show.country as string);
       const dist = km ? fmtDist(km, lc === "usa" ? "usa" : "europe") : null;
 

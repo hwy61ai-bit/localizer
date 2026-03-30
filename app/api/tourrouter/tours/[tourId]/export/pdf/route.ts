@@ -9,6 +9,7 @@ import {
   getRoadKm,
   estimateDriveHours,
   legCountry,
+  buildDriveDataKey,
 } from "../helpers";
 
 export async function GET(
@@ -19,7 +20,7 @@ export async function GET(
   const data = await getExportData(tourId);
   if (!data) return NextResponse.json({ error: "Unauthorized or not found" }, { status: 401 });
 
-  const { rows, fin, tourName, shows, legChoices } = data;
+  const { rows, fin, tourName, shows, legChoices, driveData } = data;
 
   // Build PDF in memory
   const doc = new PDFDocument({ layout: "landscape", size: "A4", margin: 40 });
@@ -160,8 +161,10 @@ export async function GET(
     if (i === 0) return;
     if (ty > H - 50) { doc.addPage(); ty = 40; }
     const prev = shows[i - 1];
-    const km = getRoadKm(prev.city as string, prev.country as string, s.city as string, s.country as string);
-    const driveH = km ? estimateDriveHours(km) : null;
+    const driveKey = buildDriveDataKey(prev.city as string, s.city as string);
+    const cached = driveData[driveKey];
+    const km = cached ? cached.distanceKm : getRoadKm(prev.city as string, prev.country as string, s.city as string, s.country as string);
+    const driveH = cached ? cached.driveHours : (km ? estimateDriveHours(km) : null);
     const flying = legChoices[i] === "fly";
     const legCtry = legCountry(prev.country as string, s.country as string);
     const distStr = km ? fmtDist(km, legCtry === "usa" ? "usa" : "europe") : "\u2014";
