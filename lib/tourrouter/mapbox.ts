@@ -1,7 +1,6 @@
 import { CITY_COORDS } from './constants';
 import { getCityCoords } from './geography';
 
-const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN;
 const KM_PER_MILE = 1.60934;
 
 // ============================================================
@@ -101,6 +100,7 @@ export async function geocodeCity(
   }
 
   // 3. Call Mapbox Geocoding API
+  const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN;
   if (!MAPBOX_TOKEN) {
     throw new Error('MAPBOX_ACCESS_TOKEN not configured');
   }
@@ -209,6 +209,7 @@ export async function getDriveInfo(
   ]);
 
   // 3. Call Mapbox Directions API
+  const MAPBOX_TOKEN = process.env.MAPBOX_ACCESS_TOKEN;
   if (!MAPBOX_TOKEN) {
     throw new Error('MAPBOX_ACCESS_TOKEN not configured');
   }
