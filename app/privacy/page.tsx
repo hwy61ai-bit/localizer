@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         <p style={{ fontSize: 13, color: "#888", marginBottom: 32 }}>Effective Date: March 2026</p>
         <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: "32px 28px", fontSize: 14, lineHeight: 1.7 }}>
 
-          <p>This Privacy Policy describes how HWY61 AI collects, uses, and protects information when you use Localizer at localizer.hwy61.ai. By using the Service, you agree to the practices described in this policy.</p>
+          <p>This Privacy Policy describes how HWY61 AI collects, uses, and protects information when you use Localizer at localizer.hwy61labs.com. By using the Service, you agree to the practices described in this policy.</p>
 
           <h2 style={{ fontSize: 18, fontWeight: 900, marginTop: 32, marginBottom: 12 }}>1. Information We Collect</h2>
           <p><strong>Account Information:</strong> We collect your email address. We use passwordless authentication (magic link) so we do not collect or store passwords.</p>
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
           <p>We retain your data for as long as your Account is active. Upon deletion request, we will delete your Content within 30 days. Rendered Assets may be cached on our CDN for a period after deletion.</p>
 
           <h2 style={{ fontSize: 18, fontWeight: 900, marginTop: 32, marginBottom: 12 }}>6. Your Rights</h2>
-          <p>Depending on your jurisdiction, you may request: access, correction, deletion, data portability, or objection to processing. Contact privacy@hwy61.ai. We will respond within 30 days.</p>
+          <p>Depending on your jurisdiction, you may request: access, correction, deletion, data portability, or objection to processing. Contact privacy@hwy61labs.com. We will respond within 30 days.</p>
 
           <h2 style={{ fontSize: 18, fontWeight: 900, marginTop: 32, marginBottom: 12 }}>7. Cookies and Tracking</h2>
           <p>We use essential cookies for authentication only. We do not use advertising cookies, tracking pixels, or third-party analytics. We do not engage in cross-site tracking.</p>
@@ -53,13 +53,13 @@ export default function PrivacyPage() {
           <p>Our service providers may process data in the United States and other countries. By using the Service, you consent to the transfer of your information to these jurisdictions.</p>
 
           <h2 style={{ fontSize: 18, fontWeight: 900, marginTop: 32, marginBottom: 12 }}>10. California Privacy Rights</h2>
-          <p>If you are a California resident, the CCPA provides additional rights. We do not sell personal information. Contact privacy@hwy61.ai to exercise your rights.</p>
+          <p>If you are a California resident, the CCPA provides additional rights. We do not sell personal information. Contact privacy@hwy61labs.com to exercise your rights.</p>
 
           <h2 style={{ fontSize: 18, fontWeight: 900, marginTop: 32, marginBottom: 12 }}>11. Changes to This Policy</h2>
           <p>We may update this policy from time to time. Continued use after changes constitutes acceptance.</p>
 
           <h2 style={{ fontSize: 18, fontWeight: 900, marginTop: 32, marginBottom: 12 }}>12. Contact</h2>
-          <p><strong>HWY61 AI</strong><br />Email: privacy@hwy61.ai<br />DMCA: dmca@hwy61.ai</p>
+          <p><strong>HWY61 AI</strong><br />Email: privacy@hwy61labs.com<br />DMCA: dmca@hwy61labs.com</p>
         </div>
       </div>
     </main>

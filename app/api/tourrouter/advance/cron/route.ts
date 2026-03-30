@@ -211,7 +211,7 @@ export async function GET(req: NextRequest) {
 
       try {
         const { data: emailResult } = await resend.emails.send({
-          from: "advances@hwy61.ai",
+          from: "advances@hwy61labs.com",
           to: recipientEmail.split(",").map((e: string) => e.trim()).filter(Boolean),
           subject: subjectMap[emailType] || subjectMap.initial,
           html: buildEmailHtml(artistName, venueName, city, formattedDate, advanceLink, emailType, daysUntilShow),
@@ -274,7 +274,7 @@ export async function GET(req: NextRequest) {
       if (ownerEmail) {
         try {
           await resend.emails.send({
-            from: "advances@hwy61.ai",
+            from: "advances@hwy61labs.com",
             to: ownerEmail,
             subject: `TourRouter Advance Digest — ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
             html: `

@@ -17,7 +17,7 @@ export default function ShowcasePage() {
               color: "#f0ede8",
               lineHeight: 0.88,
               marginBottom: 20,
-            }}>HWY61.AI</div>
+            }}>HWY61</div>
 
             <div style={{
               fontFamily: "'PragmaticaExtended', sans-serif",
@@ -218,13 +218,13 @@ export default function ShowcasePage() {
               textTransform: "uppercase",
               color: "rgba(240,237,232,0.35)",
               marginBottom: 10,
-            }}>HWY61.AI</div>
+            }}>HWY61</div>
             <div style={{ fontSize: 12, color: "rgba(240,237,232,0.2)" }}>
               <a href="/terms" style={{ color: "rgba(240,237,232,0.2)", textDecoration: "none" }}>Terms of Service</a>
               {" \u00b7 "}
               <a href="/privacy" style={{ color: "rgba(240,237,232,0.2)", textDecoration: "none" }}>Privacy Policy</a>
               {" \u00b7 "}
-              <a href="mailto:support@hwy61.ai" style={{ color: "rgba(240,237,232,0.2)", textDecoration: "none" }}>support@hwy61.ai</a>
+              <a href="mailto:support@hwy61labs.com" style={{ color: "rgba(240,237,232,0.2)", textDecoration: "none" }}>support@hwy61labs.com</a>
             </div>
           </footer>
         </div>

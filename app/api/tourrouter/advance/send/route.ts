@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
 
   try {
     await resend.emails.send({
-      from: "noreply@hwy61.ai",
+      from: "noreply@hwy61labs.com",
       to: recipientEmail.split(",").map((e: string) => e.trim()).filter(Boolean),
       subject,
       html: `

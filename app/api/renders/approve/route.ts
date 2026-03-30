@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
   if (event.promoter_email) {
     const toEmails = event.promoter_email.split(",").map((e: string) => e.trim()).filter(Boolean);
     await resend.emails.send({
-      from: "noreply@hwy61.ai",
+      from: "noreply@hwy61labs.com",
       to: toEmails,
       subject: `Show assets ready — ${bandName} @ ${venueName}`,
       html: `
