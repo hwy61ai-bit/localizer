@@ -404,3 +404,15 @@ All old hwy61.ai references updated in codebase
 Known remaining: post-login redirect and branding per subdomain (7D)
 
 Next session should start with: Phase 7B — Mapbox integration (or 7C Stripe if EIN is unblocked).
+
+Phase 7B Mapbox integration complete
+geocode_cache and drive_cache tables created in Supabase with RLS
+Mapbox geocoding + directions service built (lib/tourrouter/mapbox.ts)
+Drive info API route created
+calcTourFinancials accepts pre-fetched drive data, haversine as silent fallback
+All export routes (Excel, PDF, advance, daysheet) wired to Mapbox
+Client pages prefetch drive data on load
+Off day leg rows fixed (no drive/fly buttons on off days)
+Venue display fixed (proper size/color, no stray dashes)
+Tested with edge case city (Harlowton MT) — works
+Known: server-side exports use Mapbox via prefetchDriveDataServer

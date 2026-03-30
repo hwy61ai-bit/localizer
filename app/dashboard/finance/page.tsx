@@ -9,6 +9,7 @@ import {
   type FinancialResults,
   type VehicleType,
 } from "@/lib/tourrouter";
+import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
 
 type TourListItem = {
   id: string;
@@ -55,6 +56,7 @@ type TourFinRow = {
 };
 
 export default function FinanceDashboard() {
+  const flags = useFeatureFlags();
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<TourFinRow[]>([]);
 
@@ -159,7 +161,13 @@ export default function FinanceDashboard() {
           <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>FINANCE DASHBOARD</div>
         </div>
 
-        {loading ? (
+        {!flags.multiTour ? (
+          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
+            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Finance Dashboard</div>
+            <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Multi-tour financial tracking and reporting is available with TourRouter.</div>
+            <Link href="/dashboard/routing" style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Back to Tours</Link>
+          </div>
+        ) : loading ? (
           <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading...</div>
         ) : rows.length === 0 ? (
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>

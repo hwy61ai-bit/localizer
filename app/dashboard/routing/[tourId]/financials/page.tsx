@@ -20,6 +20,7 @@ import {
   type VehicleType,
   type DriveDataMap,
 } from "@/lib/tourrouter";
+import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -68,6 +69,7 @@ type ShowRow = {
 
 export default function FinancialsPage() {
   const { tourId } = useParams<{ tourId: string }>();
+  const flags = useFeatureFlags();
   const [tour, setTour] = useState<TourData | null>(null);
   const [shows, setShows] = useState<ShowRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -359,6 +361,26 @@ export default function FinancialsPage() {
 
         {loading || !fin ? (
           <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading...</div>
+        ) : !flags.financeLayer ? (
+          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
+            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Financial Tools</div>
+            <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Detailed financial tracking, expense management, and reporting are available with TourRouter.</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, maxWidth: 500, margin: "0 auto", marginBottom: 24 }}>
+              <div style={{ background: "#fafaf8", borderRadius: 10, padding: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: 4 }}>Shows</div>
+                <div style={{ fontSize: 20, fontWeight: 800 }}>{fin.showDayCount}</div>
+              </div>
+              <div style={{ background: "#fafaf8", borderRadius: 10, padding: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: 4 }}>Income</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#1a6b3c" }}>{fmtUSD(fin.totalIncome)}</div>
+              </div>
+              <div style={{ background: "#fafaf8", borderRadius: 10, padding: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: 4 }}>Est. Fuel</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#c0392b" }}>{fmtUSD(fin.totalFuel)}</div>
+              </div>
+            </div>
+            <a href="https://hwy61labs.com" target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Upgrade to TourRouter</a>
+          </div>
         ) : (
           <>
             {/* ══════ Summary Cards ══════ */}

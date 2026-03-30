@@ -76,5 +76,13 @@ export { calculatePersonnelCosts, determineDayType, type RosterMember, type PayC
 
 export { calculateCommissions, canSeeCommissions, stripCommissionDetails, type Commission, type CommissionResult, type CommissionType, COMMISSION_TYPE_LABELS } from './commissions';
 
+export {
+  DIY_FLAGS,
+  TOURROUTER_FLAGS,
+  getFlags,
+  getFlagsFromHeader,
+  type FeatureFlags,
+} from './featureFlags';
+
 // billingGate is server-only (uses next/headers via supabaseServer)
 // Import directly: import { checkTourRouterAccess } from '@/lib/tourrouter/billingGate'

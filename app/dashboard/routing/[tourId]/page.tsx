@@ -29,6 +29,7 @@ import {
   type CommissionType,
 } from "@/lib/tourrouter";
 import type { Commission } from "@/lib/tourrouter/commissions";
+import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -172,6 +173,7 @@ const DRAWER_SECTIONS = [
 
 export default function RouteTourPage() {
   const { tourId } = useParams<{ tourId: string }>();
+  const flags = useFeatureFlags();
   const [tour, setTour] = useState<TourData | null>(null);
   const [shows, setShows] = useState<ShowRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -601,8 +603,8 @@ export default function RouteTourPage() {
   const navItems = [
     { num: 1, label: "Import", href: `/dashboard/routing/${tourId}/import`, active: false },
     { num: 2, label: "Route", href: `/dashboard/routing/${tourId}`, active: true },
-    { num: 3, label: "Financials", href: `/dashboard/routing/${tourId}/financials`, active: false },
-    { num: 4, label: "Export", href: `/dashboard/routing/${tourId}/export`, active: false },
+    ...(flags.financeLayer ? [{ num: 3, label: "Financials", href: `/dashboard/routing/${tourId}/financials`, active: false }] : []),
+    { num: flags.financeLayer ? 4 : 3, label: "Export", href: `/dashboard/routing/${tourId}/export`, active: false },
   ];
 
   const f = financials;
@@ -725,12 +727,12 @@ export default function RouteTourPage() {
               <div style={{ fontSize: 14, fontWeight: 800 }}>Tour Settings</div>
               <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "#888" }}>&times;</button>
             </div>
-            <VehicleManager
+            {flags.multiVehicle && <VehicleManager
               tourId={tourId}
               vehicles={(tour?.tour_vehicles || []) as never[]}
               defaultFuelPrice={tour?.fuel_price_usd || 3.50}
               onUpdate={(updated) => setTour((prev) => prev ? { ...prev, tour_vehicles: updated as unknown as Record<string, unknown>[] } : prev)}
-            />
+            />}
 
             {/* Legacy single-vehicle settings — show only if no multi-vehicle config */}
             {(!tour.tour_vehicles || tour.tour_vehicles.length === 0) && (
@@ -845,7 +847,7 @@ export default function RouteTourPage() {
             </div>
 
             {/* Commissions */}
-            <div style={{ borderTop: "1px solid #e0e0da", paddingTop: 16, marginTop: 16 }}>
+            {flags.commissions && <div style={{ borderTop: "1px solid #e0e0da", paddingTop: 16, marginTop: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showCommissions ? 12 : 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, cursor: "pointer" }} onClick={() => setShowCommissions(!showCommissions)}>
                   Commissions {showCommissions ? "\u25bc" : "\u25b6"}
@@ -947,10 +949,10 @@ export default function RouteTourPage() {
                   })}
                 </div>
               )}
-            </div>
+            </div>}
 
             {/* Advance Settings */}
-            <div style={{ borderTop: "1px solid #DDDDDD", marginTop: 16, paddingTop: 16 }}>
+            {flags.advancing && <div style={{ borderTop: "1px solid #DDDDDD", marginTop: 16, paddingTop: 16 }}>
               <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 10 }}>Advance Automation</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
                 <div>
@@ -976,7 +978,7 @@ export default function RouteTourPage() {
                   </label>
                 </div>
               </div>
-            </div>
+            </div>}
           </div>
         )}
 
@@ -990,14 +992,14 @@ export default function RouteTourPage() {
             onClick={() => setShowSettings(!showSettings)}
             style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
           >{showSettings ? "Hide Vehicle Settings" : "\u2699 Vehicle Settings"}</button>
-          <button
+          {flags.personnelPay && <button
             onClick={() => setShowRoster(!showRoster)}
             style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
-          >{showRoster ? "Hide Roster" : "\u{1F465} Roster"}</button>
+          >{showRoster ? "Hide Roster" : "\u{1F465} Roster"}</button>}
         </div>
 
         {/* Roster Panel */}
-        {showRoster && (
+        {flags.personnelPay && showRoster && (
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>Tour Roster & Pay</div>
@@ -1177,7 +1179,7 @@ export default function RouteTourPage() {
               )}
 
               {/* Settlement Section */}
-              {drawerShow && !drawerShow.is_off && (
+              {flags.settlement && drawerShow && !drawerShow.is_off && (
                 <div style={{ borderBottom: "1px solid #f0f0f0", padding: "0 0 14px" }}>
                   <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888", padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }} onClick={() => setSettlementOpen(!settlementOpen)}>
                     Settlement
@@ -1207,7 +1209,7 @@ export default function RouteTourPage() {
               )}
 
               {/* Deposits Section */}
-              {drawerShow && !drawerShow.is_off && (
+              {flags.depositTracking && drawerShow && !drawerShow.is_off && (
                 <div style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <div
                     onClick={() => toggleSection("Deposits")}
@@ -1263,7 +1265,7 @@ export default function RouteTourPage() {
               )}
 
               {/* Advancing Section */}
-              {drawerShow && !drawerShow.is_off && (() => {
+              {flags.advancing && drawerShow && !drawerShow.is_off && (() => {
                 const as = drawerShow.advance_status || "not_started";
                 const statusColor = as === "confirmed" ? "#1a6b3c" : as.includes("escalated") || as.includes("bounced") ? "#c0392b" : as.includes("followup") || as.includes("final") ? "#b35c00" : as === "sent" ? "#1a5fa6" : "#888";
                 const statusBg = as === "confirmed" ? "#e8f5e9" : as.includes("escalated") || as.includes("bounced") ? "#ffebee" : as.includes("followup") || as.includes("final") ? "#fff3e0" : as === "sent" ? "#e3f2fd" : "#f5f5f5";
@@ -1351,7 +1353,7 @@ export default function RouteTourPage() {
               })()}
 
               {/* Guest List Section */}
-              {drawerShow && !drawerShow.is_off && (
+              {flags.guestList && drawerShow && !drawerShow.is_off && (
                 <div style={{ borderBottom: "1px solid #f0f0f0" }}>
                   <div
                     onClick={() => toggleSection("Guest List")}
