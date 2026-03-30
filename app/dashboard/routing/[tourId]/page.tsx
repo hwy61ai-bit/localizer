@@ -1641,8 +1641,8 @@ function LegAndShowRow({
           {formatShowDate(show.date_iso)}
         </td>
         <td style={{ padding: "10px 12px" }}>
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off ? <em>OFF DAY</em> : (show.event || "\u2014")}</div>
-          {show.venue && <div style={{ fontSize: 11, color: "#888" }}>{show.venue}</div>}
+          <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off ? <em>OFF DAY</em> : (show.event || show.venue || "\u2014")}</div>
+          {show.event && show.venue && <div style={{ fontSize: 13, color: "#222" }}>{show.venue}</div>}
         </td>
         <td style={{ padding: "10px 12px", fontSize: 13 }}>{show.city || "\u2014"}</td>
         <td style={{ padding: "10px 12px", fontSize: 12 }}>{show.country || "\u2014"}</td>
