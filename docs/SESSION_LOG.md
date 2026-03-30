@@ -416,3 +416,37 @@ Off day leg rows fixed (no drive/fly buttons on off days)
 Venue display fixed (proper size/color, no stray dashes)
 Tested with edge case city (Harlowton MT) — works
 Known: server-side exports use Mapbox via prefetchDriveDataServer
+
+
+Phase 7A — Domain Migration ✅
+
+DNS moved to Vercel for hwy61labs.com
+All subdomains configured and verified
+Supabase auth redirect URLs added
+Resend verified for @hwy61labs.com
+ImprovMX email forwarding (support@, dmca@, privacy@)
+Middleware updated for hostname routing
+Cross-subdomain auth cookies configured
+All hwy61.ai references updated across codebase
+
+Phase 7B — Mapbox Integration ✅
+
+geocode_cache and drive_cache tables created with RLS
+Mapbox geocoding + directions service built
+Drive info API route created
+calcTourFinancials accepts pre-fetched drive data
+All export routes wired to Mapbox
+Client pages prefetch on load
+Off day leg rows fixed
+Venue display fixed
+KC→Iowa City: 4h40m (was 6h15m), Harlowton MT works
+
+Phase 7D — Product Naming & Feature Flags ✅
+
+DIY/TourRouter feature flag system built and tested
+FeatureFlagProvider + useFeatureFlags hook
+All TourRouter-only features gated for DIY
+Subdomain-aware product branding across all pages
+Login page dynamic per subdomain
+Login input overflow fixed
+"HWY61 LABS" wordmark animation on landing page
