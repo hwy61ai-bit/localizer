@@ -30,6 +30,7 @@ import {
 } from "@/lib/tourrouter";
 import type { Commission } from "@/lib/tourrouter/commissions";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
+import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -174,6 +175,7 @@ const DRAWER_SECTIONS = [
 export default function RouteTourPage() {
   const { tourId } = useParams<{ tourId: string }>();
   const flags = useFeatureFlags();
+  const branding = useProductBranding();
   const [tour, setTour] = useState<TourData | null>(null);
   const [shows, setShows] = useState<ShowRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -659,7 +661,7 @@ export default function RouteTourPage() {
           <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Back to Tours</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>TOURROUTER.</h1>
+              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
               <div style={{ borderBottom: "2px solid #111111", marginBottom: 6 }} />
               <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>{loading ? "\u2014" : tour?.name?.toUpperCase() || "TOUR"}</div>
             </div>

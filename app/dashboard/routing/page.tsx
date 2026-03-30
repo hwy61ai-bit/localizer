@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
 
 type RoutingTour = {
   id: string;
@@ -27,6 +28,7 @@ export default function RoutingListPage() {
 function RoutingListInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const branding = useProductBranding();
   const [tours, setTours] = useState<RoutingTour[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -42,7 +44,7 @@ function RoutingListInner() {
     fetchArtists();
     const billing = searchParams.get("billing");
     if (billing === "success") {
-      setBillingToast("TourRouter subscription activated!");
+      setBillingToast("Subscription activated!");
       window.history.replaceState({}, "", "/dashboard/routing");
     } else if (billing === "cancelled") {
       setBillingToast("Checkout cancelled");
@@ -111,8 +113,8 @@ function RoutingListInner() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
           <div>
-            <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Localizer</Link>
-            <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>TOURROUTER.</h1>
+            {!branding.isDiy && <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Localizer</Link>}
+            <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>{branding.name}</h1>
             <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>YOUR TOURS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>{tours.length} tour{tours.length !== 1 ? "s" : ""}</div>
           </div>
@@ -136,9 +138,9 @@ function RoutingListInner() {
 
         {needsSubscription ? (
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
-            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>TourRouter requires a subscription</div>
+            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>{branding.name} requires a subscription</div>
             <div style={{ fontSize: 13, color: "#888", marginBottom: 20, maxWidth: 400, margin: "0 auto 20px" }}>
-              Subscribe to TourRouter to create and manage tour routing, financials, and advancing.
+              Subscribe to {branding.name} to create and manage tour routing, financials, and advancing.
             </div>
             <button
               onClick={async () => {

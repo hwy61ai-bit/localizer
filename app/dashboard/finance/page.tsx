@@ -10,6 +10,7 @@ import {
   type VehicleType,
 } from "@/lib/tourrouter";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
+import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
 
 type TourListItem = {
   id: string;
@@ -57,6 +58,7 @@ type TourFinRow = {
 
 export default function FinanceDashboard() {
   const flags = useFeatureFlags();
+  const branding = useProductBranding();
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<TourFinRow[]>([]);
 
@@ -155,8 +157,8 @@ export default function FinanceDashboard() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
-          <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; TourRouter</Link>
-          <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>TOURROUTER.</h1>
+          <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {branding.name}</Link>
+          <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
           <div style={{ borderBottom: "2px solid #111", marginBottom: 6, maxWidth: 200 }} />
           <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>FINANCE DASHBOARD</div>
         </div>

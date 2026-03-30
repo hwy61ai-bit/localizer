@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
 
 type Contact = {
   id: string;
@@ -26,6 +27,7 @@ const ROLES = ["Promoter", "Agent", "Manager", "Production", "TM", "BM", "Venue"
 const FILTER_ROLES = ["All", "Promoter", "Agent", "Manager", "Production", "Venue", "Other"];
 
 export default function ContactsPage() {
+  const branding = useProductBranding();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -164,10 +166,10 @@ export default function ContactsPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
-          <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; TourRouter</Link>
+          <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {branding.name}</Link>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
-              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>TOURROUTER.</h1>
+              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
               <div style={{ borderBottom: "2px solid #111", marginBottom: 6, maxWidth: 200 }} />
               <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>CONTACTS</div>
             </div>
@@ -245,7 +247,7 @@ export default function ContactsPage() {
         ) : contacts.length === 0 ? (
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: "#888", marginBottom: 12 }}>No contacts yet</div>
-            <div style={{ fontSize: 13, color: "#aaa" }}>Add contacts manually or drop a contact list document onto TourRouter to import them automatically.</div>
+            <div style={{ fontSize: 13, color: "#aaa" }}>Add contacts manually or drop a contact list document to import them automatically.</div>
           </div>
         ) : (
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, overflow: "hidden" }}>

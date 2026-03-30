@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
 
 type TourData = { id: string; name: string };
 
 export default function ExportPage() {
   const { tourId } = useParams<{ tourId: string }>();
+  const branding = useProductBranding();
   const [tour, setTour] = useState<TourData | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -103,7 +105,7 @@ export default function ExportPage() {
           <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Back to Tours</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>TOURROUTER.</h1>
+              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
               <div style={{ borderBottom: "2px solid #111111", marginBottom: 6 }} />
               <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>{tour?.name?.toUpperCase() || "TOUR"}</div>
             </div>

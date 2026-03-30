@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { getProductName } from "@/lib/tourrouter/productBranding";
 
 export default function LoginPage() {
+  const productName = useMemo(() => getProductName(), []);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export default function LoginPage() {
               letterSpacing: "-0.06em",
             }}
           >
-            LOCALIZER
+            {productName}
           </div>
           <div style={{ marginTop: 10, fontSize: 13, opacity: 0.7 }}>
             Enter your email and we'll send you a sign-in link. No password needed.

@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
 import TourTile from "./TourTile";
 
@@ -10,6 +11,8 @@ type TourStat = {
 };
 
 export default async function DashboardPage() {
+  const headersList = await headers();
+  const isDiy = headersList.get("x-hwy61-diy") === "1";
   const supabase = await supabaseServer();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -122,7 +125,7 @@ export default async function DashboardPage() {
 
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
           <div>
-            <div style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}><a href="/dashboard/routing" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>TourRouter &rarr;</a><a href="/account" style={{ fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: "#111", padding: "8px 16px", borderRadius: 999 }}>Account</a></div><h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
+            <div style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}>{!isDiy && <a href="/dashboard/routing" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>TourRouter &rarr;</a>}<a href="/account" style={{ fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: "#111", padding: "8px 16px", borderRadius: 999 }}>Account</a></div><h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
             <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>
               {artists.length} artist{artists.length !== 1 ? "s" : ""}
