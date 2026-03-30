@@ -125,7 +125,7 @@ export default function FinancialsPage() {
 
   useEffect(() => {
     if (shows.length < 2) return;
-    const showPairs = shows.map((s) => ({ city: s.city || "", country: s.country || "" }));
+    const showPairs = shows.map((s) => ({ city: s.city || "", country: s.country || "", isOff: s.is_off }));
     prefetchDriveData(showPairs).then(setDriveData);
   }, [shows]);
 

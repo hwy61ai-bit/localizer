@@ -94,6 +94,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     showsArr.map((s: Record<string, unknown>) => ({
       city: (s.city as string) || "",
       country: (s.country as string) || "",
+      isOff: (s.is_off as boolean) || false,
     }))
   );
 

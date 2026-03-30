@@ -124,15 +124,20 @@ export async function getMapboxDriveInfo(
  * Use in client components.
  */
 export async function prefetchDriveData(
-  shows: { city: string; country: string }[]
+  shows: { city: string; country: string; isOff?: boolean }[]
 ): Promise<DriveDataMap> {
   const map: DriveDataMap = {};
   const pairs: { from: string; to: string }[] = [];
 
+  function isValidCity(s: { city: string; isOff?: boolean }): boolean {
+    if (s.isOff) return false;
+    const c = s.city?.trim().toLowerCase();
+    return !!c && c !== 'off';
+  }
+
   for (let i = 1; i < shows.length; i++) {
-    const from = shows[i - 1].city;
-    const to = shows[i].city;
-    if (from && to) pairs.push({ from, to });
+    if (!isValidCity(shows[i - 1]) || !isValidCity(shows[i])) continue;
+    pairs.push({ from: shows[i - 1].city, to: shows[i].city });
   }
 
   const results = await Promise.all(
