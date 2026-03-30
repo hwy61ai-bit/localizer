@@ -7,9 +7,9 @@ function getRewriteForHost(hostname: string): string | null {
   // Strip port for local dev
   const host = hostname.split(":")[0];
 
-  // Marketing / showcase site
+  // Marketing site — serves root landing page (app/page.tsx), no rewrite needed
   if (host === "hwy61labs.com" || host === "www.hwy61labs.com") {
-    return "/showcase";
+    return null;
   }
 
   // Localizer dashboard (new domain + legacy domain during transition)
@@ -52,18 +52,12 @@ export async function middleware(req: NextRequest) {
   // --- Hostname-based rewriting ---
   const rewriteBase = getRewriteForHost(hostname);
 
-  if (rewriteBase !== null) {
-    // Public showcase hosts — rewrite and skip auth
-    if (isPublicHost(hostname)) {
-      // Rewrite root and sub-paths to /showcase/*
-      const incoming = url.pathname;
-      // Avoid double-prefixing if already under /showcase
-      if (!incoming.startsWith("/showcase")) {
-        url.pathname = rewriteBase + (incoming === "/" ? "" : incoming);
-      }
-      return NextResponse.rewrite(url);
-    }
+  // Public hosts — serve the root landing page, skip auth
+  if (isPublicHost(hostname)) {
+    return NextResponse.next();
+  }
 
+  if (rewriteBase !== null) {
     // App hosts — rewrite root to the app's base path
     if (url.pathname === "/") {
       url.pathname = rewriteBase;
