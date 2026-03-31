@@ -11,7 +11,7 @@ export const DIY_FLAGS = {
   guestList: false,
   multiTour: false,
   multiVehicle: false,
-  dealTypes: false,
+  dealTypes: true,
   contactIntelligence: false,
   crewAccess: false,
   advanceSheetPdf: false,
