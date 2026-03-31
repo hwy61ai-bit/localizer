@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
 
 const PLANS = [
@@ -55,6 +56,7 @@ export default function PricingPage() {
       });
       const data = await res.json();
       if (data.url) {
+        posthog.capture("upgrade_clicked", { plan: planName });
         window.location.href = data.url;
       } else {
         alert(data.error ?? "Something went wrong.");

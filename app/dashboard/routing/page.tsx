@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState, useRef } from "react";
+import posthog from "posthog-js";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -93,6 +94,7 @@ function RoutingListInner() {
     });
     if (resp.ok) {
       const data = await resp.json();
+      posthog.capture("tour_created");
       router.push(`/dashboard/routing/${data.tour.id}`);
     }
     setCreating(false);

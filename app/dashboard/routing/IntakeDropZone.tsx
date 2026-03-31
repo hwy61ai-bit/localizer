@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, type ReactNode } from "react";
+import posthog from "posthog-js";
 
 type IntakeResult = {
   documentType: string;
@@ -106,6 +107,7 @@ export default function IntakeDropZone({
         }
 
         const data: IntakeResult = await resp.json();
+        posthog.capture("document_dropped", { document_type: data.documentType });
         setResult(data);
         setEditedFields({ ...data.fields });
         setEditedType(data.documentType);

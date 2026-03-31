@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import posthog from "posthog-js";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
@@ -38,6 +39,7 @@ export default function ExportPage() {
       const extMap: Record<string, string> = { excel: "xlsx", daysheet: "pdf", advance: "pdf" };
       const filename = filenameMatch ? filenameMatch[1] : `export.${extMap[format] || format}`;
 
+      posthog.capture("export_generated", { export_type: format });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

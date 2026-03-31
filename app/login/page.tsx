@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getProductName } from "@/lib/tourrouter/productBranding";
+import posthog from "posthog-js";
 
 export default function LoginPage() {
   const productName = useMemo(() => getProductName(), []);
@@ -29,6 +30,7 @@ export default function LoginPage() {
       return;
     }
 
+    posthog.capture("user_logged_in", { method: "magic_link" });
     setSent(true);
   }
 
@@ -43,6 +45,8 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message);
+    } else {
+      posthog.capture("user_logged_in", { method: "google" });
     }
   }
 

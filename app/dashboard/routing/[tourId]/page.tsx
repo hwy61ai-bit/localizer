@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import posthog from "posthog-js";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import IntakeDropZone from "../IntakeDropZone";
@@ -505,6 +506,7 @@ export default function RouteTourPage() {
         setShows((prev) => [...prev, ...added].sort((a, b) =>
           (a.date_iso || "").localeCompare(b.date_iso || "")
         ));
+        posthog.capture("show_added");
         setShowAddModal(false);
         setNewShow({ date_iso: "", venue: "", city: "", country: "", offer_amount: "", offer_currency: "USD", event: "" });
       }
