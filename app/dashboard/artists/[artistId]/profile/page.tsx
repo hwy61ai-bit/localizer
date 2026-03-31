@@ -853,21 +853,36 @@ function RosterSection({
     if (expandedId === id) setExpandedId(null);
   }
 
-  const MF = ({ member, field, label, type, placeholder }: { member: any; field: string; label: string; type?: string; placeholder?: string }) => (
-    <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, alignItems: "center", padding: "4px 0" }}>
-      <label style={{ fontSize: 11, color: "#888" }}>{label}</label>
-      <input
-        style={rowInputStyle}
-        type={type || "text"}
-        value={member[field] ?? ""}
-        placeholder={placeholder}
-        onChange={(e) => {
-          const v = type === "number" ? (e.target.value ? parseFloat(e.target.value) : null) : (e.target.value || null);
-          updateMember(member.id, field, v);
-        }}
-      />
-    </div>
-  );
+  function MF({ member, field, label, type, placeholder }: { member: any; field: string; label: string; type?: string; placeholder?: string }) {
+    const [local, setLocal] = useState(String(member[field] ?? ""));
+    const initialRef = useRef(member[field]);
+
+    // Sync from parent if the member's value changed externally (e.g. after save round-trip)
+    useEffect(() => {
+      const incoming = String(member[field] ?? "");
+      if (member[field] !== initialRef.current) {
+        setLocal(incoming);
+        initialRef.current = member[field];
+      }
+    }, [member[field]]);
+
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, alignItems: "center", padding: "4px 0" }}>
+        <label style={{ fontSize: 11, color: "#888" }}>{label}</label>
+        <input
+          style={rowInputStyle}
+          type={type || "text"}
+          value={local}
+          placeholder={placeholder}
+          onChange={(e) => setLocal(e.target.value)}
+          onBlur={() => {
+            const v = type === "number" ? (local ? parseFloat(local) : null) : (local || null);
+            updateMember(member.id, field, v);
+          }}
+        />
+      </div>
+    );
+  }
 
   const SubLabel = ({ children }: { children: React.ReactNode }) => (
     <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: 14, marginBottom: 6, borderBottom: "1px solid #f0f0f0", paddingBottom: 4 }}>
@@ -901,7 +916,17 @@ function RosterSection({
                     {member.role || "No role"}{member.showDayRate ? ` \u00b7 $${member.showDayRate}/show` : ""}
                   </div>
                 </div>
-                <span style={{ fontSize: 11, color: "#ccc", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", display: "inline-block" }}>&#9656;</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeMember(member.id); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#ccc", padding: "2px 4px", lineHeight: 1 }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#c0392b"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#ccc"; }}
+                  >
+                    &times;
+                  </button>
+                  <span style={{ fontSize: 11, color: "#ccc", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", display: "inline-block" }}>&#9656;</span>
+                </div>
               </div>
               {isOpen && (
                 <div style={{ padding: "0 16px 16px" }}>
