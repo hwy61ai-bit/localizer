@@ -55,6 +55,14 @@ export default function ArtistHubClient({
         hasTourRouter = resp.ok;
       }
 
+      // Admin-only URL override for testing
+      if (isAdmin && typeof window !== "undefined") {
+        const view = new URLSearchParams(window.location.search).get("view");
+        if (view === "localizer") { hasLocalizer = true; hasTourRouter = false; }
+        else if (view === "tourrouter") { hasTourRouter = true; hasLocalizer = false; }
+        else if (view === "diy") { hasTourRouter = true; hasLocalizer = false; setIsDiy(true); }
+      }
+
       setAccess({ loading: false, hasLocalizer, hasTourRouter });
 
       // Set default tab based on access
