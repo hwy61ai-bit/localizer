@@ -843,54 +843,18 @@ function RosterSection({
     setExpandedId(member.id);
   }
 
-  function updateMember(id: string, field: string, value: unknown) {
+  const updateMemberRef = useRef((id: string, field: string, value: unknown) => {
     onUpdate(roster.map((m) => m.id === id ? { ...m, [field]: value } : m));
-  }
+  });
+  updateMemberRef.current = (id: string, field: string, value: unknown) => {
+    onUpdate(roster.map((m) => m.id === id ? { ...m, [field]: value } : m));
+  };
 
   function removeMember(id: string) {
     if (!confirm("Remove this crew member?")) return;
     onUpdate(roster.filter((m) => m.id !== id));
     if (expandedId === id) setExpandedId(null);
   }
-
-  function MF({ member, field, label, type, placeholder }: { member: any; field: string; label: string; type?: string; placeholder?: string }) {
-    const [local, setLocal] = useState(String(member[field] ?? ""));
-    const initialRef = useRef(member[field]);
-
-    // Sync from parent if the member's value changed externally (e.g. after save round-trip)
-    useEffect(() => {
-      const incoming = String(member[field] ?? "");
-      if (member[field] !== initialRef.current) {
-        setLocal(incoming);
-        initialRef.current = member[field];
-      }
-    }, [member[field]]);
-
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, alignItems: "center", padding: "4px 0" }}>
-        <label style={{ fontSize: 11, color: "#888" }}>{label}</label>
-        <input
-          style={rowInputStyle}
-          type={type || "text"}
-          value={local}
-          placeholder={placeholder}
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => (e.target as HTMLInputElement).focus()}
-          onChange={(e) => setLocal(e.target.value)}
-          onBlur={() => {
-            const v = type === "number" ? (local ? parseFloat(local) : null) : (local || null);
-            updateMember(member.id, field, v);
-          }}
-        />
-      </div>
-    );
-  }
-
-  const SubLabel = ({ children }: { children: React.ReactNode }) => (
-    <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: 14, marginBottom: 6, borderBottom: "1px solid #f0f0f0", paddingBottom: 4 }}>
-      {children}
-    </div>
-  );
 
   return (
     <div>
@@ -932,46 +896,46 @@ function RosterSection({
               </div>
               {isOpen && (
                 <div style={{ padding: "0 16px 16px" }} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
-                  <SubLabel>Identity</SubLabel>
-                  <MF member={member} field="legalName" label="Legal Name" />
-                  <MF member={member} field="preferredName" label="Preferred Name" />
-                  <MF member={member} field="role" label="Role" />
-                  <MF member={member} field="dateOfBirth" label="Date of Birth" type="date" />
+                  <RosterSubLabel>Identity</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="legalName" label="Legal Name" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="preferredName" label="Preferred Name" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="role" label="Role" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="dateOfBirth" label="Date of Birth" type="date" />
 
-                  <SubLabel>Contact</SubLabel>
-                  <MF member={member} field="email" label="Email" />
-                  <MF member={member} field="phone" label="Phone" />
-                  <MF member={member} field="secondaryPhone" label="Secondary Phone" />
+                  <RosterSubLabel>Contact</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="email" label="Email" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="phone" label="Phone" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="secondaryPhone" label="Secondary Phone" />
 
-                  <SubLabel>Emergency Contact</SubLabel>
-                  <MF member={member} field="emergencyContactName" label="Name" />
-                  <MF member={member} field="emergencyRelationship" label="Relationship" />
-                  <MF member={member} field="emergencyPhone" label="Phone" />
+                  <RosterSubLabel>Emergency Contact</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="emergencyContactName" label="Name" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="emergencyRelationship" label="Relationship" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="emergencyPhone" label="Phone" />
 
-                  <SubLabel>Travel Documents</SubLabel>
-                  <MF member={member} field="passportNumber" label="Passport #" />
-                  <MF member={member} field="passportCountry" label="Country" />
-                  <MF member={member} field="passportExpiration" label="Expiration" type="date" />
-                  <MF member={member} field="knownTravelerNumber" label="Known Traveler #" />
-                  <MF member={member} field="preferredHomeAirport" label="Home Airport" placeholder="e.g. ATX" />
+                  <RosterSubLabel>Travel Documents</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="passportNumber" label="Passport #" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="passportCountry" label="Country" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="passportExpiration" label="Expiration" type="date" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="knownTravelerNumber" label="Known Traveler #" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="preferredHomeAirport" label="Home Airport" placeholder="e.g. ATX" />
 
-                  <SubLabel>Travel Preferences</SubLabel>
-                  <MF member={member} field="seatPreference" label="Seat Pref" placeholder="aisle / window" />
-                  <MF member={member} field="bunkPreference" label="Bunk Pref" placeholder="top / bottom" />
+                  <RosterSubLabel>Travel Preferences</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="seatPreference" label="Seat Pref" placeholder="aisle / window" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="bunkPreference" label="Bunk Pref" placeholder="top / bottom" />
 
-                  <SubLabel>Dietary & Health</SubLabel>
-                  <MF member={member} field="mealNotes" label="Meal Notes" />
-                  <MF member={member} field="nonFoodAllergies" label="Allergies" />
+                  <RosterSubLabel>Dietary & Health</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="mealNotes" label="Meal Notes" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="nonFoodAllergies" label="Allergies" />
 
-                  <SubLabel>Apparel</SubLabel>
-                  <MF member={member} field="tshirtSize" label="T-Shirt" placeholder="S/M/L/XL/XXL" />
-                  <MF member={member} field="shoeSize" label="Shoe Size" />
+                  <RosterSubLabel>Apparel</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="tshirtSize" label="T-Shirt" placeholder="S/M/L/XL/XXL" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="shoeSize" label="Shoe Size" />
 
-                  <SubLabel>Pay & Financial</SubLabel>
-                  <MF member={member} field="showDayRate" label="Show Day Rate" type="number" />
-                  <MF member={member} field="offDayRate" label="Off Day Rate" type="number" />
-                  <MF member={member} field="travelDayRate" label="Travel Day Rate" type="number" />
-                  <MF member={member} field="perDiemRate" label="Per Diem" type="number" />
+                  <RosterSubLabel>Pay & Financial</RosterSubLabel>
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="showDayRate" label="Show Day Rate" type="number" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="offDayRate" label="Off Day Rate" type="number" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="travelDayRate" label="Travel Day Rate" type="number" />
+                  <RosterMemberField member={member} updateRef={updateMemberRef} field="perDiemRate" label="Per Diem" type="number" />
 
                   <div style={{ marginTop: 16, textAlign: "right" as const }}>
                     <button
@@ -1135,6 +1099,56 @@ function InsuranceSection({
       >
         + Add policy
       </button>
+    </div>
+  );
+}
+
+// ── Roster Sub-Components (defined outside RosterSection to prevent remounting) ──
+
+function RosterSubLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: 14, marginBottom: 6, borderBottom: "1px solid #f0f0f0", paddingBottom: 4 }}>
+      {children}
+    </div>
+  );
+}
+
+function RosterMemberField({
+  member, updateRef, field, label, type, placeholder,
+}: {
+  member: any;
+  updateRef: React.RefObject<(id: string, field: string, value: unknown) => void>;
+  field: string;
+  label: string;
+  type?: string;
+  placeholder?: string;
+}) {
+  const [local, setLocal] = useState(String(member[field] ?? ""));
+  const prevRef = useRef(member[field]);
+
+  useEffect(() => {
+    if (member[field] !== prevRef.current) {
+      setLocal(String(member[field] ?? ""));
+      prevRef.current = member[field];
+    }
+  }, [member[field]]);
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, alignItems: "center", padding: "4px 0" }}>
+      <label style={{ fontSize: 11, color: "#888" }}>{label}</label>
+      <input
+        style={rowInputStyle}
+        type={type || "text"}
+        value={local}
+        placeholder={placeholder}
+        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => (e.target as HTMLInputElement).focus()}
+        onChange={(e) => setLocal(e.target.value)}
+        onBlur={() => {
+          const v = type === "number" ? (local ? parseFloat(local) : null) : (local || null);
+          updateRef.current(member.id, field, v);
+        }}
+      />
     </div>
   );
 }
