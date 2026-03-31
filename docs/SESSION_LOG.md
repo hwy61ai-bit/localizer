@@ -463,3 +463,15 @@ hwy61.ai → hwy61labs.com redirect live
 PostHog analytics with 6 events + user identify
 Mobile responsiveness pass across 8 pages
 Beta invite infrastructure with 10 codes for Tim
+
+DIY deal types flag enabled
+Post-login redirect fixed (later reverted to universal /dashboard)
+hwy61.ai → hwy61labs.com redirect live
+PostHog analytics installed (6 events + identify)
+Mobile responsiveness pass (8 pages)
+Beta invite infrastructure (10 codes)
+Supabase auth URLs cleaned up (Site URL + removed old redirects)
+Legal updates — ToS + Privacy Policy (April 1, 2026)
+Artist hub architecture — tabbed detail page, artist-filtered tours, DIY upgrade banner, admin test overrides
+Removed old TourRouter nav button
+Restored drive/fly toggle for off days
