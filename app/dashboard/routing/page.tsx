@@ -203,8 +203,7 @@ function RoutingListInner() {
           onClick={() => setShowModal(false)}
         >
           <div
-            className="fade-in"
-            className="dash-modal"
+            className="fade-in dash-modal"
             style={{ background: "#fff", borderRadius: 14, padding: 32, width: 420, maxWidth: "90vw", border: "1px solid #DDDDDD" }}
             onClick={(e) => e.stopPropagation()}
           >

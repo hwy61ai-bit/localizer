@@ -13,6 +13,39 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Beta invite gate
+  const [inviteCode, setInviteCode] = useState("");
+  const [inviteVerified, setInviteVerified] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
+  async function verifyInvite() {
+    if (!inviteCode.trim()) return;
+    setInviteLoading(true);
+    setInviteError(null);
+    try {
+      const resp = await fetch("/api/beta/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: inviteCode.trim() }),
+      });
+      const data = await resp.json();
+      if (data.valid) {
+        localStorage.setItem("beta_invite_code", inviteCode.trim());
+        setInviteVerified(true);
+      } else {
+        setInviteError("Invalid or already claimed invite code.");
+      }
+    } catch {
+      setInviteError("Could not verify code. Try again.");
+    }
+    setInviteLoading(false);
+  }
+
+  function skipToLogin() {
+    setInviteVerified(true);
+  }
+
   async function sendMagicLink() {
     setError(null);
     setLoading(true);
@@ -77,7 +110,9 @@ export default function LoginPage() {
             {productName}
           </div>
           <div className="login-subtitle" style={{ marginTop: 10, fontSize: 13, opacity: 0.7 }}>
-            Enter your email and we'll send you a sign-in link. No password needed.
+            {!inviteVerified
+              ? "Enter your beta invite code to get started."
+              : "Enter your email and we\u2019ll send you a sign-in link. No password needed."}
           </div>
         </div>
 
@@ -91,7 +126,72 @@ export default function LoginPage() {
             padding: 18,
           }}
         >
-          {!sent ? (
+          {!inviteVerified ? (
+            <>
+              <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
+                Invite Code
+              </div>
+              <input
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1px solid #DDDDDD",
+                  fontSize: 14,
+                  outline: "none",
+                  background: "#FFFFFF",
+                  color: "#111111",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+                placeholder="XXXX-XXXX"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !inviteLoading && verifyInvite()}
+                disabled={inviteLoading}
+              />
+              <button
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  marginTop: 12,
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border: "1px solid #111111",
+                  background: "#111111",
+                  color: "#FFFFFF",
+                  fontWeight: 900,
+                  cursor: !inviteCode.trim() || inviteLoading ? "not-allowed" : "pointer",
+                  opacity: !inviteCode.trim() || inviteLoading ? 0.55 : 1,
+                }}
+                disabled={!inviteCode.trim() || inviteLoading}
+                onClick={verifyInvite}
+              >
+                {inviteLoading ? "Verifying\u2026" : "Verify"}
+              </button>
+              {inviteError && (
+                <p style={{ marginTop: 12, fontSize: 13, color: "#B00020" }}>
+                  {inviteError}
+                </p>
+              )}
+              <div style={{ marginTop: 16, textAlign: "center" }}>
+                <button
+                  onClick={skipToLogin}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: 12,
+                    color: "#999",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Team Login
+                </button>
+              </div>
+            </>
+          ) : !sent ? (
             <>
               <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
                 Email
@@ -131,7 +231,7 @@ export default function LoginPage() {
                 disabled={!email || loading}
                 onClick={sendMagicLink}
               >
-                {loading ? "Sending…" : "Send login link"}
+                {loading ? "Sending\u2026" : "Send login link"}
               </button>
 
               <div style={{ margin: "16px 0", textAlign: "center", fontSize: 12, color: "#999" }}>OR</div>
