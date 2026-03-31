@@ -272,7 +272,6 @@ export default function RouteTourPage() {
     const legInfos: (LegInfo | null)[] = shows.map((s, i) => {
       if (i === 0) return null;
       const prev = shows[i - 1];
-      if (s.is_off || prev.is_off) return null;
       const driveKey = buildDriveDataKey(prev.city || "", s.city || "");
       const cached = driveData[driveKey];
       const km = cached ? cached.distanceKm : getRoadKm(prev.city, prev.country, s.city, s.country);
@@ -1041,8 +1040,7 @@ export default function RouteTourPage() {
                 </thead>
                 <tbody>
                   {shows.map((s, i) => {
-                    const prevIsOff = i > 0 && shows[i - 1].is_off;
-                    const leg = (i > 0 && !s.is_off && !prevIsOff) ? legs[i] : null;
+                    const leg = i > 0 ? legs[i] : null;
                     const flying = legChoices[i] === "fly";
                     const suggestFly = leg && leg.driveH !== null && leg.driveH > flightThreshold;
                     const showNum = shows.slice(0, i + 1).filter((x) => !x.is_off).length;

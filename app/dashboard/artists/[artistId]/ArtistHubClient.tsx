@@ -111,9 +111,20 @@ export default function ArtistHubClient({
     );
   }
 
+  const backLink = (
+    <div style={{ padding: "16px 24px 0" }}>
+      <a href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>&larr; HWY61 LABS</a>
+    </div>
+  );
+
   // Localizer only — no tabs, render directly
   if (access.hasLocalizer && !access.hasTourRouter) {
-    return <ArtistDetailClient artistId={artistId} />;
+    return (
+      <div style={{ minHeight: "100vh", background: "#F7F7F5" }}>
+        {backLink}
+        <ArtistDetailClient artistId={artistId} />
+      </div>
+    );
   }
 
   // TourRouter only or both — show tabs
@@ -125,6 +136,7 @@ export default function ArtistHubClient({
 
   return (
     <div style={{ minHeight: "100vh", background: "#F7F7F5" }}>
+      {backLink}
       {/* Tab bar */}
       <div style={{
         background: "#fff", borderBottom: "1px solid #DDDDDD",
