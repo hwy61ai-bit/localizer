@@ -456,3 +456,10 @@ Post-login redirect fixed for TourRouter/DIY
 hwy61.ai → hwy61labs.com redirect live (DNS transferred to Vercel)
 PostHog analytics installed with 6 key events + user identify
 Full mobile responsiveness pass across 8 pages
+
+DIY deal types flag enabled
+Post-login redirect fixed for TourRouter/DIY
+hwy61.ai → hwy61labs.com redirect live
+PostHog analytics with 6 events + user identify
+Mobile responsiveness pass across 8 pages
+Beta invite infrastructure with 10 codes for Tim
