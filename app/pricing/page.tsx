@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
+import "./pricing.css";
 
 const PLANS = [
   {
@@ -69,7 +70,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#EEEEEE", padding: "48px 24px 80px" }}>
+    <div className="pricing-page" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "48px 24px 80px" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
 
         <div style={{ marginBottom: 24 }}>
@@ -77,18 +78,18 @@ export default function PricingPage() {
         </div>
 
         {trialExpired && (
-          <div style={{ background: "#111", color: "#fff", borderRadius: 12, padding: "16px 24px", marginBottom: 32, textAlign: "center", fontSize: 14, fontWeight: 700 }}>
+          <div className="pricing-trial-banner" style={{ background: "#111", color: "#fff", borderRadius: 12, padding: "16px 24px", marginBottom: 32, textAlign: "center", fontSize: 14, fontWeight: 700 }}>
             Your 7-day trial has ended. Choose a plan to keep access to your tours and assets.
           </div>
         )}
 
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
+        <div className="pricing-header" style={{ textAlign: "center", marginBottom: 48 }}>
           <h1 className="brand-title" style={{ margin: 0, marginBottom: 12 }}>LOCALIZER</h1>
-          <div style={{ fontSize: 28, fontWeight: 900, color: "#111", marginBottom: 8 }}>
+          <div className="pricing-headline" style={{ fontSize: 28, fontWeight: 900, color: "#111", marginBottom: 8 }}>
             Simple, transparent pricing
           </div>
-          <div style={{ fontSize: 15, color: "#666", marginBottom: 28 }}>
+          <div className="pricing-subline" style={{ fontSize: 15, color: "#666", marginBottom: 28 }}>
             Tour dates in. Tour Assets out.
           </div>
 
@@ -131,7 +132,7 @@ export default function PricingPage() {
         </div>
 
         {/* Plans grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+        <div className="pricing-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {PLANS.map((plan) => {
             const priceId = annual ? plan.annualPriceId : plan.monthlyPriceId;
             const price = annual ? plan.annualPrice : plan.monthlyPrice;
@@ -140,6 +141,7 @@ export default function PricingPage() {
             return (
               <div
                 key={plan.name}
+                className="pricing-card"
                 style={{
                   background: plan.highlight ? "#111" : "#fff",
                   border: plan.highlight ? "1px solid #111" : "1px solid #ddd",
@@ -180,7 +182,7 @@ export default function PricingPage() {
                   </div>
 
                   <div style={{ marginBottom: 24 }}>
-                    <span style={{ fontSize: 42, fontWeight: 900, color: plan.highlight ? "#fff" : "#111", letterSpacing: -1 }}>
+                    <span className="pricing-price" style={{ fontSize: 42, fontWeight: 900, color: plan.highlight ? "#fff" : "#111", letterSpacing: -1 }}>
                       ${price}
                     </span>
                     <span style={{ fontSize: 13, color: plan.highlight ? "#888" : "#999", marginLeft: 4 }}>
@@ -199,6 +201,7 @@ export default function PricingPage() {
                 </div>
 
                 <button
+                  className="pricing-cta"
                   onClick={() => handleCheckout(priceId, plan.name)}
                   disabled={isLoading}
                   style={{

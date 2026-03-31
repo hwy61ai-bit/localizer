@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
 import TourTile from "./TourTile";
+import "./dashboard.css";
 
 type TourStat = {
   count: number;
@@ -120,13 +121,13 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px 80px" }}>
+    <div className="dash-page" style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
+        <div className="dash-header" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
           <div>
-            <div style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}>{!isDiy && <a href="/dashboard/routing" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>TourRouter &rarr;</a>}<a href="/account" style={{ fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: "#111", padding: "8px 16px", borderRadius: 999 }}>Account</a></div><h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
-            <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
+            <div className="dash-header-nav" style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}>{!isDiy && <a href="/dashboard/routing" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>TourRouter &rarr;</a>}<a href="/account" style={{ fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: "#111", padding: "8px 16px", borderRadius: 999 }}>Account</a></div><h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
+            <h2 className="brand-title dash-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>
               {artists.length} artist{artists.length !== 1 ? "s" : ""}
             </div>
@@ -134,7 +135,7 @@ export default async function DashboardPage() {
 
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+        <div className="dash-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
 
           {artists.map((artist) => {
             const dateRange: string | null = null;
@@ -155,7 +156,7 @@ export default async function DashboardPage() {
           })}
 
           <form action={createArtist}>
-            <button type="submit" style={{
+            <button className="dash-add-btn" type="submit" style={{
               width: "100%",
               aspectRatio: "1 / 1",
               background: "transparent",

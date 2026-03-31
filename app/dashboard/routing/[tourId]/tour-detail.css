@@ -1,0 +1,107 @@
+@media (max-width: 768px) {
+  /* Page wrapper */
+  .td-page {
+    padding: 24px 14px 60px !important;
+  }
+
+  /* Header */
+  .td-header-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  .td-tour-name {
+    font-size: 240% !important;
+  }
+  .td-nav {
+    flex: unset !important;
+    justify-content: flex-start !important;
+    width: 100%;
+  }
+  .td-nav-pills {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    width: 100%;
+  }
+  .td-push-col {
+    align-items: flex-start !important;
+    width: 100%;
+  }
+
+  /* Stat cards */
+  .td-stats {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+    gap: 8px !important;
+  }
+  .td-stat-value {
+    font-size: 16px !important;
+  }
+
+  /* Action bar */
+  .td-actions {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  /* Settings panel grids */
+  .td-settings-grid-5 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .td-commission-row {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Route table: horizontal scroll */
+  .td-table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -14px;
+    padding: 0 14px;
+  }
+  .td-table-wrap table {
+    min-width: 700px;
+  }
+
+  /* Drawer */
+  .td-drawer {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .td-drawer-header {
+    padding: 16px 18px !important;
+  }
+
+  /* Add Show modal */
+  .td-add-modal {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    padding: 20px !important;
+  }
+  .td-add-modal-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .td-add-modal-actions {
+    flex-direction: column !important;
+  }
+  .td-add-modal-actions button {
+    width: 100%;
+  }
+
+  /* Delete confirm modal */
+  .td-delete-modal {
+    width: 90vw !important;
+    padding: 20px !important;
+  }
+
+  /* Guest list add form */
+  .td-guest-add-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .td-guest-add-grid > div[style*="width: 44"] {
+    width: 100% !important;
+  }
+  .td-guest-add-grid > div[style*="width: 80"] {
+    width: 100% !important;
+  }
+}

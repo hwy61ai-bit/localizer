@@ -1,0 +1,33 @@
+@media (max-width: 768px) {
+  .assets-page-header {
+    padding: 20px 16px !important;
+  }
+  .assets-page-header-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  .assets-page-title {
+    font-size: 48px !important;
+  }
+  .assets-page-subtitle {
+    font-size: 240% !important;
+  }
+  .assets-page-nav {
+    justify-content: flex-start !important;
+  }
+  .assets-page-body {
+    padding: 24px 16px !important;
+  }
+  .assets-tips-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .assets-format-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+    gap: 16px !important;
+  }
+  .assets-section-label {
+    font-size: 15px !important;
+  }
+}

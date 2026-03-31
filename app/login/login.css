@@ -1,0 +1,14 @@
+@media (max-width: 768px) {
+  .brand-title-login {
+    font-size: clamp(42px, 12vw, 92px) !important;
+  }
+  .login-container {
+    padding: 16px !important;
+  }
+  .login-card {
+    padding: 16px !important;
+  }
+  .login-subtitle {
+    font-size: 12px !important;
+  }
+}

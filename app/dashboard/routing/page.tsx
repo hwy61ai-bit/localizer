@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
+import "../dashboard.css";
 
 type RoutingTour = {
   id: string;
@@ -111,13 +112,13 @@ function RoutingListInner() {
   }
 
   return (
-    <div className="fade-in" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
+    <div className="fade-in dash-page" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
+        <div className="dash-header" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
           <div>
             {!branding.isDiy && <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Localizer</Link>}
             <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>{branding.name}</h1>
-            <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>YOUR TOURS</h2>
+            <h2 className="brand-title dash-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>YOUR TOURS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>{tours.length} tour{tours.length !== 1 ? "s" : ""}</div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
@@ -162,7 +163,7 @@ function RoutingListInner() {
         ) : loading ? (
           <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading...</div>
         ) : (
-          <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+          <div className="stagger dash-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
             {tours.map((tour) => (
               <RoutingTourTile
                 key={tour.id}
@@ -172,6 +173,7 @@ function RoutingListInner() {
             ))}
 
             <button
+              className="dash-add-btn"
               onClick={() => setShowModal(true)}
               style={{
                 width: "100%",
@@ -202,10 +204,11 @@ function RoutingListInner() {
         >
           <div
             className="fade-in"
+            className="dash-modal"
             style={{ background: "#fff", borderRadius: 14, padding: 32, width: 420, maxWidth: "90vw", border: "1px solid #DDDDDD" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 20, letterSpacing: "-0.3px" }}>New Routing Tour</div>
+            <div className="dash-modal-title" style={{ fontSize: 20, fontWeight: 800, marginBottom: 20, letterSpacing: "-0.3px" }}>New Routing Tour</div>
 
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 12, fontWeight: 600, color: "#888", display: "block", marginBottom: 6 }}>Tour Name</label>
@@ -232,7 +235,7 @@ function RoutingListInner() {
               </select>
             </div>
 
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+            <div className="dash-modal-actions" style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button
                 onClick={() => setShowModal(false)}
                 style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", fontWeight: 700, fontSize: 13, cursor: "pointer" }}

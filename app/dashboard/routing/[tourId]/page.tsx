@@ -32,6 +32,7 @@ import {
 import type { Commission } from "@/lib/tourrouter/commissions";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
 import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
+import "./tour-detail.css";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -656,19 +657,19 @@ export default function RouteTourPage() {
   return (
     <IntakeDropZone tourId={tourId} showId={drawerShow?.id} shows={intakeShowOptions} onSaved={reloadTour}>
     <>
-    <div className="fade-in" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
+    <div className="fade-in td-page" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #DDDDDD" }}>
           <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Back to Tours</Link>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div className="td-header-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
               <div style={{ borderBottom: "2px solid #111111", marginBottom: 6 }} />
-              <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>{loading ? "\u2014" : tour?.name?.toUpperCase() || "TOUR"}</div>
+              <div className="brand-title td-tour-name" style={{ margin: 0, fontSize: "360%" }}>{loading ? "\u2014" : tour?.name?.toUpperCase() || "TOUR"}</div>
             </div>
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #DDDDDD", borderRadius: 12, padding: 8 }}>
+            <div className="td-nav" style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              <div className="td-nav-pills" style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #DDDDDD", borderRadius: 12, padding: 8 }}>
                 {navItems.map((item) => (
                   <Link
                     key={item.num}
@@ -686,7 +687,7 @@ export default function RouteTourPage() {
             </div>
             {/* Push to Localizer */}
             {shows.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+              <div className="td-push-col" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                 <button
                   onClick={pushToLocalizer}
                   disabled={pushing}
@@ -715,11 +716,11 @@ export default function RouteTourPage() {
         </div>
 
         {/* Stat Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
+        <div className="td-stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
           {statCards.map((card) => (
             <div key={card.label} style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: "14px 16px" }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>{card.label}</div>
-              <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "monospace", color: card.color || "#111" }}>{card.value}</div>
+              <div className="td-stat-value" style={{ fontSize: 20, fontWeight: 800, fontFamily: "monospace", color: card.color || "#111" }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -745,7 +746,7 @@ export default function RouteTourPage() {
                   {showLegacyVehicle ? "Hide" : "Show"} legacy single-vehicle settings {showLegacyVehicle ? "\u25bc" : "\u25b6"}
                 </div>
                 {showLegacyVehicle && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
+                  <div className="td-settings-grid-5" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
                     <div>
                       <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Vehicle</label>
                       <select value={tour.vehicle_type || "van"} onChange={(e) => { const v = e.target.value; updateTourSetting("vehicle_type", v); const mpgDefaults: Record<string, number> = { van: 18, e350: 14, minibus: 12, bus: 6, truck: 10, car: 28 }; if (mpgDefaults[v]) updateTourSetting("mpg", mpgDefaults[v]); }} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}>
@@ -901,7 +902,7 @@ export default function RouteTourPage() {
                     }
 
                     return (
-                      <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr 140px 1fr 100px 60px 40px 30px", gap: 6, alignItems: "end", marginBottom: 8, padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
+                      <div key={c.id} className="td-commission-row" style={{ display: "grid", gridTemplateColumns: "1fr 140px 1fr 100px 60px 40px 30px", gap: 6, alignItems: "end", marginBottom: 8, padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
                         <div>
                           <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>Label</div>
                           <input value={c.label || ""} onChange={(e) => updateCommission("label", e.target.value)} placeholder="e.g. Booking Agent" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, outline: "none" }} />
@@ -987,7 +988,7 @@ export default function RouteTourPage() {
         )}
 
         {/* Action bar */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <div className="td-actions" style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <button
             onClick={() => setShowAddModal(true)}
             style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer" }}
@@ -1029,7 +1030,7 @@ export default function RouteTourPage() {
         {shows.length > 0 && (
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, overflow: "hidden" }}>
             {/* Table header */}
-            <div style={{ overflowX: "auto" }}>
+            <div className="td-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
@@ -1083,7 +1084,7 @@ export default function RouteTourPage() {
       {drawerShow !== null && (
         <>
           <div onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 900 }} />
-          <div style={{
+          <div className="td-drawer" style={{
             position: "fixed", top: 0, right: 0, bottom: 0, width: 460, maxWidth: "90vw",
             background: "#fff", zIndex: 901, overflowY: "auto",
             boxShadow: "-4px 0 24px rgba(0,0,0,0.12)",
@@ -1091,7 +1092,7 @@ export default function RouteTourPage() {
           }}>
             <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
             {/* Drawer header */}
-            <div style={{ padding: "20px 24px", borderBottom: "1px solid #DDDDDD", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+            <div className="td-drawer-header" style={{ padding: "20px 24px", borderBottom: "1px solid #DDDDDD", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
                   <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{drawerShow.event || "Show Detail"}</div>
@@ -1429,7 +1430,7 @@ export default function RouteTourPage() {
                           )}
 
                           {addingGuest ? (
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 6, alignItems: "end" }}>
+                            <div className="td-guest-add-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 6, alignItems: "end" }}>
                               <div>
                                 <label style={{ fontSize: 10, color: "#aaa", display: "block", marginBottom: 2 }}>Name</label>
                                 <input value={newGuest.name} onChange={(e) => setNewGuest((p) => ({ ...p, name: e.target.value }))} placeholder="Guest name" onKeyDown={(e) => e.key === "Enter" && addGuest()} style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none" }} />
@@ -1471,12 +1472,12 @@ export default function RouteTourPage() {
       {showAddModal && (
         <>
           <div onClick={() => setShowAddModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 900 }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 480, maxWidth: "90vw", background: "#fff", borderRadius: 14, padding: 24, zIndex: 901, boxShadow: "0 12px 40px rgba(0,0,0,0.15)" }}>
+          <div className="td-add-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 480, maxWidth: "90vw", background: "#fff", borderRadius: 14, padding: 24, zIndex: 901, boxShadow: "0 12px 40px rgba(0,0,0,0.15)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <div style={{ fontSize: 16, fontWeight: 800 }}>Add Show</div>
               <button onClick={() => setShowAddModal(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888" }}>&times;</button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="td-add-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <div>
                 <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Date</label>
                 <input type="date" value={newShow.date_iso} onChange={(e) => setNewShow((p) => ({ ...p, date_iso: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
@@ -1508,7 +1509,7 @@ export default function RouteTourPage() {
                 </select>
               </div>
             </div>
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <div className="td-add-modal-actions" style={{ marginTop: 16, display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button onClick={() => setShowAddModal(false)} style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Cancel</button>
               <button onClick={saveNewShow} disabled={addingSaving} style={{ padding: "8px 20px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: addingSaving ? 0.5 : 1 }}>{addingSaving ? "Saving..." : "Add Show"}</button>
             </div>
@@ -1520,7 +1521,7 @@ export default function RouteTourPage() {
       {deleteConfirmId && (
         <>
           <div onClick={() => setDeleteConfirmId(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 900 }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 360, background: "#fff", borderRadius: 14, padding: 24, zIndex: 901, boxShadow: "0 12px 40px rgba(0,0,0,0.15)" }}>
+          <div className="td-delete-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 360, background: "#fff", borderRadius: 14, padding: 24, zIndex: 901, boxShadow: "0 12px 40px rgba(0,0,0,0.15)" }}>
             <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>Delete Show</div>
             <div style={{ fontSize: 13, color: "#666", marginBottom: 20 }}>Are you sure? This cannot be undone.</div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>

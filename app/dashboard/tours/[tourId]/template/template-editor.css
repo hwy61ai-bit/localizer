@@ -1,0 +1,41 @@
+.template-mobile-gate {
+  display: none;
+}
+
+.template-editor-content {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .template-mobile-gate {
+    display: flex !important;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    background: #EEEEEE;
+    text-align: center;
+  }
+  .template-mobile-gate-inner {
+    max-width: 340px;
+  }
+  .template-mobile-gate-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+  .template-mobile-gate-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 8px;
+  }
+  .template-mobile-gate-msg {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.6;
+  }
+  .template-editor-content {
+    display: none !important;
+  }
+}

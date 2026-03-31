@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { getProductName } from "@/lib/tourrouter/productBranding";
 import posthog from "posthog-js";
+import "./login.css";
 
 export default function LoginPage() {
   const productName = useMemo(() => getProductName(), []);
@@ -52,6 +53,7 @@ export default function LoginPage() {
 
   return (
     <main
+      className="login-container"
       style={{
         minHeight: "100vh",
         display: "grid",
@@ -74,13 +76,14 @@ export default function LoginPage() {
           >
             {productName}
           </div>
-          <div style={{ marginTop: 10, fontSize: 13, opacity: 0.7 }}>
+          <div className="login-subtitle" style={{ marginTop: 10, fontSize: 13, opacity: 0.7 }}>
             Enter your email and we'll send you a sign-in link. No password needed.
           </div>
         </div>
 
         {/* Card */}
         <div
+          className="login-card"
           style={{
             border: "1px solid #DDDDDD",
             borderRadius: 14,

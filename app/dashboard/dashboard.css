@@ -1,0 +1,38 @@
+@media (max-width: 768px) {
+  .dash-page {
+    padding: 24px 16px 60px !important;
+  }
+  .dash-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+  .dash-header-nav {
+    position: static !important;
+    order: -1;
+    width: 100%;
+    justify-content: flex-end !important;
+  }
+  .dash-title {
+    font-size: 240% !important;
+  }
+  .dash-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 12px !important;
+  }
+  .dash-add-btn span:first-child {
+    font-size: 80px !important;
+  }
+  .dash-modal {
+    padding: 24px 20px !important;
+  }
+  .dash-modal-title {
+    font-size: 18px !important;
+  }
+  .dash-modal-actions {
+    flex-direction: column !important;
+  }
+  .dash-modal-actions button {
+    width: 100%;
+  }
+}
