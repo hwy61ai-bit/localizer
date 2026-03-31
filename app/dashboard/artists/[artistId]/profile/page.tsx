@@ -874,6 +874,8 @@ function RosterSection({
           type={type || "text"}
           value={local}
           placeholder={placeholder}
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => (e.target as HTMLInputElement).focus()}
           onChange={(e) => setLocal(e.target.value)}
           onBlur={() => {
             const v = type === "number" ? (local ? parseFloat(local) : null) : (local || null);
@@ -929,7 +931,7 @@ function RosterSection({
                 </div>
               </div>
               {isOpen && (
-                <div style={{ padding: "0 16px 16px" }}>
+                <div style={{ padding: "0 16px 16px" }} onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                   <SubLabel>Identity</SubLabel>
                   <MF member={member} field="legalName" label="Legal Name" />
                   <MF member={member} field="preferredName" label="Preferred Name" />
