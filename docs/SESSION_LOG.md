@@ -450,3 +450,9 @@ Subdomain-aware product branding across all pages
 Login page dynamic per subdomain
 Login input overflow fixed
 "HWY61 LABS" wordmark animation on landing page
+
+DIY deal types flag enabled
+Post-login redirect fixed for TourRouter/DIY
+hwy61.ai → hwy61labs.com redirect live (DNS transferred to Vercel)
+PostHog analytics installed with 6 key events + user identify
+Full mobile responsiveness pass across 8 pages
