@@ -12,8 +12,8 @@ function getRewriteForHost(hostname: string): string | null {
     return null;
   }
 
-  // Localizer dashboard (new domain + legacy domain during transition)
-  if (host === "localizer.hwy61labs.com" || host === "localizer.hwy61.ai") {
+  // Localizer dashboard
+  if (host === "localizer.hwy61labs.com") {
     return "/dashboard";
   }
 

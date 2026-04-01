@@ -26,6 +26,20 @@ type Contact = {
 const ROLES = ["Promoter", "Agent", "Manager", "Production", "TM", "BM", "Venue", "Label", "Publicist", "Attorney", "Other"];
 const FILTER_ROLES = ["All", "Promoter", "Agent", "Manager", "Production", "Venue", "Other"];
 
+function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 2 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          onClick={() => onChange(n)}
+          style={{ cursor: "pointer", fontSize: 18, color: n <= value ? "#f0c040" : "#ddd" }}
+        >{n <= value ? "\u2605" : "\u2606"}</span>
+      ))}
+    </div>
+  );
+}
+
 export default function ContactsPage() {
   const branding = useProductBranding();
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -142,20 +156,6 @@ export default function ContactsPage() {
     }
   }
 
-  function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-    return (
-      <div style={{ display: "flex", gap: 2 }}>
-        {[1, 2, 3, 4, 5].map((n) => (
-          <span
-            key={n}
-            onClick={() => onChange(n)}
-            style={{ cursor: "pointer", fontSize: 18, color: n <= value ? "#f0c040" : "#ddd" }}
-          >{n <= value ? "\u2605" : "\u2606"}</span>
-        ))}
-      </div>
-    );
-  }
-
   const inputStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box", padding: "8px 10px",
     border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none",
@@ -166,7 +166,7 @@ export default function ContactsPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
-          <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {branding.name}</Link>
+          <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {branding.name}</Link>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
               <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>

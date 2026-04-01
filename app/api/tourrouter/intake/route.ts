@@ -3,6 +3,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildDocumentTypePrompt } from "@/lib/tourrouter/prompts/documentTypePrompt";
 import { PARSE_PROMPTS } from "@/lib/tourrouter/prompts/parsePrompts";
+import { createNotification } from "@/lib/notifications";
 
 const client = new Anthropic();
 
@@ -202,6 +203,25 @@ Respond ONLY with JSON: { "showId": "<id or null>", "confidence": <0.0-1.0>, "re
   } catch (e) {
     console.error("[Intake] Storage error:", e);
   }
+
+  // ── Notify org members ──────────────────────────────────────
+  let notifyBody = `${documentType} parsed`;
+  if (matchedShowId) {
+    const { data: show } = await supabase
+      .from("tour_shows")
+      .select("city, venue")
+      .eq("id", matchedShowId)
+      .single();
+    if (show?.city) notifyBody += ` for ${show.city}${show.venue ? ` (${show.venue})` : ""}`;
+  }
+  createNotification({
+    supabase,
+    orgId: membership.org_id,
+    type: "document_parsed",
+    title: "Document processed",
+    body: notifyBody,
+    link: `/dashboard/routing/${tourId}`,
+  });
 
   // ── Return staged result (NEVER writes to DB) ──────────────
   const result: IntakeResult = {

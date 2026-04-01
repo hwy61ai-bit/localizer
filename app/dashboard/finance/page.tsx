@@ -157,7 +157,7 @@ export default function FinanceDashboard() {
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
-          <Link href="/dashboard/routing" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {branding.name}</Link>
+          <Link href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {branding.name}</Link>
           <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
           <div style={{ borderBottom: "2px solid #111", marginBottom: 6, maxWidth: 200 }} />
           <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>FINANCE DASHBOARD</div>
@@ -167,7 +167,7 @@ export default function FinanceDashboard() {
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Finance Dashboard</div>
             <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Multi-tour financial tracking and reporting is available with TourRouter.</div>
-            <Link href="/dashboard/routing" style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Back to Tours</Link>
+            <Link href="/dashboard" style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Back to Tours</Link>
           </div>
         ) : loading ? (
           <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading...</div>
@@ -175,7 +175,7 @@ export default function FinanceDashboard() {
           <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
             <div style={{ fontSize: 16, fontWeight: 700, color: "#888", marginBottom: 12 }}>No tours yet</div>
             <div style={{ fontSize: 13, color: "#aaa", marginBottom: 20 }}>Create a tour in TourRouter to see financial data here.</div>
-            <Link href="/dashboard/routing" style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Go to TourRouter</Link>
+            <Link href="/dashboard" style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Go to TourRouter</Link>
           </div>
         ) : (
           <>
