@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
 import TourTile from "./TourTile";
+import NotificationBell from "@/app/components/NotificationBell";
 import "./dashboard.css";
 
 type TourStat = {
@@ -126,7 +127,7 @@ export default async function DashboardPage() {
 
         <div className="dash-header" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
           <div>
-            <div className="dash-header-nav" style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}><a href="/account" style={{ fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: "#111", padding: "8px 16px", borderRadius: 999 }}>Account</a></div><h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>HWY61 LABS</h1>
+            <div className="dash-header-nav" style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}><NotificationBell /><a href="/account" style={{ fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: "#111", padding: "8px 16px", borderRadius: 999 }}>Account</a></div><h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>HWY61 LABS</h1>
             <h2 className="brand-title dash-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>
               {artists.length} artist{artists.length !== 1 ? "s" : ""}

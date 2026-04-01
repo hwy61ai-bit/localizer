@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
+import NotificationBell from "@/app/components/NotificationBell";
 import "../dashboard.css";
 
 type RoutingTour = {
@@ -121,7 +122,8 @@ function RoutingListInner() {
             <h2 className="brand-title dash-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>YOUR TOURS</h2>
             <div style={{ fontSize: 13, color: "#888" }}>{tours.length} tour{tours.length !== 1 ? "s" : ""}</div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <NotificationBell />
             <button onClick={openBillingPortal} style={{ fontSize: 12, color: "#888", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Manage Subscription</button>
           </div>
         </div>
