@@ -261,7 +261,7 @@ export default function ArtistProfilePage() {
                 onMouseLeave={() => setLogoHovered(false)}
                 onClick={() => logoFileRef.current?.click()}
                 style={{
-                  width: 72, height: 72, borderRadius: "50%",
+                  width: 72, height: 72, borderRadius: 12,
                   background: "#f5f5f5",
                   border: artist.logo_url ? "2px solid #DDDDDD" : "2px dashed #ccc",
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -282,7 +282,7 @@ export default function ArtistProfilePage() {
                       <div style={{
                         position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        borderRadius: "50%",
+                        borderRadius: 12,
                       }}>
                         <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>Replace</span>
                       </div>
@@ -294,6 +294,9 @@ export default function ArtistProfilePage() {
                     <div style={{ fontSize: 7, fontWeight: 700, color: "#bbb", textTransform: "uppercase" }}>Logo</div>
                   </div>
                 )}
+              </div>
+              <div style={{ fontSize: 9, color: "#999", marginTop: 6, textAlign: "center", maxWidth: 72 }}>
+                Upload a transparent .PNG for best results
               </div>
             </div>
 
