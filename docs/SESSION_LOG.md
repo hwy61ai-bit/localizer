@@ -475,3 +475,32 @@ Legal updates — ToS + Privacy Policy (April 1, 2026)
 Artist hub architecture — tabbed detail page, artist-filtered tours, DIY upgrade banner, admin test overrides
 Removed old TourRouter nav button
 Restored drive/fly toggle for off days
+
+DIY deal types flag enabled — set DIY_FLAGS.dealTypes to true so DIY users get all 14 deal types
+Post-login redirect fixed — TourRouter/DIY users redirect to /dashboard/routing after login (later reverted to universal /dashboard after architecture change)
+hwy61.ai → hwy61labs.com redirect — transferred DNS nameservers from Squarespace to Vercel, 301 redirect live
+PostHog analytics installed — provider component, production-only init, posthog.identify() on login, 6 key events tracked (user_logged_in, tour_created, show_added, document_dropped, export_generated, upgrade_clicked)
+Mobile responsiveness pass — all 8 major pages (landing, login, pricing, dashboard, routing, tour detail, assets, template editor mobile gate)
+Beta invite infrastructure — beta_invites table, validate/claim API routes, login page gated behind invite code, "Team Login" bypass, 10 codes generated for Tim
+Supabase auth cleanup — Site URL changed to hwy61labs.com, removed old localizer-two.vercel.app and hwy61.ai redirect URLs
+Legal updates (Phase 7L) — ToS and Privacy Policy updated for hwy61labs.com, all three products, Mapbox + PostHog added to third-party services, effective date April 1, 2026
+Build status doc created — full phase-by-phase status with checkmarks for Tim
+Tim's forward plan integrated — Merch and Agency removed from scope, 4-week beta sprint plan added to project knowledge and repo
+Artist hub architecture — tabbed detail page with "TourRouter / Management" and "Localizer / Assets" tabs, subscription-aware rendering, admin test view overrides (?view=localizer/tourrouter/diy)
+Artist-filtered tours — new ArtistToursClient component showing only tours for the selected artist, tour creation pre-sets artist_id
+DIY upgrade banner — subtle upgrade prompt on DIY artist hub
+Removed old TourRouter nav button from dashboard header
+Restored drive/fly toggle for off days — bands travel on off days, leg computation and UI re-enabled
+Master Artist Profile rebuilt — new top section (logo upload, bio, team contacts, advance materials), 8 accordion sections (roster, vehicles, hospitality, promo, business entity, tax, insurance, technical production), auto-save with debounce
+Gear icon on artist tiles — links to profile page, change photo moved to bottom of tile
+Roster field bugs fixed — extracted RosterMemberField to module level to prevent remount, fixed click propagation for input focus
+Branding fix — routing pages show "TOURROUTER" regardless of hostname (pathname-based override)
+ArtistDetailClient stripped down — removed all artist info, contacts, logo, advance materials, save button, master profile button. Now a clean 100-line tours-only grid.
+Dashboard header updated — "LOCALIZER" → "HWY61 LABS"
+
+Still on the list for next session:
+
+Default roster → tour roster population (profile roster pre-fills new tours)
+Tim's Week 1: Marketing site + legal (legal done, marketing site needs Tim's copy)
+Tim's Week 2: Onboarding wizard + notifications
+Master Artist Profile design review with Tim (mockups sent)
