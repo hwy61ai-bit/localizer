@@ -241,6 +241,13 @@ export default function ArtistProfilePage() {
           </div>
         </div>
 
+        <style>{`
+          @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+
         {/* ══════ Header ══════ */}
         <div style={{
           background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14,
@@ -307,9 +314,11 @@ export default function ArtistProfilePage() {
                 onChange={(e) => updateField("name", e.target.value)}
                 placeholder="Artist Name"
                 style={{
-                  fontSize: 28, fontWeight: 900, letterSpacing: "-0.02em",
+                  fontSize: 36, fontWeight: 900, letterSpacing: "0.07em",
+                  textTransform: "uppercase" as const,
                   border: "none", outline: "none", background: "transparent",
                   color: "#111", width: "100%", padding: 0, marginBottom: 4,
+                  animation: "fadeSlideUp 0.5s ease-out both",
                 }}
               />
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
