@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
 import TourTile from "./TourTile";
 import NotificationBell from "@/app/components/NotificationBell";
+import OnboardingGate from "@/app/components/OnboardingGate";
 import "./dashboard.css";
 
 type TourStat = {
@@ -122,6 +123,7 @@ export default async function DashboardPage() {
   }
 
   return (
+    <OnboardingGate artistCount={artists.length}>
     <div className="dash-page" style={{ minHeight: "100vh", background: "#F7F7F5", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
@@ -179,5 +181,6 @@ export default async function DashboardPage() {
         </div>
       </div>
     </div>
+    </OnboardingGate>
   );
 }
