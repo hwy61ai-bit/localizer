@@ -246,10 +246,6 @@ export default function ArtistProfilePage() {
             from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
           }
-          @keyframes underlineDraw {
-            from { width: 0; }
-            to { width: 100%; }
-          }
         `}</style>
 
         {/* ══════ Header ══════ */}
@@ -318,22 +314,13 @@ export default function ArtistProfilePage() {
                 onChange={(e) => updateField("name", e.target.value)}
                 placeholder="Artist Name"
                 style={{
-                  fontSize: 36, fontWeight: 900, letterSpacing: "0.07em",
+                  fontSize: 36, fontWeight: 900, letterSpacing: "-1px",
                   textTransform: "uppercase" as const,
-                  border: "none", outline: "none",
-                  background: "linear-gradient(90deg, #1a1a2e, #3b82f6)",
-                  WebkitBackgroundClip: "text", backgroundClip: "text",
-                  color: "transparent",
-                  width: "100%", padding: 0, marginBottom: 4,
+                  border: "none", outline: "none", background: "transparent",
+                  color: "#111", width: "100%", padding: 0, marginBottom: 4,
                   animation: "fadeSlideUp 0.5s ease-out both",
                 }}
               />
-              <div style={{
-                height: 2,
-                background: "linear-gradient(90deg, #1a1a2e, #3b82f6)",
-                animation: "underlineDraw 0.4s ease-out 0.4s both",
-                marginBottom: 8,
-              }} />
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 11, color: "#999", flexShrink: 0 }}>Spotify</span>
                 <input
