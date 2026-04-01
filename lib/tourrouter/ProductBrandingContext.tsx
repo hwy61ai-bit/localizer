@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { getProductContext } from "./productBranding";
 
 type ProductBranding = ReturnType<typeof getProductContext>;
@@ -15,7 +16,8 @@ const defaultContext: ProductBranding = {
 const ProductBrandingContext = createContext<ProductBranding>(defaultContext);
 
 export function ProductBrandingProvider({ children }: { children: ReactNode }) {
-  const branding = useMemo(() => getProductContext(), []);
+  const pathname = usePathname();
+  const branding = useMemo(() => getProductContext(pathname), [pathname]);
   return (
     <ProductBrandingContext.Provider value={branding}>
       {children}
