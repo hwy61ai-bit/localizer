@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { generatePublicToken } from "@/lib/tokens";
+import { createNotification } from "@/lib/notifications";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -236,6 +237,18 @@ export async function GET(req: NextRequest) {
           updates.advance_escalated = true;
         }
         await supabase.from("tour_shows").update(updates).eq("id", showId);
+
+        // Notify org when advance hits final escalation
+        if (newStatus === "final_nudge_sent") {
+          createNotification({
+            supabase,
+            orgId,
+            type: "advance_escalated",
+            title: "Advance needs follow-up",
+            body: `${venueName} unresponsive — manual follow-up needed${city ? ` (${city})` : ""}`,
+            link: `/dashboard/routing/${tour.id}`,
+          });
+        }
 
         emailsSent.push({
           org_id: orgId,

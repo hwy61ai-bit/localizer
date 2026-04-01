@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createNotification } from "@/lib/notifications";
 
 function getServiceClient() {
   return createClient(
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   // Find the advance_email record by resend_id
   const { data: record } = await supabase
     .from("advance_emails")
-    .select("id, show_id")
+    .select("id, show_id, org_id, tour_id")
     .eq("resend_id", emailId)
     .maybeSingle();
 
@@ -56,6 +57,23 @@ export async function POST(req: NextRequest) {
         advance_escalated: true,
         advance_notes: `Email bounced at ${now}`,
       }).eq("id", record.show_id);
+      // Notify org members
+      if (record.org_id && record.tour_id) {
+        const { data: show } = await supabase
+          .from("tour_shows")
+          .select("venue, city")
+          .eq("id", record.show_id)
+          .single();
+        const venue = show?.venue || "Unknown venue";
+        createNotification({
+          supabase,
+          orgId: record.org_id,
+          type: "advance_bounced",
+          title: "Email bounced",
+          body: `Advance email bounced for ${venue}${show?.city ? ` (${show.city})` : ""}`,
+          link: `/dashboard/routing/${record.tour_id}`,
+        });
+      }
       break;
 
     case "email.complained":
