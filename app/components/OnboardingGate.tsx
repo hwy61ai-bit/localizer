@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import OnboardingWizard from './OnboardingWizard';
 
 interface OnboardingGateProps {
@@ -9,16 +10,18 @@ interface OnboardingGateProps {
 }
 
 export default function OnboardingGate({ artistCount, children }: OnboardingGateProps) {
+  const searchParams = useSearchParams();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
+    const forceOnboarding = searchParams.get('onboarding') === 'true';
     const dismissed = localStorage.getItem('onboarding_dismissed') === 'true';
-    if (artistCount === 0 && !dismissed) {
+    if (forceOnboarding || (artistCount === 0 && !dismissed)) {
       setShowOnboarding(true);
     }
     setChecked(true);
-  }, [artistCount]);
+  }, [artistCount, searchParams]);
 
   // Don't render anything until we've checked localStorage to avoid flash
   if (!checked) return null;
