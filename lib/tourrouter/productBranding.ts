@@ -7,8 +7,10 @@ export type ProductName = "LOCALIZER" | "TOURROUTER." | "DIY";
 export function getProductName(): ProductName {
   if (typeof window === "undefined") return "LOCALIZER";
   const host = window.location.hostname;
+  const path = window.location.pathname;
   if (host === "diy.hwy61labs.com") return "DIY";
   if (host === "tourrouter.hwy61labs.com") return "TOURROUTER.";
+  if (path.startsWith("/dashboard/routing")) return "TOURROUTER.";
   return "LOCALIZER";
 }
 
