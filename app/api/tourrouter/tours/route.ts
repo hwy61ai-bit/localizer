@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     const { name, artist_id } = body;
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
-    // If artist_id provided, fetch default_roster to pre-fill tour roster
+    // If artist_id provided, fetch default_roster and map RosterEntry → RosterMember
     let tour_roster: Record<string, unknown>[] | null = null;
     if (artist_id) {
       try {
@@ -87,7 +87,52 @@ export async function POST(req: NextRequest) {
           .eq("id", artist_id)
           .single();
         if (artist?.default_roster && Array.isArray(artist.default_roster) && artist.default_roster.length > 0) {
-          tour_roster = artist.default_roster;
+          tour_roster = artist.default_roster.map((entry: Record<string, unknown>) => {
+            // Seed pay components from artist-level rates if present
+            const payComponents: Record<string, unknown>[] = [];
+            if (entry.showDayRate && typeof entry.showDayRate === 'number') {
+              payComponents.push({
+                type: 'per_show',
+                amount: entry.showDayRate,
+                currency: 'USD',
+                appliesTo: ['show_day'],
+              });
+            }
+            if (entry.offDayRate && typeof entry.offDayRate === 'number') {
+              payComponents.push({
+                type: 'per_day',
+                amount: entry.offDayRate,
+                currency: 'USD',
+                appliesTo: ['off_day', 'travel_day'],
+              });
+            }
+            if (entry.perDiemRate && typeof entry.perDiemRate === 'number') {
+              payComponents.push({
+                type: 'per_diem',
+                amount: entry.perDiemRate,
+                currency: 'USD',
+                appliesTo: ['show_day', 'off_day', 'travel_day', 'load_in_day'],
+              });
+            }
+            // Default component if no rates were set
+            if (payComponents.length === 0) {
+              payComponents.push({
+                type: 'per_show',
+                amount: 0,
+                currency: 'USD',
+                appliesTo: ['show_day'],
+              });
+            }
+
+            return {
+              id: entry.id || crypto.randomUUID(),
+              name: (entry.preferredName as string) || (entry.legalName as string) || 'Unknown',
+              role: (entry.role as string) || 'Other',
+              roleCategory: 'band' as const,
+              payComponents,
+              isActive: true,
+            };
+          });
         }
       } catch (e) {
         console.error("[TourRouter tours POST] Failed to fetch default_roster, skipping:", e);
