@@ -77,6 +77,23 @@ export async function POST(req: NextRequest) {
     const { name, artist_id } = body;
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
+    // If artist_id provided, fetch default_roster to pre-fill tour roster
+    let tour_roster: Record<string, unknown>[] | null = null;
+    if (artist_id) {
+      try {
+        const { data: artist } = await supabase
+          .from("artists")
+          .select("default_roster")
+          .eq("id", artist_id)
+          .single();
+        if (artist?.default_roster && Array.isArray(artist.default_roster) && artist.default_roster.length > 0) {
+          tour_roster = artist.default_roster;
+        }
+      } catch (e) {
+        console.error("[TourRouter tours POST] Failed to fetch default_roster, skipping:", e);
+      }
+    }
+
     console.log("[TourRouter tours POST] Inserting tour:", { org_id: membership.org_id, name, artist_id });
 
     const { data: tour, error } = await supabase
@@ -85,6 +102,7 @@ export async function POST(req: NextRequest) {
         org_id: membership.org_id,
         name,
         artist_id: artist_id || null,
+        ...(tour_roster ? { tour_roster } : {}),
       })
       .select()
       .single();
