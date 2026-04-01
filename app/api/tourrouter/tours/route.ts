@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { checkTourRouterAccess } from "@/lib/tourrouter/billingGate";
+import { createNotification } from "@/lib/notifications";
 
 export async function GET() {
   try {
@@ -158,6 +159,16 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("[TourRouter tours POST] Created tour:", tour?.id);
+
+    await createNotification({
+      supabase,
+      orgId: membership.org_id,
+      type: "tour_created",
+      title: "New tour created",
+      body: name,
+      link: `/dashboard/routing/${tour.id}`,
+    });
+
     return NextResponse.json({ tour }, { status: 201 });
   } catch (e) {
     console.error("[TourRouter tours POST] Unexpected error:", e);
