@@ -1,0 +1,29 @@
+.tabs {
+  display: flex;
+  border-bottom: 3px solid var(--hw-border-strong);
+}
+
+.tab {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 14px 24px;
+  color: var(--hw-text-muted);
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+  cursor: pointer;
+  transition: var(--hw-ease);
+  background: none;
+}
+
+.tab:hover {
+  color: var(--hw-text);
+}
+
+.active {
+  color: var(--hw-crimson);
+  border-bottom-color: var(--hw-crimson);
+  font-weight: 700;
+}

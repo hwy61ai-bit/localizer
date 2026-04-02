@@ -1,0 +1,49 @@
+.badge {
+  font-family: var(--hw-font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  border: 2px solid;
+  border-radius: 0;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.confirmed {
+  background: var(--hw-green-ghost);
+  color: var(--hw-green);
+  border-color: var(--hw-green-border);
+}
+
+.pending {
+  background: var(--hw-amber-ghost);
+  color: var(--hw-amber);
+  border-color: var(--hw-amber);
+}
+
+.error {
+  background: var(--hw-red-ghost);
+  color: var(--hw-crimson);
+  border-color: var(--hw-crimson);
+}
+
+.info {
+  background: var(--hw-blue-ghost);
+  color: var(--hw-blue);
+  border-color: var(--hw-blue);
+}
+
+.neutral {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--hw-text-muted);
+  border-color: var(--hw-border);
+}
+
+.accent {
+  background: var(--hw-crimson);
+  color: #fff;
+  border-color: var(--hw-crimson);
+}

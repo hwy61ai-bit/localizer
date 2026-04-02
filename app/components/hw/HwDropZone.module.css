@@ -1,0 +1,61 @@
+.zone {
+  border: 3px dashed var(--hw-border-light);
+  border-radius: 0;
+  background: var(--hw-bg-surface);
+  text-align: center;
+  padding: 48px 24px;
+  cursor: pointer;
+  transition: var(--hw-ease);
+}
+
+.zone:hover,
+.active {
+  border-style: solid;
+  border-color: var(--hw-crimson);
+  background: var(--hw-crimson-ghost);
+}
+
+.zone:hover .icon,
+.active .icon {
+  opacity: 0.7;
+}
+
+.zone:hover .label,
+.active .label {
+  color: var(--hw-crimson);
+}
+
+.icon {
+  opacity: 0.4;
+  transition: var(--hw-ease);
+}
+
+.label {
+  font-family: var(--hw-font-body);
+  font-size: 15px;
+  color: var(--hw-text-secondary);
+  margin: 12px 0 0;
+  transition: var(--hw-ease);
+}
+
+.hint {
+  font-family: var(--hw-font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--hw-text-muted);
+  margin: 8px 0 0;
+}
+
+.hidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}

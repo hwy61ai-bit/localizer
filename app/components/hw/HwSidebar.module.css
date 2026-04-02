@@ -1,0 +1,61 @@
+.sidebar {
+  width: 240px;
+  background: var(--hw-bg-surface);
+  border-right: 3px solid var(--hw-border-strong);
+  border-radius: 0;
+  height: 100vh;
+  position: fixed;
+  overflow-y: auto;
+}
+
+.brand {
+  font-family: var(--hw-font-display);
+  font-size: 20px;
+  color: var(--hw-crimson);
+  letter-spacing: 3px;
+  padding: 20px;
+  border-bottom: 3px solid var(--hw-border-strong);
+  line-height: 1;
+}
+
+.sectionLabel {
+  font-family: var(--hw-font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--hw-text-muted);
+  padding: 16px 20px 8px;
+}
+
+.item {
+  font-family: var(--hw-font-body);
+  font-size: 14px;
+  color: var(--hw-text-secondary);
+  padding: 10px 20px;
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: var(--hw-ease);
+}
+
+.item:hover {
+  background: var(--hw-crimson-ghost);
+  color: var(--hw-text);
+}
+
+.itemActive {
+  background: var(--hw-crimson-ghost);
+  color: var(--hw-crimson);
+  border-left-color: var(--hw-crimson);
+}
+
+.icon {
+  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}

@@ -1,0 +1,80 @@
+.button {
+  font-family: var(--hw-font-display);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  border: 3px solid;
+  border-radius: 0;
+  padding: 14px 28px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: var(--hw-ease);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ---- Sizes ---- */
+
+.small {
+  padding: 8px 16px;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+/* ---- Variants ---- */
+
+.primary {
+  background: var(--hw-crimson);
+  color: #fff;
+  border-color: var(--hw-crimson);
+}
+.primary:hover {
+  background: var(--hw-crimson-dark);
+  border-color: var(--hw-crimson-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--hw-shadow-md);
+}
+
+.secondary {
+  background: #fff;
+  color: var(--hw-text);
+  border-color: var(--hw-border-strong);
+}
+.secondary:hover {
+  background: var(--hw-bg-invert);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: var(--hw-shadow-md);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--hw-text);
+  border-color: transparent;
+}
+.ghost:hover {
+  border-color: var(--hw-border-strong);
+  transform: translateY(-2px);
+}
+
+.destructive {
+  background: #fff;
+  color: var(--hw-crimson);
+  border-color: var(--hw-crimson);
+}
+.destructive:hover {
+  background: var(--hw-crimson);
+  color: #fff;
+}
+
+/* ---- States ---- */
+
+.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.fullWidth {
+  width: 100%;
+}

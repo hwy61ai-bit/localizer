@@ -1,0 +1,30 @@
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--hw-border-strong);
+  border-radius: 0;
+  background: var(--hw-crimson-ghost);
+  color: var(--hw-crimson);
+  font-family: var(--hw-font-display);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.sm {
+  width: 28px;
+  height: 28px;
+  font-size: 10px;
+}
+
+.md {
+  width: 36px;
+  height: 36px;
+  font-size: 12px;
+}
+
+.lg {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}

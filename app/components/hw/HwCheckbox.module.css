@@ -1,0 +1,52 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.hidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.box {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border: 3px solid var(--hw-border-strong);
+  border-radius: 0;
+  background: var(--hw-bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--hw-ease);
+}
+
+.hidden:checked + .box {
+  background: var(--hw-crimson);
+  border-color: var(--hw-crimson);
+}
+
+.checkmark {
+  display: none;
+}
+
+.hidden:checked + .box .checkmark {
+  display: block;
+}
+
+.label {
+  font-family: var(--hw-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--hw-text);
+  margin-left: 10px;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}

@@ -1,0 +1,26 @@
+.header {
+  margin-bottom: 32px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.title {
+  font-family: var(--hw-font-display);
+  font-size: 48px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--hw-text);
+  margin: 8px 0 0;
+  line-height: 1;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}

@@ -1,0 +1,33 @@
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.link {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--hw-text-muted);
+  text-decoration: none;
+  transition: var(--hw-ease);
+}
+
+.link:hover {
+  color: var(--hw-crimson);
+}
+
+.current {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--hw-text);
+  font-weight: 700;
+}
+
+.separator {
+  color: var(--hw-border-light);
+  font-size: 11px;
+}

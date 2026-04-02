@@ -1,0 +1,37 @@
+.nav {
+  display: flex;
+  align-items: center;
+}
+
+.button {
+  font-family: var(--hw-font-mono);
+  font-size: 12px;
+  padding: 8px 14px;
+  border: 3px solid var(--hw-border-strong);
+  border-radius: 0;
+  background: var(--hw-bg-surface);
+  color: var(--hw-text);
+  cursor: pointer;
+  transition: var(--hw-ease);
+  margin-left: -3px;
+  line-height: 1;
+}
+
+.button:first-child {
+  margin-left: 0;
+}
+
+.button:hover:not(.disabled):not(.active) {
+  background: var(--hw-crimson-ghost);
+}
+
+.active {
+  background: var(--hw-bg-invert);
+  color: #fff;
+  font-weight: 700;
+}
+
+.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}

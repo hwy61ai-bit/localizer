@@ -1,0 +1,9 @@
+.tag {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--hw-blue);
+  font-weight: 400;
+  display: inline-block;
+}

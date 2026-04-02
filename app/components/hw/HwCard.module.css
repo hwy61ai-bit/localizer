@@ -1,0 +1,72 @@
+.card {
+  border: 3px solid var(--hw-border-strong);
+  border-radius: 0;
+  padding: 32px;
+  transition: var(--hw-ease);
+}
+
+.hoverable:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--hw-shadow-lg);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+/* ---- Variants ---- */
+
+.standard {
+  background: var(--hw-bg-surface);
+}
+
+.dark {
+  background: var(--hw-bg-invert);
+  color: var(--hw-text-invert);
+}
+
+.dark .title {
+  color: var(--hw-crimson);
+}
+
+.dark .desc {
+  color: rgba(245, 240, 232, 0.85);
+}
+
+.dark .meta {
+  color: rgba(245, 240, 232, 0.5);
+}
+
+.accent {
+  background: var(--hw-bg-surface);
+  border-color: var(--hw-crimson);
+  box-shadow: var(--hw-shadow-accent);
+}
+
+/* ---- Sub-components ---- */
+
+.title {
+  font-family: var(--hw-font-display);
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--hw-text);
+  margin: 0;
+}
+
+.desc {
+  font-family: var(--hw-font-body);
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--hw-text-secondary);
+  margin: 0;
+}
+
+.meta {
+  font-family: var(--hw-font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--hw-text-muted);
+  margin: 0;
+}

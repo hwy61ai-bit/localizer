@@ -1,0 +1,21 @@
+.track {
+  height: 8px;
+  background: var(--hw-border);
+  border: 1px solid var(--hw-border-light);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 0;
+  transition: var(--hw-ease-slow);
+}
+
+.crimson {
+  background: var(--hw-crimson);
+}
+
+.green {
+  background: var(--hw-green);
+}
