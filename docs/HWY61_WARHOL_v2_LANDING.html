@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HWY61 LABS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap');
+:root{--bg:#F5F0E6;--bgw:#FDFAF4;--surf:#FFFFFF;--bdr:#DDD6C8;--bdrl:#C8C0B2;--tp:#1A1815;--ts:#504A42;--tm:#8A8478;--ac:#1A1815;--yellow:#E8C820;--blue:#2860C8;--rose:#C85068;--grn:#2E8842;--grnd:rgba(46,136,66,0.08);--grnb:rgba(46,136,66,0.2);--f:'DM Sans',sans-serif;--mono:'Space Mono',monospace;--d:'Bebas Neue',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tp);font-family:var(--f);-webkit-font-smoothing:antialiased;overflow-x:hidden;font-size:15px;line-height:1.6}
+
+/* Halftone dot overlay */
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(26,24,21,0.025) 1px,transparent 1px);background-size:6px 6px;pointer-events:none;z-index:9999}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 48px;height:60px;display:flex;justify-content:space-between;align-items:center;background:rgba(245,240,230,0.9);backdrop-filter:blur(20px);border-bottom:2px solid transparent;transition:border-color .3s}
+nav.scrolled{border-bottom-color:var(--tp)}
+.nw{font-family:var(--d);font-size:28px;letter-spacing:3px;color:var(--tp)}
+.nl{display:flex;gap:8px;align-items:center}
+.nl a{font-family:var(--mono);font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ts);text-decoration:none;padding:6px 14px;transition:color .15s;cursor:pointer}
+.nl a:hover{color:var(--tp)}
+.nc{color:var(--bgw)!important;background:var(--tp)!important;padding:8px 18px!important;border:none;transition:all .2s}
+.nc:hover{background:var(--blue)!important;transform:translateY(-1px)}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:140px 48px 120px;position:relative;overflow:hidden}
+/* Warhol color block — subtle background quad */
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(232,200,32,0.04) 0%,rgba(40,96,200,0.03) 50%,rgba(200,80,104,0.02) 100%);pointer-events:none}
+
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:var(--yellow);margin-bottom:32px;animation:fu .8s ease-out .1s both}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--tp);animation:pulse 2.5s ease-in-out infinite}
+.hero-badge-text{font-size:11px;font-weight:700;color:var(--tp);letter-spacing:1.5px;text-transform:uppercase;font-family:var(--mono)}
+
+.hero h1{font-family:var(--d);font-weight:400;font-size:clamp(48px,7vw,96px);line-height:0.95;letter-spacing:2px;text-transform:uppercase;max-width:800px;margin-bottom:24px;animation:fu .8s ease-out .2s both;color:var(--tp)}
+.hero h1 em{font-style:normal;color:var(--blue)}
+
+.hs{font-size:17px;line-height:1.7;color:var(--ts);max-width:500px;margin-bottom:44px;font-weight:400;animation:fu .8s ease-out .4s both}
+
+.hf{display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;justify-content:center;animation:fu .7s ease-out .5s both}
+.hf select,.hf input{font-family:var(--f);font-size:14px;padding:10px 16px;background:var(--surf);border:2px solid var(--tp);color:var(--tp);outline:none;transition:all .15s;height:44px}
+.hf select:focus,.hf input:focus{border-color:var(--blue)}
+.hf select{width:152px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%231A1815' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:32px}
+.hf select option{background:var(--surf);color:var(--tp)}
+.hf input{width:240px}
+.hf input::placeholder{color:var(--tm)}
+.hf button{font-family:var(--d);font-size:18px;letter-spacing:2px;padding:10px 28px;background:var(--tp);color:var(--bgw);border:2px solid var(--tp);cursor:pointer;transition:all .2s;height:44px;white-space:nowrap}
+.hf button:hover{background:var(--blue);border-color:var(--blue);transform:translateY(-2px);box-shadow:3px 3px 0 var(--tp)}
+.hf button:active{transform:translateY(0);box-shadow:none}
+.hn{margin-top:16px;font-size:13px;color:var(--tm);animation:fu .7s ease-out .65s both}
+
+/* Section styles */
+.sec-label{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin-bottom:16px}
+.sec-title{font-family:var(--d);font-weight:400;font-size:clamp(32px,4.5vw,56px);letter-spacing:1px;text-transform:uppercase;line-height:1.0;margin-bottom:0;color:var(--tp)}
+
+/* Problem */
+.prob{padding:100px 48px;display:flex;justify-content:center;position:relative}
+.prob::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tp)}
+.prob-in{max-width:600px}
+.prob p{font-size:19px;line-height:1.75;color:var(--ts);font-weight:400}
+.prob p strong{color:var(--tp);font-weight:700;background:linear-gradient(180deg,transparent 55%,rgba(232,200,32,0.25) 55%);padding:0 2px}
+
+/* Drop zone section */
+.dzs{padding:100px 48px 120px;text-align:center;overflow:hidden;position:relative;background:var(--bgw)}
+.dzs::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tp)}
+.dzh{max-width:560px;margin:0 auto 64px}
+.dzh h2{font-family:var(--d);font-weight:400;font-size:clamp(32px,4.5vw,56px);letter-spacing:1px;text-transform:uppercase;margin-top:12px;line-height:1.0;margin-bottom:16px;color:var(--tp)}
+.dzh h2 em{font-style:normal;color:var(--blue)}
+.dzh p{font-size:16px;line-height:1.7;color:var(--ts)}
+
+.dzd{max-width:640px;margin:0 auto 64px;position:relative}
+.dzb{border:2px dashed var(--bdrl);padding:48px 36px;transition:all .35s;position:relative;background:var(--surf)}
+.dzb.active{border-color:var(--tp);border-style:solid;background:rgba(232,200,32,0.05)}
+.dzi{width:40px;height:40px;margin:0 auto 16px;opacity:.3;color:var(--ts)}
+.dzp{font-size:15px;color:var(--ts);margin-bottom:6px;transition:color .3s}
+.dzb.active .dzp{color:var(--tp)}
+.dzps{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--tm);text-transform:uppercase}
+
+.dd{position:absolute;width:160px;background:var(--surf);border:2px solid var(--tp);padding:14px 16px;text-align:left;opacity:0;transform:translateY(-80px) rotate(-2deg);pointer-events:none;z-index:10;left:50%;margin-left:-80px;top:16px;box-shadow:3px 3px 0 var(--tp)}
+.dd.dropping{animation:di .6s cubic-bezier(.22,1,.36,1) forwards}
+.ddt{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:5px}
+.ddn{font-size:12px;color:var(--tp);font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dde{font-family:var(--mono);font-size:10px;color:var(--tm)}
+
+.dr{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);opacity:0;transition:all .4s ease .4s;white-space:nowrap}
+.dr.show{opacity:1;bottom:-36px}
+.dri{display:inline-flex;align-items:center;gap:8px;background:var(--grnd);border:2px solid var(--grn);padding:7px 16px}
+.drc{width:14px;height:14px;color:var(--grn)}
+.drt{font-family:var(--mono);font-size:11px;letter-spacing:0.5px;color:var(--grn)}
+
+.dts{display:grid;grid-template-columns:repeat(5,1fr);gap:0;max-width:800px;margin:0 auto;border:2px solid var(--tp);overflow:hidden}
+.dtc{background:var(--surf);padding:28px 18px;cursor:pointer;transition:all .2s;position:relative}
+.dtc+.dtc{border-left:1px solid var(--tp)}
+.dtc:hover{background:var(--bg)}
+.dtc.active{background:var(--yellow)}
+.dtc.active::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tp)}
+.dtci{font-size:22px;margin-bottom:10px;opacity:.5;transition:opacity .2s}
+.dtc:hover .dtci,.dtc.active .dtci{opacity:.9}
+.dtcl{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tm);margin-bottom:6px;transition:color .2s}
+.dtc.active .dtcl{color:var(--tp)}
+.dtcd{font-size:12px;line-height:1.55;color:var(--tp);font-weight:400}
+.dtcf{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:0.5px;color:var(--tm)}
+
+/* Products */
+.prods{padding:100px 48px;position:relative}
+.prods::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tp)}
+.prodsh{text-align:center;margin-bottom:72px}
+.prodsh h2{margin-top:12px}
+
+.pe{max-width:760px;margin:0 auto;padding:48px 0;position:relative}
+.pe::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tp)}
+.pe .pn{font-family:var(--d);font-size:22px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.pe:nth-child(2) .pn{color:var(--blue)}
+.pe:nth-child(3) .pn{color:var(--rose)}
+.pe .ph{font-family:var(--d);font-size:clamp(26px,3vw,38px);font-weight:400;line-height:1.05;margin-bottom:20px;letter-spacing:1px;text-transform:uppercase;color:var(--tp)}
+.ped p{font-size:15px;line-height:1.8;color:var(--ts);margin-bottom:14px}
+.ped p:last-child{margin-bottom:0}
+
+.pfs{margin-top:28px;display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+.pf{padding:14px 0;border-top:2px solid var(--tp);display:flex;flex-direction:column;gap:3px}
+.pf:nth-child(odd){padding-right:20px}
+.pf:nth-child(even){padding-left:20px;border-left:2px solid var(--tp)}
+.fl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tp)}
+.fd{font-size:13px;color:var(--tm);font-weight:400}
+.pe .pp{margin-top:28px;padding-top:16px;border-top:2px solid var(--tp);font-family:var(--mono);font-size:12px;letter-spacing:0.5px;color:var(--tm)}
+.pe .pp span{color:var(--tp);font-weight:700;font-size:13px}
+
+/* Road App */
+.ra{padding:100px 48px;display:flex;justify-content:center;position:relative;background:var(--bgw)}
+.ra::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tp)}
+.rai{max-width:800px;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.rat h2{font-family:var(--d);font-weight:400;font-size:clamp(30px,3.5vw,44px);letter-spacing:1px;text-transform:uppercase;line-height:1.05;margin-bottom:16px;color:var(--tp)}
+.rat h2 em{font-style:normal;color:var(--blue)}
+.rat p{font-size:15px;line-height:1.7;color:var(--ts);margin-bottom:10px}
+.rav{display:flex;justify-content:center}
+.pfr{width:200px;height:400px;background:var(--surf);border:2px solid var(--tp);border-radius:24px;padding:14px;overflow:hidden;box-shadow:4px 4px 0 var(--tp)}
+.pno{width:60px;height:5px;background:var(--bdr);border-radius:3px;margin:0 auto 18px}
+.pc{display:flex;flex-direction:column;gap:12px}
+.pcl{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue)}
+.pct{font-size:14px;font-weight:600}
+.pcd{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.pcdl{font-size:10px;color:var(--tm);text-transform:uppercase;letter-spacing:.5px;font-family:var(--mono)}
+.pcdv{font-size:12px;font-weight:500}
+
+/* Audience */
+.aud{padding:100px 48px;position:relative}
+.aud::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tp)}
+.audh{text-align:center;margin-bottom:64px}
+.audh h2{margin-top:12px}
+.audc{display:grid;grid-template-columns:repeat(3,1fr);gap:0;max-width:900px;margin:0 auto;border:2px solid var(--tp)}
+.audi{padding:28px 24px;border-right:1px solid var(--tp);transition:background .2s}
+.audi:last-child{border-right:none}
+.audi:nth-child(1){background:rgba(232,200,32,0.06)}
+.audi:nth-child(2){background:rgba(40,96,200,0.04)}
+.audi:nth-child(3){background:rgba(200,80,104,0.04)}
+.audi:hover:nth-child(1){background:rgba(232,200,32,0.12)}
+.audi:hover:nth-child(2){background:rgba(40,96,200,0.08)}
+.audi:hover:nth-child(3){background:rgba(200,80,104,0.08)}
+.audi h3{font-family:var(--d);font-size:24px;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px}
+.audi:nth-child(1) h3{color:var(--tp)}
+.audi:nth-child(2) h3{color:var(--blue)}
+.audi:nth-child(3) h3{color:var(--rose)}
+.audi p{font-size:14px;line-height:1.7;color:var(--ts);font-weight:400}
+
+/* DIY */
+.diy-section{padding:100px 48px;position:relative}
+.diy-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--tp)}
+
+/* Bottom CTA */
+.bcta{padding:120px 48px;text-align:center;position:relative;background:var(--tp);color:var(--bg)}
+.bcta .sec-label{color:var(--yellow)}
+.bcta h2{font-family:var(--d);font-weight:400;font-size:clamp(30px,4.5vw,52px);letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;margin-top:12px;color:var(--bg)}
+.bcta h2 em{font-style:normal;color:var(--yellow)}
+.bcta>p{font-size:16px;color:var(--bdrl);margin-bottom:40px}
+.bcta .hf select,.bcta .hf input{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:var(--bg)}
+.bcta .hf select:focus,.bcta .hf input:focus{border-color:var(--yellow)}
+.bcta .hf select option{background:var(--tp);color:var(--bg)}
+.bcta .hf input::placeholder{color:rgba(245,240,230,0.35)}
+.bcta .hf button{background:var(--yellow);color:var(--tp);border-color:var(--yellow)}
+.bcta .hf button:hover{background:#F0D42E;box-shadow:3px 3px 0 rgba(255,255,255,0.15)}
+
+/* Footer */
+footer{padding:36px 48px;background:var(--tp);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+.fol{font-family:var(--d);font-size:14px;letter-spacing:3px;color:var(--bdrl)}
+.foli{display:flex;gap:24px}
+.foli a{font-size:12px;color:var(--bdrl);text-decoration:none;transition:color .15s;font-family:var(--mono);letter-spacing:1px;text-transform:uppercase}
+.foli a:hover{color:var(--yellow)}
+
+/* Animations */
+@keyframes fu{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes di{0%{opacity:0;transform:translateY(-80px) rotate(-3deg)}60%{opacity:1;transform:translateY(8px) rotate(1deg)}100%{opacity:1;transform:translateY(0) rotate(0deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.rv{opacity:0;transform:translateY(20px);transition:opacity .8s ease-out,transform .8s ease-out}
+.rv.vis{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){.pfs{grid-template-columns:1fr}.pf:nth-child(even){padding-left:0;border-left:none}.pf:nth-child(odd){padding-right:0}.dts{grid-template-columns:repeat(3,1fr)}.dtc+.dtc{border-left:none;border-top:1px solid var(--tp)}.rai{grid-template-columns:1fr;gap:48px;text-align:center}.audc{grid-template-columns:1fr}.audi{border-right:none;border-bottom:1px solid var(--tp)}.audi:last-child{border-bottom:none}}
+@media(max-width:768px){nav{padding:0 24px}.nl a:not(.nc){display:none}.hero{padding:120px 24px 80px}.hf{flex-direction:column;align-items:center}.hf select,.hf input{width:100%;max-width:320px}.hf button{width:100%;max-width:320px}.prob,.dzs,.prods,.ra,.aud,.bcta,.diy-section{padding:80px 24px}.dts{grid-template-columns:1fr 1fr}footer{padding:28px 24px;flex-direction:column;text-align:center}.foli{justify-content:center}}
+@media(max-width:480px){.dts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<nav id="nav"><div class="nw">HWY61 LABS</div><div class="nl"><a href="#products">Products</a><a href="#who">Who It's For</a><a href="#waitlist" class="nc">Join the Beta</a></div></nav>
+
+<section class="hero"><div class="hero-badge"><div class="hero-badge-dot"></div><div class="hero-badge-text">Now in beta</div></div><h1>Your tour shouldn't live <em>in a spreadsheet</em></h1><p class="hs">Offers in email. Routing in Excel. Settlement math on a napkin at 1am. HWY61 replaces all of it — one platform from the first offer to the last check.</p><div class="hf" id="waitlist"><select><option value="" disabled selected>I'm a...</option><option>Booking Agent</option><option>Manager / TM</option><option>Band (Self-Managed)</option><option>Venue / Promoter</option><option>Other</option></select><input type="email" placeholder="your@email.com"><button type="button">Get Early Access</button></div><p class="hn">Free during beta. No credit card required.</p></section>
+
+<section class="prob rv"><div class="prob-in"><div class="sec-label">The problem</div><p>Offers tracked in your inbox. Drive times guessed on Google Maps. Advances buried in a text thread. Settlement math done by hand while the promoter waits. Per diems calculated in your head. End-of-tour accounting that takes a week. <strong>Every person on the tour using a different tool — or no tool at all.</strong></p></div></section>
+
+<section class="dzs rv" id="intake"><div class="dzh"><div class="sec-label">How it works</div><h2>Drop <em>anything.</em> HWY61 reads it.</h2><p>Settlement sheets, deal memos, hotel confirmations, receipts, advance responses — photo, PDF, spreadsheet, scan. Drop it in. Every number gets matched to the right show and put where it belongs. No data entry. No re-typing.</p></div>
+<div class="dzd" id="dzd"><div class="dzb" id="dzb"><svg class="dzi" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M24 4L24 32M24 4L16 12M24 4L32 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 28V38C8 40.2091 9.79086 42 12 42H36C38.2091 42 40 40.2091 40 38V28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><div class="dzp">Drop any touring document here</div><div class="dzps">PDF &middot; Photo &middot; Excel &middot; Scan &middot; Screenshot</div><div class="dd" id="dd"><div class="ddt" id="ddt"></div><div class="ddn" id="ddn"></div><div class="dde" id="dde"></div></div></div><div class="dr" id="dr"><div class="dri"><svg class="drc" viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="drt" id="drt"></span></div></div></div>
+<div class="dts" id="dts"><div class="dtc active" data-index="0"><div class="dtci">&#128196;</div><div class="dtcl">Settlement</div><div class="dtcd">Handwritten, printed, or photographed. HWY61 reads the numbers — even crossed-out ones.</div><div class="dtcf">JPG &middot; PDF &middot; PNG</div></div><div class="dtc" data-index="1"><div class="dtci">&#128203;</div><div class="dtcl">Deal Memo</div><div class="dtcd">Extracts every field — guarantee, splits, production, merch terms, billing — in seconds.</div><div class="dtcf">PDF &middot; DOCX</div></div><div class="dtc" data-index="2"><div class="dtci">&#127976;</div><div class="dtcl">Hotel</div><div class="dtcd">Confirmation number, rate, check-in/out, room block details — pulled and matched to the show.</div><div class="dtcf">PDF &middot; EMAIL</div></div><div class="dtc" data-index="3"><div class="dtci">&#129534;</div><div class="dtcl">Receipt</div><div class="dtcd">Snap a receipt. Amount, vendor, date, category — auto-logged to the tour expense report.</div><div class="dtcf">JPG &middot; PNG &middot; PDF</div></div><div class="dtc" data-index="4"><div class="dtci">&#9993;</div><div class="dtcl">Advance</div><div class="dtcd">Venue responses parsed automatically. Load-in, WiFi, parking, contacts — all captured.</div><div class="dtcf">EMAIL &middot; PDF &middot; FORM</div></div></div></section>
+
+<section class="prods rv" id="products"><div class="prodsh"><div class="sec-label">Two products. One platform.</div><h2 class="sec-title">Route it. Market it. Settle it.</h2></div>
+<div class="pe"><div class="pn">TourRouter</div><div class="ph">The complete OS for touring</div><div class="ped"><p>Drop in an offer sheet and TourRouter builds your routing table. Real drive times between every city. Gas cost estimates based on your vehicle. Long drives flagged automatically. A drive-vs-fly toggle on every leg so you can compare what it costs to put the band on a plane versus grinding a 14-hour overnight.</p><p>The full budget builds itself as you route — projected guarantees, expenses, per diems, hotel costs, personnel pay, commissions — all flowing into a live P&L that updates with every change. When the tour hits the road, drop settlement sheets, receipts, and hotel confirmations into HWY61 and watch projected numbers turn into actuals. Night-of settlement done in minutes, not hours. End-of-tour financials closed with one click.</p><p>Advance every show automatically. Track every guest list. Pay every person on the bus. One platform from the first offer to the last check.</p></div><div class="pfs"><div class="pf"><span class="fl">Smart routing</span><span class="fd">Real drive times, gas estimates, long-drive flags</span></div><div class="pf"><span class="fl">Drive vs. fly</span><span class="fd">Compare ground and air on every leg</span></div><div class="pf"><span class="fl">Live budgeting</span><span class="fd">Full P&L that updates as you build the tour</span></div><div class="pf"><span class="fl">Settlement</span><span class="fd">Projected vs. actual — drop the sheet, numbers match</span></div><div class="pf"><span class="fl">Advance automation</span><span class="fd">Every show advanced on schedule, no manual follow-up</span></div><div class="pf"><span class="fl">Personnel &amp; pay</span><span class="fd">Weekly, per-show, percentage — every pay structure handled</span></div><div class="pf"><span class="fl">End-of-tour financials</span><span class="fd">One-click close — shareable report for artist and management</span></div><div class="pf"><span class="fl">Guest list</span><span class="fd">Allotments, cutoffs, and door list — per show</span></div></div><div class="pp">Starting at <span>$49/mo</span></div></div>
+<div class="pe"><div class="pn">Localizer</div><div class="ph">Tour marketing on autopilot</div><div class="ped"><p>Upload one promo image. Localizer generates every show asset for every platform — Instagram story, Facebook event, X post, poster, web graphic — branded with your fonts, your colors, your layout. Every format. Every size. Done.</p><p>Then send the entire tour's assets to every promoter on your routing in one clean link. Not a Dropbox folder. Not 47 emails with attachments. One link, every asset, every show — promoters grab exactly what they need. No back-and-forth. No "can you send me the landscape version?"</p></div><div class="pfs"><div class="pf"><span class="fl">Multi-format generation</span><span class="fd">Every platform size from one image</span></div><div class="pf"><span class="fl">Branded templates</span><span class="fd">Your fonts, colors, and layout — every time</span></div><div class="pf"><span class="fl">Promoter distribution</span><span class="fd">One link per tour — every promoter, every asset</span></div><div class="pf"><span class="fl">Batch export</span><span class="fd">Full tour's assets in one download</span></div></div><div class="pp">Starting at <span>$39/mo</span></div></div></section>
+
+<section class="prods diy-section rv"><div class="pe"><div class="pn" style="color:var(--tp)">DIY</div><div class="ph">Pro tools at an indie price</div><div class="ped"><p>No agent. No tour manager. No problem. You're booking your own shows and planning your own routes — HWY61 DIY gives you the same routing engine the pros use. Real drive times, gas estimates for your van, long-drive warnings, and a budget that builds itself as you add dates.</p><p>Drop in offer sheets, deal memos, or anything else — HWY61 reads it and puts every number where it belongs. You get smart tools without the price tag that comes with a full touring operation.</p></div><div class="pfs"><div class="pf"><span class="fl">Real routing</span><span class="fd">Actual drive times and distances, not estimates</span></div><div class="pf"><span class="fl">Tour budgeting</span><span class="fd">See your numbers before you leave the house</span></div><div class="pf"><span class="fl">Document intake</span><span class="fd">Drop anything — HWY61 reads it</span></div><div class="pf"><span class="fl">All 14 deal types</span><span class="fd">Flat guarantee to co-headliner splits</span></div></div><div class="pp"><span>$19/mo</span></div></div></section>
+
+<section class="ra rv"><div class="rai"><div class="rat"><div class="sec-label">Included with TourRouter</div><h2>The Road App.<br><em>Free for everyone.</em></h2><p>Van call, load-in, hotel, set times, travel — everything the band and crew need on the road. Nothing they don't.</p><p>No login required. No cost. Just enter the tour code your TM sends and you're in. Every person on the road stays on the same page.</p></div><div class="rav"><div class="pfr"><div class="pno"></div><div class="pc"><div class="pcl">Today's Show</div><div class="pct">The Fillmore — SF</div><div class="pcd"><span class="pcdl">Van Call</span><span class="pcdv">10:00 AM</span></div><div class="pcd"><span class="pcdl">Load In</span><span class="pcdv">3:00 PM</span></div><div class="pcd"><span class="pcdl">Soundcheck</span><span class="pcdv">4:30 PM</span></div><div class="pcd"><span class="pcdl">Doors</span><span class="pcdv">7:00 PM</span></div><div class="pcd"><span class="pcdl">Showtime</span><span class="pcdv">9:00 PM</span></div><div class="pcd" style="border-bottom:none"><span class="pcdl">Hotel</span><span class="pcdv">Hotel Nikko</span></div></div></div></div></div></section>
+
+<section class="aud rv" id="who"><div class="audh"><div class="sec-label">Who it's for</div><h2 class="sec-title">If you're on the road, this is yours</h2></div><div class="audc"><div class="audi"><h3>Agents</h3><p>Your offers live in email. Your calendar lives in a spreadsheet. Your roster's availability lives in your head. When you confirm a show in HWY61, it lands in your artist's tour automatically. No re-entry. No forwarded PDFs.</p></div><div class="audi"><h3>Managers &amp; TMs</h3><p>Route the tour, advance every show, settle every night, pay every person, and close the books — in one place. Drop a settlement sheet at 2am and the numbers are already matched by morning.</p></div><div class="audi"><h3>DIY Artists</h3><p>You don't have an agent or a tour manager. You have a band, a van, and a calendar. HWY61 DIY gives you real drive times, smart budgeting, and the same tools the pros use — for $19 a month.</p></div></div></section>
+
+<section class="bcta rv"><div class="sec-label">Beta is open</div><h2>Stop duct-taping <em>your tour together</em></h2><p>We're building HWY61 with working touring professionals. Join the beta and see what one platform can do.</p><div class="hf"><select><option value="" disabled selected>I'm a...</option><option>Booking Agent</option><option>Manager / TM</option><option>Band (Self-Managed)</option><option>Venue / Promoter</option><option>Other</option></select><input type="email" placeholder="your@email.com"><button type="button">Get Early Access</button></div></section>
+
+<footer><div class="fol">HWY61 LABS &copy; 2026</div><div class="foli"><a href="#">Contact</a><a href="#">Terms</a><a href="#">Privacy</a></div></footer>
+
+<script>
+var n=document.getElementById('nav');
+window.addEventListener('scroll',function(){n.classList.toggle('scrolled',window.scrollY>40)});
+document.querySelectorAll('.rv').forEach(function(el){
+  new IntersectionObserver(function(e){e.forEach(function(x){if(x.isIntersecting)x.target.classList.add('vis')})},{threshold:.15}).observe(el);
+});
+var D=[
+{t:'Settlement',n:'settlement_fillmore_sf.jpg',e:'JPEG \u00b7 2.4 MB',r:'Parsed \u00b7 Matched to Mar 15 \u2014 The Fillmore, SF'},
+{t:'Deal Memo',n:'bowery_presents_deal_memo.pdf',e:'PDF \u00b7 340 KB',r:'Parsed \u00b7 12 fields extracted \u00b7 Matched to Apr 2 \u2014 Bowery Ballroom'},
+{t:'Hotel',n:'marriott_conf_april.pdf',e:'PDF \u00b7 128 KB',r:'Parsed \u00b7 Room block for 6 rooms \u00b7 Matched to Apr 2\u20134'},
+{t:'Receipt',n:'IMG_4821.jpg',e:'JPEG \u00b7 1.1 MB',r:'Parsed \u00b7 $47.82 fuel \u00b7 Logged to tour expenses'},
+{t:'Advance',n:'advance_reply_930club.pdf',e:'PDF \u00b7 210 KB',r:'Parsed \u00b7 Load-in, WiFi, contacts \u00b7 Matched to Apr 8 \u2014 9:30 Club'}
+];
+var b=document.getElementById('dzb'),dd=document.getElementById('dd'),dt=document.getElementById('ddt'),dn=document.getElementById('ddn'),de=document.getElementById('dde'),dr=document.getElementById('dr'),drt=document.getElementById('drt'),cs=document.querySelectorAll('.dtc'),a=false,ct,sv=false;
+function run(i){if(a)return;a=true;var d=D[i];cs.forEach(function(c,j){c.classList.toggle('active',j===i)});dd.classList.remove('dropping');dd.style.opacity='0';dd.style.transform='translateY(-80px) rotate(-2deg)';dr.classList.remove('show');b.classList.remove('active');dt.textContent=d.t;dn.textContent=d.n;de.textContent=d.e;drt.textContent=d.r;setTimeout(function(){b.classList.add('active')},200);setTimeout(function(){dd.classList.add('dropping')},500);setTimeout(function(){dr.classList.add('show')},1400);setTimeout(function(){a=false;if(sv){ct=setTimeout(function(){run((i+1)%D.length)},3000)}},2200)}
+cs.forEach(function(c){c.addEventListener('click',function(){clearTimeout(ct);run(parseInt(c.getAttribute('data-index')))})});
+new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting&&!sv){sv=true;setTimeout(function(){run(0)},500)}})},{threshold:.2}).observe(document.getElementById('dzd'));
+</script>
+</body>
+</html>
