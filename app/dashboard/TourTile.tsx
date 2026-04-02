@@ -107,9 +107,8 @@ export default function TourTile({
       <div
         onClick={() => router.push(href ?? `/dashboard/tours/${tourId}`)}
         style={{
-          background: currentImage ? "transparent" : "#fff",
-          border: "1px solid #DDDDDD",
-          borderRadius: 14,
+          background: currentImage ? "transparent" : "var(--hw-bg-surface)",
+          border: "3px solid var(--hw-border-strong)",
           padding: 20,
           aspectRatio: "1 / 1",
           display: "flex",
@@ -117,36 +116,36 @@ export default function TourTile({
           justifyContent: "space-between",
           overflow: "hidden",
           position: "relative",
-          boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.09)" : "none",
-          transform: hovered ? "translateY(-2px)" : "none",
-          transition: "box-shadow 0.15s, transform 0.15s",
+          boxShadow: hovered ? "var(--hw-shadow-lg)" : "none",
+          transform: hovered ? "translateY(-4px)" : "none",
+          transition: "var(--hw-ease)",
           opacity: deleting ? 0.4 : 1,
         }}
       >
         {currentImage && (
           <>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${currentImage})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${currentImage})`, backgroundSize: "cover", backgroundPosition: "center", border: "3px solid var(--hw-border-strong)" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
           </>
         )}
         <div style={{ position: "relative", zIndex: 1 }}>
           {bandName && (
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "#999", marginBottom: 6 }}>
+            <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.9)" : "var(--hw-text)", marginBottom: 6 }}>
               {bandName}
             </div>
           )}
         </div>
         <div style={{ position: "relative", zIndex: 1 }}>
           {dateRange && (
-            <div style={{ fontSize: 12, color: currentImage ? "rgba(255,255,255,0.7)" : "#666", marginBottom: 8 }}>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)", marginBottom: 8 }}>
               {dateRange}
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: currentImage ? "rgba(255,255,255,0.6)" : "#aaa" }}>
-              {eventCount} event{eventCount !== 1 ? "s" : ""}
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>
+              {eventCount} tour{eventCount !== 1 ? "s" : ""}
             </span>
-            <span style={{ fontSize: 16, color: currentImage ? "rgba(255,255,255,0.5)" : "#ccc" }}>→</span>
+            <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, color: currentImage ? "rgba(255,255,255,0.5)" : "var(--hw-border-light)" }}>→</span>
           </div>
         </div>
       </div>
@@ -158,13 +157,13 @@ export default function TourTile({
           style={{
             position: "absolute", top: 10, right: 10, zIndex: 10,
             display: "flex", alignItems: "center", justifyContent: "center",
-            width: 32, height: 32, borderRadius: "50%",
-            background: "rgba(0,0,0,0.45)", backdropFilter: "blur(4px)",
+            width: 32, height: 32,
+            background: "rgba(0,0,0,0.6)", border: "2px solid rgba(255,255,255,0.2)",
             color: "#fff", textDecoration: "none",
-            filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.3))",
+            transition: "var(--hw-ease)",
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
@@ -174,7 +173,7 @@ export default function TourTile({
       {mounted && hovered && type !== "artist" && (
         <button
           onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.4)", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", backdropFilter: "blur(4px)", letterSpacing: "0.04em" }}
+          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
         >
           {uploading ? "Uploading…" : currentImage ? "Change photo" : "+ Photo"}
         </button>
@@ -184,13 +183,13 @@ export default function TourTile({
         <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, zIndex: 10, display: "flex", justifyContent: "space-between", padding: "0 10px" }}>
           <button
             onClick={handleDelete}
-            style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,0,0,0.3)", background: "rgba(0,0,0,0.55)", color: "rgba(255,100,100,0.9)", fontSize: 11, fontWeight: 700, cursor: "pointer", backdropFilter: "blur(4px)", letterSpacing: "0.04em" }}
+            style={{ padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
           >
             {deleting ? "Deleting…" : "Delete"}
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-            style={{ padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.4)", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", backdropFilter: "blur(4px)", letterSpacing: "0.04em" }}
+            style={{ padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
           >
             {uploading ? "Uploading…" : currentImage ? "Change photo" : "+ Photo"}
           </button>

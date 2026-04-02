@@ -77,25 +77,16 @@
   --hw-ease-slow: all 0.3s ease;
 }
 
-/* ===== HWY61 Body Base ===== */
+/* ===== HWY61 Body Base + Halftone ===== */
 
 body {
-  background: var(--hw-bg);
+  background:
+    radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px),
+    var(--hw-bg);
+  background-size: 4px 4px, 100%;
   color: var(--hw-text);
   font-family: var(--hw-font-body);
   -webkit-font-smoothing: antialiased;
-}
-
-/* ===== Halftone Overlay ===== */
-
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
-  background-size: 4px 4px;
-  pointer-events: none;
-  z-index: 9999;
 }
 
 /* ===== Legacy Styles ===== */
@@ -114,10 +105,8 @@ html, body {
 }
 
 body {
-  background-color: #F7F7F5;
+  /* background-color overridden by HWY61 body block above */
   color: #111111;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 

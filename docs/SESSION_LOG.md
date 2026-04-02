@@ -506,3 +506,18 @@ Tim's Week 2: Onboarding wizard + notifications
 Master Artist Profile design review with Tim (mockups sent)
 
 what got done today (roster population, notifications, onboarding shell, branding fix, nav cleanup, bug sweep, Tim status doc, Beta-Test Band kit started)
+
+
+Design System Phase 1 complete — globals.css updated with Warhol foundation (fonts, CSS vars, halftone, border-radius reset), 29 Hw* components created in app/components/hw/ with barrel export. Next session: Phase 2 — apply to dashboard shell.
+
+✅ Dashboard page background → cream
+✅ Artist tiles → HwCard with Bebas Neue titles, Space Mono metadata, gear icon styling
+✅ "New Artist" empty state → HwEmptyState
+✅ Notification bell → crimson badge, styled dropdown, unread indicators
+✅ Onboarding wizard → three HwCards with accent/standard/ghost variants
+✅ OnboardingGate → confirmed no changes needed
+✅ Artist Hub → HwTabs, HwBreadcrumb, HwPageHeader
+✅ Tour tiles → HwCard with HwBadge, create tour modal restyled
+✅ Dashboard layout → confirmed no shared nav
+✅ Halftone dot fix → dots on cream, not on white surfaces or photos
+

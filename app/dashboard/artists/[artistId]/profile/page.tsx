@@ -214,7 +214,7 @@ export default function ArtistProfilePage() {
 
   if (loading || !artist) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F7F7F5", display: "grid", placeItems: "center" }}>
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
         <div style={{ fontSize: 13, color: "#888" }}>Loading...</div>
       </div>
     );
@@ -225,7 +225,7 @@ export default function ArtistProfilePage() {
   const showSaved = savedAt && Date.now() - savedAt < 1500;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F7F5", padding: "24px 24px 80px" }}>
+    <div style={{ minHeight: "100vh", padding: "24px 24px 80px" }}>
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
 
         {/* Back + save indicator */}

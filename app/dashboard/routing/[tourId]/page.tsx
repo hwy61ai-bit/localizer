@@ -656,7 +656,7 @@ export default function RouteTourPage() {
   return (
     <IntakeDropZone tourId={tourId} showId={drawerShow?.id} shows={intakeShowOptions} onSaved={reloadTour}>
     <>
-    <div className="fade-in td-page" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
+    <div className="fade-in td-page" style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #DDDDDD" }}>

@@ -401,7 +401,6 @@ const col = {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#EEEEEE",
     padding: "32px 24px 80px",
   },
   wrap: {

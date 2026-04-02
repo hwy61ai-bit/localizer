@@ -9,7 +9,7 @@ export default async function NewEventPage({
   const { tourId } = await params;
 
   return (
-    <div style={{ padding: 40, maxWidth: 640, background: "#EEEEEE", minHeight: "100vh" }}>
+    <div style={{ padding: 40, maxWidth: 640, minHeight: "100vh" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
         <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>New Event</h1>
         <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>← Back</Link>

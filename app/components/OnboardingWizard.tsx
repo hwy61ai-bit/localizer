@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { HwCard, HwCardTitle, HwCardDesc, HwButton } from '@/app/components/hw';
 
 interface OnboardingWizardProps {
   onStartWizard: () => void;
@@ -75,57 +76,71 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: 
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @media (max-width: 900px) {
+          .hw-onboard-grid { flex-direction: column !important; align-items: center !important; }
+          .hw-onboard-card { max-width: 100% !important; flex: 1 1 auto !important; }
+        }
       `}</style>
 
       <div style={{
-        minHeight: '100vh', background: '#EEEEEE',
+        minHeight: '100vh',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '32px 24px',
         animation: 'fadeSlideUp 0.5s ease-out both',
       }}>
-        <div style={{ maxWidth: 700, width: '100%', textAlign: 'center' }}>
+        <div style={{ maxWidth: 860, width: '100%', textAlign: 'center' }}>
           <h1 style={{
-            fontWeight: 900, fontSize: 36, letterSpacing: '-1px',
-            textTransform: 'uppercase', color: '#111',
-            margin: '0 0 8px 0',
+            fontFamily: 'var(--hw-font-display)', fontSize: 72, letterSpacing: '3px',
+            textTransform: 'uppercase', color: 'var(--hw-text)',
+            margin: '0 0 8px 0', lineHeight: 1,
           }}>
-            HWY61 LABS
+            WELCOME TO HWY61
           </h1>
-          <p style={{ fontSize: 15, color: '#888', margin: '0 0 40px 0' }}>
-            Welcome — how would you like to get started?
+          <p style={{
+            fontFamily: 'var(--hw-font-body)', fontSize: 16, fontWeight: 300,
+            color: 'var(--hw-text-secondary)', margin: '8px 0 48px 0',
+          }}>
+            How would you like to get started?
           </p>
 
-          <div style={{
-            display: 'flex', gap: 16, justifyContent: 'center',
-            flexWrap: 'wrap',
+          <div className="hw-onboard-grid" style={{
+            display: 'flex', gap: 24, justifyContent: 'center',
           }}>
-            {cards.map((card) => (
-              <div
-                key={card.id}
-                onClick={card.onClick}
-                onMouseEnter={() => setHoveredCard(card.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-                style={{
-                  flex: '1 1 180px', maxWidth: 220,
-                  background: '#fff',
-                  border: '1px solid #DDD',
-                  borderRadius: 14,
-                  padding: '32px 20px',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                  transform: hoveredCard === card.id ? 'translateY(-3px)' : 'translateY(0)',
-                  boxShadow: hoveredCard === card.id ? '0 6px 20px rgba(0,0,0,0.08)' : 'none',
-                }}
-              >
-                <div style={{ marginBottom: 16 }}>{card.icon}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 6 }}>
-                  {card.title}
+            {/* Get Started */}
+            <div className="hw-onboard-card" style={{ flex: '1 1 240px', maxWidth: 260 }}>
+              <HwCard variant="accent" onClick={handleWizard}>
+                <div style={{ marginBottom: 16, opacity: 0.6, color: 'var(--hw-crimson)' }}>{cards[0].icon}</div>
+                <HwCardTitle>{cards[0].title}</HwCardTitle>
+                <HwCardDesc>{cards[0].description}</HwCardDesc>
+                <div style={{ marginTop: 20 }}>
+                  <HwButton size="small" fullWidth>GET STARTED</HwButton>
                 </div>
-                <div style={{ fontSize: 12, color: '#888', lineHeight: 1.4 }}>
-                  {card.description}
+              </HwCard>
+            </div>
+
+            {/* Demo Tour */}
+            <div className="hw-onboard-card" style={{ flex: '1 1 240px', maxWidth: 260 }}>
+              <HwCard variant="standard" onClick={handleDemoTour}>
+                <div style={{ marginBottom: 16, opacity: 0.4 }}>{cards[1].icon}</div>
+                <HwCardTitle>{cards[1].title}</HwCardTitle>
+                <HwCardDesc>{cards[1].description}</HwCardDesc>
+                <div style={{ marginTop: 20 }}>
+                  <HwButton variant="secondary" size="small" fullWidth>EXPLORE DEMO</HwButton>
                 </div>
-              </div>
-            ))}
+              </HwCard>
+            </div>
+
+            {/* Skip */}
+            <div className="hw-onboard-card" style={{ flex: '1 1 240px', maxWidth: 260 }}>
+              <HwCard variant="standard" onClick={handleSkip}>
+                <div style={{ marginBottom: 16, opacity: 0.4 }}>{cards[2].icon}</div>
+                <HwCardTitle>{cards[2].title}</HwCardTitle>
+                <HwCardDesc>{cards[2].description}</HwCardDesc>
+                <div style={{ marginTop: 20 }}>
+                  <HwButton variant="ghost" size="small" fullWidth>SKIP</HwButton>
+                </div>
+              </HwCard>
+            </div>
           </div>
         </div>
       </div>
@@ -134,8 +149,11 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: 
       {toastMsg && (
         <div style={{
           position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-          background: '#111', color: '#fff', padding: '10px 20px',
-          borderRadius: 10, fontSize: 13, fontWeight: 600,
+          background: 'var(--hw-bg-invert)', color: 'var(--hw-text-invert)',
+          padding: '12px 20px', border: '3px solid var(--hw-border-strong)',
+          boxShadow: 'var(--hw-shadow-lg)',
+          fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 700,
+          letterSpacing: '1.5px', textTransform: 'uppercase',
           animation: 'fadeSlideUp 0.3s ease-out both',
         }}>
           {toastMsg}

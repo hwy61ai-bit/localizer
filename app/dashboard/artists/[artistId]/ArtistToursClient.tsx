@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import posthog from "posthog-js";
+import { HwBadge, HwButton, HwEmptyState, HwInput, HwModal } from "@/app/components/hw";
 
 type Tour = {
   id: string;
@@ -73,16 +74,25 @@ export default function ArtistToursClient({
     <div style={{ padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888", marginBottom: 6 }}>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 6 }}>
             {artistName}
           </div>
-          <div style={{ fontSize: 13, color: "#888" }}>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
             {loading ? "Loading..." : `${tours.length} tour${tours.length !== 1 ? "s" : ""}`}
           </div>
         </div>
 
-        {!loading && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+        {!loading && tours.length === 0 && (
+          <HwEmptyState
+            title="NO TOURS YET"
+            description="Create your first tour to start routing shows and managing dates."
+            actionLabel="CREATE TOUR"
+            onAction={() => setShowModal(true)}
+          />
+        )}
+
+        {!loading && tours.length > 0 && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
             {tours.map((tour) => (
               <TourTile key={tour.id} tour={tour} onDelete={deleteTour} />
             ))}
@@ -92,9 +102,8 @@ export default function ArtistToursClient({
               style={{
                 width: "100%",
                 aspectRatio: "1 / 1",
-                background: "transparent",
-                border: "1.5px dashed #CCCCCC",
-                borderRadius: 14,
+                background: "var(--hw-bg-surface)",
+                border: "3px dashed var(--hw-border-light)",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -102,54 +111,46 @@ export default function ArtistToursClient({
                 gap: 8,
                 cursor: "pointer",
                 padding: 20,
+                transition: "var(--hw-ease)",
               }}
             >
-              <span style={{ fontSize: 140, fontWeight: 900, color: "#111", lineHeight: 1 }}>+</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#aaa", letterSpacing: "0.04em" }}>New Tour</span>
+              <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 120, fontWeight: 400, color: "var(--hw-text)", lineHeight: 1 }}>+</span>
+              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NEW TOUR</span>
             </button>
           </div>
         )}
       </div>
 
       {/* Create Tour Modal */}
-      {showModal && (
-        <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            style={{ background: "#fff", borderRadius: 14, padding: 32, width: 420, maxWidth: "90vw", border: "1px solid #DDDDDD" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6, letterSpacing: "-0.3px" }}>New Tour</div>
-            <div style={{ fontSize: 12, color: "#888", marginBottom: 20 }}>for {artistName}</div>
-
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: "#888", display: "block", marginBottom: 6 }}>Tour Name</label>
-              <input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && !creating && createTour()}
-                placeholder="e.g. Summer 2026 US Run"
-                autoFocus
-                style={{ width: "100%", boxSizing: "border-box", padding: "12px 14px", border: "1px solid #DDDDDD", borderRadius: 10, fontSize: 15, fontWeight: 600, outline: "none" }}
-              />
-            </div>
-
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
-              >Cancel</button>
-              <button
-                onClick={createTour}
-                disabled={creating || !newName.trim()}
-                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer", opacity: creating || !newName.trim() ? 0.5 : 1 }}
-              >{creating ? "Creating..." : "Create Tour"}</button>
-            </div>
-          </div>
+      <HwModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        title="NEW TOUR"
+        footer={
+          <>
+            <HwButton variant="secondary" size="small" onClick={() => setShowModal(false)}>CANCEL</HwButton>
+            <HwButton size="small" onClick={createTour} disabled={creating || !newName.trim()}>
+              {creating ? "CREATING..." : "CREATE TOUR"}
+            </HwButton>
+          </>
+        }
+      >
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 20 }}>
+          for {artistName}
         </div>
-      )}
+        <HwInput
+          label="Tour Name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="e.g. Summer 2026 US Run"
+        />
+        {/* Hidden handler for Enter key */}
+        <input
+          type="text"
+          style={{ position: "absolute", opacity: 0, width: 0, height: 0, pointerEvents: "none" }}
+          onKeyDown={(e) => e.key === "Enter" && !creating && createTour()}
+        />
+      </HwModal>
     </div>
   );
 }
@@ -207,9 +208,8 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
       <div
         onClick={() => router.push(`/dashboard/routing/${tour.id}`)}
         style={{
-          background: currentImage ? "transparent" : "#fff",
-          border: "1px solid #DDDDDD",
-          borderRadius: 14,
+          background: currentImage ? "transparent" : "var(--hw-bg-surface)",
+          border: "3px solid var(--hw-border-strong)",
           padding: 20,
           aspectRatio: "1 / 1",
           display: "flex",
@@ -217,14 +217,14 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
           justifyContent: "space-between",
           overflow: "hidden",
           position: "relative",
-          boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.09)" : "none",
-          transform: hovered ? "translateY(-2px)" : "none",
-          transition: "box-shadow 0.15s, transform 0.15s",
+          boxShadow: hovered ? "var(--hw-shadow-lg)" : "none",
+          transform: hovered ? "translateY(-4px)" : "none",
+          transition: "var(--hw-ease)",
         }}
       >
         {currentImage && (
           <>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${currentImage})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${currentImage})`, backgroundSize: "cover", backgroundPosition: "center", border: "3px solid var(--hw-border-strong)" }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
           </>
         )}
@@ -232,18 +232,18 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
         <div style={{ position: "relative", zIndex: 1 }} />
 
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.3px", color: currentImage ? "#fff" : "#111", marginBottom: 8 }}>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "#fff" : "var(--hw-text)", marginBottom: 8 }}>
             {tour.name}
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: currentImage ? "rgba(255,255,255,0.6)" : "#aaa" }}>
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>
               {new Date(tour.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               {tour.localizer_tour_id && (
-                <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: currentImage ? "rgba(26,107,60,0.8)" : "#e8f5e9", color: currentImage ? "#fff" : "#1a6b3c" }}>Localizer</span>
+                <HwBadge variant="confirmed">LOCALIZER</HwBadge>
               )}
-              <span style={{ fontSize: 16, color: currentImage ? "rgba(255,255,255,0.5)" : "#ccc" }}>&rarr;</span>
+              <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, color: currentImage ? "rgba(255,255,255,0.5)" : "var(--hw-border-light)" }}>&rarr;</span>
             </div>
           </div>
         </div>
@@ -252,7 +252,7 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
       {mounted && hovered && (
         <button
           onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.4)", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", backdropFilter: "blur(4px)", letterSpacing: "0.04em" }}
+          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
         >
           {uploading ? "Uploading\u2026" : currentImage ? "Change photo" : "+ Photo"}
         </button>
@@ -261,7 +261,7 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
       {mounted && hovered && (
         <button
           onClick={(e) => onDelete(tour.id, e)}
-          style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,0,0,0.3)", background: "rgba(0,0,0,0.55)", color: "rgba(255,100,100,0.9)", fontSize: 11, fontWeight: 700, cursor: "pointer", backdropFilter: "blur(4px)", letterSpacing: "0.04em" }}
+          style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
         >
           Delete
         </button>

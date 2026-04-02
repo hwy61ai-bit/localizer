@@ -153,7 +153,7 @@ export default function FinanceDashboard() {
   const totalNet = rows.reduce((s, r) => s + r.fin.netIncome, 0);
 
   return (
-    <div className="fade-in" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "32px 24px 80px" }}>
+    <div className="fade-in" style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 24 }}>

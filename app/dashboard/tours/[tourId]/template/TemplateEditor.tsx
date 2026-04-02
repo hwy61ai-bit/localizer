@@ -511,7 +511,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         <div className="template-mobile-gate-msg">Please switch to a larger screen to use the template editor.</div>
       </div>
     </div>
-    <div className="fade-in template-editor-content" style={{ background: "#F7F7F5", minHeight: "100vh", padding: 32 }}>
+    <div className="fade-in template-editor-content" style={{ minHeight: "100vh", padding: 32 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #ddd" }}>

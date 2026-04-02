@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import ArtistDetailClient from "./ArtistDetailClient";
 import ArtistToursClient from "./ArtistToursClient";
+import { HwTabs, HwTab, HwPageHeader, HwBreadcrumb, HwButton, HwCard, HwCardTitle, HwCardDesc } from "@/app/components/hw";
 
 const ADMIN_EMAILS = ["hwy61ai@gmail.com", "hwy61regan@gmail.com"];
 
@@ -81,8 +82,8 @@ export default function ArtistHubClient({
 
   if (access.loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F7F7F5", display: "grid", placeItems: "center" }}>
-        <div style={{ fontSize: 13, color: "#888" }}>Loading...</div>
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>Loading...</div>
       </div>
     );
   }
@@ -90,38 +91,36 @@ export default function ArtistHubClient({
   // No access at all
   if (!access.hasLocalizer && !access.hasTourRouter) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F7F7F5", display: "grid", placeItems: "center", padding: 24 }}>
-        <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center", maxWidth: 480 }}>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>No Active Subscription</div>
-          <div style={{ fontSize: 13, color: "#888", marginBottom: 20, lineHeight: 1.6 }}>
-            Subscribe to Localizer or TourRouter to manage your artists.
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
+        <HwCard variant="standard" hoverable={false}>
+          <div style={{ textAlign: "center", maxWidth: 480, padding: "16px 0" }}>
+            <HwCardTitle>NO ACTIVE SUBSCRIPTION</HwCardTitle>
+            <HwCardDesc>Subscribe to Localizer or TourRouter to manage your artists.</HwCardDesc>
+            <div style={{ marginTop: 24 }}>
+              <a href="/pricing" style={{ textDecoration: "none" }}>
+                <HwButton>VIEW PLANS</HwButton>
+              </a>
+            </div>
           </div>
-          <a
-            href="/pricing"
-            style={{
-              padding: "12px 28px", borderRadius: 10, border: "1px solid #111",
-              background: "#111", color: "#fff", fontWeight: 900, fontSize: 13,
-              textDecoration: "none", display: "inline-block",
-            }}
-          >
-            View Plans
-          </a>
-        </div>
+        </HwCard>
       </div>
     );
   }
 
   const backLink = (
     <div style={{ padding: "16px 24px 0" }}>
-      <a href="/dashboard" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>&larr; HWY61 LABS</a>
+      <HwBreadcrumb items={[{ label: "Dashboard", href: "/dashboard" }, { label: artistName }]} />
     </div>
   );
 
   // Localizer only — no tabs, render directly
   if (access.hasLocalizer && !access.hasTourRouter) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F7F7F5" }}>
+      <div style={{ minHeight: "100vh" }}>
         {backLink}
+        <div style={{ padding: "8px 24px 0" }}>
+          <HwPageHeader title={artistName} />
+        </div>
         <ArtistDetailClient artistId={artistId} />
       </div>
     );
@@ -129,63 +128,43 @@ export default function ArtistHubClient({
 
   // TourRouter only or both — show tabs
   const tabs = [];
-  tabs.push({ key: "tourrouter" as const, label: "TourRouter / Management" });
+  tabs.push({ key: "tourrouter" as const, label: "TourRouter" });
   if (access.hasLocalizer) {
-    tabs.push({ key: "localizer" as const, label: "Localizer / Assets" });
+    tabs.push({ key: "localizer" as const, label: "Localizer" });
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F7F5" }}>
+    <div style={{ minHeight: "100vh" }}>
       {backLink}
+      <div style={{ padding: "8px 24px 0" }}>
+        <HwPageHeader title={artistName} />
+      </div>
       {/* Tab bar */}
-      <div style={{
-        background: "#fff", borderBottom: "1px solid #DDDDDD",
-        padding: "0 24px", display: "flex", gap: 0,
-      }}>
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.key;
-          return (
-            <button
+      <div style={{ padding: "0 24px" }}>
+        <HwTabs>
+          {tabs.map((tab) => (
+            <HwTab
               key={tab.key}
+              label={tab.label}
+              active={activeTab === tab.key}
               onClick={() => setActiveTab(tab.key)}
-              style={{
-                padding: "14px 24px",
-                fontSize: 13,
-                fontWeight: isActive ? 900 : 600,
-                color: isActive ? "#111" : "#888",
-                background: "none",
-                border: "none",
-                borderBottom: isActive ? "2px solid #111" : "2px solid transparent",
-                cursor: "pointer",
-                transition: "color 0.15s, border-color 0.15s",
-              }}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+            />
+          ))}
+        </HwTabs>
       </div>
 
       {/* DIY upgrade banner */}
       {activeTab === "tourrouter" && isDiy && (
         <div style={{
-          background: "#f5f5f5", borderBottom: "1px solid #e8e8e8",
-          padding: "10px 24px", display: "flex", alignItems: "center",
+          background: "var(--hw-amber-ghost)", borderBottom: "3px solid var(--hw-amber)",
+          padding: "12px 24px", display: "flex", alignItems: "center",
           justifyContent: "space-between", gap: 12, flexWrap: "wrap",
         }}>
-          <div style={{ fontSize: 12, color: "#555", lineHeight: 1.5 }}>
-            You're on the <strong>DIY</strong> plan. Upgrade to TourRouter for advancing, settlements, finance tools, and more.
+          <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text)", lineHeight: 1.5 }}>
+            You&apos;re on the <strong>DIY</strong> plan. Upgrade to TourRouter for advancing, settlements, finance tools, and more.
           </div>
-          <a
-            href="/pricing"
-            style={{
-              fontSize: 11, fontWeight: 700, color: "#111",
-              textDecoration: "none", padding: "5px 14px",
-              border: "1px solid #ccc", borderRadius: 6,
-              background: "#fff", whiteSpace: "nowrap",
-            }}
-          >
-            View Plans
+          <a href="/pricing" style={{ textDecoration: "none" }}>
+            <HwButton variant="secondary" size="small">VIEW PLANS</HwButton>
           </a>
         </div>
       )}

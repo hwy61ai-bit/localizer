@@ -196,8 +196,8 @@ export default function AssetsPage() {
   }
 
   return (
-    <div className="fade-in" style={{ background: "#EEEEEE", minHeight: "100vh", color: "#111" }}>
-      <div className="assets-page-header" style={{ padding: "24px 28px", borderBottom: "1px solid #ddd", background: "#EEEEEE", maxWidth: 1100, margin: "0 auto" }}>
+    <div className="fade-in" style={{ minHeight: "100vh", color: "#111" }}>
+      <div className="assets-page-header" style={{ padding: "24px 28px", borderBottom: "1px solid #ddd", maxWidth: 1100, margin: "0 auto" }}>
         <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>← Back to Tour</Link>
         <div className="assets-page-header-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
