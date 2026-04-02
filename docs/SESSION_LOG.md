@@ -546,3 +546,32 @@ Next session should start with:
 Phase 4: Localizer pages (asset grid, upload area, template editor, venue share links)
 Then Phase 5: Supporting pages (artist profile, settings/billing)
 Then Phase 6: Global polish (skeletons, empty states, toasts, responsive pass, final audit)
+
+April 2, 2026 — Design System Day
+What got done:
+
+Tim's April 1 build package added to docs/ (design system, TODO, demo tour data, FAQ, tutorial scripts, QA checklist, landing page HTML)
+Phase 1 complete: globals.css foundation (Google Fonts, CSS custom properties, halftone overlay, border-radius reset) + 29 Hw* components in app/components/hw/ with barrel export index.ts
+Phase 2 complete: Dashboard shell restyled (artist tiles, notification bell, onboarding wizard, artist hub tabs, tour tiles, create tour modal)
+Phase 3 complete: All TourRouter pages restyled (routing table, RosterPanel, SettlementPanel, VehicleManager, IntakeDropZone, import, financials, export, public advance form) + font sweep clean
+Phase 4 complete: All Localizer pages restyled (Gigs/EventsTable, TemplateEditor sidebar, Import Assets, Import Schedule, ArtistDetailClient, venue share page)
+Landing page rebuilt from Tim's HWY61_WARHOL_v2_LANDING.html (full React conversion with animations, blue → crimson swap)
+Login page restyled with Warhol design system
+Venue share page polished (bordered hero, aligned asset labels, square advance material cards)
+Template editor sidebar fixes (toggles → checkboxes, readability improvements, missed fonts)
+Halftone dot overlay fix (z-index 1 on body::after, app content sits above)
+Hydration fixes on financials + export pages (hardcoded HWY61 brand, removed useProductBranding)
+Artist delete cascade fix (foreign key on tours_routing — now deletes child records first)
+Auth callback fix (Supabase wildcard redirect URLs + stale PKCE cookies)
+Import schedule textarea overflow fix
+
+What didn't:
+
+Phase 5 (Supporting pages: artist profile, settings/billing)
+Phase 6 (Global polish: skeletons, empty states, toasts, responsive pass, final audit)
+
+Next session should start with:
+
+Paste session kickoff + design system reference into Claude Code
+Phase 5: Artist profile page, settings/billing page
+Phase 6: Loading skeletons, empty states, toast wiring, responsive pass, final consistency audit (grep for border-radius > 0, hardcoded hex colors, non-var fonts, blurred shadows)
