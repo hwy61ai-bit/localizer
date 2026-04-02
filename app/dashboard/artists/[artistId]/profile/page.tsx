@@ -215,7 +215,7 @@ export default function ArtistProfilePage() {
   if (loading || !artist) {
     return (
       <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-        <div style={{ fontSize: 13, color: "#888" }}>Loading...</div>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
       </div>
     );
   }
@@ -232,12 +232,12 @@ export default function ArtistProfilePage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <button
             onClick={() => router.back()}
-            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 700, color: "#888", padding: 0 }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", padding: 0 }}
           >
-            &larr; Back
+            &larr; BACK
           </button>
-          <div style={{ fontSize: 11, color: saving ? "#888" : showSaved ? "#1a6b3c" : "transparent", transition: "color 0.2s" }}>
-            {saving ? "Saving..." : showSaved ? "Saved" : "."}
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: saving ? "var(--hw-text-muted)" : showSaved ? "var(--hw-green)" : "transparent", transition: "color 0.2s" }}>
+            {saving ? "SAVING..." : showSaved ? "SAVED" : "."}
           </div>
         </div>
 
@@ -250,7 +250,7 @@ export default function ArtistProfilePage() {
 
         {/* ══════ Header ══════ */}
         <div style={{
-          background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14,
+          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
           padding: 28, marginBottom: 20,
         }}>
           <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
@@ -268,16 +268,16 @@ export default function ArtistProfilePage() {
                 onMouseLeave={() => setLogoHovered(false)}
                 onClick={() => logoFileRef.current?.click()}
                 style={{
-                  width: 72, height: 72, borderRadius: 12,
-                  background: "#f5f5f5",
-                  border: artist.logo_url ? "2px solid #DDDDDD" : "2px dashed #ccc",
+                  width: 72, height: 72,
+                  background: "var(--hw-bg)",
+                  border: artist.logo_url ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: "pointer", overflow: "hidden", position: "relative",
-                  flexShrink: 0,
+                  flexShrink: 0, transition: "var(--hw-ease)",
                 }}
               >
                 {uploadingLogo ? (
-                  <div style={{ fontSize: 9, color: "#888", fontWeight: 700 }}>...</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, color: "var(--hw-text-muted)", fontWeight: 700 }}>...</div>
                 ) : artist.logo_url ? (
                   <>
                     <img
@@ -289,21 +289,20 @@ export default function ArtistProfilePage() {
                       <div style={{
                         position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        borderRadius: 12,
                       }}>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>Replace</span>
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#fff" }}>REPLACE</span>
                       </div>
                     )}
                   </>
                 ) : (
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: 16, color: "#bbb" }}>+</div>
-                    <div style={{ fontSize: 7, fontWeight: 700, color: "#bbb", textTransform: "uppercase" }}>Logo</div>
+                    <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, color: "var(--hw-text-muted)" }}>+</div>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 7, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>LOGO</div>
                   </div>
                 )}
               </div>
-              <div style={{ fontSize: 9, color: "#999", marginTop: 6, textAlign: "center", maxWidth: 72 }}>
-                Upload a transparent .PNG for best results
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 8, color: "var(--hw-text-muted)", marginTop: 6, textAlign: "center", maxWidth: 72, letterSpacing: "0.5px" }}>
+                Transparent .PNG
               </div>
             </div>
 
@@ -314,22 +313,22 @@ export default function ArtistProfilePage() {
                 onChange={(e) => updateField("name", e.target.value)}
                 placeholder="Artist Name"
                 style={{
-                  fontSize: 36, fontWeight: 900, letterSpacing: "-1px",
-                  textTransform: "uppercase" as const,
+                  fontFamily: "var(--hw-font-display)", fontSize: 48, fontWeight: 400,
+                  letterSpacing: "2px", textTransform: "uppercase" as const,
                   border: "none", outline: "none", background: "transparent",
-                  color: "#111", width: "100%", padding: 0, marginBottom: 4,
+                  color: "var(--hw-text)", width: "100%", padding: 0, marginBottom: 4,
                   animation: "fadeSlideUp 0.5s ease-out both",
                 }}
               />
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 11, color: "#999", flexShrink: 0 }}>Spotify</span>
+                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", flexShrink: 0 }}>SPOTIFY</span>
                 <input
                   value={artist.spotify_url || ""}
                   onChange={(e) => updateField("spotify_url", e.target.value)}
                   placeholder="https://open.spotify.com/artist/..."
                   style={{
-                    fontSize: 12, color: "#555", border: "none", outline: "none",
-                    background: "transparent", flex: 1, padding: 0,
+                    fontFamily: "var(--hw-font-body)", fontSize: 12, color: "var(--hw-text-secondary)",
+                    border: "none", outline: "none", background: "transparent", flex: 1, padding: 0,
                   }}
                 />
                 {artist.spotify_url && (
@@ -337,9 +336,9 @@ export default function ArtistProfilePage() {
                     href={artist.spotify_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ fontSize: 11, color: "#1a6b3c", textDecoration: "none", fontWeight: 600, flexShrink: 0 }}
+                    style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-green)", textDecoration: "none", fontWeight: 700, letterSpacing: "1px", flexShrink: 0 }}
                   >
-                    Open &rarr;
+                    OPEN &rarr;
                   </a>
                 )}
               </div>
@@ -349,7 +348,7 @@ export default function ArtistProfilePage() {
 
         {/* ══════ Bio ══════ */}
         <div style={{
-          background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14,
+          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
           padding: 28, marginBottom: 20,
         }}>
           <SectionLabel>Bio</SectionLabel>
@@ -368,7 +367,7 @@ export default function ArtistProfilePage() {
 
         {/* ══════ Team ══════ */}
         <div style={{
-          background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14,
+          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
           padding: 28, marginBottom: 20,
         }}>
           <SectionLabel>Team</SectionLabel>
@@ -390,7 +389,7 @@ export default function ArtistProfilePage() {
 
         {/* ══════ Advance Materials ══════ */}
         <div style={{
-          background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14,
+          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
           padding: 28, marginBottom: 20,
         }}>
           <SectionLabel>Advance Materials</SectionLabel>
@@ -447,7 +446,7 @@ export default function ArtistProfilePage() {
         </div>
 
         {/* ══════ Divider ══════ */}
-        <div style={{ borderTop: "1px solid #eee", margin: "2rem 0" }} />
+        <div style={{ borderTop: "3px solid var(--hw-border-strong)", margin: "2rem 0" }} />
 
         {/* ══════ 1. Roster ══════ */}
         <Accordion
