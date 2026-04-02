@@ -65,26 +65,68 @@ export default function TourTile({
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
-    if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
+    const msg = type === "artist"
+      ? "Delete this artist and all its tours? This cannot be undone."
+      : "Delete this tour and all its events? This cannot be undone.";
+    if (!window.confirm(msg)) return;
     setDeleting(true);
     try {
       if (type === "artist") {
+        // 1. Delete tours_routing children (TourRouter tours for this artist)
+        const { data: routingTours } = await supabase.from("tours_routing").select("id").eq("artist_id", tourId);
+        const routingTourIds = (routingTours ?? []).map(t => t.id);
+        if (routingTourIds.length > 0) {
+          // Get all show IDs for guest list + advance email cleanup
+          const { data: shows } = await supabase.from("tour_shows").select("id").in("tour_id", routingTourIds);
+          const showIds = (shows ?? []).map(s => s.id);
+          if (showIds.length > 0) {
+            const { error: glErr } = await supabase.from("tour_guest_list").delete().in("show_id", showIds);
+            if (glErr) console.error("tour_guest_list delete:", glErr.message);
+            const { error: aeErr } = await supabase.from("advance_emails").delete().in("show_id", showIds);
+            if (aeErr) console.error("advance_emails delete:", aeErr.message);
+          }
+          // Delete tour_shows
+          const { error: tsErr } = await supabase.from("tour_shows").delete().in("tour_id", routingTourIds);
+          if (tsErr) console.error("tour_shows delete:", tsErr.message);
+          // Delete tour_expenses
+          const { error: teErr } = await supabase.from("tour_expenses").delete().in("tour_id", routingTourIds);
+          if (teErr) console.error("tour_expenses delete:", teErr.message);
+          // Delete intake_documents
+          const { error: idErr } = await supabase.from("intake_documents").delete().in("tour_id", routingTourIds);
+          if (idErr) console.error("intake_documents delete:", idErr.message);
+          // Delete tours_routing
+          const { error: trErr } = await supabase.from("tours_routing").delete().in("id", routingTourIds);
+          if (trErr) throw trErr;
+        }
+
+        // 2. Delete Localizer tours children
         const { data: tours } = await supabase.from("tours").select("id").eq("artist_id", tourId);
         const tourIds = (tours ?? []).map(t => t.id);
         if (tourIds.length > 0) {
           const { data: events } = await supabase.from("events").select("id").in("tour_id", tourIds);
-          const eventIds = (events ?? []).map(e => e.id);
-          if (eventIds.length > 0) await supabase.from("venue_links").delete().in("event_id", eventIds);
-          await supabase.from("events").delete().in("tour_id", tourIds);
-          await supabase.from("tours").delete().in("id", tourIds);
+          const eventIds = (events ?? []).map(ev => ev.id);
+          if (eventIds.length > 0) {
+            const { error: vlErr } = await supabase.from("venue_links").delete().in("event_id", eventIds);
+            if (vlErr) throw vlErr;
+          }
+          const { error: evErr } = await supabase.from("events").delete().in("tour_id", tourIds);
+          if (evErr) throw evErr;
+          const { error: trErr } = await supabase.from("tours").delete().in("id", tourIds);
+          if (trErr) throw trErr;
         }
+
+        // 3. Delete the artist
         const { error } = await supabase.from("artists").delete().eq("id", tourId);
         if (error) throw error;
       } else {
-        await supabase.from("venue_links").delete().in("event_id",
-          (await supabase.from("events").select("id").eq("tour_id", tourId)).data?.map(e => e.id) ?? []
-        );
-        await supabase.from("events").delete().eq("tour_id", tourId);
+        const { data: evts } = await supabase.from("events").select("id").eq("tour_id", tourId);
+        const eventIds = (evts ?? []).map(ev => ev.id);
+        if (eventIds.length > 0) {
+          const { error: vlErr } = await supabase.from("venue_links").delete().in("event_id", eventIds);
+          if (vlErr) throw vlErr;
+        }
+        const { error: evErr } = await supabase.from("events").delete().eq("tour_id", tourId);
+        if (evErr) throw evErr;
         const { error } = await supabase.from("tours").delete().eq("id", tourId);
         if (error) throw error;
       }

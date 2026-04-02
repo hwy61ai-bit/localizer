@@ -84,6 +84,65 @@ export default function LoginPage() {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "12px 16px",
+    border: "3px solid var(--hw-border-strong)",
+    background: "var(--hw-bg-surface)",
+    color: "var(--hw-text)",
+    fontFamily: "var(--hw-font-body)",
+    fontSize: 15,
+    outline: "none",
+    transition: "var(--hw-ease)",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: "var(--hw-font-mono)",
+    fontSize: 11,
+    fontWeight: 400,
+    letterSpacing: "1.5px",
+    textTransform: "uppercase",
+    color: "var(--hw-text-secondary)",
+    display: "block",
+    marginBottom: 6,
+  };
+
+  const primaryBtnStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    marginTop: 12,
+    padding: "14px 28px",
+    border: "3px solid var(--hw-crimson)",
+    background: "var(--hw-crimson)",
+    color: "#fff",
+    fontFamily: "var(--hw-font-display)",
+    fontSize: 16,
+    letterSpacing: "3px",
+    textTransform: "uppercase",
+    cursor: "pointer",
+    transition: "var(--hw-ease)",
+  };
+
+  const secondaryBtnStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "14px 28px",
+    border: "3px solid var(--hw-border-strong)",
+    background: "var(--hw-bg-surface)",
+    color: "var(--hw-text)",
+    fontFamily: "var(--hw-font-display)",
+    fontSize: 16,
+    letterSpacing: "3px",
+    textTransform: "uppercase",
+    cursor: "pointer",
+    transition: "var(--hw-ease)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  };
+
   return (
     <main
       className="login-container"
@@ -92,24 +151,30 @@ export default function LoginPage() {
         display: "grid",
         placeItems: "center",
         padding: 24,
-        background: "#EEEEEE",
-        color: "#111111",
       }}
     >
-      <div style={{ width: "100%", maxWidth: 520 }}>
+      <div style={{ width: "100%", maxWidth: 480 }}>
         {/* Wordmark */}
-        <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div
-            className="brand-title-login"
             style={{
-              fontSize: 92,
-              fontWeight: 900,
-              letterSpacing: "-0.06em",
+              fontFamily: "var(--hw-font-display)",
+              fontSize: 36,
+              letterSpacing: "4px",
+              textTransform: "uppercase",
+              color: "var(--hw-crimson)",
+              lineHeight: 1,
             }}
           >
-            {productName}
+            HWY61
           </div>
-          <div className="login-subtitle" style={{ marginTop: 10, fontSize: 13, opacity: 0.7 }}>
+          <div className="login-subtitle" style={{
+            marginTop: 10,
+            fontFamily: "var(--hw-font-body)",
+            fontSize: 14,
+            fontWeight: 300,
+            color: "var(--hw-text-secondary)",
+          }}>
             {!inviteVerified
               ? "Enter your beta invite code to get started."
               : "Enter your email and we\u2019ll send you a sign-in link. No password needed."}
@@ -120,28 +185,18 @@ export default function LoginPage() {
         <div
           className="login-card"
           style={{
-            border: "1px solid #DDDDDD",
-            borderRadius: 14,
-            background: "#FFFFFF",
-            padding: 18,
+            border: "3px solid var(--hw-border-strong)",
+            background: "var(--hw-bg-surface)",
+            boxShadow: "var(--hw-shadow-lg)",
+            padding: 32,
           }}
         >
           {!inviteVerified ? (
             <>
-              <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
-                Invite Code
-              </div>
+              <label style={labelStyle}>INVITE CODE</label>
               <input
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: "1px solid #DDDDDD",
-                  fontSize: 14,
-                  outline: "none",
-                  background: "#FFFFFF",
-                  color: "#111111",
+                  ...inputStyle,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                 }}
@@ -149,109 +204,84 @@ export default function LoginPage() {
                 value={inviteCode}
                 onChange={(e) => setInviteCode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !inviteLoading && verifyInvite()}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--hw-crimson)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--hw-border-strong)")}
                 disabled={inviteLoading}
               />
               <button
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  marginTop: 12,
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: "1px solid #111111",
-                  background: "#111111",
-                  color: "#FFFFFF",
-                  fontWeight: 900,
-                  cursor: !inviteCode.trim() || inviteLoading ? "not-allowed" : "pointer",
-                  opacity: !inviteCode.trim() || inviteLoading ? 0.55 : 1,
+                  ...primaryBtnStyle,
+                  opacity: !inviteCode.trim() || inviteLoading ? 0.4 : 1,
+                  pointerEvents: !inviteCode.trim() || inviteLoading ? "none" : "auto",
                 }}
                 disabled={!inviteCode.trim() || inviteLoading}
                 onClick={verifyInvite}
               >
-                {inviteLoading ? "Verifying\u2026" : "Verify"}
+                {inviteLoading ? "VERIFYING\u2026" : "VERIFY"}
               </button>
               {inviteError && (
-                <p style={{ marginTop: 12, fontSize: 13, color: "#B00020" }}>
+                <p style={{ marginTop: 12, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
                   {inviteError}
                 </p>
               )}
-              <div style={{ marginTop: 16, textAlign: "center" }}>
+              <div style={{ marginTop: 20, textAlign: "center" }}>
                 <button
                   onClick={skipToLogin}
                   style={{
                     background: "none",
                     border: "none",
-                    fontSize: 12,
-                    color: "#999",
+                    fontFamily: "var(--hw-font-mono)",
+                    fontSize: 11,
+                    letterSpacing: "1.5px",
+                    textTransform: "uppercase",
+                    color: "var(--hw-text-muted)",
                     cursor: "pointer",
                     textDecoration: "underline",
                   }}
                 >
-                  Team Login
+                  TEAM LOGIN
                 </button>
               </div>
             </>
           ) : !sent ? (
             <>
-              <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
-                Email
-              </div>
+              <label style={labelStyle}>EMAIL</label>
               <input
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: "1px solid #DDDDDD",
-                  fontSize: 14,
-                  outline: "none",
-                  background: "#FFFFFF",
-                  color: "#111111",
-                }}
+                style={inputStyle}
                 placeholder="you@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !(!email || loading) && sendMagicLink()}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--hw-crimson)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--hw-border-strong)")}
                 disabled={loading}
               />
               <button
                 style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  marginTop: 12,
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: "1px solid #111111",
-                  background: "#111111",
-                  color: "#FFFFFF",
-                  fontWeight: 900,
-                  cursor: !email || loading ? "not-allowed" : "pointer",
-                  opacity: !email || loading ? 0.55 : 1,
+                  ...primaryBtnStyle,
+                  opacity: !email || loading ? 0.4 : 1,
+                  pointerEvents: !email || loading ? "none" : "auto",
                 }}
                 disabled={!email || loading}
                 onClick={sendMagicLink}
               >
-                {loading ? "Sending\u2026" : "Send login link"}
+                {loading ? "SENDING\u2026" : "SEND LOGIN LINK"}
               </button>
 
-              <div style={{ margin: "16px 0", textAlign: "center", fontSize: 12, color: "#999" }}>OR</div>
+              <div style={{
+                margin: "20px 0",
+                textAlign: "center",
+                fontFamily: "var(--hw-font-mono)",
+                fontSize: 11,
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                color: "var(--hw-text-muted)",
+              }}>
+                OR
+              </div>
 
               <button
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: "1px solid #DDDDDD",
-                  background: "#FFFFFF",
-                  color: "#111111",
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                }}
+                style={secondaryBtnStyle}
                 onClick={signInWithGoogle}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -260,49 +290,61 @@ export default function LoginPage() {
                   <path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z" fill="#FBBC05"/>
                   <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
                 </svg>
-                Sign in with Google
+                SIGN IN WITH GOOGLE
               </button>
 
-              <div style={{ marginTop: 16, textAlign: "center", fontSize: 12, color: "#999", lineHeight: 1.5 }}>
+              <div style={{
+                marginTop: 20,
+                textAlign: "center",
+                fontFamily: "var(--hw-font-body)",
+                fontSize: 13,
+                fontWeight: 300,
+                color: "var(--hw-text-muted)",
+                lineHeight: 1.5,
+              }}>
                 By continuing, you agree to our{" "}
-                <a href="/terms" style={{ color: "#666", textDecoration: "underline" }}>Terms of Service</a>{" "}
+                <a href="/terms" style={{ color: "var(--hw-text-secondary)", textDecoration: "underline" }}>Terms of Service</a>{" "}
                 and{" "}
-                <a href="/privacy" style={{ color: "#666", textDecoration: "underline" }}>Privacy Policy</a>.
+                <a href="/privacy" style={{ color: "var(--hw-text-secondary)", textDecoration: "underline" }}>Privacy Policy</a>.
               </div>
             </>
           ) : (
             <>
-              <div style={{ fontSize: 15, fontWeight: 900, marginBottom: 8 }}>
-                Check your inbox
+              <div style={{
+                fontFamily: "var(--hw-font-display)",
+                fontSize: 22,
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                color: "var(--hw-text)",
+                marginBottom: 8,
+              }}>
+                CHECK YOUR INBOX
               </div>
-              <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 16 }}>
+              <div style={{
+                fontFamily: "var(--hw-font-body)",
+                fontSize: 14,
+                fontWeight: 300,
+                color: "var(--hw-text-secondary)",
+                marginBottom: 20,
+                lineHeight: 1.5,
+              }}>
                 We sent a login link to <strong>{email}</strong>. Click it to sign in — it expires in 1 hour.
               </div>
               <button
-                style={{
-                  width: "100%",
-                  boxSizing: "border-box",
-                  padding: "10px 14px",
-                  borderRadius: 12,
-                  border: "1px solid #DDDDDD",
-                  background: "#FFFFFF",
-                  color: "#111111",
-                  fontWeight: 900,
-                  cursor: "pointer",
-                }}
+                style={secondaryBtnStyle}
                 onClick={() => {
                   setSent(false);
                   setEmail("");
                   setError(null);
                 }}
               >
-                Use a different email
+                USE A DIFFERENT EMAIL
               </button>
             </>
           )}
 
           {error && (
-            <p style={{ marginTop: 12, fontSize: 13, color: "#B00020" }}>
+            <p style={{ marginTop: 12, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
               {error}
             </p>
           )}
