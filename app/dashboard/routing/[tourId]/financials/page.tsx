@@ -21,7 +21,6 @@ import {
   type DriveDataMap,
 } from "@/lib/tourrouter";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
-import { useProductBranding } from "@/lib/tourrouter/ProductBrandingContext";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -71,7 +70,7 @@ type ShowRow = {
 export default function FinancialsPage() {
   const { tourId } = useParams<{ tourId: string }>();
   const flags = useFeatureFlags();
-  const branding = useProductBranding();
+
   const [tour, setTour] = useState<TourData | null>(null);
   const [shows, setShows] = useState<ShowRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -337,23 +336,24 @@ export default function FinancialsPage() {
     <div className="fade-in" style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #DDDDDD" }}>
-          <Link href={`/dashboard/routing/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Back to Tour</Link>
+        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
+          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
-              <div style={{ borderBottom: "2px solid #111111", marginBottom: 6 }} />
-              <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>{tour?.name?.toUpperCase() || "TOUR"}</div>
+              <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>HWY61</h1>
+              <div style={{ borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 6 }} />
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", margin: 0 }}>{tour?.name?.toUpperCase() || "TOUR"}</div>
             </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #DDDDDD", borderRadius: 12, padding: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
                 {navItems.map((item) => (
                   <Link key={item.num} href={item.href} style={{
-                    padding: "10px 18px", borderRadius: 10,
-                    border: item.active ? "1px solid #111" : "1px solid #DDDDDD",
-                    background: item.active ? "#111" : "#fff",
-                    color: item.active ? "#fff" : "#111",
-                    textDecoration: "none", fontWeight: item.active ? 900 : 700, fontSize: 13,
+                    padding: "10px 18px",
+                    border: item.active ? "3px solid var(--hw-border-strong)" : "3px solid transparent",
+                    background: item.active ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                    color: item.active ? "#fff" : "var(--hw-text)",
+                    textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: item.active ? 700 : 400,
+                    letterSpacing: "1.5px", textTransform: "uppercase",
                   }}>{item.num}. {item.label}</Link>
                 ))}
               </div>
@@ -362,48 +362,48 @@ export default function FinancialsPage() {
         </div>
 
         {loading || !fin ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading...</div>
+          <div style={{ textAlign: "center", padding: 60, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
         ) : !flags.financeLayer ? (
-          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
+          <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 48, textAlign: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Financial Tools</div>
-            <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>Detailed financial tracking, expense management, and reporting are available with TourRouter.</div>
+            <div style={{ fontSize: 13, color: "var(--hw-text-muted)", marginBottom: 20 }}>Detailed financial tracking, expense management, and reporting are available with TourRouter.</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, maxWidth: 500, margin: "0 auto", marginBottom: 24 }}>
-              <div style={{ background: "#fafaf8", borderRadius: 10, padding: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: 4 }}>Shows</div>
+              <div style={{ background: "var(--hw-bg-warm)", padding: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Shows</div>
                 <div style={{ fontSize: 20, fontWeight: 800 }}>{fin.showDayCount}</div>
               </div>
-              <div style={{ background: "#fafaf8", borderRadius: 10, padding: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: 4 }}>Income</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#1a6b3c" }}>{fmtUSD(fin.totalIncome)}</div>
+              <div style={{ background: "var(--hw-bg-warm)", padding: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Income</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "var(--hw-green)" }}>{fmtUSD(fin.totalIncome)}</div>
               </div>
-              <div style={{ background: "#fafaf8", borderRadius: 10, padding: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: 4 }}>Est. Fuel</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#c0392b" }}>{fmtUSD(fin.totalFuel)}</div>
+              <div style={{ background: "var(--hw-bg-warm)", padding: 16 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Est. Fuel</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFuel)}</div>
               </div>
             </div>
-            <a href="https://hwy61labs.com" target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Upgrade to TourRouter</a>
+            <a href="https://hwy61labs.com" target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Upgrade to TourRouter</a>
           </div>
         ) : (
           <>
             {/* ══════ Summary Cards ══════ */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
               {[
-                { label: "Total Income", value: fmtUSD(fin.totalIncome), color: "#1a6b3c" },
-                { label: "Total Expenses", value: fmtUSD(fin.totalExpenses), color: "#c0392b" },
-                { label: "Net Profit", value: fmtUSD(fin.netIncome), color: fin.netIncome >= 0 ? "#1a6b3c" : "#c0392b" },
-                { label: "Margin", value: fin.margin.toFixed(1) + "%", color: fin.margin >= 0 ? "#1a6b3c" : "#c0392b" },
+                { label: "Total Income", value: fmtUSD(fin.totalIncome), color: "var(--hw-green)" },
+                { label: "Total Expenses", value: fmtUSD(fin.totalExpenses), color: "var(--hw-crimson)" },
+                { label: "Net Profit", value: fmtUSD(fin.netIncome), color: fin.netIncome >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" },
+                { label: "Margin", value: fin.margin.toFixed(1) + "%", color: fin.margin >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" },
                 { label: "Avg Per Show", value: fmtUSD(fin.avgPerShow) },
-                { label: "Est. Fuel", value: fmtUSD(fin.totalFuel), color: "#c0392b" },
+                { label: "Est. Fuel", value: fmtUSD(fin.totalFuel), color: "var(--hw-crimson)" },
               ].map((c) => (
-                <div key={c.label} style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: "16px 20px" }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>{c.label}</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "monospace", color: c.color || "#111" }}>{c.value}</div>
+                <div key={c.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: "16px 20px" }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 4 }}>{c.label}</div>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "1px", color: c.color || "var(--hw-text)" }}>{c.value}</div>
                 </div>
               ))}
             </div>
 
             {/* ══════ Income Waterfall ══════ */}
-            <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, marginBottom: 16 }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 20, marginBottom: 16 }}>
               <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Income Waterfall</div>
               {(() => {
                 const gross = fin.totalIncome;
@@ -417,17 +417,18 @@ export default function FinancialsPage() {
 
                 const rowStyle = (isTotal?: boolean): React.CSSProperties => ({
                   display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "10px 0", borderBottom: isTotal ? "2px solid #1a1a18" : "1px solid #f0f0ec",
-                  fontSize: 14,
+                  padding: "10px 0", borderBottom: isTotal ? "3px solid var(--hw-border-strong)" : "2px solid var(--hw-border)",
+                  fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300,
+                  color: "var(--hw-text-secondary)",
                 });
                 const amtStyle = (negative?: boolean): React.CSSProperties => ({
-                  fontFamily: "monospace", fontWeight: 600,
-                  color: negative ? "#c0392b" : "#1a6b3c",
+                  fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700,
+                  color: negative ? "var(--hw-crimson)" : "var(--hw-green)",
                 });
                 const subRowStyle: React.CSSProperties = {
                   display: "flex", justifyContent: "space-between", alignItems: "center",
-                  padding: "6px 0 6px 24px", fontSize: 13, color: "#888",
-                  borderBottom: "1px solid #f8f8f5",
+                  padding: "6px 0 6px 24px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300,
+                  color: "var(--hw-text-muted)", borderBottom: "1px solid var(--hw-border)",
                 };
 
                 return (
@@ -446,7 +447,7 @@ export default function FinancialsPage() {
                         {commItems.filter((i) => i.type !== "label_support").map((item, idx) => (
                           <div key={idx} style={subRowStyle}>
                             <span>{item.label} ({item.recipientName})</span>
-                            <span style={{ fontFamily: "monospace" }}>-{fmt(item.amountUSD)}</span>
+                            <span style={{ fontFamily: "var(--hw-font-mono)" }}>-{fmt(item.amountUSD)}</span>
                           </div>
                         ))}
                       </>
@@ -473,13 +474,13 @@ export default function FinancialsPage() {
 
                     <div style={rowStyle(true)}>
                       <span style={{ fontSize: 16, fontWeight: 700 }}>Net to Artist</span>
-                      <span style={{ fontFamily: "monospace", fontSize: 16, fontWeight: 700, color: net >= 0 ? "#1a6b3c" : "#c0392b" }}>
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 700, color: net >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" }}>
                         {net < 0 ? "-" : ""}{fmt(net)}
                       </span>
                     </div>
 
                     {gross > 0 && (
-                      <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8, fontSize: 13, color: "#888" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 8, fontSize: 13, color: "var(--hw-text-muted)" }}>
                         Margin: {((net / gross) * 100).toFixed(1)}%
                       </div>
                     )}
@@ -489,57 +490,57 @@ export default function FinancialsPage() {
             </div>
 
             {/* ══════ Section 1: Blanket Expenses ══════ */}
-            <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24, marginBottom: 20 }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24, marginBottom: 20 }}>
               <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, letterSpacing: "-0.3px" }}>Blanket Expenses</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                 {/* Per Show Day */}
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#888", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Per Show Day</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--hw-text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Per Show Day</div>
                   <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                     <input
                       value={blanketShowLabel}
                       onChange={(e) => onBlanketShowLabelChange(e.target.value)}
                       placeholder="Label"
-                      style={{ flex: 1, padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
+                      style={{ flex: 1, padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontSize: 13, outline: "none" }}
                     />
                     <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <span style={{ fontSize: 13, color: "#888" }}>$</span>
+                      <span style={{ fontSize: 13, color: "var(--hw-text-muted)" }}>$</span>
                       <input
                         type="number"
                         value={blanketShowAmt || ""}
                         onChange={(e) => onBlanketShowAmtChange(e.target.value)}
                         placeholder="0"
-                        style={{ width: 80, padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, fontFamily: "monospace", outline: "none" }}
+                        style={{ width: 80, padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontSize: 13, fontFamily: "var(--hw-font-mono)", outline: "none" }}
                       />
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: "#888" }}>
+                  <div style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>
                     {blanketShowAmt > 0 ? `${fin.showDayCount} shows \u00d7 ${fmtUSD(blanketShowAmt)} = ${fmtUSD(fin.totalBlanketShow)}` : "No per-show expense set"}
                   </div>
                 </div>
 
                 {/* Per Off Day */}
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#888", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Per Off Day</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "var(--hw-text-muted)", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Per Off Day</div>
                   <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                     <input
                       value={blanketOffLabel}
                       onChange={(e) => onBlanketOffLabelChange(e.target.value)}
                       placeholder="Label"
-                      style={{ flex: 1, padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
+                      style={{ flex: 1, padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontSize: 13, outline: "none" }}
                     />
                     <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <span style={{ fontSize: 13, color: "#888" }}>$</span>
+                      <span style={{ fontSize: 13, color: "var(--hw-text-muted)" }}>$</span>
                       <input
                         type="number"
                         value={blanketOffAmt || ""}
                         onChange={(e) => onBlanketOffAmtChange(e.target.value)}
                         placeholder="0"
-                        style={{ width: 80, padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, fontFamily: "monospace", outline: "none" }}
+                        style={{ width: 80, padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontSize: 13, fontFamily: "var(--hw-font-mono)", outline: "none" }}
                       />
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: "#888" }}>
+                  <div style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>
                     {blanketOffAmt > 0 ? `${fin.offDayCount} off days \u00d7 ${fmtUSD(blanketOffAmt)} = ${fmtUSD(fin.totalBlanketOff)}` : "No per-off-day expense set"}
                   </div>
                 </div>
@@ -547,53 +548,53 @@ export default function FinancialsPage() {
             </div>
 
             {/* ══════ Section 2: Per-Show Financial Table ══════ */}
-            <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, overflow: "hidden", marginBottom: 20 }}>
-              <div style={{ padding: "16px 20px", borderBottom: "1px solid #DDDDDD" }}>
-                <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.3px" }}>Per-Show Breakdown</div>
-                <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>{showOnlyRows.length} shows</div>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", marginBottom: 20 }}>
+              <div style={{ padding: "16px 20px", borderBottom: "3px solid var(--hw-border-strong)" }}>
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>Per-Show Breakdown</div>
+                <div style={{ fontSize: 12, color: "var(--hw-text-muted)", marginTop: 2 }}>{showOnlyRows.length} shows</div>
               </div>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr>
+                    <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Date", "Venue", "City", "Offer", "Cur", "USD", "Expenses", "Net"].map((h) => (
-                        <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "2px solid #DDDDDD", whiteSpace: "nowrap", background: "#fafaf8" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "2px", whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {perShowData.map((row, i) => (
-                      <tr key={row.show.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                        <td style={{ padding: "9px 12px", fontSize: 12, fontFamily: "monospace", whiteSpace: "nowrap" }}>
+                      <tr key={row.show.id} style={{ borderTop: "2px solid var(--hw-border)" }}>
+                        <td style={{ padding: "9px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)", whiteSpace: "nowrap" }}>
                           {row.show.date_iso ? formatDateDisplay(new Date(row.show.date_iso + "T00:00:00")) : "\u2014"}
                         </td>
                         <td style={{ padding: "9px 12px", fontSize: 13, fontWeight: 600 }}>{row.show.venue || "\u2014"}</td>
                         <td style={{ padding: "9px 12px", fontSize: 13 }}>{row.show.city || "\u2014"}</td>
-                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace" }}>{row.show.offer_display || "\u2014"}</td>
-                        <td style={{ padding: "9px 12px", fontSize: 11, color: "#888" }}>{row.show.offer_currency}</td>
-                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace", color: "#1a6b3c", fontWeight: 600 }}>{fmtUSD(row.usd)}</td>
+                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)" }}>{row.show.offer_display || "\u2014"}</td>
+                        <td style={{ padding: "9px 12px", fontSize: 11, color: "var(--hw-text-muted)" }}>{row.show.offer_currency}</td>
+                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-green)", fontWeight: 600 }}>{fmtUSD(row.usd)}</td>
                         <td style={{ padding: "9px 12px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                            <span style={{ fontSize: 12, color: "#888" }}>$</span>
+                            <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>$</span>
                             <input
                               type="number"
                               value={row.manualExp || ""}
                               onChange={(e) => onShowExpenseChange(row.globalIdx, e.target.value)}
                               placeholder="0"
-                              style={{ width: 60, padding: "4px 6px", border: "1px solid #eee", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none" }}
+                              style={{ width: 60, padding: "4px 6px", border: "3px solid var(--hw-border)", fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none" }}
                             />
                             {blanketShowAmt > 0 && <span style={{ fontSize: 10, color: "#aaa" }}>+{fmtUSD(blanketShowAmt)}</span>}
                           </div>
                         </td>
-                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace", fontWeight: 700, color: row.net >= 0 ? "#1a6b3c" : "#c0392b" }}>{fmtUSD(row.net)}</td>
+                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 700, color: row.net >= 0 ? "#1a6b3c" : "#c0392b" }}>{fmtUSD(row.net)}</td>
                       </tr>
                     ))}
                     {/* Totals */}
-                    <tr style={{ borderTop: "2px solid #DDDDDD", background: "#fafaf8" }}>
+                    <tr style={{ borderTop: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-warm)" }}>
                       <td colSpan={5} style={{ padding: "10px 12px", fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>Total</td>
-                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "monospace", fontWeight: 800, color: "#1a6b3c" }}>{fmtUSD(fin.totalIncome)}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "monospace", fontWeight: 800, color: "#c0392b" }}>{fmtUSD(fin.totalBlanketShow + Object.values(showExpenses).reduce((a, b) => a + b, 0))}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "monospace", fontWeight: 800, color: fin.netIncome >= 0 ? "#1a6b3c" : "#c0392b" }}>{fmtUSD(fin.netIncome)}</td>
+                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-green)" }}>{fmtUSD(fin.totalIncome)}</td>
+                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalBlanketShow + Object.values(showExpenses).reduce((a, b) => a + b, 0))}</td>
+                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: fin.netIncome >= 0 ? "#1a6b3c" : "#c0392b" }}>{fmtUSD(fin.netIncome)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -602,20 +603,20 @@ export default function FinancialsPage() {
 
             {/* ══════ Section 3: Currency Summary ══════ */}
             {Object.keys(fin.byCurrency).length > 0 && (
-              <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24, marginBottom: 20 }}>
+              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24, marginBottom: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.3px" }}>Currency Summary</div>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>Currency Summary</div>
                   <button
                     onClick={fetchLiveRates}
                     disabled={ratesLoading}
-                    style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, opacity: ratesLoading ? 0.5 : 1 }}
-                  >{ratesLoading ? "Loading..." : "Update Live Rates"}</button>
+                    style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, opacity: ratesLoading ? 0.5 : 1 }}
+                  >{ratesLoading ? "LOADING..." : "UPDATE LIVE RATES"}</button>
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr>
+                    <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Currency", "Shows", "Total (Original)", "Rate (to USD)", "Total (USD)"].map((h) => (
-                        <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "2px solid #DDDDDD" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid #DDDDDD" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -625,20 +626,20 @@ export default function FinancialsPage() {
                       const rate = rates[currency] || 1;
                       const usdTotal = amount * rate;
                       return (
-                        <tr key={currency} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                        <tr key={currency} style={{ borderTop: "2px solid var(--hw-border)" }}>
                           <td style={{ padding: "9px 12px", fontSize: 13, fontWeight: 700 }}>{currency}</td>
-                          <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace" }}>{showCount}</td>
-                          <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace" }}>{amount.toLocaleString()} {currency}</td>
+                          <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)" }}>{showCount}</td>
+                          <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)" }}>{amount.toLocaleString()} {currency}</td>
                           <td style={{ padding: "9px 12px" }}>
                             <input
                               type="number"
                               step="0.0001"
                               value={rate || ""}
                               onChange={(e) => onRateChange(currency, e.target.value)}
-                              style={{ width: 90, padding: "4px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none" }}
+                              style={{ width: 90, padding: "4px 8px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none" }}
                             />
                           </td>
-                          <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "monospace", color: "#1a6b3c", fontWeight: 600 }}>{fmtUSD(usdTotal)}</td>
+                          <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-green)", fontWeight: 600 }}>{fmtUSD(usdTotal)}</td>
                         </tr>
                       );
                     })}
@@ -648,79 +649,80 @@ export default function FinancialsPage() {
             )}
 
             {/* ══════ Section 4: Transport Costs Breakdown ══════ */}
-            <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24 }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24 }}>
               <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, letterSpacing: "-0.3px" }}>Transport Costs</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {/* Drive */}
-                <div style={{ border: "1px solid #f0f0f0", borderRadius: 10, padding: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12 }}>Driving</div>
+                <div style={{ border: "3px solid var(--hw-border)", padding: 16 }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 12 }}>Driving</div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, color: "#666" }}>Drive legs</span>
-                    <span style={{ fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>{driveLegs}</span>
+                    <span style={{ fontSize: 13, color: "var(--hw-text-secondary)" }}>Drive legs</span>
+                    <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{driveLegs}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, color: "#666" }}>Total distance</span>
-                    <span style={{ fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>
+                    <span style={{ fontSize: 13, color: "var(--hw-text-secondary)" }}>Total distance</span>
+                    <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>
                       {fin.imperialTour ? Math.round(totalDriveKm * 0.6214).toLocaleString() + " mi" : Math.round(totalDriveKm).toLocaleString() + " km"}
                     </span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, color: "#666" }}>Total drive time</span>
-                    <span style={{ fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>{fmtHours(totalDriveH)}</span>
+                    <span style={{ fontSize: 13, color: "var(--hw-text-secondary)" }}>Total drive time</span>
+                    <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{fmtHours(totalDriveH)}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #f0f0f0", paddingTop: 8, marginTop: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid var(--hw-border)", paddingTop: 8, marginTop: 4 }}>
                     <span style={{ fontSize: 13, fontWeight: 700 }}>Fuel cost</span>
-                    <span style={{ fontSize: 14, fontFamily: "monospace", fontWeight: 800, color: "#c0392b" }}>{fmtUSD(fin.totalFuel)}</span>
+                    <span style={{ fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFuel)}</span>
                   </div>
                 </div>
 
                 {/* Fly */}
-                <div style={{ border: "1px solid #f0f0f0", borderRadius: 10, padding: 16 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 12 }}>Flights</div>
+                <div style={{ border: "3px solid var(--hw-border)", padding: 16 }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 12 }}>Flights</div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontSize: 13, color: "#666" }}>Flight legs</span>
-                    <span style={{ fontSize: 13, fontFamily: "monospace", fontWeight: 600 }}>{fin.flightLegs}</span>
+                    <span style={{ fontSize: 13, color: "var(--hw-text-secondary)" }}>Flight legs</span>
+                    <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{fin.flightLegs}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #f0f0f0", paddingTop: 8, marginTop: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid var(--hw-border)", paddingTop: 8, marginTop: 4 }}>
                     <span style={{ fontSize: 13, fontWeight: 700 }}>Flight cost</span>
-                    <span style={{ fontSize: 14, fontFamily: "monospace", fontWeight: 800, color: "#c0392b" }}>{fmtUSD(fin.totalFlights)}</span>
+                    <span style={{ fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFlights)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Combined total */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, padding: "12px 16px", background: "#fafaf8", borderRadius: 10, border: "1px solid #f0f0f0" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16, padding: "12px 16px", background: "var(--hw-bg-warm)", border: "3px solid var(--hw-border)" }}>
                 <span style={{ fontSize: 13, fontWeight: 800 }}>Combined Transport</span>
-                <span style={{ fontSize: 16, fontFamily: "monospace", fontWeight: 800, color: "#c0392b" }}>{fmtUSD(fin.totalFuel + fin.totalFlights)}</span>
+                <span style={{ fontSize: 16, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFuel + fin.totalFlights)}</span>
               </div>
               {fin.showDayCount > 0 && (
-                <div style={{ fontSize: 12, color: "#888", marginTop: 6, textAlign: "right" }}>
+                <div style={{ fontSize: 12, color: "var(--hw-text-muted)", marginTop: 6, textAlign: "right" }}>
                   {fmtUSD((fin.totalFuel + fin.totalFlights) / fin.showDayCount)} per show average
                 </div>
               )}
             </div>
 
             {/* ══════ Section 5: Actual Expenses ══════ */}
-            <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, overflow: "hidden", marginTop: 20 }}>
-              <div style={{ padding: "16px 20px", borderBottom: "1px solid #DDDDDD", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", marginTop: 20 }}>
+              <div style={{ padding: "16px 20px", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.3px" }}>Actual Expenses</div>
-                  <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>{expenses.length} expense{expenses.length !== 1 ? "s" : ""} &middot; {fmtUSD(expGrandTotal)} total</div>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>Actual Expenses</div>
+                  <div style={{ fontSize: 12, color: "var(--hw-text-muted)", marginTop: 2 }}>{expenses.length} expense{expenses.length !== 1 ? "s" : ""} &middot; {fmtUSD(expGrandTotal)} total</div>
                 </div>
-                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #111", background: "#111", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Add Expense</button>
+                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>+ ADD EXPENSE</button>
               </div>
 
               {/* Category filters */}
-              <div style={{ padding: "10px 20px", display: "flex", gap: 6, flexWrap: "wrap", borderBottom: "1px solid #f0f0f0" }}>
+              <div style={{ padding: "10px 20px", display: "flex", gap: 6, flexWrap: "wrap", borderTop: "2px solid var(--hw-border)" }}>
                 {["All", ...CATEGORIES].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setExpFilter(cat)}
                     style={{
-                      padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                      border: expFilter === cat ? "1px solid #111" : "1px solid #DDDDDD",
-                      background: expFilter === cat ? "#111" : "#fff",
-                      color: expFilter === cat ? "#fff" : "#888",
+                      padding: "4px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+                      letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer",
+                      border: expFilter === cat ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)",
+                      background: expFilter === cat ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                      color: expFilter === cat ? "#fff" : "var(--hw-text-muted)",
                     }}
                   >{cat}{cat !== "All" && expTotalByCategory[cat] ? ` (${fmtUSD(expTotalByCategory[cat])})` : ""}</button>
                 ))}
@@ -729,46 +731,46 @@ export default function FinancialsPage() {
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr>
+                    <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Date", "Category", "Description", "Amount", "Paid By", "Reimb.", ""].map((h) => (
-                        <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "2px solid #DDDDDD", background: "#fafaf8" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid #DDDDDD", background: "var(--hw-bg-warm)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {/* Add row */}
                     {addingExp && (
-                      <tr style={{ borderBottom: "1px solid #f0f0f0", background: "#fafff8" }}>
-                        <td style={{ padding: "6px 8px" }}><input type="date" value={newExp.date} onChange={(e) => setNewExp((p) => ({ ...p, date: e.target.value }))} style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none", width: 110 }} /></td>
+                      <tr style={{ borderTop: "2px solid var(--hw-border)", background: "#fafff8" }}>
+                        <td style={{ padding: "6px 8px" }}><input type="date" value={newExp.date} onChange={(e) => setNewExp((p) => ({ ...p, date: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 110 }} /></td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={newExp.category} onChange={(e) => setNewExp((p) => ({ ...p, category: e.target.value }))} style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, background: "#fff", outline: "none" }}>
+                          <select value={newExp.category} onChange={(e) => setNewExp((p) => ({ ...p, category: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, background: "#fff", outline: "none" }}>
                             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </td>
-                        <td style={{ padding: "6px 8px" }}><input value={newExp.description} onChange={(e) => setNewExp((p) => ({ ...p, description: e.target.value }))} placeholder="Description" style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none", width: 140 }} /></td>
+                        <td style={{ padding: "6px 8px" }}><input value={newExp.description} onChange={(e) => setNewExp((p) => ({ ...p, description: e.target.value }))} placeholder="Description" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 140 }} /></td>
                         <td style={{ padding: "6px 8px" }}>
                           <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                            <span style={{ fontSize: 12, color: "#888" }}>$</span>
-                            <input type="number" value={newExp.amount} onChange={(e) => setNewExp((p) => ({ ...p, amount: e.target.value }))} placeholder="0" style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none", width: 70 }} />
+                            <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>$</span>
+                            <input type="number" value={newExp.amount} onChange={(e) => setNewExp((p) => ({ ...p, amount: e.target.value }))} placeholder="0" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none", width: 70 }} />
                           </div>
                         </td>
-                        <td style={{ padding: "6px 8px" }}><input value={newExp.paidBy} onChange={(e) => setNewExp((p) => ({ ...p, paidBy: e.target.value }))} placeholder="Who" style={{ padding: "4px 6px", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, outline: "none", width: 80 }} /></td>
+                        <td style={{ padding: "6px 8px" }}><input value={newExp.paidBy} onChange={(e) => setNewExp((p) => ({ ...p, paidBy: e.target.value }))} placeholder="Who" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 80 }} /></td>
                         <td style={{ padding: "6px 8px" }}><input type="checkbox" checked={newExp.needsReimbursement} onChange={(e) => setNewExp((p) => ({ ...p, needsReimbursement: e.target.checked }))} /></td>
                         <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>
-                          <button onClick={addExpense} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#1a6b3c", fontWeight: 700 }}>Save</button>
-                          <button onClick={() => setAddingExp(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#888", marginLeft: 4 }}>Cancel</button>
+                          <button onClick={addExpense} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-green)", fontWeight: 700 }}>Save</button>
+                          <button onClick={() => setAddingExp(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)", marginLeft: 4 }}>Cancel</button>
                         </td>
                       </tr>
                     )}
 
                     {filteredExpenses.map((exp) => (
-                      <tr key={exp.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                        <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "monospace" }}>{exp.date}</td>
+                      <tr key={exp.id} style={{ borderTop: "2px solid var(--hw-border)" }}>
+                        <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{exp.date}</td>
                         <td style={{ padding: "8px 12px", fontSize: 12 }}>
-                          <span style={{ padding: "2px 8px", borderRadius: 4, background: "#f0f0f0", fontSize: 10, fontWeight: 700 }}>{exp.category}</span>
+                          <span style={{ padding: "3px 10px", background: "rgba(0,0,0,0.04)", border: "2px solid var(--hw-border)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>{exp.category}</span>
                         </td>
                         <td style={{ padding: "8px 12px", fontSize: 13 }}>{exp.description || "\u2014"}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "monospace", fontWeight: 600, color: "#c0392b" }}>{fmtUSD(exp.amount)}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600, color: "var(--hw-crimson)" }}>{fmtUSD(exp.amount)}</td>
                         <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.paid_by || "\u2014"}</td>
                         <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.needs_reimbursement ? "Yes" : ""}</td>
                         <td style={{ padding: "8px 12px" }}>
@@ -779,9 +781,9 @@ export default function FinancialsPage() {
 
                     {/* Totals */}
                     {expenses.length > 0 && (
-                      <tr style={{ borderTop: "2px solid #DDDDDD", background: "#fafaf8" }}>
+                      <tr style={{ borderTop: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-warm)" }}>
                         <td colSpan={3} style={{ padding: "10px 12px", fontSize: 12, fontWeight: 800, textTransform: "uppercase" }}>Total</td>
-                        <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "monospace", fontWeight: 800, color: "#c0392b" }}>{fmtUSD(expFilter === "All" ? expGrandTotal : filteredExpenses.reduce((s, e) => s + e.amount, 0))}</td>
+                        <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(expFilter === "All" ? expGrandTotal : filteredExpenses.reduce((s, e) => s + e.amount, 0))}</td>
                         <td colSpan={3}></td>
                       </tr>
                     )}
@@ -789,7 +791,10 @@ export default function FinancialsPage() {
                 </table>
               </div>
               {expenses.length === 0 && !addingExp && (
-                <div style={{ padding: 32, textAlign: "center", color: "#888", fontSize: 13 }}>No expenses recorded yet</div>
+                <div style={{ padding: 32, textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 8 }}>NO EXPENSES YET</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)" }}>Click &quot;+ Add Expense&quot; to start tracking tour expenses.</div>
+                </div>
               )}
             </div>
           </>

@@ -576,24 +576,24 @@ export default function RouteTourPage() {
 
   function driveColorBg(h: number | null): string {
     if (h === null) return "transparent";
-    if (h > 6) return "#fff0ef";
-    if (h > 4) return "#fff8f0";
-    return "#f0faf4";
+    if (h > 6) return "var(--hw-red-ghost)";
+    if (h > 4) return "var(--hw-amber-ghost)";
+    return "var(--hw-green-ghost)";
   }
 
   function driveColor(h: number | null): string {
-    if (h === null) return "#888";
-    if (h > 6) return "#c0392b";
-    if (h > 4) return "#b35c00";
-    return "#1a6b3c";
+    if (h === null) return "var(--hw-text-muted)";
+    if (h > 6) return "var(--hw-crimson)";
+    if (h > 4) return "var(--hw-amber)";
+    return "var(--hw-green)";
   }
 
-  function statusDot(status: string | null): { color: string; label: string } {
-    if (!status) return { color: "#ddd", label: "" };
+  function statusDot(status: string | null): { color: string; label: string; variant: "confirmed" | "pending" | "error" } {
+    if (!status) return { color: "var(--hw-border)", label: "", variant: "pending" };
     const s = status.toLowerCase();
-    if (s.includes("confirm")) return { color: "#1a6b3c", label: "Confirmed" };
-    if (s.includes("cancel")) return { color: "#c0392b", label: "Cancelled" };
-    return { color: "#b35c00", label: "Pending" };
+    if (s.includes("confirm")) return { color: "var(--hw-green)", label: "Confirmed", variant: "confirmed" };
+    if (s.includes("cancel")) return { color: "var(--hw-crimson)", label: "Cancelled", variant: "error" };
+    return { color: "var(--hw-amber)", label: "Pending", variant: "pending" };
   }
 
   function formatShowDate(dateStr: string | null): string {
@@ -659,26 +659,28 @@ export default function RouteTourPage() {
     <div className="fade-in td-page" style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #DDDDDD" }}>
-          <Link href={tour?.artist_id ? `/dashboard/artists/${tour.artist_id}` : "/dashboard"} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {tour?.artist_id ? "Back to Artist" : "Back to Dashboard"}</Link>
+        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
+          <Link href={tour?.artist_id ? `/dashboard/artists/${tour.artist_id}` : "/dashboard"} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; {tour?.artist_id ? "BACK TO ARTIST" : "BACK TO DASHBOARD"}</Link>
           <div className="td-header-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
-              <div style={{ borderBottom: "2px solid #111111", marginBottom: 6 }} />
-              <div className="brand-title td-tour-name" style={{ margin: 0, fontSize: "360%" }}>{loading ? "\u2014" : tour?.name?.toUpperCase() || "TOUR"}</div>
+              <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>{branding.name}</h1>
+              <div style={{ borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 6 }} />
+              <div className="td-tour-name" style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", margin: 0 }}>{loading ? "\u2014" : tour?.name?.toUpperCase() || "TOUR"}</div>
             </div>
             <div className="td-nav" style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <div className="td-nav-pills" style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #DDDDDD", borderRadius: 12, padding: 8 }}>
+              <div className="td-nav-pills" style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
                 {navItems.map((item) => (
                   <Link
                     key={item.num}
                     href={item.href}
                     style={{
-                      padding: "10px 18px", borderRadius: 10,
-                      border: item.active ? "1px solid #111" : "1px solid #DDDDDD",
-                      background: item.active ? "#111" : "#fff",
-                      color: item.active ? "#fff" : "#111",
-                      textDecoration: "none", fontWeight: item.active ? 900 : 700, fontSize: 13,
+                      padding: "10px 18px",
+                      border: item.active ? "3px solid var(--hw-border-strong)" : "3px solid transparent",
+                      background: item.active ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                      color: item.active ? "#fff" : "var(--hw-text)",
+                      textDecoration: "none",
+                      fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: item.active ? 700 : 400,
+                      letterSpacing: "1.5px", textTransform: "uppercase",
                     }}
                   >{item.num}. {item.label}</Link>
                 ))}
@@ -691,23 +693,24 @@ export default function RouteTourPage() {
                   onClick={pushToLocalizer}
                   disabled={pushing}
                   style={{
-                    padding: "10px 20px", borderRadius: 10,
-                    border: "1px solid #1a6b3c",
-                    background: "#1a6b3c", color: "#fff",
-                    fontWeight: 900, fontSize: 13, cursor: pushing ? "wait" : "pointer",
-                    opacity: pushing ? 0.6 : 1,
+                    padding: "10px 20px",
+                    border: "3px solid var(--hw-green)",
+                    background: "var(--hw-green)", color: "#fff",
+                    fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "2px", textTransform: "uppercase",
+                    cursor: pushing ? "wait" : "pointer",
+                    opacity: pushing ? 0.4 : 1,
                   }}
-                >{pushing ? "Pushing..." : tour?.localizer_tour_id ? "Update Localizer \u2192" : "Push to Localizer \u2192"}</button>
+                >{pushing ? "PUSHING..." : tour?.localizer_tour_id ? "UPDATE LOCALIZER \u2192" : "PUSH TO LOCALIZER \u2192"}</button>
                 {pushResult && !pushResult.status.startsWith("error") && (
-                  <div style={{ fontSize: 12 }}>
-                    <span style={{ color: "#1a6b3c", fontWeight: 600 }}>{pushResult.eventCount} shows {pushResult.status}</span>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" }}>
+                    <span style={{ color: "var(--hw-green)", fontWeight: 700 }}>{pushResult.eventCount} shows {pushResult.status}</span>
                     {pushResult.localizerTourId && (
-                      <Link href={`/dashboard/tours/${pushResult.localizerTourId}`} style={{ marginLeft: 8, color: "#1a5fa6", textDecoration: "none", fontWeight: 700 }}>Open in Localizer &rarr;</Link>
+                      <Link href={`/dashboard/tours/${pushResult.localizerTourId}`} style={{ marginLeft: 8, color: "var(--hw-blue)", textDecoration: "none", fontWeight: 700 }}>Open in Localizer &rarr;</Link>
                     )}
                   </div>
                 )}
                 {pushResult && pushResult.status.startsWith("error") && (
-                  <div style={{ fontSize: 12, color: "#c0392b" }}>{pushResult.status}</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-crimson)" }}>{pushResult.status}</div>
                 )}
               </div>
             )}
@@ -717,9 +720,9 @@ export default function RouteTourPage() {
         {/* Stat Cards */}
         <div className="td-stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 20 }}>
           {statCards.map((card) => (
-            <div key={card.label} style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: "14px 16px" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>{card.label}</div>
-              <div className="td-stat-value" style={{ fontSize: 20, fontWeight: 800, fontFamily: "monospace", color: card.color || "#111" }}>{card.value}</div>
+            <div key={card.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: "14px 16px" }}>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 4 }}>{card.label}</div>
+              <div className="td-stat-value" style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "1px", color: card.color || "var(--hw-text)" }}>{card.value}</div>
             </div>
           ))}
         </div>
@@ -798,7 +801,7 @@ export default function RouteTourPage() {
                 <div>
                   <div style={{ fontSize: 11, color: "#888880", marginBottom: 2 }}>$/Show Day</div>
                   <input
-                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, fontFamily: "monospace", textAlign: "right" as const, outline: "none" }}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, fontFamily: "var(--hw-font-mono)", textAlign: "right" as const, outline: "none" }}
                     type="number"
                     value={tour?.blanket_show_amount || ""}
                     placeholder="0"
@@ -817,7 +820,7 @@ export default function RouteTourPage() {
                 <div>
                   <div style={{ fontSize: 11, color: "#888880", marginBottom: 2 }}>$/Off Day</div>
                   <input
-                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, fontFamily: "monospace", textAlign: "right" as const, outline: "none" }}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "4px 8px", border: "1px solid #e0e0da", borderRadius: 4, fontSize: 13, fontFamily: "var(--hw-font-mono)", textAlign: "right" as const, outline: "none" }}
                     type="number"
                     value={tour?.blanket_off_amount || ""}
                     placeholder="0"
@@ -831,15 +834,15 @@ export default function RouteTourPage() {
                   <div style={{ fontSize: 12, fontWeight: 600, color: "#888880", marginBottom: 8 }}>BREAKDOWN</div>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
                     <span>{tour?.blanket_show_label || "Show Day"} &times; {financials?.showDayCount || 0} show days</span>
-                    <span style={{ fontFamily: "monospace" }}>${((tour?.blanket_show_amount || 0) * (financials?.showDayCount || 0)).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                    <span style={{ fontFamily: "var(--hw-font-mono)" }}>${((tour?.blanket_show_amount || 0) * (financials?.showDayCount || 0)).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 13 }}>
                     <span>{tour?.blanket_off_label || "Off Day"} &times; {financials?.offDayCount || 0} off days</span>
-                    <span style={{ fontFamily: "monospace" }}>${((tour?.blanket_off_amount || 0) * (financials?.offDayCount || 0)).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                    <span style={{ fontFamily: "var(--hw-font-mono)" }}>${((tour?.blanket_off_amount || 0) * (financials?.offDayCount || 0)).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, fontWeight: 700, borderTop: "1px solid #e0e0da", marginTop: 4 }}>
                     <span>Total Blanket Expenses</span>
-                    <span style={{ fontFamily: "monospace" }}>${(((tour?.blanket_show_amount || 0) * (financials?.showDayCount || 0)) + ((tour?.blanket_off_amount || 0) * (financials?.offDayCount || 0))).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
+                    <span style={{ fontFamily: "var(--hw-font-mono)" }}>${(((tour?.blanket_show_amount || 0) * (financials?.showDayCount || 0)) + ((tour?.blanket_off_amount || 0) * (financials?.offDayCount || 0))).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
                   </div>
                   {tour?.tour_roster && tour.tour_roster.length > 0 && (
                     <div style={{ marginTop: 8, fontSize: 11, color: "#b35c00", padding: "4px 8px", background: "#fff3e0", borderRadius: 4 }}>
@@ -920,13 +923,13 @@ export default function RouteTourPage() {
                           {(isPct || isCustom) && (
                             <>
                               <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>%</div>
-                              <input type="number" step="0.1" value={c.percentage ?? ""} onChange={(e) => updateCommission("percentage", parseFloat(e.target.value) || null)} placeholder="10" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none" }} />
+                              <input type="number" step="0.1" value={c.percentage ?? ""} onChange={(e) => updateCommission("percentage", parseFloat(e.target.value) || null)} placeholder="10" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none" }} />
                             </>
                           )}
                           {(isFlat || isCustom) && !isPct && (
                             <>
                               <div style={{ fontSize: 10, color: "#888", marginBottom: 2 }}>$ Flat</div>
-                              <input type="number" value={c.flatAmount ?? ""} onChange={(e) => updateCommission("flatAmount", parseFloat(e.target.value) || null)} placeholder="0" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, fontFamily: "monospace", outline: "none" }} />
+                              <input type="number" value={c.flatAmount ?? ""} onChange={(e) => updateCommission("flatAmount", parseFloat(e.target.value) || null)} placeholder="0" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "1px solid #DDDDDD", borderRadius: 6, fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none" }} />
                             </>
                           )}
                         </div>
@@ -990,16 +993,16 @@ export default function RouteTourPage() {
         <div className="td-actions" style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <button
             onClick={() => setShowAddModal(true)}
-            style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer" }}
-          >+ Add Show</button>
+            style={{ padding: "8px 16px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+          >+ ADD SHOW</button>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
-          >{showSettings ? "Hide Vehicle Settings" : "\u2699 Vehicle Settings"}</button>
+            style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text-secondary)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+          >{showSettings ? "HIDE SETTINGS" : "VEHICLE SETTINGS"}</button>
           {flags.personnelPay && <button
             onClick={() => setShowRoster(!showRoster)}
-            style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
-          >{showRoster ? "Hide Roster" : "\u{1F465} Roster"}</button>}
+            style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text-secondary)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+          >{showRoster ? "HIDE ROSTER" : "ROSTER"}</button>}
         </div>
 
         {/* Roster Panel */}
@@ -1019,22 +1022,22 @@ export default function RouteTourPage() {
 
         {/* Empty state */}
         {!loading && shows.length === 0 && (
-          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 48, textAlign: "center" }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#888", marginBottom: 12 }}>No shows imported yet</div>
-            <Link href={`/dashboard/routing/${tourId}/import`} style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Import Shows</Link>
+          <div style={{ background: "var(--hw-bg-surface)", border: "3px dashed var(--hw-border-light)", padding: 48, textAlign: "center" }}>
+            <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 12 }}>NO SHOWS IMPORTED YET</div>
+            <Link href={`/dashboard/routing/${tourId}/import`} style={{ display: "inline-block", padding: "14px 28px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16, letterSpacing: "3px", textTransform: "uppercase" }}>IMPORT SHOWS</Link>
           </div>
         )}
 
         {/* Route Table */}
         {shows.length > 0 && (
-          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, overflow: "hidden" }}>
+          <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
             {/* Table header */}
             <div className="td-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr>
+                  <tr style={{ background: "var(--hw-bg-invert)" }}>
                     {["#", "Date", "Event / Venue", "City", "Country", "Offer", "USD", "Status", "Cap", "Adv", ""].map((h) => (
-                      <th key={h || "del"} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "2px solid #DDDDDD", whiteSpace: "nowrap", background: "#fafaf8" }}>{h}</th>
+                      <th key={h || "del"} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "2px", whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -1081,36 +1084,37 @@ export default function RouteTourPage() {
       {/* ══════ Slide Drawer ══════ */}
       {drawerShow !== null && (
         <>
-          <div onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 900 }} />
+          <div onClick={closeDrawer} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 900 }} />
           <div className="td-drawer" style={{
             position: "fixed", top: 0, right: 0, bottom: 0, width: 460, maxWidth: "90vw",
-            background: "#fff", zIndex: 901, overflowY: "auto",
-            boxShadow: "-4px 0 24px rgba(0,0,0,0.12)",
+            background: "var(--hw-bg-surface)", zIndex: 901, overflowY: "auto",
+            borderLeft: "3px solid var(--hw-border-strong)",
+            boxShadow: "var(--hw-shadow-xl)",
             animation: "slideIn 0.25s ease-out",
           }}>
             <style>{`@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }`}</style>
             {/* Drawer header */}
-            <div className="td-drawer-header" style={{ padding: "20px 24px", borderBottom: "1px solid #DDDDDD", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+            <div className="td-drawer-header" style={{ padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)", position: "sticky", top: 0, background: "var(--hw-bg-surface)", zIndex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{drawerShow.event || "Show Detail"}</div>
-                  <div style={{ fontSize: 13, color: "#888" }}>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 4 }}>{drawerShow.event || "SHOW DETAIL"}</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
                     {[formatShowDate(drawerShow.date_iso), drawerShow.city, drawerShow.country].filter(Boolean).join(" \u00b7 ")}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  {drawerSaved && <span style={{ fontSize: 11, fontWeight: 600, color: "#1a6b3c" }}>Saved</span>}
+                  {drawerSaved && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-green)" }}>SAVED</span>}
                   <a
                     href={`/api/tourrouter/tours/${tourId}/export/advance?showId=${drawerShow.id}`}
                     download
-                    style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #DDDDDD", background: "#fff", fontSize: 11, fontWeight: 700, color: "#888", textDecoration: "none", cursor: "pointer" }}
-                  >Advance</a>
+                    style={{ padding: "4px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", textDecoration: "none", cursor: "pointer" }}
+                  >ADVANCE</a>
                   <a
                     href={`/api/tourrouter/tours/${tourId}/export/daysheet?showId=${drawerShow.id}`}
                     download
-                    style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #DDDDDD", background: "#fff", fontSize: 11, fontWeight: 700, color: "#888", textDecoration: "none", cursor: "pointer" }}
-                  >Day Sheet</a>
-                  <button onClick={closeDrawer} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888", padding: "4px 8px" }}>&times;</button>
+                    style={{ padding: "4px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", textDecoration: "none", cursor: "pointer" }}
+                  >DAY SHEET</a>
+                  <button onClick={closeDrawer} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--hw-text-muted)", padding: "4px 8px" }}>&times;</button>
                 </div>
               </div>
             </div>
@@ -1119,24 +1123,24 @@ export default function RouteTourPage() {
               {DRAWER_SECTIONS.map((section) => {
                 const collapsed = collapsedSections.has(section.title);
                 return (
-                  <div key={section.title} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                  <div key={section.title} style={{ borderBottom: "2px solid var(--hw-border)" }}>
                     <div
                       onClick={() => toggleSection(section.title)}
                       style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
                     >
-                      <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#888" }}>{section.title}</div>
-                      <span style={{ fontSize: 12, color: "#aaa" }}>{collapsed ? "\u25b6" : "\u25bc"}</span>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, textTransform: "uppercase", letterSpacing: "2px", color: "var(--hw-text-muted)" }}>{section.title}</div>
+                      <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>{collapsed ? "\u25b6" : "\u25bc"}</span>
                     </div>
                     {!collapsed && (
                       <div style={{ paddingBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                         {section.fields.map((field) => (
                           <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address"].includes(field.key) ? "1 / -1" : undefined }}>
-                            <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>{field.label}</label>
+                            <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>{field.label}</label>
                             <input
                               value={String((drawerShow as Record<string, unknown>)[field.key] ?? "")}
                               onChange={(e) => updateDrawerField(field.key, e.target.value)}
                               type={field.type || "text"}
-                              style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }}
+                              style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, outline: "none" }}
                             />
                           </div>
                         ))}
@@ -1344,7 +1348,7 @@ export default function RouteTourPage() {
                         <div style={{ marginTop: 10 }}>
                           <label style={{ fontSize: 11, color: "#aaa", display: "block", marginBottom: 4 }}>Advance Form Link</label>
                           <div style={{ display: "flex", gap: 6 }}>
-                            <input readOnly value={`${window.location.origin}/advance/${drawerShow.advance_form_token}`} style={{ flex: 1, padding: "6px 10px", border: "1px solid #eee", borderRadius: 8, fontSize: 11, fontFamily: "monospace", color: "#888", outline: "none" }} />
+                            <input readOnly value={`${window.location.origin}/advance/${drawerShow.advance_form_token}`} style={{ flex: 1, padding: "6px 10px", border: "1px solid #eee", borderRadius: 8, fontSize: 11, fontFamily: "var(--hw-font-mono)", color: "#888", outline: "none" }} />
                             <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/advance/${drawerShow.advance_form_token}`)} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Copy</button>
                           </div>
                         </div>
@@ -1405,7 +1409,7 @@ export default function RouteTourPage() {
                                   return (
                                     <tr key={g.id} style={{ borderBottom: "1px solid #f5f5f5" }}>
                                       <td style={{ padding: "5px 6px", fontWeight: 600 }}>{g.guest_name}</td>
-                                      <td style={{ padding: "5px 6px", fontFamily: "monospace" }}>{1 + g.plus_ones}</td>
+                                      <td style={{ padding: "5px 6px", fontFamily: "var(--hw-font-mono)" }}>{1 + g.plus_ones}</td>
                                       <td style={{ padding: "5px 6px" }}>{g.pass_type}</td>
                                       <td style={{ padding: "5px 6px", fontSize: 11, color: "#888", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={g.notes || ""}>{g.notes || "\u2014"}</td>
                                       <td style={{ padding: "5px 6px" }}>
@@ -1469,47 +1473,47 @@ export default function RouteTourPage() {
       {/* ══════ Add Show Modal ══════ */}
       {showAddModal && (
         <>
-          <div onClick={() => setShowAddModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 900 }} />
-          <div className="td-add-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 480, maxWidth: "90vw", background: "#fff", borderRadius: 14, padding: 24, zIndex: 901, boxShadow: "0 12px 40px rgba(0,0,0,0.15)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>Add Show</div>
-              <button onClick={() => setShowAddModal(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888" }}>&times;</button>
+          <div onClick={() => setShowAddModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 900 }} />
+          <div className="td-add-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 480, maxWidth: "90vw", background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 0, zIndex: 901, boxShadow: "var(--hw-shadow-xl)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)" }}>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>ADD SHOW</div>
+              <button onClick={() => setShowAddModal(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--hw-text-muted)" }}>&times;</button>
             </div>
-            <div className="td-add-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="td-add-modal-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: 24 }}>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Date</label>
-                <input type="date" value={newShow.date_iso} onChange={(e) => setNewShow((p) => ({ ...p, date_iso: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Date</label>
+                <input type="date" value={newShow.date_iso} onChange={(e) => setNewShow((p) => ({ ...p, date_iso: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Event Name</label>
-                <input value={newShow.event} onChange={(e) => setNewShow((p) => ({ ...p, event: e.target.value }))} placeholder="Show name" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Event Name</label>
+                <input value={newShow.event} onChange={(e) => setNewShow((p) => ({ ...p, event: e.target.value }))} placeholder="Show name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Venue</label>
-                <input value={newShow.venue} onChange={(e) => setNewShow((p) => ({ ...p, venue: e.target.value }))} placeholder="Venue name" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Venue</label>
+                <input value={newShow.venue} onChange={(e) => setNewShow((p) => ({ ...p, venue: e.target.value }))} placeholder="Venue name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>City</label>
-                <input value={newShow.city} onChange={(e) => setNewShow((p) => ({ ...p, city: e.target.value }))} placeholder="City" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>City</label>
+                <input value={newShow.city} onChange={(e) => setNewShow((p) => ({ ...p, city: e.target.value }))} placeholder="City" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Country</label>
-                <input value={newShow.country} onChange={(e) => setNewShow((p) => ({ ...p, country: e.target.value }))} placeholder="USA" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Country</label>
+                <input value={newShow.country} onChange={(e) => setNewShow((p) => ({ ...p, country: e.target.value }))} placeholder="USA" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Offer Amount</label>
-                <input type="number" value={newShow.offer_amount} onChange={(e) => setNewShow((p) => ({ ...p, offer_amount: e.target.value }))} placeholder="0" style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, outline: "none" }} />
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Offer Amount</label>
+                <input type="number" value={newShow.offer_amount} onChange={(e) => setNewShow((p) => ({ ...p, offer_amount: e.target.value }))} placeholder="0" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-mono)", fontSize: 15, outline: "none", textAlign: "right" }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Currency</label>
-                <select value={newShow.offer_currency} onChange={(e) => setNewShow((p) => ({ ...p, offer_currency: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}>
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Currency</label>
+                <select value={newShow.offer_currency} onChange={(e) => setNewShow((p) => ({ ...p, offer_currency: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, background: "var(--hw-bg-surface)", outline: "none", appearance: "none" }}>
                   {["USD", "EUR", "GBP", "CAD", "AUD", "CHF", "SEK", "NOK", "DKK"].map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
-            <div className="td-add-modal-actions" style={{ marginTop: 16, display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button onClick={() => setShowAddModal(false)} style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Cancel</button>
-              <button onClick={saveNewShow} disabled={addingSaving} style={{ padding: "8px 20px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: addingSaving ? 0.5 : 1 }}>{addingSaving ? "Saving..." : "Add Show"}</button>
+            <div className="td-add-modal-actions" style={{ padding: "16px 24px", display: "flex", justifyContent: "flex-end", gap: 12, borderTop: "3px solid var(--hw-border-strong)", background: "var(--hw-bg)" }}>
+              <button onClick={() => setShowAddModal(false)} style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>CANCEL</button>
+              <button onClick={saveNewShow} disabled={addingSaving} style={{ padding: "8px 20px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: addingSaving ? 0.4 : 1 }}>{addingSaving ? "SAVING..." : "ADD SHOW"}</button>
             </div>
           </div>
         </>
@@ -1518,13 +1522,17 @@ export default function RouteTourPage() {
       {/* ══════ Delete Confirmation ══════ */}
       {deleteConfirmId && (
         <>
-          <div onClick={() => setDeleteConfirmId(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 900 }} />
-          <div className="td-delete-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 360, background: "#fff", borderRadius: 14, padding: 24, zIndex: 901, boxShadow: "0 12px 40px rgba(0,0,0,0.15)" }}>
-            <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>Delete Show</div>
-            <div style={{ fontSize: 13, color: "#666", marginBottom: 20 }}>Are you sure? This cannot be undone.</div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button onClick={() => setDeleteConfirmId(null)} style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Cancel</button>
-              <button onClick={() => deleteShow(deleteConfirmId)} style={{ padding: "8px 20px", borderRadius: 10, border: "1px solid #c0392b", background: "#c0392b", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer" }}>Delete</button>
+          <div onClick={() => setDeleteConfirmId(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 900 }} />
+          <div className="td-delete-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 360, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-xl)", zIndex: 901 }}>
+            <div style={{ padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)" }}>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>DELETE SHOW</div>
+            </div>
+            <div style={{ padding: 24 }}>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 300, color: "var(--hw-text-secondary)", marginBottom: 20 }}>Are you sure? This cannot be undone.</div>
+            </div>
+            <div style={{ padding: "16px 24px", display: "flex", justifyContent: "flex-end", gap: 12, borderTop: "3px solid var(--hw-border-strong)", background: "var(--hw-bg)" }}>
+              <button onClick={() => setDeleteConfirmId(null)} style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>CANCEL</button>
+              <button onClick={() => deleteShow(deleteConfirmId)} style={{ padding: "8px 20px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>DELETE</button>
             </div>
           </div>
         </>
@@ -1549,7 +1557,7 @@ function LegAndShowRow({
   suggestFly: boolean;
   fromAP: ReturnType<typeof getAirport>;
   toAP: ReturnType<typeof getAirport>;
-  sd: { color: string; label: string };
+  sd: { color: string; label: string; variant: string };
   flightThreshold: number;
   onToggleLeg: (idx: number, choice: string) => void;
   onClickRow: (idx: number) => void;
@@ -1580,29 +1588,31 @@ function LegAndShowRow({
               )}
               {!flying && <span style={{ color: "#aaa" }}>{leg.distStr}</span>}
               {leg.driveH !== null && leg.driveH > 6 && !flying && (
-                <span style={{ background: "#c0392b", color: "#fff", padding: "1px 8px", borderRadius: 4, fontSize: 10, fontWeight: 800 }}>BRUTAL</span>
+                <span style={{ background: "var(--hw-crimson)", color: "#fff", padding: "2px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>BRUTAL</span>
               )}
 
               {/* Drive / Fly toggle */}
-              <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+              <div style={{ display: "flex", gap: 0, marginLeft: 8 }}>
                 <button
                   onClick={() => onToggleLeg(index, "drive")}
                   style={{
-                    padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                    border: !flying ? "1px solid #111" : "1px solid #DDDDDD",
-                    background: !flying ? "#111" : "#fff",
-                    color: !flying ? "#fff" : "#888",
+                    padding: "3px 10px", fontSize: 9, fontWeight: 700, cursor: "pointer",
+                    fontFamily: "var(--hw-font-mono)", letterSpacing: "1.5px", textTransform: "uppercase",
+                    border: "2px solid var(--hw-border-strong)",
+                    background: !flying ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                    color: !flying ? "#fff" : "var(--hw-text-muted)",
                   }}
-                >Drive</button>
+                >DRIVE</button>
                 <button
                   onClick={() => onToggleLeg(index, "fly")}
                   style={{
-                    padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                    border: flying ? "1px solid #111" : "1px solid #DDDDDD",
-                    background: flying ? "#111" : "#fff",
-                    color: flying ? "#fff" : "#888",
+                    padding: "3px 10px", fontSize: 9, fontWeight: 700, cursor: "pointer",
+                    fontFamily: "var(--hw-font-mono)", letterSpacing: "1.5px", textTransform: "uppercase",
+                    border: "2px solid var(--hw-border-strong)", marginLeft: -2,
+                    background: flying ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                    color: flying ? "#fff" : "var(--hw-text-muted)",
                   }}
-                >Fly</button>
+                >FLY</button>
               </div>
 
               {suggestFly && !flying && (
@@ -1632,57 +1642,57 @@ function LegAndShowRow({
         onClick={() => onClickRow(index)}
         style={{
           cursor: "pointer",
-          background: show.is_off ? "#fafaf8" : "#fff",
-          color: show.is_off ? "#aaa" : "#111",
-          borderBottom: "1px solid #DDDDDD",
+          background: show.is_off ? "var(--hw-bg-warm)" : "var(--hw-bg-surface)",
+          color: show.is_off ? "var(--hw-text-muted)" : "var(--hw-text)",
+          borderTop: "2px solid var(--hw-border)",
+          transition: "var(--hw-ease)",
         }}
-        onMouseEnter={(e) => { if (!show.is_off) (e.currentTarget as HTMLElement).style.background = "#f8f8f6"; }}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = show.is_off ? "#fafaf8" : "#fff"; }}
+        onMouseEnter={(e) => { if (!show.is_off) (e.currentTarget as HTMLElement).style.background = "var(--hw-crimson-ghost)"; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = show.is_off ? "var(--hw-bg-warm)" : "var(--hw-bg-surface)"; }}
       >
-        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, color: "#888" }}>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>
           {show.is_off ? "\u2014" : showNum}
         </td>
-        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12, whiteSpace: "nowrap" }}>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 12, whiteSpace: "nowrap", color: "var(--hw-text)", fontWeight: 500 }}>
           {formatShowDate(show.date_iso)}
         </td>
-        <td style={{ padding: "10px 12px" }}>
-          <div style={{ fontWeight: 600, fontSize: 13 }}>{show.is_off ? <em>OFF DAY</em> : (show.event || show.venue || "\u2014")}</div>
-          {show.event && show.venue && <div style={{ fontSize: 13, color: "#222" }}>{show.venue}</div>}
+        <td style={{ padding: "12px 12px" }}>
+          <div style={{ fontFamily: "var(--hw-font-body)", fontWeight: 500, fontSize: 14, color: "var(--hw-text)" }}>{show.is_off ? <em>OFF DAY</em> : (show.event || show.venue || "\u2014")}</div>
+          {show.event && show.venue && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.venue}</div>}
         </td>
-        <td style={{ padding: "10px 12px", fontSize: 13 }}>{show.city || "\u2014"}</td>
-        <td style={{ padding: "10px 12px", fontSize: 12 }}>{show.country || "\u2014"}</td>
-        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13 }}>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.city || "\u2014"}</td>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.country || "\u2014"}</td>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 13, textAlign: "right" }}>
           {show.is_off ? "\u2014" : (show.offer_display || "\u2014")}
         </td>
-        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 13, color: show.offer_amount ? "#1a6b3c" : "#aaa" }}>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 13, textAlign: "right", color: show.offer_amount ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
           {show.is_off ? "\u2014" : (show.offer_amount ? fmtUSD(show.offer_amount) : "\u2014")}
         </td>
-        <td style={{ padding: "10px 12px" }}>
+        <td style={{ padding: "12px 12px" }}>
           {sd.label && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: sd.color, display: "inline-block" }} />
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", padding: "4px 10px", border: "2px solid", borderColor: sd.color, color: sd.color, background: sd.variant === "confirmed" ? "var(--hw-green-ghost)" : sd.variant === "error" ? "var(--hw-red-ghost)" : "var(--hw-amber-ghost)" }}>
               {sd.label}
             </span>
           )}
         </td>
-        <td style={{ padding: "10px 12px", fontFamily: "monospace", fontSize: 12 }}>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text)" }}>
           {show.capacity ? show.capacity.toLocaleString() : "\u2014"}
         </td>
-        <td style={{ padding: "10px 8px", textAlign: "center" }}>
+        <td style={{ padding: "12px 8px", textAlign: "center" }}>
           {!show.is_off && show.advance_status === "submitted" && (
-            <span title="Advance submitted" style={{ fontSize: 14 }}>{"\u2705"}</span>
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", padding: "3px 8px", background: "var(--hw-green-ghost)", color: "var(--hw-green)", border: "2px solid var(--hw-green-border)" }}>DONE</span>
           )}
           {!show.is_off && show.advance_status && show.advance_status.includes("sent") && show.advance_status !== "submitted" && (
-            <span title="Advance sent" style={{ fontSize: 14 }}>{"\u2709\uFE0F"}</span>
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", padding: "3px 8px", background: "var(--hw-blue-ghost)", color: "var(--hw-blue)", border: "2px solid var(--hw-blue)" }}>SENT</span>
           )}
         </td>
-        <td style={{ padding: "10px 4px", textAlign: "center" }}>
+        <td style={{ padding: "12px 4px", textAlign: "center" }}>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(show.id); }}
             title="Delete show"
-            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#ccc", padding: "2px 6px", borderRadius: 4 }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#c0392b"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#ccc"; }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "var(--hw-text-muted)", padding: "2px 6px", transition: "var(--hw-ease)" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-crimson)"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-text-muted)"; }}
           >&times;</button>
         </td>
       </tr>

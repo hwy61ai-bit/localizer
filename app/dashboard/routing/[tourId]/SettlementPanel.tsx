@@ -174,59 +174,79 @@ export default function SettlementPanel({
 
   const sectionStyle: React.CSSProperties = { marginBottom: 16 };
   const headerStyle: React.CSSProperties = {
-    fontSize: 13, fontWeight: 600, textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em', color: '#888880', marginBottom: 8, display: 'flex',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 400,
+    textTransform: 'uppercase' as const, letterSpacing: '2px',
+    color: 'var(--hw-blue)', marginBottom: 8, display: 'flex',
     justifyContent: 'space-between', alignItems: 'center',
   };
   const rowStyle: React.CSSProperties = {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '6px 0', borderBottom: '1px solid #f0f0ec',
+    padding: '6px 0', borderBottom: '2px solid var(--hw-border)',
   };
-  const labelStyle: React.CSSProperties = { fontSize: 13, color: '#1a1a18' };
+  const labelStyle: React.CSSProperties = {
+    fontFamily: 'var(--hw-font-body)', fontSize: 14, fontWeight: 300,
+    color: 'var(--hw-text-secondary)',
+  };
   const inputStyle: React.CSSProperties = {
-    width: 140, padding: '4px 8px', border: '1px solid #e0e0da',
-    borderRadius: 4, fontSize: 13, fontFamily: 'DM Mono, monospace',
-    textAlign: 'right' as const, background: '#fff',
+    width: 140, padding: '6px 10px', border: '3px solid var(--hw-border-strong)',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 13,
+    textAlign: 'right' as const, background: 'var(--hw-bg-surface)',
+    outline: 'none',
   };
   const readonlyStyle: React.CSSProperties = {
-    ...inputStyle, background: '#f5f5f2', color: '#888880', border: '1px solid #e0e0da',
+    ...inputStyle, background: 'var(--hw-bg)', color: 'var(--hw-text-muted)',
+    border: '3px solid var(--hw-border)',
   };
   const tagStyle: React.CSSProperties = {
-    display: 'inline-block', padding: '2px 8px', borderRadius: 4,
-    fontSize: 11, fontWeight: 600, background: '#e8f5e9', color: '#1a6b3c',
+    display: 'inline-block', padding: '3px 10px',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700,
+    letterSpacing: '2px', textTransform: 'uppercase' as const,
+    background: 'var(--hw-green-ghost)', color: 'var(--hw-green)',
+    border: '2px solid var(--hw-green-border)',
   };
   const warningTagStyle: React.CSSProperties = {
-    ...tagStyle, background: '#fff3e0', color: '#b35c00',
+    ...tagStyle, background: 'var(--hw-amber-ghost)', color: 'var(--hw-amber)',
+    border: '2px solid var(--hw-amber)',
   };
   const dangerTagStyle: React.CSSProperties = {
-    ...tagStyle, background: '#fce4ec', color: '#c0392b',
+    ...tagStyle, background: 'var(--hw-red-ghost)', color: 'var(--hw-crimson)',
+    border: '2px solid var(--hw-crimson)',
   };
   const toggleContainerStyle: React.CSSProperties = {
-    display: 'flex', borderRadius: 6, overflow: 'hidden',
-    border: '1px solid #e0e0da', marginBottom: 16,
+    display: 'flex', overflow: 'hidden',
+    border: '3px solid var(--hw-border-strong)', marginBottom: 16,
   };
   const toggleBtnStyle = (active: boolean): React.CSSProperties => ({
-    flex: 1, padding: '8px 0', fontSize: 13, fontWeight: 600,
+    flex: 1, padding: '8px 0',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 700,
+    letterSpacing: '2px', textTransform: 'uppercase' as const,
     border: 'none', cursor: 'pointer', textAlign: 'center' as const,
-    background: active ? '#1a1a18' : '#f5f5f2',
-    color: active ? '#fff' : '#888880',
-    transition: 'all 0.15s ease',
+    background: active ? 'var(--hw-bg-invert)' : 'var(--hw-bg-surface)',
+    color: active ? '#fff' : 'var(--hw-text-muted)',
+    transition: 'var(--hw-ease)',
   });
   const summaryBoxStyle: React.CSSProperties = {
-    background: '#f5f5f2', borderRadius: 8, padding: 16, marginBottom: 16,
+    background: 'var(--hw-bg-surface)', border: '3px solid var(--hw-border-strong)',
+    padding: 16, marginBottom: 16,
   };
   const summaryRowStyle: React.CSSProperties = {
     display: 'flex', justifyContent: 'space-between', padding: '4px 0',
     fontSize: 14,
   };
-  const summaryLabelStyle: React.CSSProperties = { color: '#888880' };
+  const summaryLabelStyle: React.CSSProperties = {
+    fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px',
+    textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)',
+  };
   const summaryValueStyle: React.CSSProperties = {
-    fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#1a1a18',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 13, fontWeight: 700,
+    color: 'var(--hw-text)',
   };
   const btnStyle: React.CSSProperties = {
-    padding: '6px 12px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-    border: '1px solid #e0e0da', background: '#fff', color: '#1a1a18',
-    cursor: 'pointer',
+    padding: '4px 10px',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700,
+    letterSpacing: '1.5px', textTransform: 'uppercase' as const,
+    border: '2px solid var(--hw-border-strong)', background: 'var(--hw-bg-surface)',
+    color: 'var(--hw-text)', cursor: 'pointer', transition: 'var(--hw-ease)',
   };
 
   // ─── Render ──────────────────────────────────────────────────────────────
@@ -253,7 +273,7 @@ export default function SettlementPanel({
       <div style={summaryBoxStyle}>
         <div style={summaryRowStyle}>
           <span style={summaryLabelStyle}>Projected Income</span>
-          <span style={{ ...summaryValueStyle, color: '#1a6b3c' }}>
+          <span style={{ ...summaryValueStyle, color: 'var(--hw-green)' }}>
             {fmt(projectedIncome)}
           </span>
         </div>
@@ -261,18 +281,18 @@ export default function SettlementPanel({
           <span style={summaryLabelStyle}>Actual Income</span>
           <span style={{
             ...summaryValueStyle,
-            color: actualIncome > projectedIncome ? '#1a6b3c' : actualIncome < projectedIncome ? '#c0392b' : '#1a1a18',
+            color: actualIncome > projectedIncome ? 'var(--hw-green)' : actualIncome < projectedIncome ? 'var(--hw-crimson)' : 'var(--hw-text)',
           }}>
             {settlement.artistPayment != null ? fmt(actualIncome) : '\u2014'}
           </span>
         </div>
-        <div style={{ ...summaryRowStyle, borderTop: '1px solid #e0e0da', marginTop: 4, paddingTop: 8 }}>
+        <div style={{ ...summaryRowStyle, borderTop: '3px solid var(--hw-border-strong)', marginTop: 4, paddingTop: 8 }}>
           <span style={summaryLabelStyle}>Remaining</span>
           <span style={{
             ...summaryValueStyle,
             color: settlement.artistPayment != null
-              ? (actualIncome - projectedIncome >= 0 ? '#1a6b3c' : '#c0392b')
-              : '#888880',
+              ? (actualIncome - projectedIncome >= 0 ? 'var(--hw-green)' : 'var(--hw-crimson)')
+              : 'var(--hw-text-muted)',
           }}>
             {settlement.artistPayment != null
               ? `${actualIncome - projectedIncome >= 0 ? '+' : ''}${fmt(actualIncome - projectedIncome)}`
@@ -296,7 +316,7 @@ export default function SettlementPanel({
             {deal.guarantee != null && (
               <div style={rowStyle}>
                 <span style={labelStyle}>Guarantee</span>
-                <span style={{ ...labelStyle, fontFamily: 'DM Mono, monospace' }}>
+                <span style={{ ...labelStyle, fontFamily: 'var(--hw-font-mono)' }}>
                   {fmt(deal.guarantee)}
                 </span>
               </div>
@@ -306,7 +326,7 @@ export default function SettlementPanel({
                 <span style={labelStyle}>
                   {deal.versusBase === 'net' ? '% of Net' : deal.versusBase === 'adjusted_gross' ? '% of Adj. Gross' : '% of Gross'}
                 </span>
-                <span style={{ ...labelStyle, fontFamily: 'DM Mono, monospace' }}>
+                <span style={{ ...labelStyle, fontFamily: 'var(--hw-font-mono)' }}>
                   {deal.percentage}%
                 </span>
               </div>
@@ -314,29 +334,29 @@ export default function SettlementPanel({
             {deal.expenseCap != null && (
               <div style={rowStyle}>
                 <span style={labelStyle}>Expense Cap</span>
-                <span style={{ ...labelStyle, fontFamily: 'DM Mono, monospace' }}>{fmt(deal.expenseCap)}</span>
+                <span style={{ ...labelStyle, fontFamily: 'var(--hw-font-mono)' }}>{fmt(deal.expenseCap)}</span>
               </div>
             )}
             {deal.promoterProfit != null && (
               <div style={rowStyle}>
                 <span style={labelStyle}>Promoter Profit</span>
-                <span style={{ ...labelStyle, fontFamily: 'DM Mono, monospace' }}>{fmt(deal.promoterProfit)}</span>
+                <span style={{ ...labelStyle, fontFamily: 'var(--hw-font-mono)' }}>{fmt(deal.promoterProfit)}</span>
               </div>
             )}
             {deal.walkoutPotential != null && (
               <div style={rowStyle}>
                 <span style={labelStyle}>Walkout Potential</span>
-                <span style={{ ...labelStyle, fontFamily: 'DM Mono, monospace' }}>{fmt(deal.walkoutPotential)}</span>
+                <span style={{ ...labelStyle, fontFamily: 'var(--hw-font-mono)' }}>{fmt(deal.walkoutPotential)}</span>
               </div>
             )}
             {deal.rawText && (
-              <div style={{ marginTop: 8, padding: 8, background: '#f5f5f2', borderRadius: 4, fontSize: 12, color: '#888880', fontStyle: 'italic' }}>
+              <div style={{ marginTop: 8, padding: 8, background: 'var(--hw-bg)', border: '2px solid var(--hw-border)', fontFamily: 'var(--hw-font-body)', fontSize: 13, fontWeight: 300, color: 'var(--hw-text-muted)', fontStyle: 'italic' }}>
                 {deal.rawText}
               </div>
             )}
           </>
         ) : (
-          <div style={{ fontSize: 13, color: '#888880', padding: '8px 0' }}>
+          <div style={{ fontFamily: 'var(--hw-font-body)', fontSize: 14, fontWeight: 300, color: 'var(--hw-text-muted)', padding: '8px 0' }}>
             Drop a deal memo onto this show to populate deal terms.
           </div>
         )}
@@ -456,10 +476,10 @@ export default function SettlementPanel({
           />
         </div>
 
-        <div style={{ ...rowStyle, borderBottom: '2px solid #1a1a18', paddingBottom: 8, marginBottom: 8 }}>
-          <span style={{ ...labelStyle, fontWeight: 700 }}>Artist Payment</span>
+        <div style={{ ...rowStyle, borderBottom: '3px solid var(--hw-border-strong)', paddingBottom: 8, marginBottom: 8 }}>
+          <span style={{ ...labelStyle, fontWeight: 500, color: 'var(--hw-text)' }}>Artist Payment</span>
           <input
-            style={{ ...inputStyle, borderColor: '#1a6b3c', fontWeight: 700 }}
+            style={{ ...inputStyle, borderColor: 'var(--hw-green)', fontWeight: 700 }}
             type="text"
             placeholder="0.00"
             value={numVal(settlement.artistPayment)}
@@ -591,7 +611,7 @@ export default function SettlementPanel({
         </div>
 
         {showVerification && verification && (
-          <div style={{ padding: 12, background: verification.dealMatchesSettlement ? '#e8f5e9' : '#fff3e0', borderRadius: 8 }}>
+          <div style={{ padding: 12, background: verification.dealMatchesSettlement ? 'var(--hw-green-ghost)' : 'var(--hw-amber-ghost)', border: `3px solid ${verification.dealMatchesSettlement ? 'var(--hw-green-border)' : 'var(--hw-amber)'}` }}>
             <div style={summaryRowStyle}>
               <span style={summaryLabelStyle}>Status</span>
               <span style={verification.dealMatchesSettlement ? tagStyle : dangerTagStyle}>
@@ -611,7 +631,7 @@ export default function SettlementPanel({
                 <span style={summaryLabelStyle}>Difference</span>
                 <span style={{
                   ...summaryValueStyle,
-                  color: verification.difference > 0 ? '#1a6b3c' : '#c0392b',
+                  color: verification.difference > 0 ? 'var(--hw-green)' : 'var(--hw-crimson)',
                 }}>
                   {verification.difference > 0 ? '+' : ''}{fmt(verification.difference)}
                   {verification.percentageDifference !== 0 &&
@@ -620,7 +640,7 @@ export default function SettlementPanel({
               </div>
             )}
             {verification.discrepancies.length > 0 && (
-              <div style={{ marginTop: 8, fontSize: 12, color: '#b35c00' }}>
+              <div style={{ marginTop: 8, fontFamily: 'var(--hw-font-body)', fontSize: 13, fontWeight: 300, color: 'var(--hw-amber)' }}>
                 {verification.discrepancies.map((d, i) => (
                   <div key={i} style={{ padding: '4px 0' }}>{d}</div>
                 ))}
@@ -630,7 +650,7 @@ export default function SettlementPanel({
         )}
 
         {showVerification && !verification && (
-          <div style={{ fontSize: 13, color: '#888880', padding: '8px 0' }}>
+          <div style={{ fontFamily: 'var(--hw-font-body)', fontSize: 14, fontWeight: 300, color: 'var(--hw-text-muted)', padding: '8px 0' }}>
             Need both deal terms and settlement data to verify.
           </div>
         )}

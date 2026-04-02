@@ -180,45 +180,52 @@ export default function VehicleManager({
   // ─── Styles ───────────────────────────────────────────────────────
 
   const cardStyle: React.CSSProperties = {
-    border: '1px solid #e0e0da', borderRadius: 8, padding: 12,
-    marginBottom: 8, background: '#fff',
+    border: '3px solid var(--hw-border-strong)', padding: 12,
+    marginBottom: 8, background: 'var(--hw-bg-surface)',
   };
   const inputStyle: React.CSSProperties = {
-    padding: '4px 8px', border: '1px solid #e0e0da', borderRadius: 4,
-    fontSize: 13, background: '#fff',
+    padding: '6px 10px', border: '3px solid var(--hw-border-strong)',
+    fontFamily: 'var(--hw-font-body)', fontSize: 13,
+    background: 'var(--hw-bg-surface)', outline: 'none',
   };
   const smallInputStyle: React.CSSProperties = {
     ...inputStyle, width: 80, textAlign: 'right' as const,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 13,
   };
   const selectStyle: React.CSSProperties = {
-    ...inputStyle, minWidth: 100,
+    ...inputStyle, minWidth: 100, appearance: 'none' as const,
   };
   const btnStyle: React.CSSProperties = {
-    padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-    border: '1px solid #e0e0da', background: '#fff', color: '#1a1a18',
-    cursor: 'pointer',
+    padding: '4px 10px',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700,
+    letterSpacing: '1.5px', textTransform: 'uppercase' as const,
+    border: '2px solid var(--hw-border-strong)', background: 'var(--hw-bg-surface)',
+    color: 'var(--hw-text)', cursor: 'pointer', transition: 'var(--hw-ease)',
   };
   const addBtnStyle: React.CSSProperties = {
-    ...btnStyle, background: '#1a6b3c', color: '#fff', border: 'none',
+    ...btnStyle, background: 'var(--hw-crimson)', color: '#fff',
+    border: '2px solid var(--hw-crimson)',
   };
   const dangerBtnStyle: React.CSSProperties = {
-    ...btnStyle, color: '#c0392b', borderColor: '#c0392b',
+    ...btnStyle, color: 'var(--hw-crimson)', borderColor: 'var(--hw-crimson)',
   };
   const catTag = (cat: VehicleCategory): React.CSSProperties => ({
-    display: 'inline-block', padding: '2px 6px', borderRadius: 4,
-    fontSize: 10, fontWeight: 600, background: '#f0f0ec', color: '#888880',
-    marginLeft: 6,
+    display: 'inline-block', padding: '3px 8px',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700,
+    letterSpacing: '2px', textTransform: 'uppercase' as const,
+    background: 'rgba(0,0,0,0.04)', color: 'var(--hw-text-muted)',
+    border: '2px solid var(--hw-border)', marginLeft: 6,
   });
   const dropdownStyle: React.CSSProperties = {
     position: 'absolute' as const, top: '100%', left: 0, right: 0,
-    background: '#fff', border: '1px solid #e0e0da', borderRadius: 8,
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: 320,
+    background: 'var(--hw-bg-surface)', border: '3px solid var(--hw-border-strong)',
+    boxShadow: 'var(--hw-shadow-lg)', maxHeight: 320,
     overflowY: 'auto' as const, zIndex: 100,
   };
   const dropdownItemStyle: React.CSSProperties = {
-    padding: '8px 12px', cursor: 'pointer', borderBottom: '1px solid #f0f0ec',
-    fontSize: 13,
+    padding: '10px 12px', cursor: 'pointer',
+    borderBottom: '2px solid var(--hw-border)', fontSize: 13,
+    transition: 'var(--hw-ease)',
   };
 
   // ─── Fuel cost summary ────────────────────────────────────────────
@@ -232,15 +239,15 @@ export default function VehicleManager({
     <div>
       {/* ── Header ──────────────────────────────────────────────── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a18' }}>
-          Vehicles
-          <span style={{ fontSize: 12, fontWeight: 400, color: '#888880', marginLeft: 8 }}>
+        <div>
+          <span style={{ fontFamily: 'var(--hw-font-display)', fontSize: 22, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--hw-text)' }}>VEHICLES</span>
+          <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 12 }}>
             {activeVehicles.length} active &middot; {totalPassengers} total seats
           </span>
-          {saving && <span style={{ fontSize: 11, color: '#888880', marginLeft: 8 }}>Saving...</span>}
+          {saving && <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 8 }}>SAVING...</span>}
         </div>
         <button style={addBtnStyle} onClick={() => setAddingNew(true)}>
-          + Add Vehicle
+          + ADD VEHICLE
         </button>
       </div>
 
@@ -262,26 +269,26 @@ export default function VehicleManager({
                   key={spec.id}
                   style={dropdownItemStyle}
                   onClick={() => addFromDatabase(spec)}
-                  onMouseEnter={(e) => { (e.target as HTMLElement).style.background = '#f5f5f2'; }}
-                  onMouseLeave={(e) => { (e.target as HTMLElement).style.background = '#fff'; }}
+                  onMouseEnter={(e) => { (e.target as HTMLElement).style.background = 'var(--hw-crimson-ghost)'; }}
+                  onMouseLeave={(e) => { (e.target as HTMLElement).style.background = 'var(--hw-bg-surface)'; }}
                 >
-                  <div style={{ fontWeight: 600 }}>
+                  <div style={{ fontFamily: 'var(--hw-font-body)', fontWeight: 500, color: 'var(--hw-text)' }}>
                     {spec.make} {spec.model}
                     <span style={catTag(spec.category)}>
                       {VEHICLE_CATEGORY_LABELS[spec.category]}
                     </span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#888880', marginTop: 2 }}>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1px', color: 'var(--hw-text-muted)', marginTop: 2 }}>
                     {spec.fuelType} &middot; {spec.mpg} MPG &middot; {spec.passengers} pax
                     {spec.notes && ` &middot; ${spec.notes}`}
                   </div>
                 </div>
               ))}
               <div
-                style={{ ...dropdownItemStyle, borderBottom: 'none', color: '#1a5fa6', fontWeight: 600 }}
+                style={{ ...dropdownItemStyle, borderBottom: 'none', fontFamily: 'var(--hw-font-mono)', fontSize: 11, letterSpacing: '1px', color: 'var(--hw-crimson)', fontWeight: 700 }}
                 onClick={addCustomVehicle}
-                onMouseEnter={(e) => { (e.target as HTMLElement).style.background = '#f5f5f2'; }}
-                onMouseLeave={(e) => { (e.target as HTMLElement).style.background = '#fff'; }}
+                onMouseEnter={(e) => { (e.target as HTMLElement).style.background = 'var(--hw-crimson-ghost)'; }}
+                onMouseLeave={(e) => { (e.target as HTMLElement).style.background = 'var(--hw-bg-surface)'; }}
               >
                 + Add custom vehicle{searchQuery ? `: "${searchQuery}"` : ''}
               </div>
@@ -306,18 +313,18 @@ export default function VehicleManager({
               onClick={() => setEditingId(isExpanded ? null : vehicle.id)}
             >
               <div>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a18' }}>
+                <span style={{ fontFamily: 'var(--hw-font-display)', fontSize: 18, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--hw-text)' }}>
                   {vehicle.label}
                 </span>
                 <span style={catTag(vehicle.category)}>
                   {VEHICLE_CATEGORY_LABELS[vehicle.category]}
                 </span>
-                <span style={{ fontSize: 11, color: '#888880', marginLeft: 8 }}>
+                <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 8 }}>
                   {vehicle.mpg} MPG &middot; {vehicle.passengers} pax &middot; {vehicle.fuelType}
                   &middot; {vehicle.ownership}
                 </span>
               </div>
-              <span style={{ fontSize: 13, color: '#888880' }}>
+              <span style={{ fontSize: 13, color: 'var(--hw-text-muted)' }}>
                 {isExpanded ? '\u25BE' : '\u25B8'}
               </span>
             </div>
@@ -326,7 +333,7 @@ export default function VehicleManager({
             {isExpanded && (
               <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Label</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Label</div>
                   <input
                     style={{ ...inputStyle, width: '100%' }}
                     value={vehicle.label}
@@ -335,7 +342,7 @@ export default function VehicleManager({
                   />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Category</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Category</div>
                   <select
                     style={{ ...selectStyle, width: '100%' }}
                     value={vehicle.category}
@@ -347,7 +354,7 @@ export default function VehicleManager({
                   </select>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Fuel Type</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Fuel Type</div>
                   <select
                     style={{ ...selectStyle, width: '100%' }}
                     value={vehicle.fuelType}
@@ -360,7 +367,7 @@ export default function VehicleManager({
                   </select>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Ownership</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Ownership</div>
                   <select
                     style={{ ...selectStyle, width: '100%' }}
                     value={vehicle.ownership}
@@ -373,7 +380,7 @@ export default function VehicleManager({
                   </select>
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>MPG</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>MPG</div>
                   <input
                     style={{ ...smallInputStyle, width: '100%' }}
                     type="number"
@@ -382,7 +389,7 @@ export default function VehicleManager({
                   />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Passengers</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Passengers</div>
                   <input
                     style={{ ...smallInputStyle, width: '100%' }}
                     type="number"
@@ -391,7 +398,7 @@ export default function VehicleManager({
                   />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Fuel $/gal</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Fuel $/gal</div>
                   <input
                     style={{ ...smallInputStyle, width: '100%' }}
                     type="number"
@@ -401,7 +408,7 @@ export default function VehicleManager({
                   />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Make / Model</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Make / Model</div>
                   <input
                     style={{ ...inputStyle, width: '100%' }}
                     value={`${vehicle.make} ${vehicle.model}`.trim()}
@@ -410,7 +417,7 @@ export default function VehicleManager({
                   />
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <div style={{ fontSize: 11, color: '#888880', marginBottom: 2 }}>Notes</div>
+                  <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Notes</div>
                   <input
                     style={{ ...inputStyle, width: '100%' }}
                     value={vehicle.notes}
@@ -442,8 +449,9 @@ export default function VehicleManager({
 
       {/* ── Empty State ─────────────────────────────────────────── */}
       {vehicles.length === 0 && !addingNew && (
-        <div style={{ textAlign: 'center' as const, padding: 32, color: '#888880', fontSize: 14 }}>
-          No vehicles added. Click "+ Add Vehicle" and search for your touring vehicle.
+        <div style={{ textAlign: 'center' as const, padding: 32, border: '3px dashed var(--hw-border-light)' }}>
+          <div style={{ fontFamily: 'var(--hw-font-display)', fontSize: 24, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--hw-text)', marginBottom: 8 }}>NO VEHICLES</div>
+          <div style={{ fontFamily: 'var(--hw-font-body)', fontSize: 14, fontWeight: 300, color: 'var(--hw-text-muted)' }}>Click &quot;+ Add Vehicle&quot; and search for your touring vehicle.</div>
         </div>
       )}
     </div>

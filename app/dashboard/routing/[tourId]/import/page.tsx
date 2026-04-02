@@ -439,29 +439,28 @@ export default function ImportPage() {
     <div className="fade-in" style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #DDDDDD" }}>
-          <Link href={`/dashboard/routing/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; Back to Tour</Link>
+        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
+          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>TOURROUTER.</h1>
-              <div style={{ borderBottom: "2px solid #111111", marginBottom: 6 }} />
-              <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>{tour?.name?.toUpperCase() || "TOUR"}</div>
+              <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>TOURROUTER</h1>
+              <div style={{ borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 6 }} />
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", margin: 0 }}>{tour?.name?.toUpperCase() || "TOUR"}</div>
             </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #DDDDDD", borderRadius: 12, padding: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
                 {navItems.map((item) => (
                   <Link
                     key={item.num}
                     href={item.href}
                     style={{
                       padding: "10px 18px",
-                      borderRadius: 10,
-                      border: item.active ? "1px solid #111" : "1px solid #DDDDDD",
-                      background: item.active ? "#111" : "#fff",
-                      color: item.active ? "#fff" : "#111",
+                      border: item.active ? "3px solid var(--hw-border-strong)" : "3px solid transparent",
+                      background: item.active ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                      color: item.active ? "#fff" : "var(--hw-text)",
                       textDecoration: "none",
-                      fontWeight: item.active ? 900 : 700,
-                      fontSize: 13,
+                      fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: item.active ? 700 : 400,
+                      letterSpacing: "1.5px", textTransform: "uppercase",
                     }}
                   >{item.num}. {item.label}</Link>
                 ))}
@@ -471,25 +470,25 @@ export default function ImportPage() {
         </div>
 
         {/* Step indicator */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        <div style={{ display: "flex", gap: 0, marginBottom: 20 }}>
           {[1, 2, 3].map((s) => (
             <div key={s} style={{
-              padding: "6px 16px",
-              borderRadius: 20,
-              fontSize: 12,
-              fontWeight: 700,
-              background: step === s ? "#111" : "#fff",
-              color: step === s ? "#fff" : "#888",
-              border: "1px solid #DDDDDD",
+              padding: "8px 16px",
+              fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700,
+              letterSpacing: "1.5px", textTransform: "uppercase",
+              background: step === s ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+              color: step === s ? "#fff" : "var(--hw-text-muted)",
+              border: "3px solid var(--hw-border-strong)",
+              marginLeft: s > 1 ? -3 : 0,
             }}>
-              {s === 1 ? "1. Source" : s === 2 ? "2. Map Columns" : "3. Review & Save"}
+              {s === 1 ? "1. SOURCE" : s === 2 ? "2. MAP COLUMNS" : "3. REVIEW & SAVE"}
             </div>
           ))}
         </div>
 
         {/* Error */}
         {error && (
-          <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#c00" }}>
+          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
             {error}
           </div>
         )}
@@ -499,12 +498,13 @@ export default function ImportPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             <div
               onClick={() => setPasteMode(true)}
-              className="card-hover"
-              style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 32, textAlign: "center", cursor: "pointer" }}
+              style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 32, textAlign: "center", cursor: "pointer", transition: "var(--hw-ease)" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--hw-shadow-lg)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "none"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
             >
-              <div style={{ fontSize: 36, marginBottom: 12 }}>{"\u{1F4CB}"}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>Paste Text / CSV</div>
-              <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>Paste comma or tab-separated text directly from a spreadsheet</div>
+              <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.4 }}>{"\u{1F4CB}"}</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>PASTE TEXT / CSV</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.5 }}>Paste comma or tab-separated text directly from a spreadsheet</div>
             </div>
 
             <div
@@ -512,13 +512,14 @@ export default function ImportPage() {
               onDragOver={(e) => { e.preventDefault(); setDragOverSpreadsheet(true); }}
               onDragLeave={() => setDragOverSpreadsheet(false)}
               onDrop={handleSpreadsheetDrop}
-              className="card-hover"
-              style={{ background: "#fff", border: dragOverSpreadsheet ? "2px dashed #fff" : "1px solid #DDDDDD", borderRadius: 14, padding: 32, textAlign: "center", cursor: "pointer", transition: "border 0.2s" }}
+              style={{ background: "var(--hw-bg-surface)", border: dragOverSpreadsheet ? "3px solid var(--hw-crimson)" : "3px solid var(--hw-border-strong)", padding: 32, textAlign: "center", cursor: "pointer", transition: "var(--hw-ease)" }}
+              onMouseEnter={(e) => { if (!dragOverSpreadsheet) { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--hw-shadow-lg)"; } }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "none"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
             >
-              <div style={{ fontSize: 36, marginBottom: 12 }}>{"\u{1F4CA}"}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>Upload Spreadsheet</div>
-              <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>Upload a .csv, .xlsx, or .xls file with your tour schedule</div>
-              <div style={{ fontSize: 12, color: "#aaa", marginTop: 10 }}>or drag and drop</div>
+              <div style={{ fontSize: 36, marginBottom: 12, opacity: dragOverSpreadsheet ? 0.7 : 0.4 }}>{"\u{1F4CA}"}</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>UPLOAD SPREADSHEET</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.5 }}>Upload a .csv, .xlsx, or .xls file with your tour schedule</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 10 }}>OR DRAG AND DROP</div>
               <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={handleFileUpload} />
             </div>
 
@@ -527,13 +528,14 @@ export default function ImportPage() {
               onDragOver={(e) => { e.preventDefault(); setDragOverPdf(true); }}
               onDragLeave={() => setDragOverPdf(false)}
               onDrop={handlePdfDrop}
-              className="card-hover"
-              style={{ background: "#fff", border: dragOverPdf ? "2px dashed #fff" : "1px solid #DDDDDD", borderRadius: 14, padding: 32, textAlign: "center", cursor: pdfLoading ? "wait" : "pointer", opacity: pdfLoading ? 0.6 : 1, transition: "border 0.2s" }}
+              style={{ background: dragOverPdf ? "var(--hw-crimson-ghost)" : "var(--hw-bg-surface)", border: dragOverPdf ? "3px solid var(--hw-crimson)" : "3px solid var(--hw-border-strong)", padding: 32, textAlign: "center", cursor: pdfLoading ? "wait" : "pointer", opacity: pdfLoading ? 0.4 : 1, transition: "var(--hw-ease)" }}
+              onMouseEnter={(e) => { if (!dragOverPdf) { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--hw-shadow-lg)"; } }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "none"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
             >
-              <div style={{ fontSize: 36, marginBottom: 12 }}>{pdfLoading ? "\u23F3" : "\u{1F4C4}"}</div>
-              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>{pdfLoading ? "Parsing PDF..." : "Upload Deal Memo (PDF)"}</div>
-              <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>Upload a deal memo PDF — AI will extract show data automatically</div>
-              <div style={{ fontSize: 12, color: "#aaa", marginTop: 10 }}>or drag and drop</div>
+              <div style={{ fontSize: 36, marginBottom: 12, opacity: dragOverPdf ? 0.7 : 0.4 }}>{pdfLoading ? "\u23F3" : "\u{1F4C4}"}</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>{pdfLoading ? "PARSING PDF..." : "UPLOAD DEAL MEMO (PDF)"}</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.5 }}>Upload a deal memo PDF — AI will extract show data automatically</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 10 }}>OR DRAG AND DROP</div>
               <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={handlePdfUpload} />
             </div>
           </div>
@@ -541,52 +543,52 @@ export default function ImportPage() {
 
         {/* Paste mode */}
         {step === 1 && pasteMode && (
-          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24 }}>
+          <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>Paste Your Data</div>
-              <button onClick={() => { setPasteMode(false); setPasteText(""); }} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Cancel</button>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>PASTE YOUR DATA</div>
+              <button onClick={() => { setPasteMode(false); setPasteText(""); }} style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" }}>CANCEL</button>
             </div>
-            <div style={{ fontSize: 13, color: "#888", marginBottom: 12 }}>First row should be headers. Supports comma, tab, or pipe-separated values.</div>
+            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", marginBottom: 12 }}>First row should be headers. Supports comma, tab, or pipe-separated values.</div>
             <textarea
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
               placeholder={"Date,Event,City,Country,Venue,Offer\n2026-03-15,The Roxy,Los Angeles,USA,The Roxy Theatre,$5000"}
-              style={{ width: "100%", boxSizing: "border-box", minHeight: 200, padding: 14, border: "1px solid #DDDDDD", borderRadius: 10, fontSize: 13, fontFamily: "monospace", resize: "vertical", outline: "none" }}
+              style={{ width: "100%", boxSizing: "border-box", minHeight: 200, padding: 14, border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-mono)", fontSize: 13, resize: "vertical", outline: "none" }}
             />
             <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
               <button
                 onClick={handlePasteSubmit}
                 disabled={!pasteText.trim()}
-                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer", opacity: pasteText.trim() ? 1 : 0.5 }}
-              >Parse Data</button>
+                style={{ padding: "10px 24px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: pasteText.trim() ? 1 : 0.4 }}
+              >PARSE DATA</button>
             </div>
           </div>
         )}
 
         {/* ══════ STEP 2: Column Mapper ══════ */}
         {step === 2 && (
-          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24 }}>
+          <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Map Columns</div>
-                <div style={{ fontSize: 13, color: "#888" }}>
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>MAP COLUMNS</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
                   {rawRows.length} rows detected &middot; {headers.length} columns
-                  {resolving && <span style={{ marginLeft: 8, color: "#b35c00" }}>&middot; AI mapping headers...</span>}
+                  {resolving && <span style={{ marginLeft: 8, color: "var(--hw-amber)" }}>&middot; AI MAPPING HEADERS...</span>}
                 </div>
               </div>
-              <button onClick={() => { setStep(1); setPasteMode(false); setError(""); }} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Back</button>
+              <button onClick={() => { setStep(1); setPasteMode(false); setError(""); }} style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" }}>BACK</button>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
               {MAPPER_FIELDS.map((f) => (
                 <div key={f.key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <label style={{ width: 160, fontSize: 13, fontWeight: f.required ? 800 : 600, color: f.required ? "#111" : "#666" }}>
+                  <label style={{ width: 160, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: f.required ? 700 : 400, color: f.required ? "var(--hw-text)" : "var(--hw-text-muted)" }}>
                     {f.label}{f.required ? " *" : ""}
                   </label>
                   <select
                     value={mapping[f.key] || ""}
                     onChange={(e) => updateMapping(f.key, e.target.value)}
-                    style={{ flex: 1, padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}
+                    style={{ flex: 1, padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, background: "var(--hw-bg-surface)", outline: "none", appearance: "none" }}
                   >
                     <option value="">{f.required ? "\u2014 Required \u2014" : "\u2014 Skip \u2014"}</option>
                     {headers.map((h) => (
@@ -599,21 +601,21 @@ export default function ImportPage() {
 
             {/* Preview first 3 rows */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#888", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>Preview (first 3 rows)</div>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-blue)", marginBottom: 8 }}>PREVIEW (FIRST 3 ROWS)</div>
+              <div style={{ overflowX: "auto", border: "3px solid var(--hw-border-strong)" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr>
+                    <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {headers.map((h) => (
-                        <th key={h} style={{ padding: "6px 10px", borderBottom: "1px solid #DDDDDD", textAlign: "left", fontWeight: 700, color: "#888", whiteSpace: "nowrap" }}>{h}</th>
+                        <th key={h} style={{ padding: "10px 10px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", color: "#fff", whiteSpace: "nowrap", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {rawRows.slice(0, 3).map((row, i) => (
-                      <tr key={i}>
+                      <tr key={i} style={{ borderTop: "2px solid var(--hw-border)" }}>
                         {headers.map((h) => (
-                          <td key={h} style={{ padding: "6px 10px", borderBottom: "1px solid #f0f0f0", whiteSpace: "nowrap" }}>{row[h] || ""}</td>
+                          <td key={h} style={{ padding: "8px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)", whiteSpace: "nowrap" }}>{row[h] || ""}</td>
                         ))}
                       </tr>
                     ))}
@@ -625,52 +627,57 @@ export default function ImportPage() {
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button
                 onClick={applyMapping}
-                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
-              >Apply Mapping</button>
+                style={{ padding: "10px 24px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}
+              >APPLY MAPPING</button>
             </div>
           </div>
         )}
 
         {/* ══════ STEP 3: Review & Save ══════ */}
         {step === 3 && (
-          <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24 }}>
+          <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>Review Shows</div>
-                <div style={{ fontSize: 13, color: "#888" }}>{shows.length} shows parsed</div>
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>REVIEW SHOWS</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{shows.length} shows parsed</div>
               </div>
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => { setStep(headers.length > 0 ? 2 : 1); setError(""); }} style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #DDDDDD", background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700 }}>Back</button>
+                <button onClick={() => { setStep(headers.length > 0 ? 2 : 1); setError(""); }} style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" }}>BACK</button>
                 <button
                   onClick={saveShows}
                   disabled={saving || shows.length === 0}
-                  style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer", opacity: saving || shows.length === 0 ? 0.5 : 1 }}
-                >{saving ? "Saving..." : "Save to Tour"}</button>
+                  style={{ padding: "10px 24px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: saving || shows.length === 0 ? 0.4 : 1 }}
+                >{saving ? "SAVING..." : "SAVE TO TOUR"}</button>
               </div>
             </div>
 
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <div style={{ overflowX: "auto", border: "3px solid var(--hw-border-strong)" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr>
+                  <tr style={{ background: "var(--hw-bg-invert)" }}>
                     {["#", "Date", "Event", "City", "Country", "Venue", "Offer", "Currency", "Status", "Capacity"].map((h) => (
-                      <th key={h} style={{ padding: "8px 10px", borderBottom: "2px solid #DDDDDD", textAlign: "left", fontWeight: 700, color: "#888", whiteSpace: "nowrap", textTransform: "uppercase", fontSize: 11, letterSpacing: "0.04em" }}>{h}</th>
+                      <th key={h} style={{ padding: "12px 10px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", color: "#fff", whiteSpace: "nowrap", textTransform: "uppercase" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {shows.map((s, i) => (
-                    <tr key={i} style={{ background: s.is_off ? "#fafaf8" : "#fff" }}>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", color: s.is_off ? "#aaa" : "#111" }}>{s.is_off ? "OFF" : i + 1}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", whiteSpace: "nowrap" }}>{s.date_iso || "\u2014"}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", fontWeight: 600 }}>{s.event}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.city}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.country}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.venue}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", fontFamily: "monospace" }}>{s.offer_amount ? `$${s.offer_amount.toLocaleString()}` : "\u2014"}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.offer_currency}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0" }}>{s.status || "\u2014"}</td>
-                      <td style={{ padding: "8px 10px", borderBottom: "1px solid #f0f0f0", fontFamily: "monospace" }}>{s.capacity || "\u2014"}</td>
+                    <tr
+                      key={i}
+                      style={{ background: s.is_off ? "var(--hw-bg-warm)" : "var(--hw-bg-surface)", borderTop: "2px solid var(--hw-border)", transition: "var(--hw-ease)" }}
+                      onMouseEnter={(e) => { if (!s.is_off) (e.currentTarget as HTMLElement).style.background = "var(--hw-crimson-ghost)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = s.is_off ? "var(--hw-bg-warm)" : "var(--hw-bg-surface)"; }}
+                    >
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 12, color: s.is_off ? "var(--hw-text-muted)" : "var(--hw-text)" }}>{s.is_off ? "OFF" : i + 1}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 12, whiteSpace: "nowrap", fontWeight: 500, color: "var(--hw-text)" }}>{s.date_iso || "\u2014"}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, color: "var(--hw-text)" }}>{s.event}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.city}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.country}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.venue}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 13, textAlign: "right", color: s.offer_amount ? "var(--hw-green)" : "var(--hw-text-muted)" }}>{s.offer_amount ? `$${s.offer_amount.toLocaleString()}` : "\u2014"}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-secondary)" }}>{s.offer_currency}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.status || "\u2014"}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 12, textAlign: "right", color: "var(--hw-text)" }}>{s.capacity || "\u2014"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -678,7 +685,10 @@ export default function ImportPage() {
             </div>
 
             {shows.length === 0 && (
-              <div style={{ padding: 40, textAlign: "center", color: "#888", fontSize: 14 }}>No valid shows found. Check your data and column mapping.</div>
+              <div style={{ padding: 40, textAlign: "center" }}>
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 8 }}>NO VALID SHOWS FOUND</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)" }}>Check your data and column mapping.</div>
+              </div>
             )}
           </div>
         )}

@@ -169,17 +169,17 @@ export default function IntakeDropZone({
   }
 
   const fieldColor = (key: string): string => {
-    if (!result) return "#fff";
-    if (result.confirmationRequired.includes(key)) return "#fff5f5";
-    if (result.reviewRequired.includes(key)) return "#fffbf0";
-    return "#f0faf4";
+    if (!result) return "var(--hw-bg-surface)";
+    if (result.confirmationRequired.includes(key)) return "var(--hw-red-ghost)";
+    if (result.reviewRequired.includes(key)) return "var(--hw-amber-ghost)";
+    return "var(--hw-green-ghost)";
   };
 
   const fieldBorder = (key: string): string => {
-    if (!result) return "#DDDDDD";
-    if (result.confirmationRequired.includes(key)) return "#ffcccc";
-    if (result.reviewRequired.includes(key)) return "#f0d080";
-    return "#c8e6c9";
+    if (!result) return "var(--hw-border-strong)";
+    if (result.confirmationRequired.includes(key)) return "var(--hw-crimson)";
+    if (result.reviewRequired.includes(key)) return "var(--hw-amber)";
+    return "var(--hw-green-border)";
   };
 
   return (
@@ -199,13 +199,14 @@ export default function IntakeDropZone({
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <div style={{
-            border: "3px dashed rgba(255,255,255,0.5)",
-            borderRadius: 20, padding: "60px 80px", textAlign: "center",
+            border: "3px dashed var(--hw-crimson)",
+            background: "var(--hw-crimson-ghost)",
+            padding: "60px 80px", textAlign: "center",
           }}>
-            <div style={{ fontSize: 48, marginBottom: 12, opacity: 0.8 }}>+</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>Drop document to process</div>
-            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", marginTop: 8 }}>
-              Deal memos, settlements, hotel confirmations, receipts, advances
+            <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, marginBottom: 12, opacity: 0.7, color: "var(--hw-crimson)" }}>+</div>
+            <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "#fff" }}>DROP DOCUMENT TO PROCESS</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", marginTop: 8 }}>
+              DEAL MEMOS, SETTLEMENTS, HOTEL CONFIRMATIONS, RECEIPTS, ADVANCES
             </div>
           </div>
         </div>
@@ -214,70 +215,70 @@ export default function IntakeDropZone({
       {/* Processing modal */}
       {processing && (
         <div style={{ position: "fixed", inset: 0, zIndex: 960, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "#fff", borderRadius: 14, padding: 40, textAlign: "center", maxWidth: 400 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>Processing Document</div>
-            <div style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>{fileName}</div>
-            <div style={{ fontSize: 13, color: "#111" }}>{processingStep}</div>
+          <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-xl)", padding: 40, textAlign: "center", maxWidth: 400 }}>
+            <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>PROCESSING DOCUMENT</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 16 }}>{fileName}</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", color: "var(--hw-text)" }}>{processingStep}</div>
           </div>
         </div>
       )}
 
       {/* Saved toast */}
       {savedMsg && (
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "#111", color: "#fff", padding: "10px 24px", borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "var(--hw-bg-invert)", color: "var(--hw-text-invert)", padding: "12px 24px", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-lg)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>
           {savedMsg}
         </div>
       )}
 
       {/* Error toast */}
       {error && !result && !processing && (
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "#c0392b", color: "#fff", padding: "10px 24px", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" }} onClick={() => setError(null)}>
-          {error} (click to dismiss)
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "var(--hw-crimson)", color: "#fff", padding: "12px 24px", border: "3px solid var(--hw-crimson)", boxShadow: "var(--hw-shadow-lg)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }} onClick={() => setError(null)}>
+          {error} (CLICK TO DISMISS)
         </div>
       )}
 
       {/* Review modal */}
       {result && (
         <>
-          <div onClick={closeReview} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 960 }} />
+          <div onClick={closeReview} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 960 }} />
           <div style={{
             position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
             width: 600, maxWidth: "95vw", maxHeight: "85vh", overflowY: "auto",
-            background: "#fff", borderRadius: 14, padding: 24, zIndex: 961,
-            boxShadow: "0 12px 40px rgba(0,0,0,0.2)",
+            background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
+            zIndex: 961, boxShadow: "var(--hw-shadow-xl)",
           }}>
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)" }}>
               <div>
-                <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Review Extracted Data</div>
-                <div style={{ fontSize: 12, color: "#888" }}>{fileName}</div>
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>REVIEW EXTRACTED DATA</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{fileName}</div>
               </div>
-              <button onClick={closeReview} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#888" }}>&times;</button>
+              <button onClick={closeReview} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--hw-text-muted)" }}>&times;</button>
             </div>
 
             {/* Document type */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 24px", marginTop: 16, marginBottom: 16 }}>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Document Type</label>
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>DOCUMENT TYPE</label>
                 <select
                   value={editedType}
                   onChange={(e) => setEditedType(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, background: "var(--hw-bg-surface)", outline: "none", appearance: "none" }}
                 >
                   {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
                 {result.documentTypeConfidence < 0.8 && result.suggestedTypes.length > 0 && (
-                  <div style={{ fontSize: 11, color: "#b35c00", marginTop: 4 }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-amber)", marginTop: 4 }}>
                     Low confidence ({Math.round(result.documentTypeConfidence * 100)}%). Also consider: {result.suggestedTypes.map((t) => DOC_TYPE_LABELS[t] || t).join(", ")}
                   </div>
                 )}
               </div>
               <div>
-                <label style={{ fontSize: 11, color: "#888", display: "block", marginBottom: 4 }}>Matched Show</label>
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>MATCHED SHOW</label>
                 <select
                   value={editedShowId || ""}
                   onChange={(e) => setEditedShowId(e.target.value || null)}
-                  style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "1px solid #DDDDDD", borderRadius: 8, fontSize: 13, background: "#fff", outline: "none" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, background: "var(--hw-bg-surface)", outline: "none", appearance: "none" }}
                 >
                   <option value="">No show selected</option>
                   {(shows || []).map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
@@ -286,23 +287,23 @@ export default function IntakeDropZone({
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", gap: 12, marginBottom: 12, fontSize: 11 }}>
-              <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#f0faf4", border: "1px solid #c8e6c9", marginRight: 4 }} />Auto-confirmed</span>
-              <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#fffbf0", border: "1px solid #f0d080", marginRight: 4 }} />Review</span>
-              <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: "#fff5f5", border: "1px solid #ffcccc", marginRight: 4 }} />Confirm required</span>
+            <div style={{ display: "flex", gap: 12, padding: "0 24px", marginBottom: 12, fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1px", textTransform: "uppercase" }}>
+              <span><span style={{ display: "inline-block", width: 10, height: 10, background: "var(--hw-green-ghost)", border: "2px solid var(--hw-green-border)", marginRight: 4 }} />Auto-confirmed</span>
+              <span><span style={{ display: "inline-block", width: 10, height: 10, background: "var(--hw-amber-ghost)", border: "2px solid var(--hw-amber)", marginRight: 4 }} />Review</span>
+              <span><span style={{ display: "inline-block", width: 10, height: 10, background: "var(--hw-red-ghost)", border: "2px solid var(--hw-crimson)", marginRight: 4 }} />Confirm required</span>
             </div>
 
             {/* Fields */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "0 24px", marginBottom: 16 }}>
               {Object.entries(editedFields).map(([key, val]) => {
                 if (val === null || val === undefined) return null;
                 const isObject = typeof val === "object";
                 return (
                   <div key={key} style={{ gridColumn: isObject || String(val).length > 60 ? "1 / -1" : undefined }}>
-                    <label style={{ fontSize: 10, color: "#888", display: "block", marginBottom: 2 }}>
+                    <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>
                       {key.replace(/_/g, " ")}
                       {result.confidence[key] !== undefined && (
-                        <span style={{ marginLeft: 4, color: result.confidence[key] >= 0.95 ? "#1a6b3c" : result.confidence[key] >= 0.75 ? "#b35c00" : "#c0392b" }}>
+                        <span style={{ marginLeft: 4, color: result.confidence[key] >= 0.95 ? "var(--hw-green)" : result.confidence[key] >= 0.75 ? "var(--hw-amber)" : "var(--hw-crimson)" }}>
                           {Math.round(result.confidence[key] * 100)}%
                         </span>
                       )}
@@ -312,13 +313,13 @@ export default function IntakeDropZone({
                         value={JSON.stringify(val, null, 2)}
                         onChange={(e) => { try { updateField(key, JSON.parse(e.target.value)); } catch { /* invalid json */ } }}
                         rows={3}
-                        style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: `1px solid ${fieldBorder(key)}`, borderRadius: 6, fontSize: 12, outline: "none", background: fieldColor(key), fontFamily: "monospace", resize: "vertical" }}
+                        style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: `3px solid ${fieldBorder(key)}`, fontFamily: "var(--hw-font-mono)", fontSize: 12, outline: "none", background: fieldColor(key), resize: "vertical" }}
                       />
                     ) : (
                       <input
                         value={String(val)}
                         onChange={(e) => updateField(key, e.target.value)}
-                        style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: `1px solid ${fieldBorder(key)}`, borderRadius: 6, fontSize: 12, outline: "none", background: fieldColor(key) }}
+                        style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: `3px solid ${fieldBorder(key)}`, fontFamily: "var(--hw-font-body)", fontSize: 13, outline: "none", background: fieldColor(key) }}
                       />
                     )}
                   </div>
@@ -327,17 +328,17 @@ export default function IntakeDropZone({
             </div>
 
             {error && (
-              <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 8, padding: "8px 12px", marginBottom: 12, fontSize: 12, color: "#c00" }}>{error}</div>
+              <div style={{ margin: "0 24px 12px", background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "8px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>{error}</div>
             )}
 
             {/* Actions */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button onClick={closeReview} style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>Cancel</button>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, padding: "16px 24px", borderTop: "3px solid var(--hw-border-strong)", background: "var(--hw-bg)" }}>
+              <button onClick={closeReview} style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>CANCEL</button>
               <button
                 onClick={confirmSave}
                 disabled={saving}
-                style={{ padding: "8px 20px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 800, fontSize: 12, cursor: "pointer", opacity: saving ? 0.5 : 1 }}
-              >{saving ? "Saving..." : "Confirm & Save"}</button>
+                style={{ padding: "8px 20px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: saving ? 0.4 : 1 }}
+              >{saving ? "SAVING..." : "CONFIRM & SAVE"}</button>
             </div>
           </div>
         </>

@@ -207,58 +207,63 @@ export default function RosterPanel({
   // ─── Styles ──────────────────────────────────────────────────────────
 
   const cardStyle: React.CSSProperties = {
-    border: '1px solid #e0e0da', borderRadius: 8, padding: 12,
-    marginBottom: 8, background: '#fff',
+    border: '3px solid var(--hw-border-strong)', padding: 12,
+    marginBottom: 8, background: 'var(--hw-bg-surface)',
   };
   const cardHeaderStyle: React.CSSProperties = {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: 8, cursor: 'pointer',
   };
-  const nameStyle: React.CSSProperties = { fontSize: 14, fontWeight: 600, color: '#1a1a18' };
-  const roleStyle: React.CSSProperties = { fontSize: 12, color: '#888880' };
+  const nameStyle: React.CSSProperties = { fontFamily: 'var(--hw-font-display)', fontSize: 18, letterSpacing: '1px', textTransform: 'uppercase' as const, color: 'var(--hw-text)' };
+  const roleStyle: React.CSSProperties = { fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginTop: 2 };
   const tagStyle = (active: boolean): React.CSSProperties => ({
-    display: 'inline-block', padding: '2px 6px', borderRadius: 4,
-    fontSize: 10, fontWeight: 600,
-    background: active ? '#e8f5e9' : '#fce4ec',
-    color: active ? '#1a6b3c' : '#c0392b',
+    display: 'inline-block', padding: '3px 8px',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
+    background: active ? 'var(--hw-green-ghost)' : 'var(--hw-red-ghost)',
+    color: active ? 'var(--hw-green)' : 'var(--hw-crimson)',
+    border: `2px solid ${active ? 'var(--hw-green-border)' : 'var(--hw-crimson)'}`,
     marginLeft: 8,
   });
   const categoryTagStyle = (cat: 'band' | 'crew'): React.CSSProperties => ({
-    display: 'inline-block', padding: '2px 6px', borderRadius: 4,
-    fontSize: 10, fontWeight: 600,
-    background: cat === 'band' ? '#e3f2fd' : '#fff3e0',
-    color: cat === 'band' ? '#1a5fa6' : '#b35c00',
+    display: 'inline-block', padding: '3px 8px',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
+    background: cat === 'band' ? 'var(--hw-blue-ghost)' : 'var(--hw-amber-ghost)',
+    color: cat === 'band' ? 'var(--hw-blue)' : 'var(--hw-amber)',
+    border: `2px solid ${cat === 'band' ? 'var(--hw-blue)' : 'var(--hw-amber)'}`,
     marginLeft: 8,
   });
   const inputStyle: React.CSSProperties = {
-    padding: '4px 8px', border: '1px solid #e0e0da', borderRadius: 4,
-    fontSize: 13, background: '#fff',
+    padding: '6px 10px', border: '3px solid var(--hw-border-strong)',
+    fontFamily: 'var(--hw-font-body)', fontSize: 13, background: 'var(--hw-bg-surface)',
+    outline: 'none',
   };
   const smallInputStyle: React.CSSProperties = {
     ...inputStyle, width: 90, textAlign: 'right' as const,
-    fontFamily: 'DM Mono, monospace',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 13,
   };
   const selectStyle: React.CSSProperties = {
-    ...inputStyle, minWidth: 120,
+    ...inputStyle, minWidth: 120, appearance: 'none' as const,
   };
   const btnStyle: React.CSSProperties = {
-    padding: '4px 10px', borderRadius: 4, fontSize: 12, fontWeight: 600,
-    border: '1px solid #e0e0da', background: '#fff', color: '#1a1a18',
-    cursor: 'pointer',
+    padding: '4px 10px', fontSize: 11, fontWeight: 700,
+    fontFamily: 'var(--hw-font-mono)', letterSpacing: '1.5px', textTransform: 'uppercase' as const,
+    border: '2px solid var(--hw-border-strong)', background: 'var(--hw-bg-surface)', color: 'var(--hw-text)',
+    cursor: 'pointer', transition: 'var(--hw-ease)',
   };
   const addBtnStyle: React.CSSProperties = {
-    ...btnStyle, background: '#1a6b3c', color: '#fff', border: 'none',
+    ...btnStyle, background: 'var(--hw-crimson)', color: '#fff', border: '2px solid var(--hw-crimson)',
   };
   const dangerBtnStyle: React.CSSProperties = {
-    ...btnStyle, color: '#c0392b', borderColor: '#c0392b',
+    ...btnStyle, color: 'var(--hw-crimson)', borderColor: 'var(--hw-crimson)',
   };
   const compRowStyle: React.CSSProperties = {
     display: 'flex', gap: 8, alignItems: 'center', padding: '6px 0',
-    borderBottom: '1px solid #f0f0ec', flexWrap: 'wrap' as const,
+    borderBottom: '2px solid var(--hw-border)', flexWrap: 'wrap' as const,
   };
   const sectionLabel: React.CSSProperties = {
-    fontSize: 11, fontWeight: 600, textTransform: 'uppercase' as const,
-    color: '#888880', letterSpacing: '0.05em', marginTop: 12, marginBottom: 6,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 400,
+    textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)',
+    letterSpacing: '2px', marginTop: 12, marginBottom: 6,
   };
 
   // ─── Render ──────────────────────────────────────────────────────────
@@ -270,21 +275,21 @@ export default function RosterPanel({
     <div>
       {/* ── Header ──────────────────────────────────────────────── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a18' }}>
-          Tour Roster
-          <span style={{ fontSize: 12, fontWeight: 400, color: '#888880', marginLeft: 8 }}>
+        <div>
+          <span style={{ fontFamily: 'var(--hw-font-display)', fontSize: 22, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--hw-text)' }}>TOUR ROSTER</span>
+          <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 12 }}>
             {roster.length} member{roster.length !== 1 ? 's' : ''}
           </span>
-          {saving && <span style={{ fontSize: 11, color: '#888880', marginLeft: 8 }}>Saving...</span>}
+          {saving && <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 8 }}>SAVING...</span>}
         </div>
         <button style={addBtnStyle} onClick={() => setAddingNew(true)}>
-          + Add Member
+          + ADD MEMBER
         </button>
       </div>
 
       {/* ── Add New Form ────────────────────────────────────────── */}
       {addingNew && (
-        <div style={{ ...cardStyle, background: '#f5f5f2', marginBottom: 16 }}>
+        <div style={{ ...cardStyle, background: 'var(--hw-bg)', marginBottom: 16 }}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' as const }}>
             <input
               style={{ ...inputStyle, flex: 1, minWidth: 150 }}
@@ -363,8 +368,9 @@ export default function RosterPanel({
 
       {/* ── Empty State ─────────────────────────────────────────── */}
       {roster.length === 0 && !addingNew && (
-        <div style={{ textAlign: 'center' as const, padding: 32, color: '#888880', fontSize: 14 }}>
-          No roster members yet. Click "+ Add Member" to start building your touring crew.
+        <div style={{ textAlign: 'center' as const, padding: 32, border: '3px dashed var(--hw-border-light)' }}>
+          <div style={{ fontFamily: 'var(--hw-font-display)', fontSize: 24, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--hw-text)', marginBottom: 8 }}>NO ROSTER MEMBERS</div>
+          <div style={{ fontFamily: 'var(--hw-font-body)', fontSize: 14, fontWeight: 300, color: 'var(--hw-text-muted)' }}>Click &quot;+ Add Member&quot; to start building your touring crew.</div>
         </div>
       )}
     </div>
@@ -428,7 +434,7 @@ function MemberCard({
           <span style={tagFn(member.isActive)}>{member.isActive ? 'Active' : 'Inactive'}</span>
           <div style={roleStyle}>{member.role} &middot; {member.payComponents.length} pay component{member.payComponents.length !== 1 ? 's' : ''}</div>
         </div>
-        <div style={{ fontSize: 13, color: '#888880' }}>
+        <div style={{ fontSize: 13, color: 'var(--hw-text-muted)' }}>
           {isExpanded ? '\u25BE' : '\u25B8'}
         </div>
       </div>
@@ -509,7 +515,7 @@ function MemberCard({
 
               {/* Day type checkboxes for applicable types */}
               {['per_show', 'per_day', 'per_diem', 'base_bonus'].includes(comp.type) && (
-                <div style={{ display: 'flex', gap: 4, fontSize: 11, color: '#888880' }}>
+                <div style={{ display: 'flex', gap: 4, fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1px', color: 'var(--hw-text-muted)' }}>
                   {(Object.entries(DAY_TYPE_LABELS) as [DayType, string][]).map(([dt, label]) => (
                     <label key={dt} style={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer' }}>
                       <input
@@ -533,7 +539,7 @@ function MemberCard({
               {/* Bonus fields for base_bonus */}
               {comp.type === 'base_bonus' && (
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: '#888880' }}>Bonus:</span>
+                  <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1px', color: 'var(--hw-text-muted)' }}>Bonus:</span>
                   <input
                     style={{ ...smallInputStyle, width: 70 }}
                     placeholder="$"
@@ -576,8 +582,8 @@ function MemberCard({
           ))}
 
           {member.payComponents.length === 0 && (
-            <div style={{ fontSize: 12, color: '#888880', padding: '8px 0' }}>
-              No pay components. Click "+ Add" to set up compensation.
+            <div style={{ fontFamily: 'var(--hw-font-body)', fontSize: 13, fontWeight: 300, color: 'var(--hw-text-muted)', padding: '8px 0' }}>
+              No pay components. Click &quot;+ Add&quot; to set up compensation.
             </div>
           )}
 

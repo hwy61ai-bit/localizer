@@ -105,29 +105,32 @@ export default function AdvanceFormPage() {
 
   // Field helper
   const fieldStyle: React.CSSProperties = {
-    width: "100%", boxSizing: "border-box", padding: "10px 12px",
-    border: "1px solid #DDDDDD", borderRadius: 10, fontSize: 14, outline: "none",
-    fontFamily: "system-ui, sans-serif",
+    width: "100%", boxSizing: "border-box", padding: "12px 16px",
+    border: "3px solid var(--hw-border-strong)", fontSize: 15, outline: "none",
+    fontFamily: "var(--hw-font-body)", color: "var(--hw-text)",
+    background: "var(--hw-bg-surface)",
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600, color: "#888", display: "block", marginBottom: 5,
+    fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+    letterSpacing: "1.5px", textTransform: "uppercase",
+    color: "var(--hw-text-secondary)", display: "block", marginBottom: 6,
   };
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F5F5F2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#888", fontSize: 15 }}>Loading...</div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
       </div>
     );
   }
 
   if (notFound) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F5F5F2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Link Not Found</div>
-          <div style={{ fontSize: 14, color: "#888" }}>This advance form link is invalid or has expired.</div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", maxWidth: 440, padding: 40, border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>LINK NOT FOUND</div>
+          <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 300, color: "var(--hw-text-muted)" }}>This advance form link is invalid or has expired.</div>
         </div>
       </div>
     );
@@ -135,11 +138,10 @@ export default function AdvanceFormPage() {
 
   if (submitted) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F5F5F2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ textAlign: "center", maxWidth: 440, padding: 40 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>{"\u2705"}</div>
-          <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Thank You!</div>
-          <div style={{ fontSize: 15, color: "#888", lineHeight: 1.6 }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ textAlign: "center", maxWidth: 440, padding: 40, border: "3px solid var(--hw-green)", background: "var(--hw-green-ghost)" }}>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 36, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>THANK YOU</div>
+          <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.6 }}>
             Advance information received for <strong>{show?.artistName}</strong> at <strong>{show?.venue}</strong>.
             The tour manager has been notified.
           </div>
@@ -149,24 +151,24 @@ export default function AdvanceFormPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F5F5F2", padding: "32px 24px 80px" }}>
-      <div style={{ maxWidth: 680, margin: "0 auto" }}>
+    <div style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
+      <div style={{ maxWidth: 640, margin: "0 auto" }}>
         {/* Header */}
-        <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: "2px solid #111111" }}>
-          <div className="brand-title" style={{ margin: 0, fontSize: 28, marginBottom: 4 }}>TOURROUTER.</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em" }}>Advance Information Request</div>
+        <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: "3px solid var(--hw-border-strong)" }}>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4 }}>HWY61</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "4px", textTransform: "uppercase", color: "var(--hw-blue)" }}>ADVANCE INFORMATION REQUEST</div>
         </div>
 
         {/* Show info card */}
-        <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24, marginBottom: 24 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>{show?.artistName}</div>
-          <div style={{ fontSize: 15, color: "#666", marginBottom: 2 }}>{show?.date}</div>
-          <div style={{ fontSize: 15, color: "#666" }}>{show?.venue}{show?.city ? `, ${show.city}` : ""}{show?.country ? ` \u2014 ${show.country}` : ""}</div>
+        <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24, marginBottom: 24 }}>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>{show?.artistName}</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-text-secondary)", marginBottom: 2 }}>{show?.date}</div>
+          <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show?.venue}{show?.city ? `, ${show.city}` : ""}{show?.country ? ` \u2014 ${show.country}` : ""}</div>
         </div>
 
         {/* Error */}
         {error && (
-          <div style={{ background: "#fff0f0", border: "1px solid #ffcccc", borderRadius: 10, padding: "10px 16px", marginBottom: 16, fontSize: 13, color: "#c00" }}>
+          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
             {error}
           </div>
         )}
@@ -234,15 +236,17 @@ export default function AdvanceFormPage() {
           onClick={handleSubmit}
           disabled={submitting}
           style={{
-            width: "100%", padding: "14px 24px", borderRadius: 10,
-            border: "1px solid #111", background: "#111", color: "#fff",
-            fontWeight: 900, fontSize: 15, cursor: submitting ? "wait" : "pointer",
-            opacity: submitting ? 0.6 : 1, marginTop: 8,
+            width: "100%", padding: "16px 28px",
+            border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff",
+            fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "3px", textTransform: "uppercase",
+            cursor: submitting ? "wait" : "pointer",
+            opacity: submitting ? 0.4 : 1, marginTop: 8,
+            transition: "var(--hw-ease)",
           }}
-        >{submitting ? "Submitting..." : "Submit Advance Information"}</button>
+        >{submitting ? "SUBMITTING..." : "SUBMIT ADVANCE INFORMATION"}</button>
 
-        <div style={{ textAlign: "center", marginTop: 24, fontSize: 11, color: "#aaa" }}>
-          Powered by TourRouter
+        <div style={{ textAlign: "center", marginTop: 24, fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
+          POWERED BY HWY61
         </div>
       </div>
     </div>
@@ -251,8 +255,8 @@ export default function AdvanceFormPage() {
 
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14, padding: 24, marginBottom: 16 }}>
-      <div style={{ fontSize: 13, fontWeight: 800, color: "#888", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 16 }}>{title}</div>
+    <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24, marginBottom: 16 }}>
+      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", textTransform: "uppercase", letterSpacing: "4px", marginBottom: 16 }}>{title}</div>
       {children}
     </div>
   );
