@@ -521,3 +521,28 @@ Design System Phase 1 complete — globals.css updated with Warhol foundation (f
 ✅ Dashboard layout → confirmed no shared nav
 ✅ Halftone dot fix → dots on cream, not on white surfaces or photos
 
+April 2, 2026 — Design System Day
+What got done:
+
+Phase 1: globals.css foundation (fonts, CSS vars, halftone overlay, border-radius reset) + 29 Hw* components in app/components/hw/ with barrel export
+Phase 2: Dashboard shell restyled (artist tiles, notification bell, onboarding wizard, artist hub tabs, tour tiles)
+Phase 3: All TourRouter pages restyled (routing table, RosterPanel, SettlementPanel, VehicleManager, IntakeDropZone, import, financials, export, public advance form) + font sweep
+Landing page rebuilt from Tim's HWY61_WARHOL_v2_LANDING.html (blue → crimson swap, full React conversion with animations)
+Login page restyled with Warhol design system
+Artist delete cascade fix (foreign key constraint on tours_routing)
+Auth callback fix (Supabase wildcard redirect URLs + stale PKCE cookies)
+Halftone dot overlay fix (z-index 1 on body::after, content above via body background layering)
+Hydration fixes on financials + export pages (hardcoded HWY61 brand)
+Tim's build package files added to docs/ (design system, TODO, demo tour data, FAQ, tutorial scripts, QA checklist, landing page HTML)
+
+What didn't:
+
+Phase 4 (Localizer pages) — next session
+Phase 5 (Supporting pages) — next session
+Phase 6 (Global polish) — next session
+
+Next session should start with:
+
+Phase 4: Localizer pages (asset grid, upload area, template editor, venue share links)
+Then Phase 5: Supporting pages (artist profile, settings/billing)
+Then Phase 6: Global polish (skeletons, empty states, toasts, responsive pass, final audit)
