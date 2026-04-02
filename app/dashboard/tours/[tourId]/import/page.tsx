@@ -208,26 +208,26 @@ export default function ImportPage() {
       <div style={s.wrap}>
 
         {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>← Back to Tour</Link>
+        <div style={{ marginBottom: 28, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
+          <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ display: "inline-block" }}>
-                <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</h1>
-                <div style={{ borderBottom: "2px solid #111", marginBottom: 6 }} />
+                <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</h1>
+                <div style={{ borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 6 }} />
               </div>
-              <div className="brand-title" style={{ margin: 0, fontSize: "360%" }}>Import Schedule</div>
-              <div style={{ marginTop: 8, fontSize: 13, color: "#666", maxWidth: 520, lineHeight: 1.6 }}>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", margin: 0 }}>IMPORT SCHEDULE</div>
+              <div style={{ marginTop: 8, fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", maxWidth: 520, lineHeight: 1.6 }}>
                 Paste a tour schedule or upload a file. The AI will extract every
                 date, venue, city, and email automatically.
               </div>
             </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #ddd", borderRadius: 12, padding: "8px" }}>
-                <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>1. ↑ Import Schedule</Link>
-                <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>2. ↑ Import Assets</Link>
-                <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>3. Template For Shows</Link>
-                <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>4. Gigs</Link>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
+                <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>1. IMPORT SCHEDULE</Link>
+                <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>2. IMPORT ASSETS</Link>
+                <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. TEMPLATE</Link>
+                <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>4. GIGS</Link>
               </div>
             </div>
           </div>
@@ -235,7 +235,7 @@ export default function ImportPage() {
 
         {/* Input card — hide after parse */}
         {!events && (
-          <div style={{ ...s.card, border: dragOver ? "2px dashed #111" : "1px solid #ddd", transition: "border 0.2s" }}
+          <div style={{ ...s.card, border: dragOver ? "3px solid var(--hw-crimson)" : "3px solid var(--hw-border-strong)", transition: "var(--hw-ease)" }}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}>
@@ -360,7 +360,7 @@ export default function ImportPage() {
                   key={i}
                   style={{
                     ...s.tableRow,
-                    background: i % 2 === 0 ? "#fff" : "#fafafa",
+                    background: "var(--hw-bg-surface)",
                   }}
                 >
                   <div style={s.col.date}>{formatDate(e.date_iso)}</div>
@@ -390,12 +390,12 @@ export default function ImportPage() {
 
 // ── Styles
 const col = {
-  date: { width: 110, flexShrink: 0, fontSize: 13 },
+  date: { width: 110, flexShrink: 0, fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 500 as const },
   day: { width: 80, flexShrink: 0, fontSize: 13 },
-  venue: { width: 180, flexShrink: 0, fontSize: 13 },
-  city: { width: 140, flexShrink: 0, fontSize: 13 },
-  email: { width: 220, flexShrink: 0, fontSize: 12 },
-  notes: { flex: 1, fontSize: 12 },
+  venue: { width: 180, flexShrink: 0, fontSize: 14, fontWeight: 500 as const, color: "var(--hw-text)" },
+  city: { width: 140, flexShrink: 0, fontSize: 14 },
+  email: { width: 220, flexShrink: 0, fontFamily: "var(--hw-font-mono)", fontSize: 11 },
+  notes: { flex: 1, fontSize: 12, color: "var(--hw-text-muted)" },
 };
 
 const styles = {
@@ -415,42 +415,48 @@ const styles = {
     marginBottom: 28,
   },
   eyebrow: {
+    fontFamily: "var(--hw-font-mono)",
     fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: "0.14em",
+    fontWeight: 400,
+    letterSpacing: "2px",
     textTransform: "uppercase" as const,
-    color: "#888",
+    color: "var(--hw-text-muted)",
     marginBottom: 6,
   },
   title: {
+    fontFamily: "var(--hw-font-display)",
     fontSize: 32,
-    fontWeight: 900,
+    fontWeight: 400,
     margin: 0,
-    letterSpacing: -0.5,
-    color: "#111",
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
+    color: "var(--hw-text)",
   },
   subtitle: {
     marginTop: 8,
-    fontSize: 13,
-    color: "#666",
+    fontFamily: "var(--hw-font-body)",
+    fontSize: 14,
+    fontWeight: 300,
+    color: "var(--hw-text-secondary)",
     maxWidth: 520,
     lineHeight: 1.6,
   },
   backBtn: {
-    padding: "10px 14px",
-    borderRadius: 10,
-    border: "1px solid #ddd",
-    background: "#fff",
+    padding: "8px 14px",
+    border: "3px solid var(--hw-border-strong)",
+    background: "var(--hw-bg-surface)",
     cursor: "pointer",
-    fontWeight: 700,
-    fontSize: 13,
+    fontFamily: "var(--hw-font-display)",
+    fontWeight: 400,
+    fontSize: 12,
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
     flexShrink: 0,
     marginTop: 4,
   },
   card: {
-    background: "#fff",
-    border: "1px solid #ddd",
-    borderRadius: 16,
+    background: "var(--hw-bg-surface)",
+    border: "3px solid var(--hw-border-strong)",
     padding: 24,
   },
   uploadRow: {
@@ -460,78 +466,90 @@ const styles = {
     flexWrap: "wrap" as const,
   },
   uploadLabel: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: "#111",
+    fontFamily: "var(--hw-font-body)",
+    fontSize: 14,
+    fontWeight: 500,
+    color: "var(--hw-text)",
   },
   uploadFormats: {
+    fontFamily: "var(--hw-font-mono)",
     fontSize: 12,
-    color: "#999",
+    letterSpacing: "1px",
+    color: "var(--hw-text-muted)",
     flex: 1,
   },
   uploadBtn: {
     padding: "8px 14px",
-    borderRadius: 10,
-    border: "1px solid #ddd",
-    background: "#f5f5f5",
+    border: "3px solid var(--hw-border-strong)",
+    background: "var(--hw-bg-surface)",
     cursor: "pointer",
-    fontWeight: 700,
-    fontSize: 13,
+    fontFamily: "var(--hw-font-display)",
+    fontWeight: 400,
+    fontSize: 12,
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
   },
   divider: {
     margin: "18px 0",
-    borderTop: "1px solid #eee",
+    borderTop: "2px solid var(--hw-border)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     position: "relative" as const,
   },
   dividerText: {
-    background: "#fff",
+    background: "var(--hw-bg-surface)",
     padding: "0 12px",
-    fontSize: 12,
-    color: "#aaa",
+    fontFamily: "var(--hw-font-mono)",
+    fontSize: 11,
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
+    color: "var(--hw-text-muted)",
     position: "relative" as const,
     top: -1,
   },
   textarea: {
     width: "100%",
+    boxSizing: "border-box" as const,
     padding: "14px",
-    border: "1px solid #ddd",
-    borderRadius: 12,
+    border: "3px solid var(--hw-border-strong)",
+    fontFamily: "var(--hw-font-mono)",
     fontSize: 13,
     lineHeight: 1.7,
     resize: "vertical" as const,
     outline: "none",
-    fontFamily: "monospace",
-    color: "#111",
-    background: "#fafafa",
+    color: "var(--hw-text)",
+    background: "var(--hw-bg-surface)",
   },
   errorBox: {
     marginTop: 14,
     padding: "12px 14px",
-    borderRadius: 10,
-    background: "#fff0f0",
-    border: "1px solid #fcc",
-    fontSize: 13,
-    color: "#B00020",
+    background: "var(--hw-red-ghost)",
+    border: "3px solid var(--hw-crimson)",
+    fontFamily: "var(--hw-font-mono)",
+    fontSize: 11,
+    color: "var(--hw-crimson)",
   },
   parseBtn: {
     marginTop: 16,
     width: "100%",
     padding: "14px",
-    borderRadius: 12,
-    border: "1px solid #111",
-    background: "#111",
+    border: "3px solid var(--hw-crimson)",
+    background: "var(--hw-crimson)",
     color: "#fff",
-    fontWeight: 900,
-    fontSize: 15,
-    transition: "opacity 0.2s",
+    fontFamily: "var(--hw-font-display)",
+    fontWeight: 400,
+    fontSize: 18,
+    letterSpacing: "3px",
+    textTransform: "uppercase" as const,
+    transition: "var(--hw-ease)",
   },
   parsingNote: {
     marginTop: 10,
-    fontSize: 12,
-    color: "#999",
+    fontFamily: "var(--hw-font-mono)",
+    fontSize: 11,
+    letterSpacing: "1px",
+    color: "var(--hw-text-muted)",
     textAlign: "center" as const,
   },
   previewHeader: {
@@ -543,77 +561,94 @@ const styles = {
     flexWrap: "wrap" as const,
   },
   previewTitle: {
-    fontSize: 22,
-    fontWeight: 900,
-    color: "#111",
+    fontFamily: "var(--hw-font-display)",
+    fontSize: 28,
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
+    color: "var(--hw-text)",
   },
   previewSub: {
-    fontSize: 13,
-    color: "#666",
+    fontFamily: "var(--hw-font-body)",
+    fontSize: 14,
+    fontWeight: 300,
+    color: "var(--hw-text-secondary)",
     marginTop: 4,
   },
   retryBtn: {
-    padding: "10px 14px",
-    borderRadius: 10,
-    border: "1px solid #ddd",
-    background: "#fff",
+    padding: "8px 14px",
+    border: "3px solid var(--hw-border-strong)",
+    background: "var(--hw-bg-surface)",
     cursor: "pointer",
-    fontWeight: 700,
-    fontSize: 13,
+    fontFamily: "var(--hw-font-display)",
+    fontWeight: 400,
+    fontSize: 12,
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
   },
   confirmBtn: {
     padding: "10px 18px",
-    borderRadius: 10,
-    border: "1px solid #111",
-    background: "#111",
+    border: "3px solid var(--hw-crimson)",
+    background: "var(--hw-crimson)",
     color: "#fff",
-    fontWeight: 900,
-    fontSize: 13,
-    transition: "opacity 0.2s",
+    fontFamily: "var(--hw-font-display)",
+    fontWeight: 400,
+    fontSize: 14,
+    letterSpacing: "3px",
+    textTransform: "uppercase" as const,
+    transition: "var(--hw-ease)",
   },
   warningsBox: {
     marginBottom: 16,
     padding: "14px 16px",
-    borderRadius: 12,
-    background: "#fffbf0",
-    border: "1px solid #f0d080",
+    background: "var(--hw-amber-ghost)",
+    border: "3px solid var(--hw-amber)",
+    fontFamily: "var(--hw-font-body)",
     fontSize: 13,
+    fontWeight: 300,
   },
   warningsTitle: {
+    fontFamily: "var(--hw-font-mono)",
+    fontSize: 11,
     fontWeight: 700,
+    letterSpacing: "1.5px",
+    textTransform: "uppercase" as const,
     marginBottom: 6,
-    color: "#7a5c00",
+    color: "var(--hw-amber)",
   },
   warningItem: {
-    color: "#7a5c00",
+    color: "var(--hw-amber)",
     marginTop: 4,
   },
   tableWrap: {
-    border: "1px solid #ddd",
-    borderRadius: 14,
+    border: "3px solid var(--hw-border-strong)",
     overflow: "hidden",
-    background: "#fff",
+    background: "var(--hw-bg-surface)",
     overflowX: "auto" as const,
   },
   tableHead: {
     display: "flex",
     gap: 0,
-    padding: "10px 16px",
-    background: "#f5f5f5",
-    borderBottom: "1px solid #eee",
-    fontSize: 11,
-    fontWeight: 900,
-    letterSpacing: "0.06em",
+    padding: "12px 16px",
+    background: "var(--hw-bg-invert)",
+    fontFamily: "var(--hw-font-mono)",
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: "2px",
     textTransform: "uppercase" as const,
     minWidth: 1050,
-    color: "#555",
+    color: "#fff",
   },
   tableRow: {
     display: "flex",
     padding: "11px 16px",
-    borderTop: "1px solid #f0f0f0",
+    borderTop: "2px solid var(--hw-border)",
     alignItems: "center",
     minWidth: 1050,
+    fontFamily: "var(--hw-font-body)",
+    fontSize: 14,
+    fontWeight: 300,
+    color: "var(--hw-text-secondary)",
+    transition: "var(--hw-ease)",
   },
   col,
 } as const;

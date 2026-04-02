@@ -514,22 +514,22 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     <div className="fade-in template-editor-content" style={{ minHeight: "100vh", padding: 32 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
-        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "1px solid #ddd" }}>
-          <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>← Back to Tour</Link>
+        <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
+          <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ display: "inline-block" }}>
-                <div className="brand-title" style={{ fontSize: 72, lineHeight: 1, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</div>
-                <div style={{ borderBottom: "2px solid #111", marginBottom: 6 }} />
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", lineHeight: 1, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</div>
+                <div style={{ borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 6 }} />
               </div>
-              <div className="brand-title" style={{ fontSize: "360%" }}>Template For Shows</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>TEMPLATE</div>
             </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "#fff", border: "1px solid #ddd", borderRadius: 12, padding: "8px" }}>
-              <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>1. ↑ Import Schedule</Link>
-              <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>2. ↑ Import Assets</Link>
-              <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>3. Template For Shows</Link>
-              <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>4. Gigs</Link>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
+              <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>1. IMPORT SCHEDULE</Link>
+              <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>2. IMPORT ASSETS</Link>
+              <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. TEMPLATE</Link>
+              <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>4. GIGS</Link>
             </div>
             </div>
           </div>
@@ -539,13 +539,13 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           <div style={{ display: "flex", gap: 8 }}>
             {FORMATS.map(f => (
               <button key={f.key} onClick={() => { setActiveFormat(f.key); }}
-                style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid", borderColor: activeFormat === f.key ? "#111" : "#ddd", background: activeFormat === f.key ? "#111" : "#fff", color: activeFormat === f.key ? "#fff" : "#111", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                style={{ padding: "8px 16px", border: activeFormat === f.key ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)", background: activeFormat === f.key ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: activeFormat === f.key ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: activeFormat === f.key ? 700 : 400, fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
                 {f.label}
               </button>
             ))}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            {isPrintFormat && <div style={{ fontSize: 11, color: "#888", fontWeight: 600, padding: "10px 0" }}>Print poster generates as PDF from the venue download page.</div>}
+            {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "10px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
             {!isVideoFormat && !isPrintFormat && <button
                 onClick={async () => {
                   const pid = formatImageIds[activeFormat];
@@ -577,11 +577,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     console.error(err);
                   }
                 }}
-                style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", color: "#111", fontWeight: 900, fontSize: 13, cursor: "pointer" }}
-              >Preview Render</button>}
+                style={{ padding: "8px 20px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+              >PREVIEW RENDER</button>}
               <button onClick={save} disabled={saving}
-              className={justSaved ? "save-pulse" : ""} style={{ padding: "10px 24px", borderRadius: 10, border: "1px solid #111", background: (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "#1a7f4b" : "#111", color: "#fff", fontWeight: 900, fontSize: 13, cursor: "pointer" }}>
-              {saving ? "Saving..." : (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "Saved ✓" : "Save Template"}
+              className={justSaved ? "save-pulse" : ""} style={{ padding: "8px 20px", border: `3px solid ${(savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)"}`, background: (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
+              {saving ? "SAVING..." : (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "SAVED ✓" : "SAVE TEMPLATE"}
             </button>
           </div>
         </div>
@@ -590,13 +590,13 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <div style={{ fontSize: 11, color: "#888", fontWeight: 600 }}>DRAG TEXT TO POSITION — snaps to center</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>DRAG TEXT TO POSITION — SNAPS TO CENTER</div>
               <button onClick={() => setPreviewLongest(!previewLongest)}
-                style={{ fontSize: 12, fontWeight: 900, padding: "8px 16px", borderRadius: 10, border: "2px solid", borderColor: previewLongest ? "#c00" : "#111", background: previewLongest ? "#fff0f0" : "#111", color: previewLongest ? "#c00" : "#fff", cursor: "pointer", letterSpacing: "0.03em", transition: "all 0.2s ease-out" }}>
-                {previewLongest ? "⚠ Showing longest names" : "Preview longest names"}
+                style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", padding: "6px 14px", border: previewLongest ? "2px solid var(--hw-crimson)" : "2px solid var(--hw-border-strong)", background: previewLongest ? "var(--hw-red-ghost)" : "var(--hw-bg-invert)", color: previewLongest ? "var(--hw-crimson)" : "#fff", cursor: "pointer", transition: "var(--hw-ease)" }}>
+                {previewLongest ? "SHOWING LONGEST NAMES" : "PREVIEW LONGEST NAMES"}
               </button>
             </div>
-            <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #ddd", overflow: "hidden" }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
               {imageUrl ? (
                 <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default", width: `${Math.round(fmtDims.w * previewScale)}px`, margin: "0 auto" }}>
                   <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
@@ -704,17 +704,17 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   })}
                 </div>
               ) : (
-                <div style={{ padding: 48, textAlign: "center", color: "#999", fontSize: 14 }}>
+                <div style={{ padding: 48, textAlign: "center" }}>
                   {isVideoFormat ? (
                     <>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: "#bbb", marginBottom: 12 }}>Not Uploaded Yet</div>
-                      <div style={{ marginBottom: 16 }}>Upload a {activeFormat === "tiktok" ? "TikTok/Reels" : "YouTube Shorts"} video to configure this format.</div>
-                      <Link href={`/dashboard/tours/${tourId}/assets`} style={{ color: "#111", fontWeight: 700 }}>→ Import Assets</Link>
+                      <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 12 }}>NOT UPLOADED YET</div>
+                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)", marginBottom: 16 }}>Upload a {activeFormat === "tiktok" ? "TikTok/Reels" : "YouTube Shorts"} video to configure this format.</div>
+                      <Link href={`/dashboard/tours/${tourId}/assets`} style={{ color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700 }}>→ IMPORT ASSETS</Link>
                     </>
                   ) : (
                     <>
-                      No image uploaded for this format yet.<br /><br />
-                      <Link href={`/dashboard/tours/${tourId}/assets`} style={{ color: "#111", fontWeight: 700 }}>→ Import Assets</Link>
+                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)", marginBottom: 12 }}>No image uploaded for this format yet.</div>
+                      <Link href={`/dashboard/tours/${tourId}/assets`} style={{ color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700 }}>→ IMPORT ASSETS</Link>
                     </>
                   )}
                 </div>
@@ -724,8 +724,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 10 }}>FONT</div>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 10 }}>FONT</div>
               <input
                 ref={fontFileRef}
                 type="file"
@@ -739,15 +739,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 style={{
                   width: "100%",
                   padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "1px dashed #888",
-                  background: "#fff",
-                  color: "#111",
-                  fontSize: 11,
+                  border: "2px dashed var(--hw-border-light)",
+                  background: "var(--hw-bg-surface)",
+                  color: "var(--hw-crimson)",
+                  fontFamily: "var(--hw-font-mono)",
+                  fontSize: 10,
                   fontWeight: 700,
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase" as const,
                   cursor: uploadingFont ? "not-allowed" : "pointer",
-                  textAlign: "center",
-                  letterSpacing: "0.05em",
+                  textAlign: "center" as const,
                   marginBottom: 8,
                 }}
               >
@@ -757,12 +758,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 {customFonts.length > 0 && (
                   <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#999", letterSpacing: "0.05em" }}>CUSTOM FONTS</div>
+                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>CUSTOM FONTS</div>
                     </div>
                     {customFonts.map(f => (
                       <div key={f.value} style={{ display: "flex", gap: 4 }}>
                         <button onClick={() => updateCfg("fontFamily", f.value)}
-                          style={{ flex: 1, padding: "8px 12px", borderRadius: 8, border: "1px solid", borderColor: cfg.fontFamily === f.value ? "#111" : "#ddd", background: cfg.fontFamily === f.value ? "#111" : "#fff", color: cfg.fontFamily === f.value ? "#fff" : "#111", fontWeight: 700, fontSize: 12, cursor: "pointer", textAlign: "left" }}>
+                          style={{ flex: 1, padding: "8px 12px", border: cfg.fontFamily === f.value ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-border)", background: cfg.fontFamily === f.value ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: cfg.fontFamily === f.value ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontWeight: 500, fontSize: 12, cursor: "pointer", textAlign: "left" }}>
                           {f.label}
                         </button>
                         <button onClick={async () => {
@@ -782,17 +783,17 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                             }
                           } catch (err: any) { toast.error("Delete failed: " + err.message); }
                         }}
-                          style={{ padding: "8px 8px", borderRadius: 8, border: "1px solid #ddd", background: "#fff", color: "#c00", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
+                          style={{ padding: "8px 8px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
                           ✕
                         </button>
                       </div>
                     ))}
-                    <div style={{ borderBottom: "1px solid #eee", marginTop: 4, marginBottom: 4 }} />
+                    <div style={{ borderBottom: "2px solid var(--hw-border)", marginTop: 4, marginBottom: 4 }} />
                   </>
                 )}
                 {FONTS.map(f => (
                   <button key={f.value} onClick={() => updateCfg("fontFamily", f.value)}
-                    style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid", borderColor: cfg.fontFamily === f.value ? "#111" : "#ddd", background: cfg.fontFamily === f.value ? "#111" : "#fff", color: cfg.fontFamily === f.value ? "#fff" : "#111", fontWeight: 700, fontSize: 12, cursor: "pointer", textAlign: "left" }}>
+                    style={{ padding: "8px 12px", border: cfg.fontFamily === f.value ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-border)", background: cfg.fontFamily === f.value ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: cfg.fontFamily === f.value ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontWeight: 500, fontSize: 12, cursor: "pointer", textAlign: "left" }}>
                     {f.label}
                   </button>
                 ))}
@@ -801,14 +802,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </div>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 900, color: "#555", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
               {(["venue", "date", "city"] as FieldKey[]).map(field => {
                 const textMax = isPrintFormat ? 400 : 120;
                 return (
                 <div key={field} style={{ marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>{FIELD_LABELS[field]}</span>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>{FIELD_LABELS[field]}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <input
                         type="number"
@@ -819,9 +820,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           const val = parseInt(e.target.value);
                           if (!isNaN(val) && val >= 1 && val <= 999) updateField(field, "size", val);
                         }}
-                        style={{ width: 42, fontSize: 11, fontWeight: 700, color: "#555", border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", textAlign: "right", outline: "none" }}
+                        style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
                       />
-                      <span style={{ fontSize: 11, color: "#999" }}>px</span>
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
                     </div>
                   </div>
                   <input type="range" min={16} max={textMax} step={2}
@@ -835,21 +836,20 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               })}
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: cfg.showBandName ? 12 : 0 }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: cfg.showBandName ? 12 : 0 }}>
+                <span onClick={() => updateCfg("showBandName", !cfg.showBandName)} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: cfg.showBandName ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {cfg.showBandName && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 900, color: "#555" }}>BAND NAME</div>
-                  <div style={{ fontSize: 11, color: "#888" }}>If not baked into image</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Name</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>If not baked into image</div>
                 </div>
-                <button onClick={() => updateCfg("showBandName", !cfg.showBandName)}
-                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.showBandName ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
-                  <span style={{ position: "absolute", top: 2, left: cfg.showBandName ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-                </button>
-              </div>
+              </label>
               {cfg.showBandName && (
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Size</span>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <input
                         type="number"
@@ -860,9 +860,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           const val = parseInt(e.target.value);
                           if (!isNaN(val) && val >= 1 && val <= 999) updateCfg("bandSize", val);
                         }}
-                        style={{ width: 42, fontSize: 11, fontWeight: 700, color: "#555", border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", textAlign: "right", outline: "none" }}
+                        style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
                       />
-                      <span style={{ fontSize: 11, color: "#999" }}>px</span>
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
                     </div>
                   </div>
                   <input type="range" min={20} max={isPrintFormat ? 600 : 200} step={2} value={cfg.bandSize}
@@ -870,18 +870,18 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     style={{ width: "100%", cursor: "pointer" }}
                   />
                   <div style={{ marginTop: 10 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Alignment</span>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Alignment</span>
                     <AlignButtons field="band" />
                   </div>
                 </div>
               )}
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 900, color: "#555" }}>TEXT COLOR</div>
-                  <div style={{ fontSize: 11, color: "#888" }}>Applies to all fields</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>TEXT COLOR</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>Applies to all fields</div>
                 </div>
                 <input type="color" value={`#${cfg.textColor}`}
                   onChange={(e) => updateCfg("textColor", e.target.value.replace("#", ""))}
@@ -890,21 +890,20 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </div>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: cfg.showLogo ? 12 : 0 }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: logoUrl ? "pointer" : "not-allowed", opacity: logoUrl ? 1 : 0.4, marginBottom: cfg.showLogo ? 12 : 0 }}>
+                <span onClick={() => logoUrl && updateCfg("showLogo", !cfg.showLogo)} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: cfg.showLogo ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: logoUrl ? "pointer" : "not-allowed" }}>
+                  {cfg.showLogo && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 900, color: "#555" }}>BAND LOGO</div>
-                  <div style={{ fontSize: 11, color: "#888" }}>{logoUrl ? "Tinted to text color" : "Upload on artist page"}</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Logo</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{logoUrl ? "Tinted to text color" : "Upload on artist page"}</div>
                 </div>
-                <button onClick={() => updateCfg("showLogo", !cfg.showLogo)} disabled={!logoUrl}
-                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: logoUrl ? "pointer" : "not-allowed", background: cfg.showLogo ? "#111" : "#ddd", position: "relative", flexShrink: 0, opacity: logoUrl ? 1 : 0.4 }}>
-                  <span style={{ position: "absolute", top: 2, left: cfg.showLogo ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-                </button>
-              </div>
+              </label>
               {cfg.showLogo && logoUrl && (
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600 }}>Size</span>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <input
                         type="number"
@@ -921,9 +920,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                             },
                           }));
                         }}
-                        style={{ width: 42, fontSize: 11, fontWeight: 700, color: "#555", border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", textAlign: "right", outline: "none" }}
+                        style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
                       />
-                      <span style={{ fontSize: 11, color: "#999" }}>px</span>
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
                     </div>
                   </div>
                   <input type="range" min={20} max={isPrintFormat ? 1800 : 600} step={2} value={cfg.logo?.size ?? 80}
@@ -940,30 +939,28 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               )}
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <span onClick={() => updateCfg("shortDate", !cfg.shortDate)} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: cfg.shortDate ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {cfg.shortDate && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>Short date format</div>
-                  <div style={{ fontSize: 11, color: "#888" }}>e.g. SAT. JUN 26TH</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Short Date Format</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>e.g. SAT. JUN 26TH</div>
                 </div>
-                <button onClick={() => updateCfg("shortDate", !cfg.shortDate)}
-                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.shortDate ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
-                  <span style={{ position: "absolute", top: 2, left: cfg.shortDate ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-                </button>
-              </div>
+              </label>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #ddd", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <span onClick={() => updateCfg("allCaps", !cfg.allCaps)} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: cfg.allCaps ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {cfg.allCaps && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
                 <div>
-                  <div style={{ fontSize: 12, fontWeight: 700 }}>All caps</div>
-                  <div style={{ fontSize: 11, color: "#888" }}>Venue, city & state in uppercase</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>All Caps</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>Venue, city &amp; state in uppercase</div>
                 </div>
-                <button onClick={() => updateCfg("allCaps", !cfg.allCaps)}
-                  style={{ width: 40, height: 22, borderRadius: 999, border: "none", cursor: "pointer", background: cfg.allCaps ? "#111" : "#ddd", position: "relative", flexShrink: 0 }}>
-                  <span style={{ position: "absolute", top: 2, left: cfg.allCaps ? 19 : 2, width: 18, height: 18, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-                </button>
-              </div>
+              </label>
             </div>
 
           </div>
