@@ -115,7 +115,7 @@ export default function LoginPage() {
     padding: "14px 28px",
     border: "3px solid var(--hw-crimson)",
     background: "var(--hw-crimson)",
-    color: "#fff",
+    color: "var(--hw-text-invert)",
     fontFamily: "var(--hw-font-display)",
     fontSize: 16,
     letterSpacing: "3px",

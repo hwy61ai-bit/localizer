@@ -279,8 +279,8 @@ export default function ImportPage() {
               style={{
                 ...s.parseBtn,
                 background: parsing
-                  ? `linear-gradient(to right, #1a6b3c ${parseProgress}%, #333 ${parseProgress}%)`
-                  : "#111",
+                  ? `linear-gradient(to right, var(--hw-green) ${parseProgress}%, var(--hw-bg-invert) ${parseProgress}%)`
+                  : "var(--hw-bg-invert)",
                 opacity: !rawText.trim() || extracting ? 0.5 : 1,
                 cursor: !rawText.trim() || parsing || extracting ? "not-allowed" : "pointer",
                 transition: "background 0.15s",

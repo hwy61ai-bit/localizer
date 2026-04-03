@@ -46,13 +46,13 @@ export default async function ArtistsDashboardPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32 }}>
           <div>
-            <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid #111111" }}>LOCALIZER</h1>
+            <h1 className="brand-title" style={{ margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "2px solid var(--hw-border-strong)" }}>LOCALIZER</h1>
             <h2 className="brand-title" style={{ margin: 0, marginBottom: 6, fontSize: "400%" }}>ARTISTS</h2>
-            <div style={{ fontSize: 13, color: "#888" }}>{artists.length} artist{artists.length !== 1 ? "s" : ""}</div>
+            <div style={{ fontSize: 13, color: "var(--hw-text-muted)" }}>{artists.length} artist{artists.length !== 1 ? "s" : ""}</div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-            <div style={{ fontSize: 12, color: "#aaa" }}>{user.email}</div>
-            <a href="/dashboard" style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #DDDDDD", background: "#fff", color: "#111", textDecoration: "none", fontWeight: 700, fontSize: 13 }}>TourRouter &rarr;</a>
+            <div style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>{user.email}</div>
+            <a href="/dashboard" style={{ padding: "8px 16px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontWeight: 700, fontSize: 13, textTransform: "uppercase", letterSpacing: 3 }}>TourRouter &rarr;</a>
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
@@ -60,9 +60,9 @@ export default async function ArtistsDashboardPage() {
             <ArtistTile key={artist.id} artistId={artist.id} artistName={artist.name} tourCount={tourCounts[artist.id] ?? 0} imageUrl={artist.image_url ?? null} />
           ))}
           <form action={createArtist}>
-            <button type="submit" style={{ width: "100%", aspectRatio: "1 / 1", background: "transparent", border: "1.5px dashed #CCCCCC", borderRadius: 14, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", padding: 20 }}>
-              <span style={{ fontSize: 140, fontWeight: 900, color: "#111", lineHeight: 1 }}>+</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#aaa", letterSpacing: "0.04em" }}>New Artist</span>
+            <button type="submit" style={{ width: "100%", aspectRatio: "1 / 1", background: "transparent", border: "3px dashed var(--hw-border)", borderRadius: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", padding: 20 }}>
+              <span style={{ fontSize: 140, fontWeight: 900, color: "var(--hw-text)", lineHeight: 1 }}>+</span>
+              <span style={{ fontSize: 13, fontFamily: "var(--hw-font-display)", fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: 3, textTransform: "uppercase" }}>New Artist</span>
             </button>
           </form>
         </div>

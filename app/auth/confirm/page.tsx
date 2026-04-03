@@ -23,8 +23,8 @@ export default function AuthConfirm() {
   }, []);
 
   return (
-    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#EEEEEE" }}>
-      <div style={{ fontSize: 14, opacity: 0.7 }}>{message}</div>
+    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "transparent" }}>
+      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)" }}>{message}</div>
     </main>
   );
 }

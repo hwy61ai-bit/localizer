@@ -59,8 +59,8 @@ export default function ArtistTile({ artistId, artistName, tourCount, imageUrl }
       <div
         onClick={() => router.push(`/dashboard/artists/${artistId}`)}
         style={{
-          background: currentImage ? "transparent" : "#fff",
-          border: "1px solid #DDDDDD", borderRadius: 14, padding: 20, aspectRatio: "1 / 1",
+          background: currentImage ? "transparent" : "var(--hw-bg-surface)",
+          border: "3px solid var(--hw-border-strong)", borderRadius: 0, padding: 20, aspectRatio: "1 / 1",
           display: "flex", flexDirection: "column", justifyContent: "space-between",
           overflow: "hidden", position: "relative", opacity: deleting ? 0.4 : 1,
           boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.09)" : "none",
@@ -73,22 +73,22 @@ export default function ArtistTile({ artistId, artistName, tourCount, imageUrl }
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
           </>
         )}
-        <div style={{ position: "relative", zIndex: 1, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.6)" : "#999" }}>Artist</div>
+        <div style={{ position: "relative", zIndex: 1, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.6)" : "var(--hw-blue)" }}>Artist</div>
         <div style={{ position: "relative", zIndex: 1 }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: currentImage ? "#fff" : "#111", marginBottom: 8, lineHeight: 1.2 }}>{artistName}</div>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, fontWeight: 800, color: currentImage ? "var(--hw-text-invert)" : "var(--hw-text)", marginBottom: 8, lineHeight: 1.2 }}>{artistName}</div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: currentImage ? "rgba(255,255,255,0.6)" : "#aaa" }}>{tourCount} tour{tourCount !== 1 ? "s" : ""}</span>
-            <span style={{ fontSize: 16, color: currentImage ? "rgba(255,255,255,0.5)" : "#ccc" }}>&#8594;</span>
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: currentImage ? "rgba(255,255,255,0.6)" : "var(--hw-text-muted)" }}>{tourCount} tour{tourCount !== 1 ? "s" : ""}</span>
+            <span style={{ fontSize: 16, color: currentImage ? "rgba(255,255,255,0.5)" : "var(--hw-border)" }}>&#8594;</span>
           </div>
         </div>
       </div>
       {mounted && hovered && (
-        <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.4)", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+        <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 10px", borderRadius: 0, border: "3px solid rgba(255,255,255,0.4)", background: "rgba(0,0,0,0.55)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer" }}>
           {uploading ? "Uploading..." : currentImage ? "Change photo" : "+ Photo"}
         </button>
       )}
       {mounted && hovered && (
-        <button onClick={handleDelete} style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 10px", borderRadius: 20, border: "1px solid rgba(255,0,0,0.3)", background: "rgba(0,0,0,0.55)", color: "rgba(255,100,100,0.9)", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+        <button onClick={handleDelete} style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 10px", borderRadius: 0, border: "3px solid rgba(255,0,0,0.3)", background: "rgba(0,0,0,0.55)", color: "rgba(255,100,100,0.9)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer" }}>
           {deleting ? "Deleting..." : "Delete"}
         </button>
       )}

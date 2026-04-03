@@ -225,7 +225,7 @@ export default function ArtistProfilePage() {
   const showSaved = savedAt && Date.now() - savedAt < 1500;
 
   return (
-    <div style={{ minHeight: "100vh", padding: "24px 24px 80px" }}>
+    <div style={{ minHeight: "100vh", padding: "24px 24px 80px", background: "transparent" }}>
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
 
         {/* Back + save indicator */}
@@ -358,8 +358,9 @@ export default function ArtistProfilePage() {
             placeholder="Artist biography..."
             style={{
               width: "100%", boxSizing: "border-box",
-              padding: "10px 12px", border: "1px solid #eee", borderRadius: 8,
-              fontSize: 13, color: "#333", lineHeight: 1.7, background: "#fafaf8",
+              padding: "12px 16px", border: "3px solid var(--hw-border-strong)",
+              fontFamily: "var(--hw-font-body)", fontSize: 15, color: "var(--hw-text)",
+              lineHeight: 1.7, background: "var(--hw-bg-surface)",
               outline: "none", resize: "vertical", minHeight: 100,
             }}
           />
@@ -410,32 +411,32 @@ export default function ArtistProfilePage() {
                     onClick={() => advFileRefs.current[field.id]?.click()}
                     style={{
                       padding: "16px 18px",
-                      background: url ? "#f0faf4" : "#fafaf8",
-                      border: url ? "1px solid #c8e6c9" : "1px solid #eee",
-                      borderRadius: 10, cursor: "pointer",
+                      background: url ? "var(--hw-green-ghost)" : "var(--hw-bg-surface)",
+                      border: url ? "3px solid var(--hw-green-border)" : "3px solid var(--hw-border-strong)",
+                      cursor: "pointer",
                       display: "flex", alignItems: "center", justifyContent: "space-between",
-                      transition: "border-color 0.15s",
+                      transition: "var(--hw-ease)",
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#111", marginBottom: 2 }}>
+                      <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text)", marginBottom: 2 }}>
                         {field.label}
                       </div>
-                      <div style={{ fontSize: 11, color: url ? "#1a6b3c" : "#aaa" }}>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" as const, color: url ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
                         {isUploading ? "Uploading..." : url ? "Uploaded" : "Not uploaded"}
                       </div>
                     </div>
                     <div>
                       {url ? (
                         <span style={{
-                          fontSize: 9, fontWeight: 800, color: "#1a6b3c",
-                          background: "#e8f5e9", padding: "3px 8px", borderRadius: 4,
-                          textTransform: "uppercase", letterSpacing: "0.06em",
+                          fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, color: "var(--hw-green)",
+                          background: "var(--hw-green-ghost)", padding: "4px 10px", border: "2px solid var(--hw-green-border)",
+                          textTransform: "uppercase" as const, letterSpacing: "2px",
                         }}>
                           PDF
                         </span>
                       ) : (
-                        <span style={{ fontSize: 16, color: "#ccc" }}>&#8593;</span>
+                        <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, color: "var(--hw-text-muted)" }}>&#8593;</span>
                       )}
                     </div>
                   </div>
@@ -638,9 +639,10 @@ export default function ArtistProfilePage() {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontSize: 11, fontWeight: 500, textTransform: "uppercase" as const,
-      letterSpacing: 1.2, color: "#999",
-      borderBottom: "1px solid #eee", paddingBottom: 8, marginBottom: 16,
+      fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+      textTransform: "uppercase" as const, letterSpacing: "4px",
+      color: "var(--hw-blue)",
+      borderBottom: "3px solid var(--hw-border-strong)", paddingBottom: 8, marginBottom: 16,
     }}>
       {children}
     </div>
@@ -661,18 +663,20 @@ function TeamCard({
 }) {
   const fieldStyle: React.CSSProperties = {
     width: "100%", boxSizing: "border-box",
-    padding: "6px 10px", border: "1px solid #eee", borderRadius: 6,
-    fontSize: 12, color: "#333", background: "#fafaf8", outline: "none",
+    padding: "8px 10px", border: "3px solid var(--hw-border-strong)",
+    fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text)",
+    background: "var(--hw-bg-surface)", outline: "none",
   };
 
   return (
     <div style={{
-      padding: "14px 16px", background: "#fafaf8",
-      border: "1px solid #eee", borderRadius: 10,
+      padding: "14px 16px", background: "var(--hw-bg-surface)",
+      border: "3px solid var(--hw-border-strong)",
     }}>
       <div style={{
-        fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const,
-        letterSpacing: "0.1em", color: "#999", marginBottom: 10,
+        fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700,
+        textTransform: "uppercase" as const, letterSpacing: "1.5px",
+        color: "var(--hw-text-muted)", marginBottom: 10,
       }}>
         {label}
       </div>
@@ -716,15 +720,15 @@ function Accordion({
   const [hovered, setHovered] = useState(false);
 
   const colors = {
-    green: { bg: "#e8f5e9", text: "#1a6b3c" },
-    amber: { bg: "#fff3e0", text: "#b35c00" },
-    gray: { bg: "#f0f0f0", text: "#888" },
+    green: { bg: "var(--hw-green-ghost)", text: "var(--hw-green)", border: "var(--hw-green-border)" },
+    amber: { bg: "var(--hw-amber-ghost)", text: "var(--hw-amber)", border: "var(--hw-amber)" },
+    gray: { bg: "rgba(0,0,0,0.04)", text: "var(--hw-text-muted)", border: "var(--hw-border)" },
   };
   const bc = colors[badgeColor];
 
   return (
     <div style={{
-      background: "#fff", border: "1px solid #DDDDDD", borderRadius: 14,
+      background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
       marginBottom: 10, overflow: "hidden",
     }}>
       <div
@@ -734,15 +738,17 @@ function Accordion({
         style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
           padding: "16px 24px", cursor: "pointer", userSelect: "none" as const,
-          background: hovered ? "#fafaf8" : "#fff",
-          transition: "background 0.1s",
+          background: hovered ? "var(--hw-crimson-ghost)" : "var(--hw-bg-surface)",
+          transition: "var(--hw-ease)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>{title}</span>
+          <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>{title}</span>
           {badge && (
             <span style={{
-              fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4,
+              fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+              letterSpacing: "2px", textTransform: "uppercase",
+              padding: "3px 10px", border: `2px solid ${bc.border}`,
               background: bc.bg, color: bc.text,
             }}>
               {badge}
@@ -750,7 +756,7 @@ function Accordion({
           )}
         </div>
         <span style={{
-          fontSize: 12, color: "#999",
+          fontSize: 12, color: "var(--hw-text-muted)",
           transform: open ? "rotate(90deg)" : "rotate(0deg)",
           transition: "transform 0.2s",
           display: "inline-block",
@@ -771,8 +777,9 @@ function Accordion({
 
 const rowInputStyle: React.CSSProperties = {
   width: "100%", boxSizing: "border-box",
-  padding: "7px 10px", border: "1px solid #eee", borderRadius: 6,
-  fontSize: 13, color: "#333", background: "#fafaf8", outline: "none",
+  padding: "7px 10px", border: "3px solid var(--hw-border-strong)",
+  fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text)",
+  background: "var(--hw-bg-surface)", outline: "none",
 };
 
 const rowTextareaStyle: React.CSSProperties = {
@@ -796,9 +803,9 @@ function JsonFieldRows({
           <div key={f.path} style={{
             display: "grid", gridTemplateColumns: "160px 1fr", gap: 10,
             alignItems: f.type === "textarea" ? "flex-start" : "center",
-            padding: "8px 0", borderBottom: "1px solid #f5f5f5",
+            padding: "8px 0", borderBottom: "2px solid var(--hw-border)",
           }}>
-            <label style={{ fontSize: 12, color: "#888", fontWeight: 500, paddingTop: f.type === "textarea" ? 6 : 0 }}>
+            <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400, paddingTop: f.type === "textarea" ? 6 : 0 }}>
               {f.label}
             </label>
             {f.type === "textarea" ? (
@@ -874,7 +881,7 @@ function RosterSection({
           const isOpen = expandedId === member.id;
           return (
             <div key={member.id} style={{
-              border: "1px solid #eee", borderRadius: 10, overflow: "hidden",
+              border: "3px solid var(--hw-border-strong)", overflow: "hidden",
               gridColumn: isOpen ? "1 / -1" : undefined,
             }}>
               <div
@@ -882,27 +889,28 @@ function RosterSection({
                 style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                   padding: "12px 16px", cursor: "pointer",
-                  background: isOpen ? "#fafaf8" : "#fff",
+                  background: isOpen ? "var(--hw-bg)" : "var(--hw-bg-surface)",
+                  transition: "var(--hw-ease)",
                 }}
               >
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#111" }}>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>
                     {member.legalName || "Unnamed"}
                   </div>
-                  <div style={{ fontSize: 11, color: "#888" }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)" }}>
                     {member.role || "No role"}{member.showDayRate ? ` \u00b7 $${member.showDayRate}/show` : ""}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button
                     onClick={(e) => { e.stopPropagation(); removeMember(member.id); }}
-                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "#ccc", padding: "2px 4px", lineHeight: 1 }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#c0392b"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#ccc"; }}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "var(--hw-text-muted)", padding: "2px 4px", lineHeight: 1 }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-crimson)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-text-muted)"; }}
                   >
                     &times;
                   </button>
-                  <span style={{ fontSize: 11, color: "#ccc", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", display: "inline-block" }}>&#9656;</span>
+                  <span style={{ fontSize: 11, color: "var(--hw-text-muted)", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", display: "inline-block" }}>&#9656;</span>
                 </div>
               </div>
               {isOpen && (
@@ -951,9 +959,9 @@ function RosterSection({
                   <div style={{ marginTop: 16, textAlign: "right" as const }}>
                     <button
                       onClick={() => removeMember(member.id)}
-                      style={{ padding: "5px 14px", borderRadius: 6, border: "1px solid #ddd", background: "#fff", color: "#c0392b", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+                      style={{ padding: "8px 16px", border: "3px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-display)", fontSize: 12, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, cursor: "pointer" }}
                     >
-                      Remove
+                      REMOVE
                     </button>
                   </div>
                 </div>
@@ -965,12 +973,12 @@ function RosterSection({
       <button
         onClick={addMember}
         style={{
-          width: "100%", padding: "12px", borderRadius: 10,
-          border: "1.5px dashed #ccc", background: "transparent",
-          fontSize: 12, fontWeight: 700, color: "#888", cursor: "pointer",
+          width: "100%", padding: "12px",
+          border: "3px dashed var(--hw-border-light)", background: "transparent",
+          fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer",
         }}
       >
-        + Add crew member
+        + ADD CREW MEMBER
       </button>
     </div>
   );
@@ -1003,15 +1011,15 @@ function VehiclesSection({
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
         {vehicles.map((v: any) => (
-          <div key={v.id} style={{ padding: "14px 16px", border: "1px solid #eee", borderRadius: 10, background: "#fafaf8" }}>
+          <div key={v.id} style={{ padding: "14px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <input
                 value={v.name || ""}
                 onChange={(e) => updateVehicle(v.id, "name", e.target.value || null)}
                 placeholder="Vehicle name"
-                style={{ ...rowInputStyle, fontWeight: 700, fontSize: 13 }}
+                style={{ ...rowInputStyle, fontFamily: "var(--hw-font-display)", fontWeight: 400, fontSize: 16, letterSpacing: "2px", textTransform: "uppercase" as const }}
               />
-              <button onClick={() => removeVehicle(v.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", fontSize: 14, marginLeft: 8 }}>&times;</button>
+              <button onClick={() => removeVehicle(v.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--hw-text-muted)", fontSize: 14, marginLeft: 8 }}>&times;</button>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
               <input value={v.type || ""} onChange={(e) => updateVehicle(v.id, "type", e.target.value || null)} placeholder="Type / purpose" style={rowInputStyle} />
@@ -1023,21 +1031,21 @@ function VehiclesSection({
       <button
         onClick={addVehicle}
         style={{
-          width: "100%", padding: "12px", borderRadius: 10,
-          border: "1.5px dashed #ccc", background: "transparent",
-          fontSize: 12, fontWeight: 700, color: "#888", cursor: "pointer", marginBottom: 16,
+          width: "100%", padding: "12px",
+          border: "3px dashed var(--hw-border-light)", background: "transparent",
+          fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer", marginBottom: 16,
         }}
       >
-        + Add vehicle
+        + ADD VEHICLE
       </button>
 
-      <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 12 }}>
+      <div style={{ borderTop: "2px solid var(--hw-border)", paddingTop: 12 }}>
         <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-          <label style={{ fontSize: 12, color: "#888" }}>Storage Location</label>
+          <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Storage Location</label>
           <input style={rowInputStyle} value={data.storageLocation || ""} onChange={(e) => onUpdate({ ...data, storageLocation: e.target.value || null })} />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-          <label style={{ fontSize: 12, color: "#888" }}>Notes</label>
+          <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Notes</label>
           <textarea style={rowTextareaStyle} value={data.notes || ""} placeholder="Trailers, major equipment, etc." onChange={(e) => onUpdate({ ...data, notes: e.target.value || null })} />
         </div>
       </div>
@@ -1083,14 +1091,14 @@ function InsuranceSection({
   return (
     <div>
       {policies.map((p: any) => (
-        <div key={p.id} style={{ border: "1px solid #eee", borderRadius: 10, padding: 14, marginBottom: 8 }}>
+        <div key={p.id} style={{ border: "3px solid var(--hw-border-strong)", padding: 14, marginBottom: 8 }}>
           <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 1fr 32px", gap: 8, marginBottom: 8 }}>
             <select style={rowInputStyle} value={p.type} onChange={(e) => updatePolicy(p.id, "type", e.target.value)}>
               {typeOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
             <input style={rowInputStyle} value={p.carrier || ""} placeholder="Carrier" onChange={(e) => updatePolicy(p.id, "carrier", e.target.value || null)} />
             <input style={rowInputStyle} value={p.policyNumber || ""} placeholder="Policy #" onChange={(e) => updatePolicy(p.id, "policyNumber", e.target.value || null)} />
-            <button onClick={() => removePolicy(p.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", fontSize: 14 }}>&times;</button>
+            <button onClick={() => removePolicy(p.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--hw-text-muted)", fontSize: 14 }}>&times;</button>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
             <input style={rowInputStyle} value={p.coverageAmount ?? ""} placeholder="Coverage $" type="number" onChange={(e) => updatePolicy(p.id, "coverageAmount", e.target.value ? parseFloat(e.target.value) : null)} />
@@ -1103,12 +1111,12 @@ function InsuranceSection({
       <button
         onClick={addPolicy}
         style={{
-          width: "100%", padding: "12px", borderRadius: 10,
-          border: "1.5px dashed #ccc", background: "transparent",
-          fontSize: 12, fontWeight: 700, color: "#888", cursor: "pointer",
+          width: "100%", padding: "12px",
+          border: "3px dashed var(--hw-border-light)", background: "transparent",
+          fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer",
         }}
       >
-        + Add policy
+        + ADD POLICY
       </button>
     </div>
   );
@@ -1118,7 +1126,7 @@ function InsuranceSection({
 
 function RosterSubLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: 14, marginBottom: 6, borderBottom: "1px solid #f0f0f0", paddingBottom: 4 }}>
+    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-blue)", textTransform: "uppercase" as const, letterSpacing: "2px", marginTop: 14, marginBottom: 6, borderBottom: "2px solid var(--hw-border)", paddingBottom: 4 }}>
       {children}
     </div>
   );
@@ -1146,7 +1154,7 @@ function RosterMemberField({
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, alignItems: "center", padding: "4px 0" }}>
-      <label style={{ fontSize: 11, color: "#888" }}>{label}</label>
+      <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>{label}</label>
       <input
         style={rowInputStyle}
         type={type || "text"}

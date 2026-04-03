@@ -200,8 +200,8 @@ export default function TourTile({
             position: "absolute", top: 10, right: 10, zIndex: 10,
             display: "flex", alignItems: "center", justifyContent: "center",
             width: 32, height: 32,
-            background: "rgba(0,0,0,0.6)", border: "2px solid rgba(255,255,255,0.2)",
-            color: "#fff", textDecoration: "none",
+            background: "rgba(0,0,0,0.6)", border: "3px solid rgba(255,255,255,0.2)",
+            color: "var(--hw-text-invert)", textDecoration: "none",
             transition: "var(--hw-ease)",
           }}
         >
@@ -215,7 +215,7 @@ export default function TourTile({
       {mounted && hovered && type !== "artist" && (
         <button
           onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
+          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 12px", border: "3px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
         >
           {uploading ? "Uploading…" : currentImage ? "Change photo" : "+ Photo"}
         </button>
@@ -225,13 +225,13 @@ export default function TourTile({
         <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, zIndex: 10, display: "flex", justifyContent: "space-between", padding: "0 10px" }}>
           <button
             onClick={handleDelete}
-            style={{ padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
+            style={{ padding: "5px 12px", border: "3px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
           >
             {deleting ? "Deleting…" : "Delete"}
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-            style={{ padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
+            style={{ padding: "5px 12px", border: "3px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
           >
             {uploading ? "Uploading…" : currentImage ? "Change photo" : "+ Photo"}
           </button>

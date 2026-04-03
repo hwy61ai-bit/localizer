@@ -47,20 +47,20 @@ function CityStateCell({ event, editing, saving, drafts, inputRef, onStartEdit, 
   const isStateEditing = editing?.id === event.id && editing?.field === "state";
   const isEditing = isCityEditing || isStateEditing;
   return (
-    <div style={{ cursor: "text", minHeight: 24, padding: "2px 4px", borderRadius: 6, border: isEditing ? "1.5px solid #111" : "1.5px solid transparent", background: isEditing ? "#fff" : "transparent", transition: "border 0.1s, background 0.1s", position: "relative" }}
-      onMouseEnter={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "#ddd"; }}
+    <div style={{ cursor: "text", minHeight: 24, padding: "2px 4px", borderRadius: 0, border: isEditing ? "2px solid var(--hw-border-strong)" : "2px solid transparent", background: isEditing ? "var(--hw-bg-surface)" : "transparent", transition: "border 0.1s, background 0.1s", position: "relative" }}
+      onMouseEnter={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "var(--hw-border)"; }}
       onMouseLeave={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "transparent"; }}>
       <span style={{ fontSize: 14 }}>
         {isCityEditing ? (
           <input ref={inputRef} value={drafts.city} onChange={e => onCityChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 90, fontSize: 14, background: "transparent", padding: 0 }} />
         ) : (
-          <span onClick={() => onStartEdit(event, "city")} style={{ cursor: "text" }}>{event.city || <span style={{ color: "#ccc" }}>City</span>}</span>
+          <span onClick={() => onStartEdit(event, "city")} style={{ cursor: "text" }}>{event.city || <span style={{ color: "var(--hw-text-muted)" }}>City</span>}</span>
         )}
-        <span style={{ color: "#999" }}>, </span>
+        <span style={{ color: "var(--hw-text-muted)" }}>, </span>
         {isStateEditing ? (
           <input ref={inputRef} value={drafts.state} onChange={e => onStateChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: 28, fontSize: 14, background: "transparent", padding: 0 }} />
         ) : (
-          <span onClick={() => onStartEdit(event, "state")} style={{ cursor: "text" }}>{event.state || <span style={{ color: "#ccc" }}>ST</span>}</span>
+          <span onClick={() => onStartEdit(event, "state")} style={{ cursor: "text" }}>{event.state || <span style={{ color: "var(--hw-text-muted)" }}>ST</span>}</span>
         )}
       </span>
     </div>
@@ -87,13 +87,13 @@ function Cell({ event, field, display, editing, saving, draft, inputRef, onStart
   const isSaving = saving === event.id + field;
   return (
     <div onClick={() => onStartEdit(event, field)} title="Click to edit"
-      style={{ cursor: "text", minHeight: 24, padding: "2px 4px", borderRadius: 6, border: isEditing ? "1.5px solid #111" : "1.5px solid transparent", background: isEditing ? "#fff" : "transparent", opacity: isSaving ? 0.4 : 1, transition: "border 0.1s, background 0.1s", position: "relative" }}
-      onMouseEnter={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "#ddd"; }}
+      style={{ cursor: "text", minHeight: 24, padding: "2px 4px", borderRadius: 0, border: isEditing ? "2px solid var(--hw-border-strong)" : "2px solid transparent", background: isEditing ? "var(--hw-bg-surface)" : "transparent", opacity: isSaving ? 0.4 : 1, transition: "border 0.1s, background 0.1s", position: "relative" }}
+      onMouseEnter={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "var(--hw-border)"; }}
       onMouseLeave={e => { if (!isEditing) (e.currentTarget as HTMLDivElement).style.borderColor = "transparent"; }}>
       {isEditing ? (
         <input ref={inputRef} value={draft} onChange={e => onDraftChange(e.target.value)} onBlur={onCommit} onKeyDown={onKey} style={{ border: "none", outline: "none", width: "100%", fontSize: 14, background: "transparent", padding: 0 }} />
       ) : (
-        <span style={{ fontSize: 14 }}>{display || <span style={{ color: "#ccc" }}>—</span>}</span>
+        <span style={{ fontSize: 14 }}>{display || <span style={{ color: "var(--hw-text-muted)" }}>—</span>}</span>
       )}
     </div>
   );
@@ -463,20 +463,20 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
               <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <div style={{ opacity: 0.8, display: "flex", alignItems: "center", gap: 4 }}>
-                <button onClick={() => { const current = e.promoter_email ?? ""; startEdit(e, "promoter_email"); setTimeout(() => { setDraft(current ? current + ", " : ""); inputRef.current?.focus(); }, 50); }} title="Add email" style={{ width: 22, height: 22, borderRadius: 6, border: "1px solid #ddd", background: "#fff", color: "#888", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, lineHeight: 1 }}>+</button>
+                <button onClick={() => { const current = e.promoter_email ?? ""; startEdit(e, "promoter_email"); setTimeout(() => { setDraft(current ? current + ", " : ""); inputRef.current?.focus(); }, 50); }} title="Add email" style={{ width: 22, height: 22, borderRadius: 0, border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text-muted)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, lineHeight: 1 }}>+</button>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {editing?.id === e.id && editing?.field === "promoter_email" ? (
-                    <div style={{ padding: "2px 4px", borderRadius: 6, border: "1.5px solid #111", background: "#fff" }}>
+                    <div style={{ padding: "2px 4px", borderRadius: 0, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
                       <input ref={inputRef} value={draft} onChange={ev => setDraft(ev.target.value)} onBlur={commitEdit} onKeyDown={handleKey} style={{ border: "none", outline: "none", width: "100%", fontSize: 14, background: "transparent", padding: 0 }} />
                     </div>
                   ) : (() => {
                     const emails = (e.promoter_email ?? "").split(",").map(x => x.trim()).filter(Boolean);
-                    if (emails.length === 0) return <div onClick={() => startEdit(e, "promoter_email")} style={{ cursor: "text", padding: "2px 4px", borderRadius: 6, border: "1.5px solid transparent", minHeight: 24 }} onMouseEnter={ev => (ev.currentTarget.style.borderColor = "#ddd")} onMouseLeave={ev => (ev.currentTarget.style.borderColor = "transparent")}><span style={{ fontSize: 14, color: "#ccc" }}>&mdash;</span></div>;
+                    if (emails.length === 0) return <div onClick={() => startEdit(e, "promoter_email")} style={{ cursor: "text", padding: "2px 4px", borderRadius: 0, border: "2px solid transparent", minHeight: 24 }} onMouseEnter={ev => (ev.currentTarget.style.borderColor = "var(--hw-border)")} onMouseLeave={ev => (ev.currentTarget.style.borderColor = "transparent")}><span style={{ fontSize: 14, color: "var(--hw-text-muted)" }}>&mdash;</span></div>;
                     return (
-                      <div onClick={() => startEdit(e, "promoter_email")} style={{ cursor: "text", padding: "2px 4px", borderRadius: 6, border: "1.5px solid transparent" }} onMouseEnter={ev => (ev.currentTarget.style.borderColor = "#ddd")} onMouseLeave={ev => (ev.currentTarget.style.borderColor = "transparent")}>
+                      <div onClick={() => startEdit(e, "promoter_email")} style={{ cursor: "text", padding: "2px 4px", borderRadius: 0, border: "2px solid transparent" }} onMouseEnter={ev => (ev.currentTarget.style.borderColor = "var(--hw-border)")} onMouseLeave={ev => (ev.currentTarget.style.borderColor = "transparent")}>
                         <div style={{ fontSize: 14, lineHeight: 1.4 }}>{emails[0]}</div>
                         {emails.length === 2 && <div style={{ fontSize: 14, lineHeight: 1.4 }}>{emails[1]}</div>}
-                        {emails.length > 2 && <div style={{ fontSize: 11, fontWeight: 700, color: "#888", marginTop: 2 }}>+{emails.length - 1} more</div>}
+                        {emails.length > 2 && <div style={{ fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 2 }}>+{emails.length - 1} more</div>}
                       </div>
                     );
                   })()}
@@ -492,7 +492,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                 ) : e.render_status === "error" ? (
                   <button onClick={() => reRenderEvent(e.id)} style={{ padding: "4px 12px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-crimson)" }}>RETRY</button>
                 ) : (
-                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-border)", background: "rgba(0,0,0,0.04)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NOT READY</span>
+                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NOT READY</span>
                 )}
               </div>
               <div>

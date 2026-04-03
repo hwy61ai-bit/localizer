@@ -70,41 +70,45 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="pricing-page" style={{ minHeight: "100vh", background: "#EEEEEE", padding: "48px 24px 80px" }}>
+    <div className="pricing-page" style={{ minHeight: "100vh", background: "transparent", padding: "48px 24px 80px" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
 
         <div style={{ marginBottom: 24 }}>
-          <a href="/" style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>← Back</a>
+          <a href="/" style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-border-strong)", textDecoration: "none", letterSpacing: 1 }}>← Back</a>
         </div>
 
         {trialExpired && (
-          <div className="pricing-trial-banner" style={{ background: "#111", color: "#fff", borderRadius: 12, padding: "16px 24px", marginBottom: 32, textAlign: "center", fontSize: 14, fontWeight: 700 }}>
+          <div className="pricing-trial-banner" style={{ background: "var(--hw-bg-invert)", color: "#fff", borderRadius: 0, border: "3px solid var(--hw-border-strong)", padding: "16px 24px", marginBottom: 32, textAlign: "center", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 700 }}>
             Your 7-day trial has ended. Choose a plan to keep access to your tours and assets.
           </div>
         )}
 
         {/* Header */}
         <div className="pricing-header" style={{ textAlign: "center", marginBottom: 48 }}>
-          <h1 className="brand-title" style={{ margin: 0, marginBottom: 12 }}>LOCALIZER</h1>
-          <div className="pricing-headline" style={{ fontSize: 28, fontWeight: 900, color: "#111", marginBottom: 8 }}>
+          <h1 className="brand-title" style={{ margin: 0, marginBottom: 12, fontFamily: "var(--hw-font-display)" }}>LOCALIZER</h1>
+          <div className="pricing-headline" style={{ fontFamily: "var(--hw-font-display)", fontSize: 36, fontWeight: 400, color: "var(--hw-border-strong)", marginBottom: 8, textTransform: "uppercase", letterSpacing: 2 }}>
             Simple, transparent pricing
           </div>
-          <div className="pricing-subline" style={{ fontSize: 15, color: "#666", marginBottom: 28 }}>
+          <div className="pricing-subline" style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, color: "var(--hw-border-strong)", marginBottom: 28, opacity: 0.6 }}>
             Tour dates in. Tour Assets out.
           </div>
 
           {/* Toggle */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: "#fff", border: "1px solid #ddd", borderRadius: 999, padding: "6px 8px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 0, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", borderRadius: 0, padding: 0 }}>
             <button
               onClick={() => setAnnual(false)}
               style={{
-                padding: "7px 18px",
-                borderRadius: 999,
+                padding: "10px 22px",
+                borderRadius: 0,
                 border: "none",
-                background: !annual ? "#111" : "transparent",
-                color: !annual ? "#fff" : "#666",
-                fontWeight: 700,
-                fontSize: 13,
+                borderRight: "3px solid var(--hw-border-strong)",
+                background: !annual ? "var(--hw-border-strong)" : "transparent",
+                color: !annual ? "#fff" : "var(--hw-border-strong)",
+                fontFamily: "var(--hw-font-display)",
+                fontWeight: 400,
+                fontSize: 14,
+                textTransform: "uppercase",
+                letterSpacing: 2,
                 cursor: "pointer",
               }}
             >
@@ -113,19 +117,22 @@ export default function PricingPage() {
             <button
               onClick={() => setAnnual(true)}
               style={{
-                padding: "7px 18px",
-                borderRadius: 999,
+                padding: "10px 22px",
+                borderRadius: 0,
                 border: "none",
-                background: annual ? "#111" : "transparent",
-                color: annual ? "#fff" : "#666",
-                fontWeight: 700,
-                fontSize: 13,
+                background: annual ? "var(--hw-border-strong)" : "transparent",
+                color: annual ? "#fff" : "var(--hw-border-strong)",
+                fontFamily: "var(--hw-font-display)",
+                fontWeight: 400,
+                fontSize: 14,
+                textTransform: "uppercase",
+                letterSpacing: 2,
                 cursor: "pointer",
               }}
             >
               Annual
-              <span style={{ marginLeft: 6, fontSize: 11, color: annual ? "#aaa" : "#999", fontWeight: 600 }}>
-                save ~17%
+              <span style={{ marginLeft: 8, fontFamily: "var(--hw-font-mono)", fontSize: 9, color: annual ? "rgba(255,255,255,0.6)" : "var(--hw-border-strong)", fontWeight: 700, letterSpacing: 1, opacity: 0.7 }}>
+                SAVE ~17%
               </span>
             </button>
           </div>
@@ -143,10 +150,10 @@ export default function PricingPage() {
                 key={plan.name}
                 className="pricing-card"
                 style={{
-                  background: plan.highlight ? "#111" : "#fff",
-                  border: plan.highlight ? "1px solid #111" : "1px solid #ddd",
-                  borderRadius: 16,
-                  padding: 28,
+                  background: "var(--hw-bg-surface)",
+                  border: "3px solid var(--hw-border-strong)",
+                  borderRadius: 0,
+                  padding: 32,
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
@@ -156,17 +163,18 @@ export default function PricingPage() {
                 {plan.highlight && (
                   <div style={{
                     position: "absolute",
-                    top: -12,
+                    top: -14,
                     left: "50%",
                     transform: "translateX(-50%)",
-                    background: "#111",
-                    border: "1px solid #444",
+                    background: "var(--hw-crimson)",
+                    border: "3px solid var(--hw-border-strong)",
                     color: "#fff",
-                    fontSize: 10,
-                    fontWeight: 800,
-                    letterSpacing: "0.14em",
-                    padding: "4px 12px",
-                    borderRadius: 999,
+                    fontFamily: "var(--hw-font-mono)",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    padding: "4px 14px",
+                    borderRadius: 0,
                     textTransform: "uppercase",
                   }}>
                     Most Popular
@@ -174,26 +182,26 @@ export default function PricingPage() {
                 )}
 
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: plan.highlight ? "#aaa" : "#999", marginBottom: 8 }}>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, fontWeight: 400, letterSpacing: 3, textTransform: "uppercase", color: "var(--hw-border-strong)", marginBottom: 8 }}>
                     {plan.name}
                   </div>
-                  <div style={{ fontSize: 13, color: plan.highlight ? "#aaa" : "#666", marginBottom: 20, lineHeight: 1.5 }}>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-border-strong)", marginBottom: 20, lineHeight: 1.5, opacity: 0.6 }}>
                     {plan.desc}
                   </div>
 
                   <div style={{ marginBottom: 24 }}>
-                    <span className="pricing-price" style={{ fontSize: 42, fontWeight: 900, color: plan.highlight ? "#fff" : "#111", letterSpacing: -1 }}>
+                    <span className="pricing-price" style={{ fontFamily: "var(--hw-font-display)", fontSize: 50, fontWeight: 400, color: "var(--hw-border-strong)", letterSpacing: -1 }}>
                       ${price}
                     </span>
-                    <span style={{ fontSize: 13, color: plan.highlight ? "#888" : "#999", marginLeft: 4 }}>
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-border-strong)", marginLeft: 4, opacity: 0.5 }}>
                       /{annual ? "year" : "mo"}
                     </span>
                   </div>
 
                   <div style={{ display: "grid", gap: 8, marginBottom: 28 }}>
                     {plan.features.map((f) => (
-                      <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: plan.highlight ? "#ccc" : "#444" }}>
-                        <span style={{ color: plan.highlight ? "#888" : "#bbb", fontSize: 16 }}>✓</span>
+                      <div key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-border-strong)" }}>
+                        <span style={{ color: "var(--hw-crimson)", fontSize: 16 }}>✓</span>
                         {f}
                       </div>
                     ))}
@@ -207,12 +215,15 @@ export default function PricingPage() {
                   style={{
                     width: "100%",
                     padding: "13px",
-                    borderRadius: 12,
-                    border: plan.highlight ? "1px solid #444" : "1px solid #111",
-                    background: plan.highlight ? "#fff" : "#111",
-                    color: plan.highlight ? "#111" : "#fff",
-                    fontWeight: 900,
-                    fontSize: 14,
+                    borderRadius: 0,
+                    border: plan.highlight ? "3px solid var(--hw-crimson)" : "3px solid var(--hw-border-strong)",
+                    background: plan.highlight ? "var(--hw-crimson)" : "var(--hw-bg-surface)",
+                    color: plan.highlight ? "#fff" : "var(--hw-border-strong)",
+                    fontFamily: "var(--hw-font-display)",
+                    fontWeight: 400,
+                    fontSize: 15,
+                    textTransform: "uppercase",
+                    letterSpacing: 3,
                     cursor: isLoading ? "not-allowed" : "pointer",
                     opacity: isLoading ? 0.6 : 1,
                   }}

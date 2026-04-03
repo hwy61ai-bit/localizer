@@ -351,7 +351,7 @@ export default function FinancialsPage() {
                     padding: "10px 18px",
                     border: item.active ? "3px solid var(--hw-border-strong)" : "3px solid transparent",
                     background: item.active ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
-                    color: item.active ? "#fff" : "var(--hw-text)",
+                    color: item.active ? "var(--hw-text-invert)" : "var(--hw-text)",
                     textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: item.active ? 700 : 400,
                     letterSpacing: "1.5px", textTransform: "uppercase",
                   }}>{item.num}. {item.label}</Link>
@@ -365,8 +365,8 @@ export default function FinancialsPage() {
           <div style={{ textAlign: "center", padding: 60, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
         ) : !flags.financeLayer ? (
           <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 48, textAlign: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Financial Tools</div>
-            <div style={{ fontSize: 13, color: "var(--hw-text-muted)", marginBottom: 20 }}>Detailed financial tracking, expense management, and reporting are available with TourRouter.</div>
+            <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 800, marginBottom: 8 }}>Financial Tools</div>
+            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text-muted)", marginBottom: 20 }}>Detailed financial tracking, expense management, and reporting are available with TourRouter.</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, maxWidth: 500, margin: "0 auto", marginBottom: 24 }}>
               <div style={{ background: "var(--hw-bg-warm)", padding: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Shows</div>
@@ -381,7 +381,7 @@ export default function FinancialsPage() {
                 <div style={{ fontSize: 20, fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFuel)}</div>
               </div>
             </div>
-            <a href="https://hwy61labs.com" target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", border: "1px solid #111", background: "#111", color: "#fff", textDecoration: "none", fontWeight: 900, fontSize: 13 }}>Upgrade to TourRouter</a>
+            <a href="https://hwy61labs.com" target="_blank" rel="noopener noreferrer" style={{ padding: "10px 24px", border: "3px solid var(--hw-bg-invert)", background: "var(--hw-bg-invert)", color: "var(--hw-text-invert)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontWeight: 900, fontSize: 13, letterSpacing: "3px", textTransform: "uppercase" }}>Upgrade to TourRouter</a>
           </div>
         ) : (
           <>
@@ -404,7 +404,7 @@ export default function FinancialsPage() {
 
             {/* ══════ Income Waterfall ══════ */}
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 20, marginBottom: 16 }}>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Income Waterfall</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, marginBottom: 16 }}>Income Waterfall</div>
               {(() => {
                 const gross = fin.totalIncome;
                 const commTotal = fin.totalCommissions;
@@ -491,7 +491,7 @@ export default function FinancialsPage() {
 
             {/* ══════ Section 1: Blanket Expenses ══════ */}
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24, marginBottom: 20 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, letterSpacing: "-0.3px" }}>Blanket Expenses</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 800, marginBottom: 16 }}>Blanket Expenses</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                 {/* Per Show Day */}
                 <div>
@@ -558,7 +558,7 @@ export default function FinancialsPage() {
                   <thead>
                     <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Date", "Venue", "City", "Offer", "Cur", "USD", "Expenses", "Net"].map((h) => (
-                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "2px", whiteSpace: "nowrap" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -583,10 +583,10 @@ export default function FinancialsPage() {
                               placeholder="0"
                               style={{ width: 60, padding: "4px 6px", border: "3px solid var(--hw-border)", fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none" }}
                             />
-                            {blanketShowAmt > 0 && <span style={{ fontSize: 10, color: "#aaa" }}>+{fmtUSD(blanketShowAmt)}</span>}
+                            {blanketShowAmt > 0 && <span style={{ fontSize: 10, color: "var(--hw-text-muted)" }}>+{fmtUSD(blanketShowAmt)}</span>}
                           </div>
                         </td>
-                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 700, color: row.net >= 0 ? "#1a6b3c" : "#c0392b" }}>{fmtUSD(row.net)}</td>
+                        <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 700, color: row.net >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" }}>{fmtUSD(row.net)}</td>
                       </tr>
                     ))}
                     {/* Totals */}
@@ -594,7 +594,7 @@ export default function FinancialsPage() {
                       <td colSpan={5} style={{ padding: "10px 12px", fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>Total</td>
                       <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-green)" }}>{fmtUSD(fin.totalIncome)}</td>
                       <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalBlanketShow + Object.values(showExpenses).reduce((a, b) => a + b, 0))}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: fin.netIncome >= 0 ? "#1a6b3c" : "#c0392b" }}>{fmtUSD(fin.netIncome)}</td>
+                      <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: fin.netIncome >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" }}>{fmtUSD(fin.netIncome)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -609,14 +609,14 @@ export default function FinancialsPage() {
                   <button
                     onClick={fetchLiveRates}
                     disabled={ratesLoading}
-                    style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "#fff", cursor: "pointer", fontSize: 12, fontWeight: 700, opacity: ratesLoading ? 0.5 : 1 }}
+                    style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", fontWeight: 700, opacity: ratesLoading ? 0.5 : 1 }}
                   >{ratesLoading ? "LOADING..." : "UPDATE LIVE RATES"}</button>
                 </div>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Currency", "Shows", "Total (Original)", "Rate (to USD)", "Total (USD)"].map((h) => (
-                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid #DDDDDD" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -650,7 +650,7 @@ export default function FinancialsPage() {
 
             {/* ══════ Section 4: Transport Costs Breakdown ══════ */}
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 16, letterSpacing: "-0.3px" }}>Transport Costs</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 800, marginBottom: 16 }}>Transport Costs</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {/* Drive */}
                 <div style={{ border: "3px solid var(--hw-border)", padding: 16 }}>
@@ -708,7 +708,7 @@ export default function FinancialsPage() {
                   <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>Actual Expenses</div>
                   <div style={{ fontSize: 12, color: "var(--hw-text-muted)", marginTop: 2 }}>{expenses.length} expense{expenses.length !== 1 ? "s" : ""} &middot; {fmtUSD(expGrandTotal)} total</div>
                 </div>
-                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>+ ADD EXPENSE</button>
+                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>+ ADD EXPENSE</button>
               </div>
 
               {/* Category filters */}
@@ -722,7 +722,7 @@ export default function FinancialsPage() {
                       letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer",
                       border: expFilter === cat ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)",
                       background: expFilter === cat ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
-                      color: expFilter === cat ? "#fff" : "var(--hw-text-muted)",
+                      color: expFilter === cat ? "var(--hw-text-invert)" : "var(--hw-text-muted)",
                     }}
                   >{cat}{cat !== "All" && expTotalByCategory[cat] ? ` (${fmtUSD(expTotalByCategory[cat])})` : ""}</button>
                 ))}
@@ -733,17 +733,17 @@ export default function FinancialsPage() {
                   <thead>
                     <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Date", "Category", "Description", "Amount", "Paid By", "Reimb.", ""].map((h) => (
-                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid #DDDDDD", background: "var(--hw-bg-warm)" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)", background: "var(--hw-bg-invert)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {/* Add row */}
                     {addingExp && (
-                      <tr style={{ borderTop: "2px solid var(--hw-border)", background: "#fafff8" }}>
+                      <tr style={{ borderTop: "2px solid var(--hw-border)", background: "var(--hw-bg-warm)" }}>
                         <td style={{ padding: "6px 8px" }}><input type="date" value={newExp.date} onChange={(e) => setNewExp((p) => ({ ...p, date: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 110 }} /></td>
                         <td style={{ padding: "6px 8px" }}>
-                          <select value={newExp.category} onChange={(e) => setNewExp((p) => ({ ...p, category: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, background: "#fff", outline: "none" }}>
+                          <select value={newExp.category} onChange={(e) => setNewExp((p) => ({ ...p, category: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, background: "var(--hw-bg-surface)", outline: "none" }}>
                             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </td>
@@ -767,14 +767,14 @@ export default function FinancialsPage() {
                       <tr key={exp.id} style={{ borderTop: "2px solid var(--hw-border)" }}>
                         <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{exp.date}</td>
                         <td style={{ padding: "8px 12px", fontSize: 12 }}>
-                          <span style={{ padding: "3px 10px", background: "rgba(0,0,0,0.04)", border: "2px solid var(--hw-border)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>{exp.category}</span>
+                          <span style={{ padding: "3px 10px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>{exp.category}</span>
                         </td>
                         <td style={{ padding: "8px 12px", fontSize: 13 }}>{exp.description || "\u2014"}</td>
                         <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600, color: "var(--hw-crimson)" }}>{fmtUSD(exp.amount)}</td>
                         <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.paid_by || "\u2014"}</td>
                         <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.needs_reimbursement ? "Yes" : ""}</td>
                         <td style={{ padding: "8px 12px" }}>
-                          <button onClick={() => deleteExpense(exp.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "#aaa" }}>&times;</button>
+                          <button onClick={() => deleteExpense(exp.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)" }}>&times;</button>
                         </td>
                       </tr>
                     ))}

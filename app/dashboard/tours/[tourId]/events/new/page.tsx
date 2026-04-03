@@ -9,24 +9,24 @@ export default async function NewEventPage({
   const { tourId } = await params;
 
   return (
-    <div style={{ padding: 40, maxWidth: 640, minHeight: "100vh" }}>
+    <div style={{ padding: 40, maxWidth: 640, minHeight: "100vh", background: "transparent" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>New Event</h1>
-        <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontWeight: 700, color: "#888", textDecoration: "none" }}>← Back</Link>
+        <h1 style={{ margin: 0, fontSize: 24, fontFamily: "var(--hw-font-display)", fontWeight: 900, letterSpacing: "2px", textTransform: "uppercase" }}>New Event</h1>
+        <Link href={`/dashboard/tours/${tourId}`} style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 700, color: "var(--hw-text-muted)", textDecoration: "none", letterSpacing: "1px", textTransform: "uppercase" }}>← Back</Link>
       </div>
 
-      <div style={{ background: "#fff", border: "1px solid #ddd", borderRadius: 14, padding: 24 }}>
+      <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", borderRadius: 0, padding: 24 }}>
         <form action={createEventAction.bind(null, tourId)}>
           <div style={{ display: "grid", gap: 16 }}>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: 12 }}>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", color: "#999" }}>Date</div>
-                <input name="event_date" type="date" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Date</div>
+                <input name="event_date" type="date" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
               </div>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", color: "#999" }}>Day</div>
-                <select name="day" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, background: "#fff", boxSizing: "border-box" }}>
+                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Day</div>
+                <select name="day" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", background: "var(--hw-bg-surface)", boxSizing: "border-box" }}>
                   <option value="">—</option>
                   <option>Monday</option>
                   <option>Tuesday</option>
@@ -41,31 +41,31 @@ export default async function NewEventPage({
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", gap: 12 }}>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", color: "#999" }}>City</div>
-                <input name="city" placeholder="Memphis" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>City</div>
+                <input name="city" placeholder="Memphis" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
               </div>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", color: "#999" }}>State</div>
-                <input name="state" placeholder="TN" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>State</div>
+                <input name="state" placeholder="TN" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
               </div>
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", color: "#999" }}>Venue</div>
-              <input name="venue_name" placeholder="The Fillmore" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+              <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Venue</div>
+              <input name="venue_name" placeholder="The Fillmore" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", color: "#999" }}>Promoter Email</div>
-              <input name="promoter_email" type="email" placeholder="promoter@example.com" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+              <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Promoter Email</div>
+              <input name="promoter_email" type="email" placeholder="promoter@example.com" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
             </div>
 
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em", color: "#999" }}>Manager Email</div>
-              <input name="manager_email" type="email" placeholder="manager@example.com" style={{ width: "100%", padding: "10px 12px", border: "1px solid #ddd", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+              <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Manager Email</div>
+              <input name="manager_email" type="email" placeholder="manager@example.com" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
             </div>
 
-            <button type="submit" style={{ marginTop: 4, padding: "12px 24px", borderRadius: 10, border: "none", background: "#111", color: "#fff", fontWeight: 900, fontSize: 14, cursor: "pointer" }}>
+            <button type="submit" style={{ marginTop: 4, padding: "12px 24px", borderRadius: 0, border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontWeight: 900, fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>
               Create Event
             </button>
 

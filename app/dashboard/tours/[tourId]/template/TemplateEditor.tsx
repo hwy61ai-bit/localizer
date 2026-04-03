@@ -426,7 +426,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
         {(["left", "center", "right"] as Align[]).map(a => (
           <button key={a} onClick={() => handleClick(a)}
-            style={{ flex: 1, padding: "4px 0", borderRadius: 6, border: "1px solid", borderColor: current === a ? "#111" : "#ddd", background: current === a ? "#111" : "#fff", color: current === a ? "#fff" : "#888", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
+            style={{ flex: 1, padding: "4px 0", borderRadius: 0, border: "3px solid", borderColor: current === a ? "var(--hw-border-strong)" : "var(--hw-border)", background: current === a ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: current === a ? "#fff" : "var(--hw-text-muted)", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>
             {a === "left" ? "⬅" : a === "center" ? "↔" : "➡"}
           </button>
         ))}
@@ -885,7 +885,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 </div>
                 <input type="color" value={`#${cfg.textColor}`}
                   onChange={(e) => updateCfg("textColor", e.target.value.replace("#", ""))}
-                  style={{ width: 40, height: 32, borderRadius: 6, border: "1px solid #ddd", cursor: "pointer", padding: 2 }}
+                  style={{ width: 40, height: 32, borderRadius: 0, border: "3px solid var(--hw-border-strong)", cursor: "pointer", padding: 2 }}
                 />
               </div>
             </div>

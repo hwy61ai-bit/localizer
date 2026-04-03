@@ -200,7 +200,7 @@ export default function HWY61Wordmark({ className }: HWY61WordmarkProps) {
               {/* Solid layer — fades in */}
               <span
                 style={{
-                  color: "#1a1a1a",
+                  color: "var(--hw-text)",
                   opacity: mapFaded ? 1 : 0,
                   transition: "opacity 1s ease-out",
                 }}

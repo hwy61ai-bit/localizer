@@ -165,7 +165,7 @@ export default function AnimatedWordmark() {
                 pointerEvents: "none",
               }}>{char}</span>
               <span style={{
-                color: "#f0ede8",
+                color: "var(--hw-bg)",
                 opacity: mapFaded ? 1 : 0,
                 transition: "opacity 1s ease-out",
               }}>{char}</span>

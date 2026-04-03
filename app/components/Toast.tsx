@@ -36,9 +36,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const warning = useCallback((msg: string) => addToast(msg, "warning"), [addToast]);
 
   const colors: Record<ToastType, { bg: string; border: string; text: string; icon: string }> = {
-    success: { bg: "#0a1f0f", border: "#1a4d2e", text: "#4ade80", icon: "✓" },
-    error: { bg: "#1f0a0a", border: "#4d1a1a", text: "#f87171", icon: "✕" },
-    warning: { bg: "#1f1a0a", border: "#4d3d1a", text: "#fbbf24", icon: "⚠" },
+    success: { bg: "var(--hw-green-ghost)", border: "var(--hw-green)", text: "var(--hw-green)", icon: "✓" },
+    error: { bg: "var(--hw-red-ghost)", border: "var(--hw-crimson)", text: "var(--hw-crimson)", icon: "✕" },
+    warning: { bg: "var(--hw-amber-ghost)", border: "var(--hw-amber)", text: "var(--hw-amber)", icon: "⚠" },
   };
 
   return (
@@ -59,20 +59,20 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           return (
             <div key={t.id} style={{
               background: c.bg,
-              border: `1px solid ${c.border}`,
-              borderRadius: 10,
+              border: `3px solid ${c.border}`,
+              borderRadius: 0,
               padding: "12px 18px",
               display: "flex",
               alignItems: "center",
               gap: 10,
               minWidth: 280,
-              maxWidth: 420,
+              maxWidth: 380,
               pointerEvents: "auto",
               animation: "toastIn 0.3s ease-out",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+              boxShadow: "6px 6px 0 var(--hw-border-strong)",
             }}>
               <span style={{ fontSize: 16, color: c.text, flexShrink: 0 }}>{c.icon}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: c.text, lineHeight: 1.4 }}>{t.message}</span>
+              <span style={{ fontSize: 13, fontFamily: "var(--hw-font-body)", fontWeight: 600, color: c.text, lineHeight: 1.4 }}>{t.message}</span>
               <button
                 onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))}
                 style={{
