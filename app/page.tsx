@@ -236,8 +236,13 @@ function Products() {
 
         {/* TourRouter */}
         <div className="product-block">
-          <div className="product-name c-crimson">TourRouter</div>
-          <div className="product-tagline">The complete OS for touring</div>
+          <div className="product-header">
+            <div className="product-header-text">
+              <div className="product-name c-crimson">TourRouter</div>
+              <div className="product-tagline">The complete OS for touring</div>
+            </div>
+            <Link href="/tourrouter" className="learn-more-btn c-crimson">Learn More</Link>
+          </div>
           <div className="product-desc">
             <p>Drop in an offer sheet and TourRouter builds your routing table. Real drive times between every city. Gas cost estimates based on your vehicle. Long drives flagged automatically. A drive-vs-fly toggle on every leg so you can compare what it costs to put the band on a plane versus grinding a 14-hour overnight.</p>
             <p>The full budget builds itself as you route — projected guarantees, expenses, per diems, hotel costs, personnel pay, commissions — all flowing into a live P&amp;L that updates with every change. When the tour hits the road, drop settlement sheets, receipts, and hotel confirmations into HWY61 and watch projected numbers turn into actuals. Night-of settlement done in minutes, not hours. End-of-tour financials closed with one click.</p>
@@ -258,8 +263,13 @@ function Products() {
 
         {/* Localizer */}
         <div className="product-block">
-          <div className="product-name c-blue">Localizer</div>
-          <div className="product-tagline">Tour marketing on autopilot</div>
+          <div className="product-header">
+            <div className="product-header-text">
+              <div className="product-name c-blue">Localizer</div>
+              <div className="product-tagline">Tour marketing on autopilot</div>
+            </div>
+            <Link href="/localizer" className="learn-more-btn c-blue">Learn More</Link>
+          </div>
           <div className="product-desc">
             <p>Upload one promo image. Localizer generates every show asset for every platform — Instagram story, Facebook event, X post, poster, web graphic — branded with your fonts, your colors, your layout. Every format. Every size. Done.</p>
             <p>Then send the entire tour&rsquo;s assets to every promoter on your routing in one clean link. Not a Dropbox folder. Not 47 emails with attachments. One link, every asset, every show — promoters grab exactly what they need.</p>
@@ -275,8 +285,13 @@ function Products() {
 
         {/* DIY */}
         <div className="product-block">
-          <div className="product-name c-purple">DIY</div>
-          <div className="product-tagline">Pro tools at an indie price</div>
+          <div className="product-header">
+            <div className="product-header-text">
+              <div className="product-name c-purple">DIY</div>
+              <div className="product-tagline">Pro tools at an indie price</div>
+            </div>
+            <Link href="/diy" className="learn-more-btn c-purple">Learn More</Link>
+          </div>
           <div className="product-desc">
             <p>No agent. No tour manager. No problem. You&rsquo;re booking your own shows and planning your own routes — HWY61 DIY gives you the same routing engine the pros use. Real drive times, gas estimates for your van, long-drive warnings, and a budget that builds itself as you add dates.</p>
             <p>Drop in offer sheets, deal memos, or anything else — HWY61 reads it and puts every number where it belongs. Smart tools without the price tag.</p>

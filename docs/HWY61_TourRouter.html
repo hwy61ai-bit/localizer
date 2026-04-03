@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TourRouter — The Touring OS | HWY61</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --hw-crimson: #c5535b;
+  --hw-crimson-dark: #a8444b;
+  --hw-crimson-ghost: rgba(197,83,91,0.08);
+  --hw-blue: #456ca9;
+  --hw-blue-ghost: rgba(69,108,169,0.08);
+  --hw-gray: #c7c1bf;
+  --hw-purple: #966c9a;
+  --hw-purple-ghost: rgba(150,108,154,0.08);
+  --hw-rose: #c19795;
+  --hw-green: #5a9e6a;
+  --hw-green-ghost: rgba(90,158,106,0.1);
+  --hw-amber: #c49a3c;
+  --hw-bg: #F5F0E8;
+  --hw-bg-warm: #FFFDF8;
+  --hw-bg-surface: #FFFFFF;
+  --hw-bg-invert: #1A1A1A;
+  --hw-text: #1A1A1A;
+  --hw-text-secondary: #4A4540;
+  --hw-text-muted: #8A8580;
+  --hw-text-invert: #F5F0E8;
+  --hw-border: #E0D8CC;
+  --hw-border-strong: #1A1A1A;
+  --hw-font-display: 'Bebas Neue', sans-serif;
+  --hw-font-mono: 'Space Mono', monospace;
+  --hw-font-body: 'DM Sans', sans-serif;
+  --hw-shadow-sm: 3px 3px 0 var(--hw-border-strong);
+  --hw-shadow-md: 4px 4px 0 var(--hw-border-strong);
+  --hw-shadow-lg: 6px 6px 0 var(--hw-border-strong);
+  --hw-shadow-accent: 6px 6px 0 var(--hw-crimson);
+}
+
+body {
+  background: var(--hw-bg);
+  color: var(--hw-text);
+  font-family: var(--hw-font-body);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 4px 4px;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── NAV ── */
+nav {
+  background: var(--hw-bg-invert);
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+nav .nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+nav .logo {
+  font-family: var(--hw-font-display);
+  font-size: 28px;
+  letter-spacing: 3px;
+  color: var(--hw-text-invert);
+  text-decoration: none;
+}
+nav .logo span { color: var(--hw-crimson); }
+nav .nav-links {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  list-style: none;
+}
+nav .nav-links a {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--hw-gray);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+nav .nav-links a:hover { color: var(--hw-text-invert); }
+nav .nav-links a.active { color: var(--hw-crimson); }
+nav .nav-cta {
+  font-family: var(--hw-font-display);
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  background: var(--hw-crimson);
+  color: white;
+  padding: 10px 24px;
+  border: 3px solid var(--hw-crimson);
+  border-radius: 0;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+nav .nav-cta:hover {
+  background: var(--hw-crimson-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--hw-shadow-md);
+}
+
+/* ── LAYOUT ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+section { padding: 80px 0; }
+section.alt-bg { background: var(--hw-bg-warm); }
+section.dark-bg { background: var(--hw-bg-invert); color: var(--hw-text-invert); }
+
+/* ── SECTION TAG ── */
+.section-tag {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--hw-blue);
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+.dark-bg .section-tag { color: var(--hw-rose); }
+
+/* ── TYPOGRAPHY ── */
+.hero-headline {
+  font-family: var(--hw-font-display);
+  font-size: clamp(48px, 6vw, 72px);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1.05;
+  margin-bottom: 24px;
+}
+.section-headline {
+  font-family: var(--hw-font-display);
+  font-size: clamp(36px, 4vw, 52px);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 24px;
+}
+.sub-headline {
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--hw-text-secondary);
+  max-width: 680px;
+  margin-bottom: 32px;
+}
+.dark-bg .sub-headline { color: var(--hw-gray); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-block;
+  font-family: var(--hw-font-display);
+  font-size: 16px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 16px 40px;
+  border: 3px solid;
+  border-radius: 0;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--hw-crimson);
+  color: white;
+  border-color: var(--hw-crimson);
+}
+.btn-primary:hover {
+  background: var(--hw-crimson-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--hw-shadow-md);
+}
+.btn-secondary {
+  background: var(--hw-bg-surface);
+  color: var(--hw-text);
+  border-color: var(--hw-border-strong);
+}
+.btn-secondary:hover {
+  background: var(--hw-bg-invert);
+  color: var(--hw-text-invert);
+  transform: translateY(-2px);
+  box-shadow: var(--hw-shadow-md);
+}
+.btn-invert {
+  background: var(--hw-bg-surface);
+  color: var(--hw-bg-invert);
+  border-color: var(--hw-bg-surface);
+}
+.btn-invert:hover {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--hw-crimson);
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 100px 0 80px;
+  position: relative;
+}
+.hero .hero-eyebrow {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--hw-crimson);
+  margin-bottom: 20px;
+  display: inline-block;
+  background: var(--hw-crimson-ghost);
+  padding: 6px 16px;
+  border: 2px solid var(--hw-crimson);
+}
+.hero .hero-headline span { color: var(--hw-crimson); }
+.hero .btn-row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+/* ── PROBLEM SECTION ── */
+.problem-text {
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--hw-text-secondary);
+  max-width: 760px;
+  margin-bottom: 20px;
+}
+.problem-text:last-of-type { margin-bottom: 0; }
+.dark-bg .problem-text { color: var(--hw-gray); }
+.problem-highlight {
+  font-weight: 500;
+  color: var(--hw-text);
+}
+.dark-bg .problem-highlight { color: var(--hw-text-invert); }
+
+/* ── FEATURE CARDS ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+.feature-card {
+  background: var(--hw-bg-surface);
+  border: 3px solid var(--hw-border-strong);
+  padding: 32px;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--hw-shadow-md);
+}
+.feature-card .feature-number {
+  font-family: var(--hw-font-display);
+  font-size: 48px;
+  color: var(--hw-border);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.feature-card h3 {
+  font-family: var(--hw-font-display);
+  font-size: 22px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.feature-card p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--hw-text-secondary);
+}
+.feature-card .feature-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+}
+
+/* ── USE CASES ── */
+.use-cases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+.use-case-card {
+  padding: 32px;
+  border: 3px solid var(--hw-border-strong);
+  background: var(--hw-bg-surface);
+  position: relative;
+  overflow: hidden;
+}
+.use-case-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+}
+.use-case-card:nth-child(1)::before { background: var(--hw-crimson); }
+.use-case-card:nth-child(2)::before { background: var(--hw-blue); }
+.use-case-card:nth-child(3)::before { background: var(--hw-purple); }
+.use-case-card:nth-child(4)::before { background: var(--hw-rose); }
+.use-case-card h3 {
+  font-family: var(--hw-font-display);
+  font-size: 22px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-left: 12px;
+}
+.use-case-card p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--hw-text-secondary);
+  padding-left: 12px;
+}
+
+/* ── TESTIMONIALS ── */
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+.testimonial-card {
+  background: var(--hw-bg-surface);
+  border: 3px solid var(--hw-border-strong);
+  padding: 32px;
+  position: relative;
+}
+.testimonial-card .quote-mark {
+  font-family: var(--hw-font-display);
+  font-size: 72px;
+  color: var(--hw-border);
+  line-height: 1;
+  margin-bottom: -12px;
+}
+.testimonial-card .quote-text {
+  font-size: 16px;
+  line-height: 1.7;
+  font-style: italic;
+  color: var(--hw-text-secondary);
+  margin-bottom: 16px;
+}
+.testimonial-card .quote-author {
+  font-family: var(--hw-font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+}
+
+/* ── PRICING ── */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+.pricing-card {
+  background: var(--hw-bg-surface);
+  border: 3px solid var(--hw-border-strong);
+  padding: 40px 32px;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+.pricing-card.featured {
+  border-color: var(--hw-crimson);
+  transform: translateY(-8px);
+  box-shadow: var(--hw-shadow-accent);
+}
+.pricing-card .plan-name {
+  font-family: var(--hw-font-mono);
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--hw-blue);
+  margin-bottom: 8px;
+}
+.pricing-card.featured .plan-name { color: var(--hw-crimson); }
+.pricing-card .plan-price {
+  font-family: var(--hw-font-display);
+  font-size: 52px;
+  letter-spacing: 1px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.pricing-card .plan-period {
+  font-family: var(--hw-font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+  margin-bottom: 20px;
+}
+.pricing-card .plan-desc {
+  font-size: 14px;
+  color: var(--hw-text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+.pricing-card .btn { width: 100%; text-align: center; }
+.pricing-note {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--hw-text-muted);
+}
+
+/* ── BUNDLE BAR ── */
+.bundle-bar {
+  margin-top: 40px;
+  background: var(--hw-bg-invert);
+  border: 3px solid var(--hw-border-strong);
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.bundle-bar .bundle-text h3 {
+  font-family: var(--hw-font-display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--hw-text-invert);
+  margin-bottom: 8px;
+}
+.bundle-bar .bundle-text p {
+  font-size: 15px;
+  color: var(--hw-gray);
+}
+.bundle-bar .bundle-price {
+  font-family: var(--hw-font-display);
+  font-size: 48px;
+  color: var(--hw-crimson);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* ── FINAL CTA ── */
+.final-cta {
+  text-align: center;
+  padding: 100px 0;
+}
+.final-cta .section-headline { margin: 0 auto 16px; }
+.final-cta .sub-headline { margin: 0 auto 40px; text-align: center; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--hw-bg-invert);
+  padding: 40px 0;
+  text-align: center;
+}
+footer p {
+  font-family: var(--hw-font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--hw-text-muted);
+}
+footer a { color: var(--hw-crimson); text-decoration: none; }
+
+/* ── DIVIDER ── */
+.section-divider {
+  border: none;
+  border-top: 3px solid var(--hw-border-strong);
+  margin: 0;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  section { padding: 60px 0; }
+  .container { padding: 0 20px; }
+  .hero { padding: 60px 0; }
+  .features-grid { grid-template-columns: 1fr; }
+  .use-cases-grid { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .bundle-bar { flex-direction: column; text-align: center; }
+  nav .nav-links { display: none; }
+  .hero .btn-row { flex-direction: column; }
+  .hero .btn-row .btn { text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">HWY<span>61</span></a>
+    <ul class="nav-links">
+      <li><a href="#" class="active">TourRouter</a></li>
+      <li><a href="#">Localizer</a></li>
+      <li><a href="#">DIY</a></li>
+      <li><a href="#">Road App</a></li>
+      <li><a href="#">Pricing</a></li>
+    </ul>
+    <a href="#" class="nav-cta">Get Early Access</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">The Touring OS</div>
+    <h1 class="hero-headline">Every offer tracked.<br>Every show advanced.<br>Every dollar <span>accounted for.</span></h1>
+    <p class="sub-headline">TourRouter is the first platform that handles the entire lifecycle of a tour — from the blank calendar to the final settlement. Routing, budgeting, advancing, settlement, finance, personnel pay, guest lists, and document management. One system. One database. No spreadsheets.</p>
+    <div class="btn-row">
+      <a href="#" class="btn btn-primary">Start Free During Beta</a>
+      <a href="#pricing" class="btn btn-secondary">See Pricing</a>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- PROBLEM -->
+<section class="dark-bg">
+  <div class="container">
+    <div class="section-tag">The Problem</div>
+    <h2 class="section-headline">Touring runs on scattered systems<br>and manual math.</h2>
+    <p class="problem-text">The routing lives in a spreadsheet. The budget lives in a different spreadsheet. The advance lives in an email chain. The settlement lives on a piece of paper at the merch table. The guest list lives in a text thread. Personnel pay lives in someone's head.</p>
+    <p class="problem-text">Every person on the tour is working from a different version of the truth. The tour manager reconciles it all — <span class="problem-highlight">manually, every night, after the show, when they should be sleeping.</span></p>
+    <p class="problem-text">One wrong number in one cell cascades through everything. And nobody catches it until settlement day, when the promoter's math doesn't match yours and you're standing in a back office at midnight trying to figure out where $400 went.</p>
+    <p class="problem-text">This is how every touring act at the club-to-theater level operates. It's been this way for decades. <span class="problem-highlight">Not because it works — because nothing better existed.</span></p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SOLUTION -->
+<section>
+  <div class="container">
+    <div class="section-tag">One System</div>
+    <h2 class="section-headline">TourRouter replaces the spreadsheets,<br>the email chains, and the napkin math.</h2>
+    <p class="sub-headline" style="max-width: 760px;">Every person on the tour works from the same data. When a show is added, the budget updates. When an advance comes back, the show details populate. When a settlement is dropped in, the P&L shifts from projected to actual. When someone gets paid, the finance layer reflects it.</p>
+    <p class="problem-text">Nothing is re-entered. Nothing is copy-pasted. Nothing lives in someone's inbox. The tour manager's job goes from "reconcile everything manually" to "review and confirm."</p>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- FEATURES -->
+<section class="alt-bg">
+  <div class="container">
+    <div class="section-tag">What It Does</div>
+    <h2 class="section-headline">Nine systems. One platform.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-crimson);"></div>
+        <div class="feature-number">01</div>
+        <h3>Routing & Budget</h3>
+        <p>Add shows manually or drop a route sheet. Real drive times and distances between every city. Gas costs based on your vehicle. Long drives flagged. Drive-vs-fly toggle on every leg. The budget builds itself — guarantees, expenses, per diems, hotels, personnel, commissions — a live P&L that updates with every change.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-blue);"></div>
+        <div class="feature-number">02</div>
+        <h3>Document Intake</h3>
+        <p>Drop any touring document — settlement sheet, deal memo, hotel confirmation, receipt, advance response — as a PDF, photo, scan, or Excel file. The system reads it, figures out what it is, matches it to the right show, and stages every number for review. Handwritten settlements, blurry scans, crossed-out numbers — all handled.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-purple);"></div>
+        <div class="feature-number">03</div>
+        <h3>Settlement</h3>
+        <p>Drop the settlement sheet in after the show. TourRouter reads every number — ticket gross, expenses, deductions, artist payment. Matches it to the right show. You review, confirm, and the show moves from projected to actual. All 14 deal types supported. Promoter math verification automatic. Night-of settlement in minutes.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-rose);"></div>
+        <div class="feature-number">04</div>
+        <h3>Advancing</h3>
+        <p>Advance emails on your schedule — first email, first follow-up, second follow-up, final nudge. Venues fill in a web form with load-in, WiFi, parking, contacts, and notes. Venue goes dark close to show day? Automatic escalation. Pause any show. Turn it off entirely. Always in control.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-green);"></div>
+        <div class="feature-number">05</div>
+        <h3>Personnel & Pay</h3>
+        <p>Day rate, off-day rate, weekly rate, per-show rate, or percentage of net. TourRouter calculates what each person is owed based on the actual schedule. Band on splits, crew on day rates, hybrid structures — all supported. Numbers feed directly into the tour P&L.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-amber);"></div>
+        <div class="feature-number">06</div>
+        <h3>Finance Layer</h3>
+        <p>Income waterfall, per-show P&L, commission breakdown, net-to-artist — projected and actual side by side. When every show is settled, generate an end-of-tour report as a PDF and share it with anyone via link. No login required for the recipient.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-crimson);"></div>
+        <div class="feature-number">07</div>
+        <h3>Guest List</h3>
+        <p>Per-show lists with allotments by pass type — Guest, Industry, Press, Photo. Anyone on the tour adds names to their allotment. TM sets cutoff times. Show day: generate a door list PDF to hand to the venue.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-blue);"></div>
+        <div class="feature-number">08</div>
+        <h3>Commissions</h3>
+        <p>Commission structures for agents, managers, anyone who takes a cut. Percentage of gross, net, or custom. The waterfall shows exactly how money flows from gross income to net-to-artist. You decide which roles see the breakdown.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-accent" style="background: var(--hw-purple);"></div>
+        <div class="feature-number">09</div>
+        <h3>Multi-Currency</h3>
+        <p>Every show in its own currency — USD, CAD, GBP, EUR, and more. Everything converts to your base currency for the tour P&L using daily exchange rates. No manual conversion. No rounding errors.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- USE CASES -->
+<section>
+  <div class="container">
+    <div class="section-tag">Who Uses It</div>
+    <h2 class="section-headline">Built for every role on the tour.</h2>
+    <div class="use-cases-grid">
+      <div class="use-case-card">
+        <h3>Tour Manager</h3>
+        <p>Your entire job in one place. Route the tour, advance every show, settle every night, track every expense, manage the guest list, and generate the end-of-tour report. No more reconciling spreadsheets at 1am.</p>
+      </div>
+      <div class="use-case-card">
+        <h3>Manager</h3>
+        <p>See the financial picture of every tour in real time. Projected vs. actual income, commission waterfall, net-to-artist — without waiting for the TM to send you a spreadsheet update. Share the end-of-tour report with one link.</p>
+      </div>
+      <div class="use-case-card">
+        <h3>Business Manager</h3>
+        <p>Every number in one system that calculates correctly every time. Settlement verification, commission tracking, personnel pay, expense documentation — all exportable as CSV, Excel, or PDF.</p>
+      </div>
+      <div class="use-case-card">
+        <h3>Band</h3>
+        <p>See your schedule, hotel info, set times, and travel details in the Road App. No financial data — just what you need to know to show up at the right place at the right time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- TESTIMONIALS -->
+<section class="alt-bg">
+  <div class="container">
+    <div class="section-tag">From the Road</div>
+    <h2 class="section-headline">What they're saying.</h2>
+    <div class="testimonial-grid">
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <p class="quote-text">Beta user quote — tour manager perspective. What changed about their workflow. Specific detail about time saved or headaches eliminated.</p>
+        <div class="quote-author">— Name, Tour Manager</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <p class="quote-text">Beta user quote — manager perspective. What they can see now that they couldn't before. How it changed their relationship to tour finances.</p>
+        <div class="quote-author">— Name, Manager</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="quote-mark">"</div>
+        <p class="quote-text">Beta user quote — business manager perspective. How settlement verification or the finance layer changed their accounting process.</p>
+        <div class="quote-author">— Name, Business Manager</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-tag">Pricing</div>
+    <h2 class="section-headline">Every feature. Every plan.</h2>
+    <p class="sub-headline">All plans include routing, budgeting, advancing, settlement, finance, personnel pay, guest list, document intake, all 14 deal types, multi-currency, and exports. The only difference is how many artists and users you need.</p>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="plan-name">Solo</div>
+        <div class="plan-price">$49</div>
+        <div class="plan-period">Per Month</div>
+        <p class="plan-desc">1 artist, 2 users.<br>Full feature set.</p>
+        <a href="#" class="btn btn-secondary">Start Free</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$79</div>
+        <div class="plan-period">Per Month</div>
+        <p class="plan-desc">3 artists, 5 users.<br>Full feature set.</p>
+        <a href="#" class="btn btn-primary">Start Free</a>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Agency</div>
+        <div class="plan-price">$149</div>
+        <div class="plan-period">Per Month</div>
+        <p class="plan-desc">Unlimited artists.<br>Unlimited users.</p>
+        <a href="#" class="btn btn-secondary">Start Free</a>
+      </div>
+    </div>
+    <p class="pricing-note">Annual billing saves 20%. Free during beta — no credit card required.</p>
+
+    <div class="bundle-bar">
+      <div class="bundle-text">
+        <h3>The Full HWY61 Suite</h3>
+        <p>TourRouter + Localizer + DIY + Road App. Everything in one subscription. Saves over $130/mo vs. buying separately.</p>
+      </div>
+      <div class="bundle-price">$249<span style="font-size: 20px; color: var(--hw-gray);">/mo</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- FINAL CTA -->
+<section class="dark-bg final-cta">
+  <div class="container">
+    <div class="section-tag">Get Started</div>
+    <h2 class="section-headline">Start routing your next tour.</h2>
+    <p class="sub-headline" style="color: var(--hw-gray);">Free during beta. No credit card. No commitment. Just the tool the touring industry should have had 20 years ago.</p>
+    <a href="#" class="btn btn-invert">Get Early Access</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>&copy; 2026 HWY61 Labs &nbsp;·&nbsp; <a href="#">Terms</a> &nbsp;·&nbsp; <a href="#">Privacy</a> &nbsp;·&nbsp; <a href="#">Contact</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
