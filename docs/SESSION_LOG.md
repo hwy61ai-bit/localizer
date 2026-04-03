@@ -575,3 +575,19 @@ Next session should start with:
 Paste session kickoff + design system reference into Claude Code
 Phase 5: Artist profile page, settings/billing page
 Phase 6: Loading skeletons, empty states, toast wiring, responsive pass, final consistency audit (grep for border-radius > 0, hardcoded hex colors, non-var fonts, blurred shadows)
+
+
+Done this session:
+
+FAQ/Support page (38 Q&As, accordion, linked from dashboard)
+TourRouter product page
+Localizer product page
+DIY product page
+Road App product page
+"Learn More" buttons on landing page (crimson, blue, purple)
+
+Still on the list:
+
+Onboarding wizard (5-step build — biggest lift)
+Demo tour data seed
+Product page headers (you mentioned revisiting those)

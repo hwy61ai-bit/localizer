@@ -1,11 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import Anthropic from "@anthropic-ai/sdk";
 import { buildDocumentTypePrompt } from "@/lib/tourrouter/prompts/documentTypePrompt";
 import { PARSE_PROMPTS } from "@/lib/tourrouter/prompts/parsePrompts";
 import { createNotification } from "@/lib/notifications";
 
-const client = new Anthropic();
+async function callClaude(model: string, max_tokens: number, messages: unknown[]) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error("No API key");
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    } as Record<string, string>,
+    body: JSON.stringify({ model, max_tokens, messages }),
+  });
+  if (!res.ok) {
+    const errData = await res.text();
+    throw new Error(errData);
+  }
+  const data = await res.json();
+  return (data.content || [])
+    .filter((b: { type: string }) => b.type === "text")
+    .map((b: { text: string }) => b.text)
+    .join("");
+}
 
 type IntakeResult = {
   documentType: string;
@@ -49,28 +70,38 @@ export async function POST(req: NextRequest) {
   let extractedText = "";
   const isImage = fileType?.startsWith("image/");
   const isPdf = fileType === "application/pdf";
+  const isExcel = fileType?.includes("spreadsheet") || fileType?.includes("excel") || fileName?.endsWith(".xlsx") || fileName?.endsWith(".xls");
 
   try {
-    const contentBlock = isImage
-      ? [
-          { type: "image" as const, source: { type: "base64" as const, media_type: fileType as "image/jpeg", data: base64 } },
-          { type: "text" as const, text: "Extract ALL text from this document. Return only the raw text, no commentary." },
-        ]
-      : isPdf
-        ? [
-            { type: "document" as const, source: { type: "base64" as const, media_type: "application/pdf" as const, data: base64 } },
-            { type: "text" as const, text: "Extract ALL text from this document. Return only the raw text, no commentary." },
-          ]
-        : [{ type: "text" as const, text: `File: ${fileName}\nContent (base64 decoded):\n${Buffer.from(base64, "base64").toString("utf-8").slice(0, 8000)}` }];
+    let contentBlock;
+    if (isImage) {
+      contentBlock = [
+        { type: "image" as const, source: { type: "base64" as const, media_type: fileType as "image/jpeg", data: base64 } },
+        { type: "text" as const, text: "Extract ALL text from this document. Return only the raw text, no commentary." },
+      ];
+    } else if (isPdf) {
+      contentBlock = [
+        { type: "document" as const, source: { type: "base64" as const, media_type: "application/pdf" as const, data: base64 } },
+        { type: "text" as const, text: "Extract ALL text from this document. Return only the raw text, no commentary." },
+      ];
+    } else if (isExcel) {
+      const XLSX = require("xlsx");
+      const buffer = Buffer.from(base64, "base64");
+      const workbook = XLSX.read(buffer, { type: "buffer", raw: true, cellDates: true });
+      let text = "";
+      for (const sheetName of workbook.SheetNames) {
+        const sheet = workbook.Sheets[sheetName];
+        text += `Sheet: ${sheetName}\n`;
+        text += XLSX.utils.sheet_to_csv(sheet) + "\n\n";
+      }
+      contentBlock = [{ type: "text" as const, text: `File: ${fileName}\nContent:\n${text.slice(0, 8000)}` }];
+    } else {
+      contentBlock = [{ type: "text" as const, text: `File: ${fileName}\nContent (base64 decoded):\n${Buffer.from(base64, "base64").toString("utf-8").slice(0, 8000)}` }];
+    }
 
-    const extractMsg = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4096,
-      messages: [{ role: "user", content: contentBlock }],
-    });
-    extractedText = extractMsg.content.filter((b) => b.type === "text").map((b) => (b as { type: "text"; text: string }).text).join("");
+    extractedText = await callClaude("claude-sonnet-4-20250514", 4096, [{ role: "user", content: contentBlock }]);
   } catch (e) {
-    console.error("[Intake] Text extraction failed:", e);
+    console.error("[Intake] Text extraction failed:", e instanceof Error ? e.message : e, "fileType:", fileType, "fileName:", fileName, "isExcel:", isExcel);
     return NextResponse.json({ error: "Failed to extract text from document" }, { status: 500 });
   }
 
@@ -85,12 +116,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const typePrompt = buildDocumentTypePrompt(fileName || "document", extractedText.slice(0, 300));
-    const typeMsg = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 512,
-      messages: [{ role: "user", content: typePrompt }],
-    });
-    const typeRaw = typeMsg.content.filter((b) => b.type === "text").map((b) => (b as { type: "text"; text: string }).text).join("");
+    const typeRaw = await callClaude("claude-sonnet-4-20250514", 512, [{ role: "user", content: typePrompt }]);
     const typeResult = JSON.parse(typeRaw);
     documentType = typeResult.type || "unknown";
     documentTypeConfidence = typeResult.confidence || 0;
@@ -124,12 +150,7 @@ ${extractedText.slice(0, 500)}
 
 Respond ONLY with JSON: { "showId": "<id or null>", "confidence": <0.0-1.0>, "reason": "<why>" }`;
 
-        const matchMsg = await client.messages.create({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 256,
-          messages: [{ role: "user", content: matchPrompt }],
-        });
-        const matchRaw = matchMsg.content.filter((b) => b.type === "text").map((b) => (b as { type: "text"; text: string }).text).join("");
+        const matchRaw = await callClaude("claude-sonnet-4-20250514", 256, [{ role: "user", content: matchPrompt }]);
         const matchResult = JSON.parse(matchRaw);
         if (matchResult.showId && matchResult.confidence > 0.5) {
           matchedShowId = matchResult.showId;
@@ -148,12 +169,7 @@ Respond ONLY with JSON: { "showId": "<id or null>", "confidence": <0.0-1.0>, "re
   if (documentType !== "unknown" && PARSE_PROMPTS[documentType]) {
     try {
       const parsePrompt = PARSE_PROMPTS[documentType](extractedText);
-      const parseMsg = await client.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4096,
-        messages: [{ role: "user", content: parsePrompt }],
-      });
-      const parseRaw = parseMsg.content.filter((b) => b.type === "text").map((b) => (b as { type: "text"; text: string }).text).join("");
+      const parseRaw = await callClaude("claude-sonnet-4-20250514", 4096, [{ role: "user", content: parsePrompt }]);
       const parseResult = JSON.parse(parseRaw);
       fields = parseResult.fields || parseResult.contacts ? { contacts: parseResult.contacts } : {};
       confidence = parseResult.confidence || {};

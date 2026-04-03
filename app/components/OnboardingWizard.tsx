@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { HwCard, HwCardTitle, HwCardDesc, HwButton } from '@/app/components/hw';
 
 interface OnboardingWizardProps {
@@ -10,6 +11,7 @@ interface OnboardingWizardProps {
 }
 
 export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: OnboardingWizardProps) {
+  const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -25,8 +27,7 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: 
   }
 
   function handleWizard() {
-    console.log('wizard selected');
-    onStartWizard();
+    router.push('/dashboard/onboarding');
   }
 
   const cards = [
