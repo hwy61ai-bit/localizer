@@ -45,9 +45,40 @@ function isDiyHost(hostname: string): boolean {
   return hostname.split(":")[0] === "diy.hwy61labs.com";
 }
 
+// Routes that redirect to /coming-soon when COMING_SOON=true
+const COMING_SOON_MARKETING_ROUTES = new Set([
+  "/",
+  "/tourrouter",
+  "/localizer",
+  "/diy",
+  "/roadapp",
+]);
+
+// Prefixes that are always allowed through (never redirected to coming-soon)
+const COMING_SOON_PASSTHROUGH_PREFIXES = [
+  "/coming-soon",
+  "/login",
+  "/dashboard",
+  "/api",
+  "/advance",
+  "/v/e",
+  "/auth",
+];
+
 export async function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") || "";
   const url = req.nextUrl.clone();
+
+  // --- Coming Soon gate ---
+  if (process.env.COMING_SOON === "true") {
+    const { pathname } = url;
+    const isPassthrough = COMING_SOON_PASSTHROUGH_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+    );
+    if (!isPassthrough && COMING_SOON_MARKETING_ROUTES.has(pathname)) {
+      return NextResponse.redirect(new URL("/coming-soon", req.url));
+    }
+  }
 
   // --- Hostname-based rewriting ---
   const rewriteBase = getRewriteForHost(hostname);
