@@ -598,3 +598,25 @@ OnboardingWizard choice screen now routes to /dashboard/onboarding
 Fixed Anthropic API key issue on intake endpoint (was using SDK instead of raw fetch)
 Created /api/tourrouter/import/text endpoint for xlsx parsing (client-side SheetJS → CSV → Claude)
 Created /api/tourrouter/artists endpoint for wizard artist creation
+
+Fixed PDF/daysheet/advance export errors (pdfkit added to serverComponentsExternalPackages, try/catch wrappers)
+Auto-fill off days between show dates on import (consolidates 5+ consecutive off days in routing table display)
+Redesigned artist profile header: band photo + Spotify thumbnail + logo as three 94px squares under band name, Spotify oembed auto-fetch
+First artist creation routes to profile page, subsequent artists to hub
+Moved Actual Expenses above Blanket Expenses on financials page
+Fixed column mapping: removed 'day' from date aliases, alias resolver no longer overrides builtin mappings
+Country field now uppercase in routing table
+"Vehicle Settings" renamed to "Tour Settings"
+
+For Tim + Drew to revisit:
+
+Design exported PDFs (route report, day sheets, advance sheets) to look polished
+Localizer-only view via ?view=localizer has a redirect bug (QA item)
+Consider Localizer-specific onboarding path
+
+Next session:
+
+Demo tour data seed (Beta Test Band)
+Product page headers
+"Tour Settings" rename (not done yet)
+Stripe restructure (when EIN clears)
