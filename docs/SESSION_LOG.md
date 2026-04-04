@@ -620,3 +620,17 @@ Demo tour data seed (Beta Test Band)
 Product page headers
 "Tour Settings" rename (not done yet)
 Stripe restructure (when EIN clears)
+
+
+Add what got done today:
+
+Coming Soon gate (middleware + splash page, env var toggle)
+Demo tour seed API (Beta Test Band, 18 shows, full data)
+OnboardingWizard wired to demo seed
+Flight price fetch on fly toggle (was hardcoded empty)
+getAirport nearest-airport fallback using haversine
+60 regional airports added to constants
+Flight prices changed to one-way
+Per-person price display when no roster
+Inline cost comparison on fly toggle
+Duplicate show rows fixed (SQL cleanup)

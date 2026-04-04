@@ -75,8 +75,28 @@ export async function middleware(req: NextRequest) {
     const isPassthrough = COMING_SOON_PASSTHROUGH_PREFIXES.some(
       (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
     );
-    if (!isPassthrough && COMING_SOON_MARKETING_ROUTES.has(pathname)) {
-      return NextResponse.redirect(new URL("/coming-soon", req.url));
+    const isPreview = req.nextUrl.searchParams.get("preview") === "true";
+    if (!isPassthrough && !isPreview && COMING_SOON_MARKETING_ROUTES.has(pathname)) {
+      // Check if user has a valid session — authenticated users bypass coming soon
+      const comingSoonRes = NextResponse.next();
+      const comingSoonSupabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() { return req.cookies.getAll(); },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                comingSoonRes.cookies.set(name, value, options);
+              });
+            },
+          },
+        }
+      );
+      const { data: { user: comingSoonUser } } = await comingSoonSupabase.auth.getUser();
+      if (!comingSoonUser) {
+        return NextResponse.redirect(new URL("/coming-soon", req.url));
+      }
     }
   }
 
