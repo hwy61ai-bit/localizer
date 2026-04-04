@@ -28,6 +28,8 @@ import {
   type DriveDataMap,
   COMMISSION_TYPE_LABELS,
   type CommissionType,
+  VEHICLE_MPG,
+  VEHICLE_L100,
 } from "@/lib/tourrouter";
 import type { Commission } from "@/lib/tourrouter/commissions";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
@@ -95,6 +97,7 @@ type ShowRow = {
 type LegInfo = {
   km: number | null;
   driveH: number | null;
+  fuelCost: number | null;
   distStr: string;
   legCtry: string;
   dayGap: number;
@@ -185,6 +188,10 @@ export default function RouteTourPage() {
   const [financials, setFinancials] = useState<FinancialResults | null>(null);
   const [legs, setLegs] = useState<(LegInfo | null)[]>([]);
   const [driveData, setDriveData] = useState<DriveDataMap>({});
+  const [flightPriceCache, setFlightPriceCache] = useState<Record<string, number>>({});
+  const flightPriceCacheRef = useRef<Record<string, number>>({});
+  // Keep ref in sync with state
+  flightPriceCacheRef.current = flightPriceCache;
 
   // Drawer
   const [drawerShow, setDrawerShow] = useState<ShowRow | null>(null);
@@ -285,7 +292,24 @@ export default function RouteTourPage() {
         const d2 = new Date(s.date_iso);
         dayGap = Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
       }
-      return { km, driveH, distStr, legCtry, dayGap, fromCity: prev.city || "?", toCity: s.city || "?" };
+      // Fuel cost for this leg
+      let fuelCost: number | null = null;
+      if (km) {
+        const lc = legCtry;
+        if (lc === "usa") {
+          const mpgVal = VEHICLE_MPG[vehicleType] || 20;
+          const miles = km * 0.6214;
+          const pricePerGal = tour.fuel_price_usd || 3.50;
+          fuelCost = (miles / mpgVal) * pricePerGal;
+        } else {
+          const l100 = VEHICLE_L100[vehicleType] || 11.8;
+          const litres = (km / 100) * l100;
+          const eurRate = rates["EUR"] || 1.09;
+          const pricePerLitre = 1.65 * eurRate;
+          fuelCost = litres * (tour.fuel_price_usd ? tour.fuel_price_usd / 3.785 : pricePerLitre);
+        }
+      }
+      return { km, driveH, fuelCost, distStr, legCtry, dayGap, fromCity: prev.city || "?", toCity: s.city || "?" };
     });
     setLegs(legInfos);
 
@@ -330,13 +354,40 @@ export default function RouteTourPage() {
       vehicleType,
       vehicleCount,
       fuelPriceOverride: tour.fuel_price_usd || null,
-      flightPriceCache: {},
+      flightPriceCache,
       driveData,
     });
     setFinancials(fin);
-  }, [shows, tour, legChoices, driveData]);
+  }, [shows, tour, legChoices, driveData, flightPriceCache]);
 
   useEffect(() => { compute(); }, [compute]);
+
+  // ── Flight price fetch ─────────────────────────────────────
+
+  async function fetchFlightPrice(fromIata: string, toIata: string, date: string, pax: number) {
+    const safePax = Math.max(pax || 1, 1);
+    const key = `${fromIata}-${toIata}-${date}-${safePax}pax`;
+    console.log("[FlightPrice] fetching:", key);
+    // Use ref to avoid stale closure — state may not be current when called from toggleLeg
+    if (flightPriceCacheRef.current[key] !== undefined) {
+      console.log("[FlightPrice] already cached:", key);
+      return;
+    }
+    try {
+      const res = await fetch("/api/tourrouter/flight-price", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ origin: fromIata, destination: toIata, date, pax: safePax }),
+      });
+      const data = await res.json();
+      console.log("[FlightPrice] response:", key, data);
+      if (data.price_usd) {
+        setFlightPriceCache(prev => ({ ...prev, [key]: data.price_usd }));
+      }
+    } catch (e) {
+      console.error("Flight price fetch failed:", e);
+    }
+  }
 
   // ── Leg choice toggle ──────────────────────────────────────
 
@@ -352,6 +403,18 @@ export default function RouteTourPage() {
         body: JSON.stringify({ leg_choices: next }),
       });
     }, 800);
+
+    // Fetch flight price when toggling to fly
+    if (choice === "fly" && idx > 0) {
+      const prevShow = shows[idx - 1];
+      const thisShow = shows[idx];
+      const fromAP = getAirport(prevShow?.city, prevShow?.country);
+      const toAP = getAirport(thisShow?.city, thisShow?.country);
+      console.log("[toggleLeg] fly idx:", idx, "from:", prevShow?.city, "→", fromAP, "to:", thisShow?.city, "→", toAP);
+      if (fromAP && toAP && thisShow?.date_iso) {
+        fetchFlightPrice(fromAP.iata, toAP.iata, thisShow.date_iso, tour?.pax || 4);
+      }
+    }
   }
 
   // ── Drawer ─────────────────────────────────────────────────
@@ -1072,6 +1135,9 @@ export default function RouteTourPage() {
                         driveColor={driveColor}
                         formatShowDate={formatShowDate}
                         onDelete={(id) => setDeleteConfirmId(id)}
+                        flightPriceCache={flightPriceCache}
+                        pax={tour?.pax || 4}
+                        dateIso={s.date_iso}
                       />
                     );
                   })}
@@ -1578,7 +1644,7 @@ function consolidateShows(showList: ShowRow[]): ConsolidatedShow[] {
 function LegAndShowRow({
   show, showNum, index, leg, flying, suggestFly, fromAP, toAP, sd,
   flightThreshold, onToggleLeg, onClickRow, driveColorBg, driveColor, formatShowDate,
-  onDelete,
+  onDelete, flightPriceCache, pax, dateIso,
 }: {
   show: ConsolidatedShow;
   showNum: number;
@@ -1596,6 +1662,9 @@ function LegAndShowRow({
   driveColor: (h: number | null) => string;
   formatShowDate: (d: string | null) => string;
   onDelete: (id: string) => void;
+  flightPriceCache: Record<string, number>;
+  pax: number;
+  dateIso: string | null;
 }) {
   const hasAP = fromAP && toAP;
   const links = hasAP ? buildFlightLinks(fromAP.iata, toAP.iata) : null;
@@ -1645,6 +1714,28 @@ function LegAndShowRow({
                   }}
                 >FLY</button>
               </div>
+
+              {/* Flight cost info — only shown when flying */}
+              {flying && hasAP && dateIso && (() => {
+                const costStyle = { fontFamily: "var(--hw-font-mono)", fontSize: 11 };
+                const safePax = Math.max(pax || 1, 1);
+                const priceKey = `${fromAP.iata}-${toAP.iata}-${dateIso}-${safePax}pax`;
+                const flightPrice = flightPriceCache[priceKey];
+                if (flightPrice !== undefined) {
+                  const diff = leg.fuelCost !== null ? flightPrice - leg.fuelCost : null;
+                  const priceLabel = pax && pax > 1
+                    ? `${fmtUSD(flightPrice)} flights (${pax} pax)`
+                    : `${fmtUSD(flightPrice)}/person`;
+                  return (
+                    <span style={costStyle}>
+                      <span style={{ color: "var(--hw-text)" }}>{priceLabel}</span>
+                      {diff !== null && diff > 0 && <span style={{ color: "var(--hw-crimson)", marginLeft: 6 }}>({fmtUSD(diff)} more)</span>}
+                      {diff !== null && diff <= 0 && <span style={{ color: "var(--hw-green)", marginLeft: 6 }}>({fmtUSD(Math.abs(diff))} savings)</span>}
+                    </span>
+                  );
+                }
+                return <span style={{ ...costStyle, color: "var(--hw-text-muted)" }}>fetching price...</span>;
+              })()}
 
               {suggestFly && !flying && (
                 <span style={{ fontSize: 11, color: "var(--hw-amber)" }}>Long drive — consider flying</span>

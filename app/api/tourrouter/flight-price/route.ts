@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "origin and destination required" }, { status: 400 });
   }
 
-  const cacheKey = `${origin}-${destination}-${date || ""}-${pax || 1}pax`;
+  const passengerCount = pax || 1;
+  const cacheKey = `${origin}-${destination}-${date || ""}-${passengerCount}pax`;
 
   // Check cache first
   const { data: cached } = await supabase
@@ -25,11 +26,10 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (cached) {
-    return NextResponse.json({ price_usd: cached.price_usd, cached: true });
+    return NextResponse.json({ price_usd: cached.price_usd, pax: passengerCount, cached: true });
   }
 
   // Cache miss — call Anthropic with web_search
-  const passengerCount = pax || 1;
   try {
     const resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         tools: [{ type: "web_search_20250305", name: "web_search" }],
         messages: [{
           role: "user",
-          content: `What is the approximate round-trip economy airfare for ${passengerCount} passenger${passengerCount > 1 ? "s" : ""} flying ${origin} to ${destination} around ${date || "soon"}? Give me a single total USD dollar amount only, no explanation. Just the number like: 840`,
+          content: `What is the approximate one-way economy airfare for ${passengerCount} passenger${passengerCount > 1 ? "s" : ""} flying ${origin} to ${destination} around ${date || "soon"}? Give me a single total USD dollar amount only, no explanation. Just the number like: 840`,
         }],
       }),
     });
@@ -59,8 +59,10 @@ export async function POST(req: NextRequest) {
       .filter((b: { type: string }) => b.type === "text")
       .map((b: { text: string }) => b.text)
       .join("");
-    const match = text.match(/\$?([\d,]+)/);
-    const price = match ? parseInt(match[1].replace(/,/g, "")) : null;
+    const matches = text.match(/\$?([\d,]+)/g);
+    const lastMatch = matches ? matches[matches.length - 1] : null;
+    const priceStr = lastMatch ? lastMatch.replace(/[\$,]/g, "") : null;
+    const price = priceStr ? parseInt(priceStr) : null;
 
     if (!price) {
       return NextResponse.json({ error: "Could not estimate price", raw: text }, { status: 422 });
@@ -77,7 +79,7 @@ export async function POST(req: NextRequest) {
       created_at: new Date().toISOString(),
     }, { onConflict: "cache_key" });
 
-    return NextResponse.json({ price_usd: price, cached: false });
+    return NextResponse.json({ price_usd: price, pax: passengerCount, cached: false });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json({ error: "Flight price lookup failed", details: msg }, { status: 500 });

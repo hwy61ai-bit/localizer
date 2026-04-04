@@ -14,11 +14,27 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: 
   const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
 
-  function handleDemoTour() {
-    setToastMsg('Demo tour coming soon');
-    setTimeout(() => setToastMsg(null), 3000);
-    onDemoTour();
+  async function handleDemoTour() {
+    if (isLoadingDemo) return;
+    setIsLoadingDemo(true);
+    try {
+      const res = await fetch('/api/tourrouter/demo-seed', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setToastMsg(data.error || 'Failed to create demo tour');
+        setTimeout(() => setToastMsg(null), 4000);
+        onDemoTour();
+        return;
+      }
+      router.push(`/dashboard/routing/${data.tour_id}`);
+    } catch (err) {
+      setToastMsg('Network error — please try again');
+      setTimeout(() => setToastMsg(null), 4000);
+    } finally {
+      setIsLoadingDemo(false);
+    }
   }
 
   function handleSkip() {
@@ -120,13 +136,15 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: 
             </div>
 
             {/* Demo Tour */}
-            <div className="hw-onboard-card" style={{ flex: '1 1 240px', maxWidth: 260 }}>
-              <HwCard variant="standard" onClick={handleDemoTour}>
+            <div className="hw-onboard-card" style={{ flex: '1 1 240px', maxWidth: 260, opacity: isLoadingDemo ? 0.6 : 1 }}>
+              <HwCard variant="standard" onClick={isLoadingDemo ? undefined : handleDemoTour}>
                 <div style={{ marginBottom: 16, opacity: 0.4 }}>{cards[1].icon}</div>
-                <HwCardTitle>{cards[1].title}</HwCardTitle>
-                <HwCardDesc>{cards[1].description}</HwCardDesc>
+                <HwCardTitle>{isLoadingDemo ? 'Creating demo tour...' : cards[1].title}</HwCardTitle>
+                <HwCardDesc>{isLoadingDemo ? 'Setting up 18 shows, hotels, settlements, and more' : cards[1].description}</HwCardDesc>
                 <div style={{ marginTop: 20 }}>
-                  <HwButton variant="secondary" size="small" fullWidth>EXPLORE DEMO</HwButton>
+                  <HwButton variant="secondary" size="small" fullWidth disabled={isLoadingDemo}>
+                    {isLoadingDemo ? 'LOADING...' : 'EXPLORE DEMO'}
+                  </HwButton>
                 </div>
               </HwCard>
             </div>
