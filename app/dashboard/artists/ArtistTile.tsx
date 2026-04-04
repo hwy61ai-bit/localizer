@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -13,30 +13,12 @@ type Props = {
 
 export default function ArtistTile({ artistId, artistName, tourCount, imageUrl }: Props) {
   const router = useRouter();
-  const fileRef = useRef<HTMLInputElement>(null);
   const [hovered, setHovered] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [currentImage, setCurrentImage] = useState<string | null>(imageUrl);
+  const [currentImage] = useState<string | null>(imageUrl);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `artist-images/${artistId}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("localizer-assets").upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage.from("localizer-assets").getPublicUrl(path);
-      await supabase.from("artists").update({ image_url: urlData.publicUrl }).eq("id", artistId);
-      setCurrentImage(urlData.publicUrl);
-    } catch (err) { console.error(err); alert("Upload failed."); }
-    finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
-  }
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
@@ -55,7 +37,6 @@ export default function ArtistTile({ artistId, artistName, tourCount, imageUrl }
 
   return (
     <div style={{ position: "relative", cursor: "pointer" }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
       <div
         onClick={() => router.push(`/dashboard/artists/${artistId}`)}
         style={{
@@ -82,11 +63,6 @@ export default function ArtistTile({ artistId, artistName, tourCount, imageUrl }
           </div>
         </div>
       </div>
-      {mounted && hovered && (
-        <button onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }} style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 10px", borderRadius: 0, border: "3px solid rgba(255,255,255,0.4)", background: "rgba(0,0,0,0.55)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer" }}>
-          {uploading ? "Uploading..." : currentImage ? "Change photo" : "+ Photo"}
-        </button>
-      )}
       {mounted && hovered && (
         <button onClick={handleDelete} style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 10px", borderRadius: 0, border: "3px solid rgba(255,0,0,0.3)", background: "rgba(0,0,0,0.55)", color: "rgba(255,100,100,0.9)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer" }}>
           {deleting ? "Deleting..." : "Delete"}

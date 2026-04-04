@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -25,43 +25,12 @@ export default function TourTile({
   type = "tour",
 }: Props) {
   const router = useRouter();
-  const fileRef = useRef<HTMLInputElement>(null);
   const [hovered, setHovered] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [currentImage, setCurrentImage] = useState<string | null>(imageUrl);
+  const [currentImage] = useState<string | null>(imageUrl);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
-
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `artist-images/${tourId}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("localizer-assets")
-        .upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage
-        .from("localizer-assets")
-        .getPublicUrl(path);
-      const { error: updateError } = await supabase
-        .from("artists")
-        .update({ image_url: urlData.publicUrl })
-        .eq("id", tourId);
-      if (updateError) throw updateError;
-      setCurrentImage(urlData.publicUrl);
-    } catch (err) {
-      console.error("Upload failed:", err);
-      alert("Upload failed. Please try again.");
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
-    }
-  }
 
   async function handleDelete(e: React.MouseEvent) {
     e.stopPropagation();
@@ -144,8 +113,6 @@ export default function TourTile({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
-
       <div
         onClick={() => router.push(href ?? `/dashboard/tours/${tourId}`)}
         style={{
@@ -212,28 +179,13 @@ export default function TourTile({
         </a>
       )}
 
-      {mounted && hovered && type !== "artist" && (
-        <button
-          onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 12px", border: "3px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
-        >
-          {uploading ? "Uploading…" : currentImage ? "Change photo" : "+ Photo"}
-        </button>
-      )}
-
       {mounted && hovered && (
-        <div style={{ position: "absolute", bottom: 10, left: 0, right: 0, zIndex: 10, display: "flex", justifyContent: "space-between", padding: "0 10px" }}>
+        <div style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10 }}>
           <button
             onClick={handleDelete}
             style={{ padding: "5px 12px", border: "3px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
           >
             {deleting ? "Deleting…" : "Delete"}
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-            style={{ padding: "5px 12px", border: "3px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
-          >
-            {uploading ? "Uploading…" : currentImage ? "Change photo" : "+ Photo"}
           </button>
         </div>
       )}

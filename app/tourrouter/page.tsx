@@ -48,7 +48,6 @@ export default function TourRouterPage() {
           -webkit-font-smoothing: antialiased;
           line-height: 1.6;
         }
-
         /* ── NAV ── */
         .tourrouter-page nav {
           background: var(--hw-bg-invert);
