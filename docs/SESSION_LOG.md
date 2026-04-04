@@ -634,3 +634,28 @@ Flight prices changed to one-way
 Per-person price display when no roster
 Inline cost comparison on fly toggle
 Duplicate show rows fixed (SQL cleanup)
+
+
+## April 4, 2026
+
+### Built
+- **Coming Soon gate**: middleware.ts redirects marketing routes (/, /tourrouter, /localizer, /diy, /roadapp) to /coming-soon when COMING_SOON=true env var is set. Created app/coming-soon/page.tsx splash page (Warhol styling, HWY61 LABS wordmark, Team Login link). Authenticated users bypass the gate automatically. Live on Vercel.
+- **Demo tour seed**: /api/tourrouter/demo-seed endpoint creates the full Beta Test Band tour in one POST — artist, 7-person roster, tour config, 18 shows + 9 off days, 10 hotels, 3 settlements, 4 advance detail sheets, 12 guest list entries, 12 expenses, commission structure. Wired to OnboardingWizard "Explore a Demo Tour" button.
+- **Flight price fetch on Fly toggle**: routing page now fetches flight prices when a leg is toggled to fly. Uses /api/tourrouter/flight-price (Anthropic + web_search + Supabase cache). Updates tour financials. Inline cost display next to toggle shows price and savings/premium vs driving. Changed prompt from round-trip to one-way.
+- **Nearest-airport fallback**: getAirport() uses city coordinates to find closest airport by haversine distance when no exact match. Added 60 regional airports to CITY_AIRPORTS and AIRPORT_COORDS.
+- **Removed photo button** from TourTile.tsx (dashboard tiles) — redundant with Master Artist Profile.
+- **Data cleanup**: deleted duplicate rows on one real tour via SQL.
+
+### Fixed
+- Flight price endpoint regex was grabbing first number in Claude's response (year/pax) instead of the price. Now grabs the last number.
+- Demo seed schema mismatches (flight_threshold → flight_threshold_h, removed is_demo).
+- Supabase auth import in demo-seed route (switched to supabaseServer pattern).
+
+### Tried but reverted
+- 6 different product page header treatments (giant wordmark, colored stripe, product marker, corner badge, left border, active nav). None landed.
+
+### Next session
+- Demo tour polish: add leg_choices to seed for transatlantic fly legs
+- Onboarding wizard QA
+- Export PDF design review with Tim
+- Tour Settings expansion
