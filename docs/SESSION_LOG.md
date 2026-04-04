@@ -591,3 +591,10 @@ Still on the list:
 Onboarding wizard (5-step build — biggest lift)
 Demo tour data seed
 Product page headers (you mentioned revisiting those)
+
+
+Built 5-step onboarding wizard at /dashboard/onboarding (Create Artist → Add Team → Create Tour → Add Shows → Done)
+OnboardingWizard choice screen now routes to /dashboard/onboarding
+Fixed Anthropic API key issue on intake endpoint (was using SDK instead of raw fetch)
+Created /api/tourrouter/import/text endpoint for xlsx parsing (client-side SheetJS → CSV → Claude)
+Created /api/tourrouter/artists endpoint for wizard artist creation

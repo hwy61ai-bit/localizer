@@ -17,6 +17,7 @@ export async function GET(
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
+  try {
   const data = await getExportData(tourId);
   if (!data) return NextResponse.json({ error: "Unauthorized or not found" }, { status: 401 });
 
@@ -220,4 +221,8 @@ export async function GET(
       "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
+  } catch (e) {
+    console.error("[PDF Export] Error:", e instanceof Error ? e.message : e, e instanceof Error ? e.stack : "");
+    return NextResponse.json({ error: "PDF generation failed" }, { status: 500 });
+  }
 }

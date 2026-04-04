@@ -489,6 +489,103 @@ export default function FinancialsPage() {
               })()}
             </div>
 
+            {/* ══════ Actual Expenses ══════ */}
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", marginTop: 20 }}>
+              <div style={{ padding: "16px 20px", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>Actual Expenses</div>
+                  <div style={{ fontSize: 12, color: "var(--hw-text-muted)", marginTop: 2 }}>{expenses.length} expense{expenses.length !== 1 ? "s" : ""} &middot; {fmtUSD(expGrandTotal)} total</div>
+                </div>
+                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>+ ADD EXPENSE</button>
+              </div>
+
+              {/* Category filters */}
+              <div style={{ padding: "10px 20px", display: "flex", gap: 6, flexWrap: "wrap", borderTop: "2px solid var(--hw-border)" }}>
+                {["All", ...CATEGORIES].map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setExpFilter(cat)}
+                    style={{
+                      padding: "4px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+                      letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer",
+                      border: expFilter === cat ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)",
+                      background: expFilter === cat ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                      color: expFilter === cat ? "var(--hw-text-invert)" : "var(--hw-text-muted)",
+                    }}
+                  >{cat}{cat !== "All" && expTotalByCategory[cat] ? ` (${fmtUSD(expTotalByCategory[cat])})` : ""}</button>
+                ))}
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "var(--hw-bg-invert)" }}>
+                      {["Date", "Category", "Description", "Amount", "Paid By", "Reimb.", ""].map((h) => (
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)", background: "var(--hw-bg-invert)" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Add row */}
+                    {addingExp && (
+                      <tr style={{ borderTop: "2px solid var(--hw-border)", background: "var(--hw-bg-warm)" }}>
+                        <td style={{ padding: "6px 8px" }}><input type="date" value={newExp.date} onChange={(e) => setNewExp((p) => ({ ...p, date: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 110 }} /></td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <select value={newExp.category} onChange={(e) => setNewExp((p) => ({ ...p, category: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, background: "var(--hw-bg-surface)", outline: "none" }}>
+                            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </td>
+                        <td style={{ padding: "6px 8px" }}><input value={newExp.description} onChange={(e) => setNewExp((p) => ({ ...p, description: e.target.value }))} placeholder="Description" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 140 }} /></td>
+                        <td style={{ padding: "6px 8px" }}>
+                          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                            <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>$</span>
+                            <input type="number" value={newExp.amount} onChange={(e) => setNewExp((p) => ({ ...p, amount: e.target.value }))} placeholder="0" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none", width: 70 }} />
+                          </div>
+                        </td>
+                        <td style={{ padding: "6px 8px" }}><input value={newExp.paidBy} onChange={(e) => setNewExp((p) => ({ ...p, paidBy: e.target.value }))} placeholder="Who" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 80 }} /></td>
+                        <td style={{ padding: "6px 8px" }}><input type="checkbox" checked={newExp.needsReimbursement} onChange={(e) => setNewExp((p) => ({ ...p, needsReimbursement: e.target.checked }))} /></td>
+                        <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>
+                          <button onClick={addExpense} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-green)", fontWeight: 700 }}>Save</button>
+                          <button onClick={() => setAddingExp(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)", marginLeft: 4 }}>Cancel</button>
+                        </td>
+                      </tr>
+                    )}
+
+                    {filteredExpenses.map((exp) => (
+                      <tr key={exp.id} style={{ borderTop: "2px solid var(--hw-border)" }}>
+                        <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{exp.date}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12 }}>
+                          <span style={{ padding: "3px 10px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>{exp.category}</span>
+                        </td>
+                        <td style={{ padding: "8px 12px", fontSize: 13 }}>{exp.description || "\u2014"}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600, color: "var(--hw-crimson)" }}>{fmtUSD(exp.amount)}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.paid_by || "\u2014"}</td>
+                        <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.needs_reimbursement ? "Yes" : ""}</td>
+                        <td style={{ padding: "8px 12px" }}>
+                          <button onClick={() => deleteExpense(exp.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)" }}>&times;</button>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {/* Totals */}
+                    {expenses.length > 0 && (
+                      <tr style={{ borderTop: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-warm)" }}>
+                        <td colSpan={3} style={{ padding: "10px 12px", fontSize: 12, fontWeight: 800, textTransform: "uppercase" }}>Total</td>
+                        <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(expFilter === "All" ? expGrandTotal : filteredExpenses.reduce((s, e) => s + e.amount, 0))}</td>
+                        <td colSpan={3}></td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {expenses.length === 0 && !addingExp && (
+                <div style={{ padding: 32, textAlign: "center" }}>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 8 }}>NO EXPENSES YET</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)" }}>Click &quot;+ Add Expense&quot; to start tracking tour expenses.</div>
+                </div>
+              )}
+            </div>
+
             {/* ══════ Section 1: Blanket Expenses ══════ */}
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24, marginBottom: 20 }}>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 800, marginBottom: 16 }}>Blanket Expenses</div>
@@ -701,102 +798,6 @@ export default function FinancialsPage() {
               )}
             </div>
 
-            {/* ══════ Section 5: Actual Expenses ══════ */}
-            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", marginTop: 20 }}>
-              <div style={{ padding: "16px 20px", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>Actual Expenses</div>
-                  <div style={{ fontSize: 12, color: "var(--hw-text-muted)", marginTop: 2 }}>{expenses.length} expense{expenses.length !== 1 ? "s" : ""} &middot; {fmtUSD(expGrandTotal)} total</div>
-                </div>
-                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>+ ADD EXPENSE</button>
-              </div>
-
-              {/* Category filters */}
-              <div style={{ padding: "10px 20px", display: "flex", gap: 6, flexWrap: "wrap", borderTop: "2px solid var(--hw-border)" }}>
-                {["All", ...CATEGORIES].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setExpFilter(cat)}
-                    style={{
-                      padding: "4px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
-                      letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer",
-                      border: expFilter === cat ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)",
-                      background: expFilter === cat ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
-                      color: expFilter === cat ? "var(--hw-text-invert)" : "var(--hw-text-muted)",
-                    }}
-                  >{cat}{cat !== "All" && expTotalByCategory[cat] ? ` (${fmtUSD(expTotalByCategory[cat])})` : ""}</button>
-                ))}
-              </div>
-
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ background: "var(--hw-bg-invert)" }}>
-                      {["Date", "Category", "Description", "Amount", "Paid By", "Reimb.", ""].map((h) => (
-                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)", background: "var(--hw-bg-invert)" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* Add row */}
-                    {addingExp && (
-                      <tr style={{ borderTop: "2px solid var(--hw-border)", background: "var(--hw-bg-warm)" }}>
-                        <td style={{ padding: "6px 8px" }}><input type="date" value={newExp.date} onChange={(e) => setNewExp((p) => ({ ...p, date: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 110 }} /></td>
-                        <td style={{ padding: "6px 8px" }}>
-                          <select value={newExp.category} onChange={(e) => setNewExp((p) => ({ ...p, category: e.target.value }))} style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, background: "var(--hw-bg-surface)", outline: "none" }}>
-                            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                          </select>
-                        </td>
-                        <td style={{ padding: "6px 8px" }}><input value={newExp.description} onChange={(e) => setNewExp((p) => ({ ...p, description: e.target.value }))} placeholder="Description" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 140 }} /></td>
-                        <td style={{ padding: "6px 8px" }}>
-                          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                            <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>$</span>
-                            <input type="number" value={newExp.amount} onChange={(e) => setNewExp((p) => ({ ...p, amount: e.target.value }))} placeholder="0" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none", width: 70 }} />
-                          </div>
-                        </td>
-                        <td style={{ padding: "6px 8px" }}><input value={newExp.paidBy} onChange={(e) => setNewExp((p) => ({ ...p, paidBy: e.target.value }))} placeholder="Who" style={{ padding: "4px 6px", border: "3px solid var(--hw-border-strong)", fontSize: 12, outline: "none", width: 80 }} /></td>
-                        <td style={{ padding: "6px 8px" }}><input type="checkbox" checked={newExp.needsReimbursement} onChange={(e) => setNewExp((p) => ({ ...p, needsReimbursement: e.target.checked }))} /></td>
-                        <td style={{ padding: "6px 8px", whiteSpace: "nowrap" }}>
-                          <button onClick={addExpense} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-green)", fontWeight: 700 }}>Save</button>
-                          <button onClick={() => setAddingExp(false)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)", marginLeft: 4 }}>Cancel</button>
-                        </td>
-                      </tr>
-                    )}
-
-                    {filteredExpenses.map((exp) => (
-                      <tr key={exp.id} style={{ borderTop: "2px solid var(--hw-border)" }}>
-                        <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{exp.date}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12 }}>
-                          <span style={{ padding: "3px 10px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>{exp.category}</span>
-                        </td>
-                        <td style={{ padding: "8px 12px", fontSize: 13 }}>{exp.description || "\u2014"}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600, color: "var(--hw-crimson)" }}>{fmtUSD(exp.amount)}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.paid_by || "\u2014"}</td>
-                        <td style={{ padding: "8px 12px", fontSize: 12 }}>{exp.needs_reimbursement ? "Yes" : ""}</td>
-                        <td style={{ padding: "8px 12px" }}>
-                          <button onClick={() => deleteExpense(exp.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)" }}>&times;</button>
-                        </td>
-                      </tr>
-                    ))}
-
-                    {/* Totals */}
-                    {expenses.length > 0 && (
-                      <tr style={{ borderTop: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-warm)" }}>
-                        <td colSpan={3} style={{ padding: "10px 12px", fontSize: 12, fontWeight: 800, textTransform: "uppercase" }}>Total</td>
-                        <td style={{ padding: "10px 12px", fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(expFilter === "All" ? expGrandTotal : filteredExpenses.reduce((s, e) => s + e.amount, 0))}</td>
-                        <td colSpan={3}></td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              {expenses.length === 0 && !addingExp && (
-                <div style={{ padding: 32, textAlign: "center" }}>
-                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 8 }}>NO EXPENSES YET</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)" }}>Click &quot;+ Add Expense&quot; to start tracking tour expenses.</div>
-                </div>
-              )}
-            </div>
           </>
         )}
       </div>

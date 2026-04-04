@@ -65,5 +65,54 @@ export async function POST(
     console.error("tour_shows insert error:", error.message, error.details, error.hint, "rows[0]:", JSON.stringify(rows[0]));
     return NextResponse.json({ error: error.message, details: error.details, hint: error.hint }, { status: 500 });
   }
+
+  // ── Fill gaps between show dates with off days ──
+  try {
+    const { data: allShows } = await supabase
+      .from("tour_shows")
+      .select("id, date_iso, is_off, sort_order")
+      .eq("tour_id", tourId)
+      .order("date_iso", { ascending: true });
+
+    if (allShows && allShows.length >= 2) {
+      const existingDates = new Set(allShows.map((s) => s.date_iso).filter(Boolean));
+      const offDayRows: Record<string, unknown>[] = [];
+
+      for (let i = 0; i < allShows.length - 1; i++) {
+        const currentDate = allShows[i].date_iso;
+        const nextDate = allShows[i + 1].date_iso;
+        if (!currentDate || !nextDate) continue;
+
+        const d = new Date(currentDate + "T12:00:00");
+        const end = new Date(nextDate + "T12:00:00");
+        d.setDate(d.getDate() + 1);
+
+        while (d < end) {
+          const iso = d.toISOString().split("T")[0];
+          if (!existingDates.has(iso)) {
+            existingDates.add(iso);
+            offDayRows.push({
+              tour_id: tourId,
+              org_id: profile.org_id,
+              date_iso: iso,
+              is_off: true,
+              event: "OFF",
+              city: "",
+              country: "",
+              sort_order: 9999,
+            });
+          }
+          d.setDate(d.getDate() + 1);
+        }
+      }
+
+      if (offDayRows.length > 0) {
+        await supabase.from("tour_shows").insert(offDayRows);
+      }
+    }
+  } catch (e) {
+    console.error("Off day gap fill error:", e);
+  }
+
   return NextResponse.json({ shows: inserted }, { status: 201 });
 }

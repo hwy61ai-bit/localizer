@@ -998,7 +998,7 @@ export default function RouteTourPage() {
           <button
             onClick={() => setShowSettings(!showSettings)}
             style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text-secondary)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
-          >{showSettings ? "HIDE SETTINGS" : "VEHICLE SETTINGS"}</button>
+          >{showSettings ? "HIDE SETTINGS" : "TOUR SETTINGS"}</button>
           {flags.personnelPay && <button
             onClick={() => setShowRoster(!showRoster)}
             style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text-secondary)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
@@ -1042,13 +1042,15 @@ export default function RouteTourPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {shows.map((s, i) => {
-                    const leg = i > 0 ? legs[i] : null;
-                    const flying = legChoices[i] === "fly";
+                  {consolidateShows(shows).map((s, i) => {
+                    // Map back to original index for legs/choices
+                    const origIdx = shows.findIndex((orig) => orig.id === s.id);
+                    const leg = origIdx > 0 ? legs[origIdx] : null;
+                    const flying = legChoices[origIdx] === "fly";
                     const suggestFly = leg && leg.driveH !== null && leg.driveH > flightThreshold;
-                    const showNum = shows.slice(0, i + 1).filter((x) => !x.is_off).length;
+                    const showNum = shows.slice(0, origIdx + 1).filter((x) => !x.is_off).length;
                     const sd = statusDot(s.status);
-                    const fromAP = i > 0 ? getAirport(shows[i - 1].city, shows[i - 1].country) : null;
+                    const fromAP = origIdx > 0 ? getAirport(shows[origIdx - 1].city, shows[origIdx - 1].country) : null;
                     const toAP = getAirport(s.city, s.country);
 
                     return (
@@ -1056,7 +1058,7 @@ export default function RouteTourPage() {
                         key={s.id}
                         show={s}
                         showNum={showNum}
-                        index={i}
+                        index={origIdx}
                         leg={leg}
                         flying={flying}
                         suggestFly={!!suggestFly}
@@ -1544,12 +1546,41 @@ export default function RouteTourPage() {
 
 // ── Sub-component for leg + show row ─────────────────────────
 
+type ConsolidatedShow = ShowRow & { offDayCount?: number; offDateEnd?: string };
+
+function consolidateShows(showList: ShowRow[]): ConsolidatedShow[] {
+  const result: ConsolidatedShow[] = [];
+  let i = 0;
+  while (i < showList.length) {
+    if (showList[i].is_off) {
+      let count = 1;
+      const startIdx = i;
+      while (i + count < showList.length && showList[i + count].is_off) {
+        count++;
+      }
+      if (count > 5) {
+        const endDate = showList[i + count - 1].date_iso || undefined;
+        result.push({ ...showList[i], offDayCount: count, offDateEnd: endDate });
+      } else {
+        for (let j = 0; j < count; j++) {
+          result.push(showList[startIdx + j]);
+        }
+      }
+      i += count;
+    } else {
+      result.push(showList[i]);
+      i++;
+    }
+  }
+  return result;
+}
+
 function LegAndShowRow({
   show, showNum, index, leg, flying, suggestFly, fromAP, toAP, sd,
   flightThreshold, onToggleLeg, onClickRow, driveColorBg, driveColor, formatShowDate,
   onDelete,
 }: {
-  show: ShowRow;
+  show: ConsolidatedShow;
   showNum: number;
   index: number;
   leg: LegInfo | null;
@@ -1654,14 +1685,16 @@ function LegAndShowRow({
           {show.is_off ? "\u2014" : showNum}
         </td>
         <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 12, whiteSpace: "nowrap", color: "var(--hw-text)", fontWeight: 500 }}>
-          {formatShowDate(show.date_iso)}
+          {show.is_off && show.offDayCount && show.offDayCount > 1 && show.offDateEnd
+            ? formatShowDate(show.date_iso) + " \u2013 " + formatShowDate(show.offDateEnd)
+            : formatShowDate(show.date_iso)}
         </td>
         <td style={{ padding: "12px 12px" }}>
-          <div style={{ fontFamily: "var(--hw-font-body)", fontWeight: 500, fontSize: 14, color: "var(--hw-text)" }}>{show.is_off ? <em>OFF DAY</em> : (show.event || show.venue || "\u2014")}</div>
+          <div style={{ fontFamily: "var(--hw-font-body)", fontWeight: 500, fontSize: 14, color: "var(--hw-text)" }}>{show.is_off ? <em style={{ fontStyle: "italic", opacity: 0.7 }}>{show.offDayCount && show.offDayCount > 1 ? `OFF \u00B7 ${show.offDayCount} DAYS` : "OFF DAY"}</em> : (show.event || show.venue || "\u2014")}</div>
           {show.event && show.venue && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.venue}</div>}
         </td>
         <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.city || "\u2014"}</td>
-        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.country || "\u2014"}</td>
+        <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)", textTransform: "uppercase" }}>{show.country || "\u2014"}</td>
         <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 13, textAlign: "right" }}>
           {show.is_off ? "\u2014" : (show.offer_display || "\u2014")}
         </td>

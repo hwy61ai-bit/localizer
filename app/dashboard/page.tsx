@@ -107,7 +107,12 @@ export default async function DashboardPage() {
       name: "New Artist",
     });
     if (error) throw new Error(error.message);
-    redirect(`/dashboard/artists/${newArtistId}`);
+    const { count } = await supabase.from("artists").select("id", { count: "exact", head: true }).eq("org_id", orgId);
+    if ((count ?? 0) <= 1) {
+      redirect(`/dashboard/artists/${newArtistId}/profile`);
+    } else {
+      redirect(`/dashboard/artists/${newArtistId}`);
+    }
   }
 
   function formatDate(iso: string | null): string | null {

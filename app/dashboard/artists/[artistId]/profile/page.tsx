@@ -64,6 +64,16 @@ export default function ArtistProfilePage() {
   const [logoHovered, setLogoHovered] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
+  // Photo
+  const photoFileRef = useRef<HTMLInputElement>(null);
+  const [photoHovered, setPhotoHovered] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Spotify thumbnail
+  const [spotifyThumb, setSpotifyThumb] = useState<string | null>(null);
+  const [spotifyHovered, setSpotifyHovered] = useState(false);
+  const spotifyDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
   // Advance materials
   const advFileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
@@ -191,6 +201,49 @@ export default function ArtistProfilePage() {
     }
   }
 
+  async function handlePhotoUpload(file: File) {
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `artist-assets/${artistId}/photo.${ext}`;
+      const { error } = await supabase.storage.from("localizer-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
+      const url = data.publicUrl + "?t=" + Date.now();
+      await supabase.from("artists").update({ image_url: url }).eq("id", artistId);
+      setArtist((prev) => prev ? { ...prev, image_url: url } : prev);
+    } catch (e) {
+      console.error("Photo upload failed:", e);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
+
+  function fetchSpotifyThumb(url: string) {
+    if (spotifyDebounceRef.current) clearTimeout(spotifyDebounceRef.current);
+    if (!url.includes("open.spotify.com/artist/")) {
+      setSpotifyThumb(null);
+      return;
+    }
+    spotifyDebounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`);
+        if (!res.ok) { setSpotifyThumb(null); return; }
+        const data = await res.json();
+        if (data.thumbnail_url) setSpotifyThumb(data.thumbnail_url);
+        else setSpotifyThumb(null);
+      } catch {
+        setSpotifyThumb(null);
+      }
+    }, 300);
+  }
+
+  // Fetch thumb on mount if spotify_url exists
+  useEffect(() => {
+    if (artist?.spotify_url) fetchSpotifyThumb(artist.spotify_url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artist?.spotify_url ? "has" : "none"]);
+
   // ── Advance Upload ───────────────────────────────────────────
 
   async function handleAdvUpload(fieldId: string, file: File) {
@@ -253,8 +306,105 @@ export default function ArtistProfilePage() {
           background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
           padding: 28, marginBottom: 20,
         }}>
-          <div style={{ display: "flex", gap: 24, alignItems: "flex-start" }}>
-            {/* Logo */}
+          {/* Artist Name — full width */}
+          <input
+            value={artist.name || ""}
+            onChange={(e) => updateField("name", e.target.value)}
+            placeholder="Artist Name"
+            style={{
+              fontFamily: "var(--hw-font-display)", fontSize: 48, fontWeight: 400,
+              letterSpacing: "2px", textTransform: "uppercase" as const,
+              border: "none", outline: "none", background: "transparent",
+              color: "var(--hw-text)", width: "100%", padding: 0, marginBottom: 20,
+              animation: "fadeSlideUp 0.5s ease-out both",
+            }}
+          />
+
+          {/* Three squares row */}
+          <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+            {/* Square 1 — Band Photo */}
+            <div>
+              <input
+                ref={photoFileRef}
+                type="file"
+                accept=".jpg,.jpeg,.png,.webp"
+                style={{ display: "none" }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); }}
+              />
+              <div
+                onMouseEnter={() => setPhotoHovered(true)}
+                onMouseLeave={() => setPhotoHovered(false)}
+                onClick={() => photoFileRef.current?.click()}
+                style={{
+                  width: 94, height: 94,
+                  background: "var(--hw-bg)",
+                  border: artist.image_url ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", overflow: "hidden", position: "relative",
+                  flexShrink: 0, transition: "var(--hw-ease)",
+                }}
+              >
+                {uploadingPhoto ? (
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, color: "var(--hw-text-muted)", fontWeight: 700 }}>...</div>
+                ) : artist.image_url ? (
+                  <>
+                    <img src={artist.image_url} alt="Band photo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {photoHovered && (
+                      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#fff" }}>REPLACE</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 20, color: "var(--hw-text-muted)" }}>+</div>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 7, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>PHOTO</div>
+                  </div>
+                )}
+              </div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 8, color: "var(--hw-text-muted)", marginTop: 6, textAlign: "center", maxWidth: 94, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                PHOTO
+              </div>
+            </div>
+
+            {/* Square 2 — Spotify Thumbnail */}
+            <div>
+              <div
+                onMouseEnter={() => setSpotifyHovered(true)}
+                onMouseLeave={() => setSpotifyHovered(false)}
+                onClick={() => { if (artist.spotify_url) window.open(artist.spotify_url, "_blank"); }}
+                style={{
+                  width: 94, height: 94,
+                  background: "var(--hw-bg)",
+                  border: spotifyThumb ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: spotifyThumb ? "pointer" : "default", overflow: "hidden", position: "relative",
+                  flexShrink: 0, transition: "var(--hw-ease)",
+                }}
+              >
+                {spotifyThumb ? (
+                  <>
+                    <img src={spotifyThumb} alt="Spotify" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {spotifyHovered && (
+                      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" /></svg>
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#fff" }}>OPEN</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: "center" }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" /></svg>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 7, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px", marginTop: 4 }}>SPOTIFY</div>
+                  </div>
+                )}
+              </div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 8, color: "var(--hw-text-muted)", marginTop: 6, textAlign: "center", maxWidth: 94, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                SPOTIFY
+              </div>
+            </div>
+
+            {/* Square 3 — Logo */}
             <div>
               <input
                 ref={logoFileRef}
@@ -268,7 +418,7 @@ export default function ArtistProfilePage() {
                 onMouseLeave={() => setLogoHovered(false)}
                 onClick={() => logoFileRef.current?.click()}
                 style={{
-                  width: 72, height: 72,
+                  width: 94, height: 94,
                   background: "var(--hw-bg)",
                   border: artist.logo_url ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
                   display: "flex", alignItems: "center", justifyContent: "center",
@@ -280,69 +430,43 @@ export default function ArtistProfilePage() {
                   <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, color: "var(--hw-text-muted)", fontWeight: 700 }}>...</div>
                 ) : artist.logo_url ? (
                   <>
-                    <img
-                      src={artist.logo_url}
-                      alt="Logo"
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
+                    <img src={artist.logo_url} alt="Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     {logoHovered && (
-                      <div style={{
-                        position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                      }}>
+                      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "#fff" }}>REPLACE</span>
                       </div>
                     )}
                   </>
                 ) : (
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, color: "var(--hw-text-muted)" }}>+</div>
+                    <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 20, color: "var(--hw-text-muted)" }}>+</div>
                     <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 7, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>LOGO</div>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 6, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: 2 }}>transparent .png</div>
                   </div>
                 )}
               </div>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 8, color: "var(--hw-text-muted)", marginTop: 6, textAlign: "center", maxWidth: 72, letterSpacing: "0.5px" }}>
-                Transparent .PNG
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 8, color: "var(--hw-text-muted)", marginTop: 6, textAlign: "center", maxWidth: 94, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                LOGO (TRANSPARENT .PNG)
               </div>
             </div>
+          </div>
 
-            {/* Name + Spotify */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <input
-                value={artist.name || ""}
-                onChange={(e) => updateField("name", e.target.value)}
-                placeholder="Artist Name"
-                style={{
-                  fontFamily: "var(--hw-font-display)", fontSize: 48, fontWeight: 400,
-                  letterSpacing: "2px", textTransform: "uppercase" as const,
-                  border: "none", outline: "none", background: "transparent",
-                  color: "var(--hw-text)", width: "100%", padding: 0, marginBottom: 4,
-                  animation: "fadeSlideUp 0.5s ease-out both",
-                }}
-              />
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", flexShrink: 0 }}>SPOTIFY</span>
-                <input
-                  value={artist.spotify_url || ""}
-                  onChange={(e) => updateField("spotify_url", e.target.value)}
-                  placeholder="https://open.spotify.com/artist/..."
-                  style={{
-                    fontFamily: "var(--hw-font-body)", fontSize: 12, color: "var(--hw-text-secondary)",
-                    border: "none", outline: "none", background: "transparent", flex: 1, padding: 0,
-                  }}
-                />
-                {artist.spotify_url && (
-                  <a
-                    href={artist.spotify_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-green)", textDecoration: "none", fontWeight: 700, letterSpacing: "1px", flexShrink: 0 }}
-                  >
-                    OPEN &rarr;
-                  </a>
-                )}
-              </div>
-            </div>
+          {/* Spotify URL input */}
+          <div style={{ maxWidth: 94 * 3 + 16 * 2 }}>
+            <input
+              value={artist.spotify_url || ""}
+              onChange={(e) => {
+                updateField("spotify_url", e.target.value);
+                fetchSpotifyThumb(e.target.value);
+              }}
+              placeholder="Paste Spotify artist URL"
+              style={{
+                fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "0.5px",
+                color: "var(--hw-text-secondary)", width: "100%", padding: "8px 0",
+                border: "none", borderBottom: "1px solid var(--hw-border)", outline: "none",
+                background: "transparent",
+              }}
+            />
           </div>
         </div>
 

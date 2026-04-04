@@ -1,5 +1,5 @@
 export const FIELD_ALIASES: Record<string, string[]> = {
-  date: ['date', 'show date', 'show_date', 'event date', 'date of show', 'day'],
+  date: ['date', 'show date', 'show_date', 'event date', 'date of show'],
   event: ['event', 'show', 'event name', 'show name', 'artist', 'act', 'band', 'name'],
   city: ['city', 'market', 'location', 'town', 'venue city', 'show city'],
   country: ['country', 'nation', 'territory', 'country/region'],

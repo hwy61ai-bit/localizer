@@ -143,15 +143,13 @@ export default function ImportPage() {
         const resolved = data.mappings as Record<string, { field: string; confidence: number }>;
         // Merge: alias library results override builtin when confidence is higher
         const merged = { ...builtinGuesses };
-        const usedFields = new Set(Object.values(merged).filter(Boolean));
         for (const [header, match] of Object.entries(resolved)) {
-          if (match.field && match.confidence >= 0.7 && !usedFields.has(header)) {
-            // Find if this field is already mapped to a different header
-            const existingHeader = Object.entries(merged).find(([, f]) => f === match.field)?.[0];
-            if (!existingHeader || !builtinGuesses[existingHeader]) {
-              // Only override if the builtin didn't have a confident match
-              merged[match.field] = header;
-            }
+          if (match.field && match.confidence >= 0.7) {
+            // Never override a field that the builtin already mapped
+            if (builtinGuesses[match.field]) continue;
+            // Don't map to a header already used by builtin
+            if (Object.values(builtinGuesses).includes(header)) continue;
+            merged[match.field] = header;
           }
         }
         setMapping(merged);
