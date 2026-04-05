@@ -718,6 +718,7 @@ Markdown table paste support — users can paste markdown tables from ChatGPT/Cl
 - BUG-8: share link URL throws clear 500 if NEXT_PUBLIC_APP_URL env var missing
 - Bonus: null-safe buildDriveDataKey + skip off-day legs in exports.ts (pre-existing 
   crash bug uncovered during BUG-5 testing on Dust & Neon tour)
+- BUG-1: /api/artists/logo now requires auth and org match (was unauthenticated)
 
 ### Next session
 - Message Tim with QA findings and BUG-4 helper architecture proposal (41 routes need 
@@ -730,3 +731,5 @@ Markdown table paste support — users can paste markdown tables from ChatGPT/Cl
 
 ### Remaining QA bugs
 - BUG-1 MEDIUM, BUG-4 HIGH (partial), BUG-6 MEDIUM, BUG-3/7/9/10 LOW
+- BUG-4 HIGH (partial — helper design approved by Tim, rollout pending)
+- BUG-6 MEDIUM, BUG-3/7/9/10 LOW
