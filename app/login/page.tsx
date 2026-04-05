@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getProductName } from "@/lib/tourrouter/productBranding";
 import posthog from "posthog-js";
 import "./login.css";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get("error");
   const productName = useMemo(() => getProductName(), []);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -191,6 +194,25 @@ export default function LoginPage() {
             padding: 32,
           }}
         >
+          {urlError && (
+            <div style={{
+              background: "#c5535b",
+              color: "#fff",
+              border: "3px solid #1A1A1A",
+              boxShadow: "4px 4px 0 #000",
+              borderRadius: 0,
+              padding: "12px 16px",
+              marginBottom: 16,
+              fontFamily: "var(--hw-font-mono)",
+              fontSize: 13,
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}>
+              {urlError === "auth"
+                ? "Your session expired. Please sign in again."
+                : "Something went wrong. Please try signing in again."}
+            </div>
+          )}
           {!inviteVerified ? (
             <>
               <label style={labelStyle}>INVITE CODE</label>

@@ -115,6 +115,11 @@ export async function POST(
       } catch { /* skip */ }
     }
 
+    const cityRaw = (s.city as string) || "";
+    const cityParts = cityRaw.split(",").map(p => p.trim()).filter(Boolean);
+    const cityOnly = cityParts[0] || "";
+    const stateOnly = cityParts[1] || null;
+
     return {
       org_id: orgId,
       tour_id: localizerTourId,
@@ -122,12 +127,12 @@ export async function POST(
       event_index: i,
       date_iso: dateIso,
       day,
-      city: (s.city as string) || "",
-      state: (s.country as string) || null,
+      city: cityOnly,
+      state: stateOnly,
       venue: (s.venue as string) || (s.event as string) || "",
       venue_name: (s.venue as string) || null,
-      venue_city: (s.city as string) || null,
-      venue_state: (s.country as string) || null,
+      venue_city: cityOnly,
+      venue_state: stateOnly,
       promoter_email: null,
       manager_email: null,
     };

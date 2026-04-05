@@ -14,6 +14,22 @@ import {
   normalizeCountry,
   detectCountry,
 } from "@/lib/tourrouter";
+import { normalizeState } from "@/lib/tourrouter/stateNames";
+
+function cleanMarkdownTable(text: string): string {
+  const lines = text.split("\n");
+  const looksLikeMarkdown = lines.filter(l => /^\s*\*?\s*\|/.test(l)).length >= 2;
+  if (!looksLikeMarkdown) return text;
+  const cleaned = lines
+    .map(line => {
+      let l = line.replace(/^\s*\*\s*/, "");
+      l = l.replace(/^\s*\|/, "").replace(/\|\s*$/, "");
+      return l;
+    })
+    .filter(line => !/^[\s|:\-]+$/.test(line))
+    .filter(line => line.trim().length > 0);
+  return cleaned.join("\n");
+}
 
 type TourData = { id: string; name: string };
 type RawRow = Record<string, string>;
@@ -160,7 +176,7 @@ export default function ImportPage() {
 
   function handlePasteSubmit() {
     if (!pasteText.trim()) return;
-    Papa.parse(pasteText, {
+    Papa.parse(cleanMarkdownTable(pasteText), {
       header: false,
       skipEmptyLines: true,
       complete: (results) => {
@@ -362,17 +378,45 @@ export default function ImportPage() {
       }
 
       const eventStr = String(row.event || "").trim();
-      const isOff = /\bOFF\b|OFF DAY|DAY OFF/i.test(eventStr) || /\bOFF\b|OFF DAY|DAY OFF/i.test(String(row.city || ""));
-      const cityStr = String(row.city || "").trim();
+      const cityRaw = String(row.city || "").trim();
+      const venueStr = String(row.venue || "").trim();
+      const offPattern = /\bOFF\b|OFF DAY|DAY OFF|TRAVEL DAY|\bTRAVEL\b|\bDARK\b|NO SHOW/i;
+      const isOff =
+        offPattern.test(eventStr) ||
+        offPattern.test(cityRaw) ||
+        offPattern.test(venueStr) ||
+        (!cityRaw && !venueStr && !eventStr);
+      const stateRaw = normalizeState(row.state as string);
+
+      // Handle various user input formats:
+      // Case 1: city already has "City, ST" — use as-is but normalize state portion
+      // Case 2: city has extra parts like "Dallas, TX, USA" — take first two
+      // Case 3: city is "Dallas" and state col has value — combine them
+      // Case 4: city is "London" and state col is empty — use city alone
+      let cityWithState: string;
+      if (cityRaw.includes(",")) {
+        const parts = cityRaw.split(",").map(p => p.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+          const normalizedPart = normalizeState(parts[1]);
+          cityWithState = `${parts[0]}, ${normalizedPart}`;
+        } else {
+          cityWithState = parts[0];
+        }
+      } else if (stateRaw) {
+        cityWithState = `${cityRaw}, ${stateRaw}`;
+      } else {
+        cityWithState = cityRaw;
+      }
+
       const countryRaw = countryMapped
         ? String(row.country || "").trim()
-        : detectCountry(cityStr);
+        : detectCountry(cityWithState);
       const offerParsed = parseOffer(row.offer, countryRaw);
 
       built.push({
         date_iso: `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`,
         event: eventStr,
-        city: cityStr,
+        city: cityWithState,
         country: countryRaw,
         country_norm: normalizeCountry(countryRaw),
         venue: String(row.venue || "").trim(),
