@@ -659,3 +659,13 @@ Duplicate show rows fixed (SQL cleanup)
 - Onboarding wizard QA
 - Export PDF design review with Tim
 - Tour Settings expansion
+
+Solid session today. Recap of what shipped:
+
+Login error banner for expired sessions (?error=auth now shows a clear message)
+"+ New Artist" always redirects to profile page (both dashboard tile and artists page)
+Push-to-Localizer correctly splits city/state ("Dallas, TX" → city: Dallas, state: TX)
+Import parser now reads State column from spreadsheets
+State name normalization — handles "Texas" / "texas" / "tx" / "TX" all → "TX" (US + CA + AU)
+Expanded off-day detection — catches "OFF" in venue field, "TRAVEL DAY", "DARK", blank rows
+Markdown table paste support — users can paste markdown tables from ChatGPT/Claude/docs and it just works
