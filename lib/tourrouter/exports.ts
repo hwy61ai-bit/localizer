@@ -78,7 +78,7 @@ export function buildExportRows(params: BuildExportRowsParams): ExportRow[] {
     if (!s.isOff) showNum++;
     let fuelCost = 0, flightCost = 0;
 
-    if (i > 0) {
+    if (i > 0 && !s.isOff && !tourShows[i - 1].isOff) {
       const prev = tourShows[i - 1];
       const driveKey = buildDriveDataKey(prev.city, s.city);
       const cached = driveData?.[driveKey];

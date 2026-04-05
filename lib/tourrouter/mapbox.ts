@@ -15,8 +15,10 @@ export type DriveDataMap = Record<string, {
   routeSummary: string;
 }>;
 
-export function buildDriveDataKey(city1: string, city2: string): string {
-  return city1.toLowerCase().trim() + '|' + city2.toLowerCase().trim();
+export function buildDriveDataKey(city1: string | null | undefined, city2: string | null | undefined): string {
+  const c1 = (city1 ?? "").toLowerCase().trim();
+  const c2 = (city2 ?? "").toLowerCase().trim();
+  return c1 + '|' + c2;
 }
 
 /**
