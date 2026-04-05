@@ -8,6 +8,19 @@ export async function GET(req: NextRequest) {
 
   const supabase = await supabaseServer();
 
+  // Auth check
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: membership } = await supabase
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!membership?.org_id || membership.org_id !== orgId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const { data: tour } = await supabase
     .from("tours")
     .select("artist_id")
