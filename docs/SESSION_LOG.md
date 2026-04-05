@@ -669,3 +669,30 @@ Import parser now reads State column from spreadsheets
 State name normalization — handles "Texas" / "texas" / "tx" / "TX" all → "TX" (US + CA + AU)
 Expanded off-day detection — catches "OFF" in venue field, "TRAVEL DAY", "DARK", blank rows
 Markdown table paste support — users can paste markdown tables from ChatGPT/Claude/docs and it just works
+
+The Mac mini is fully set up and ready for QA work.
+Full recap of what you accomplished today:
+Code fixes shipped to production:
+
+Login error banner for expired sessions + Suspense boundary
+"+ New Artist" always routes to profile page
+Push-to-Localizer correctly splits city/state
+State column import + name normalization (US/CA/AU)
+Expanded off-day detection (venue field, blank rows, more keywords)
+Markdown table paste support in CSV import
+
+Infrastructure:
+
+MacBook Pro set up as second dev machine (Homebrew, Node, git, SSH, repo cloned, .env.local)
+Mac mini set up as dedicated QA machine with all safety guardrails:
+
+Separate Anthropic API key (mac-mini-qa-agent)
+Supabase service role key removed — agent can't nuke the database
+Git push physically disabled
+Anthropic spend capped at $100/month with email alerts
+qa-start / qa-stop launcher scripts
+QA reports folder structure in place
+
+
+
+For next session: You still need to create the QA agent prompt file (~/localizer/qa/QA_AGENT_PROMPT.md) from Tim's doc, and you haven't run a real QA session yet. That's a good starting point for tomorrow
