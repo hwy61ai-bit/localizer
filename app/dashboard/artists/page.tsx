@@ -38,7 +38,7 @@ export default async function ArtistsDashboardPage() {
     if (!membership?.org_id) redirect("/dashboard");
     const newId = randomUUID();
     await supabase.from("artists").insert({ id: newId, org_id: membership.org_id, name: "New Artist" });
-    redirect(`/dashboard/artists/${newId}`);
+    redirect(`/dashboard/artists/${newId}/profile`);
   }
 
   return (
