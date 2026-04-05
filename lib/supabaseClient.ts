@@ -1,6 +1,9 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-const COOKIE_DOMAIN = ".hwy61labs.com";
+const COOKIE_DOMAIN =
+  typeof window !== "undefined" && window.location.hostname.endsWith("hwy61labs.com")
+    ? ".hwy61labs.com"
+    : "";
 
 function cookieStorage() {
   return {
@@ -11,11 +14,13 @@ function cookieStorage() {
     },
     setItem(key: string, value: string) {
       if (typeof document === "undefined") return;
-      document.cookie = `${key}=${encodeURIComponent(value)};domain=${COOKIE_DOMAIN};path=/;max-age=3600;SameSite=Lax;Secure`;
+      const domainAttr = COOKIE_DOMAIN ? `domain=${COOKIE_DOMAIN};` : "";
+      document.cookie = `${key}=${encodeURIComponent(value)};${domainAttr}path=/;max-age=3600;SameSite=Lax;Secure`;
     },
     removeItem(key: string) {
       if (typeof document === "undefined") return;
-      document.cookie = `${key}=;domain=${COOKIE_DOMAIN};path=/;max-age=0`;
+      const domainAttr = COOKIE_DOMAIN ? `domain=${COOKIE_DOMAIN};` : "";
+      document.cookie = `${key}=;${domainAttr}path=/;max-age=0`;
     },
   };
 }
