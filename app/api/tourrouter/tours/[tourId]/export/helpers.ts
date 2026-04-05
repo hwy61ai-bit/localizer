@@ -1,4 +1,5 @@
 import { supabaseServer } from "@/lib/supabaseServer";
+import { checkTourRouterAccess } from "@/lib/tourrouter/billingGate";
 import {
   buildExportRows,
   calcTourFinancials,
@@ -28,17 +29,27 @@ export type ExportData = {
   driveData: DriveDataMap;
 };
 
-export async function getExportData(tourId: string): Promise<ExportData | null> {
+type ExportFailure = { ok: false; reason: "unauthorized" | "no_org" | "subscription_required" | "not_found"; detail?: string };
+type ExportSuccess = { ok: true; data: ExportData };
+export type ExportResult = ExportFailure | ExportSuccess;
+
+export async function getExportData(tourId: string): Promise<ExportResult> {
   const supabase = await supabaseServer();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return null;
+  if (authError || !user) return { ok: false, reason: "unauthorized" };
 
   const { data: profile } = await supabase
     .from("org_members")
     .select("org_id")
     .eq("user_id", user.id)
     .maybeSingle();
-  if (!profile?.org_id) return null;
+  if (!profile?.org_id) return { ok: false, reason: "no_org" };
+
+  // Billing gate
+  const access = await checkTourRouterAccess(profile.org_id, user.email);
+  if (!access.allowed) {
+    return { ok: false, reason: "subscription_required", detail: access.reason };
+  }
 
   const { data: tour } = await supabase
     .from("tours_routing")
@@ -46,7 +57,7 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
     .eq("id", tourId)
     .eq("org_id", profile.org_id)
     .single();
-  if (!tour) return null;
+  if (!tour) return { ok: false, reason: "not_found" };
 
   const { data: shows } = await supabase
     .from("tour_shows")
@@ -130,13 +141,16 @@ export async function getExportData(tourId: string): Promise<ExportData | null> 
   });
 
   return {
-    tour,
-    shows: showsArr,
-    rows,
-    fin,
-    tourName: (tour.name as string) || "tour",
-    legChoices,
-    driveData,
+    ok: true,
+    data: {
+      tour,
+      shows: showsArr,
+      rows,
+      fin,
+      tourName: (tour.name as string) || "tour",
+      legChoices,
+      driveData,
+    },
   };
 }
 

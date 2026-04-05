@@ -6,8 +6,12 @@ export async function GET(
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
-  const data = await getExportData(tourId);
-  if (!data) return NextResponse.json({ error: "Unauthorized or not found" }, { status: 401 });
+  const result = await getExportData(tourId);
+  if (!result.ok) {
+    const statusMap = { unauthorized: 401, no_org: 403, subscription_required: 403, not_found: 404 } as const;
+    return NextResponse.json({ error: result.reason, detail: result.detail }, { status: statusMap[result.reason] });
+  }
+  const data = result.data;
 
   const { rows, fin, tourName } = data;
   const lines: (string | number)[][] = [];
