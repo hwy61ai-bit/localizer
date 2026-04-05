@@ -670,29 +670,63 @@ State name normalization — handles "Texas" / "texas" / "tx" / "TX" all → "TX
 Expanded off-day detection — catches "OFF" in venue field, "TRAVEL DAY", "DARK", blank rows
 Markdown table paste support — users can paste markdown tables from ChatGPT/Claude/docs and it just works
 
-The Mac mini is fully set up and ready for QA work.
-Full recap of what you accomplished today:
-Code fixes shipped to production:
 
-Login error banner for expired sessions + Suspense boundary
-"+ New Artist" always routes to profile page
-Push-to-Localizer correctly splits city/state
-State column import + name normalization (US/CA/AU)
-Expanded off-day detection (venue field, blank rows, more keywords)
-Markdown table paste support in CSV import
+## April 5, 2026
 
-Infrastructure:
+### Code fixes shipped (morning)
+- Login error banner for expired sessions (?error=auth)
+- Suspense boundary on login page (fix prerender error)
+- "+ New Artist" always routes to profile page (both dashboard tile and artists page)
+- Push-to-Localizer splits city/state correctly (Dallas, TX → city: Dallas, state: TX)
+- Import parser reads State column from spreadsheets
+- State name normalization (Texas / tx / TX all → TX) — covers US, Canada, Australia
+- Expanded off-day detection (catches OFF in venue field, TRAVEL DAY, DARK, blank rows)
+- Markdown table paste support in import (handles ChatGPT/Claude output tables)
 
-MacBook Pro set up as second dev machine (Homebrew, Node, git, SSH, repo cloned, .env.local)
-Mac mini set up as dedicated QA machine with all safety guardrails:
+### Infrastructure
+- MacBook Pro set up as travel dev machine (Homebrew, Node, git, SSH, .env.local)
+- Mac mini set up as dedicated QA machine with safety guardrails:
+  - Separate Anthropic API key (mac-mini-qa-agent)
+  - No Supabase service role key (can't nuke database)
+  - Git push physically disabled
+  - Anthropic spend capped at $100/month with email alerts at $25/$50/$75/$90
+  - qa-start / qa-stop launcher scripts
+  - QA_AGENT_PROMPT.md saved to ~/localizer/qa/
 
-Separate Anthropic API key (mac-mini-qa-agent)
-Supabase service role key removed — agent can't nuke the database
-Git push physically disabled
-Anthropic spend capped at $100/month with email alerts
-qa-start / qa-stop launcher scripts
-QA reports folder structure in place
+### QA sessions (Mac mini)
+- Session 1: Artist API routes (~10 min, $0.61, 3 bugs)
+  - BUG-1: /api/artists/logo unauthenticated (MEDIUM)
+  - BUG-2: ArtistTile delete cascade incomplete (HIGH)
+  - BUG-3: GET /tourrouter/artists 405 empty body (LOW)
+- Session 2: TourRouter tours routes (~30 min, 7 bugs)
+  - BUG-4: Billing gate only on GET /tours — 40 other routes unprotected (HIGH)
+  - BUG-5: Export routes return 401 for not-found (HIGH)
+  - BUG-6: Show PUT returns 500 not 404 (MEDIUM)
+  - BUG-7: 401 vs 403 convention (LOW)
+  - BUG-8: Share link URL no fallback (MEDIUM)
+  - BUG-9: Missing updated_at on show PUT (LOW)
+  - BUG-10: Silent delete no-op (LOW)
 
+### Bug fixes shipped (evening)
+- BUG-2 resolved via architectural cleanup: deleted orphaned Localizer-only 
+  /dashboard/artists page and ArtistTile.tsx component (142 lines of dead code removed). 
+  Unified artist experience — everyone uses /dashboard with TourTile, ArtistHubClient 
+  already adapts to product access correctly.
+- BUG-4 partial: added billing gate to POST /tours and all 5 export routes 
+  (6 of 41 routes protected, 35 remaining)
+- BUG-5: export helpers return discriminated union with proper 401/403/404 status codes
+- BUG-8: share link URL throws clear 500 if NEXT_PUBLIC_APP_URL env var missing
+- Bonus: null-safe buildDriveDataKey + skip off-day legs in exports.ts (pre-existing 
+  crash bug uncovered during BUG-5 testing on Dust & Neon tour)
 
+### Next session
+- Message Tim with QA findings and BUG-4 helper architecture proposal (41 routes need 
+  shared requireTourRouterAccess helper before rollout)
+- Fix BUG-1 (unauthenticated logo endpoint) — quick win
+- Fix BUG-6 (show PUT 500) — quick win
+- Design shared billing gate helper with Tim's input
+- Run additional QA sessions on import flow, finance calculations, RLS policies
+- 4 LOW severity bugs (3, 7, 9, 10) deferred to cleanup sweep before beta
 
-For next session: You still need to create the QA agent prompt file (~/localizer/qa/QA_AGENT_PROMPT.md) from Tim's doc, and you haven't run a real QA session yet. That's a good starting point for tomorrow
+### Remaining QA bugs
+- BUG-1 MEDIUM, BUG-4 HIGH (partial), BUG-6 MEDIUM, BUG-3/7/9/10 LOW
