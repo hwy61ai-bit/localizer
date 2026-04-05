@@ -74,6 +74,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No org found for this user" }, { status: 403 });
     }
 
+    // Billing gate
+    const access = await checkTourRouterAccess(membership.org_id, user.email);
+    if (!access.allowed) {
+      return NextResponse.json({ error: "subscription_required", reason: access.reason }, { status: 403 });
+    }
+
     const body = await req.json();
     const { name, artist_id } = body;
     if (!name) return NextResponse.json({ error: "Name required" }, { status: 400 });

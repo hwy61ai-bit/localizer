@@ -195,6 +195,14 @@ export async function POST(
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const url = `${process.env.NEXT_PUBLIC_APP_URL}/report/${token}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) {
+    console.error("NEXT_PUBLIC_APP_URL env var is not set — cannot build share link");
+    return NextResponse.json(
+      { error: "Server configuration error: missing NEXT_PUBLIC_APP_URL" },
+      { status: 500 }
+    );
+  }
+  const url = `${appUrl}/report/${token}`;
   return NextResponse.json({ token, url, expiresAt });
 }
