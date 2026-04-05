@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getProductName } from "@/lib/tourrouter/productBranding";
 import posthog from "posthog-js";
 import "./login.css";
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error");
   const productName = useMemo(() => getProductName(), []);
@@ -373,5 +373,13 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }
