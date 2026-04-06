@@ -52,6 +52,7 @@ type ParsedShow = {
   merch: string;
   backend: string;
   promoter: string;
+  promoter_contact: string;
   notes: string;
 };
 
@@ -431,6 +432,7 @@ export default function ImportPage() {
         merch: String(row.merch || "").trim(),
         backend: String(row.backend || "").trim(),
         promoter: String(row.promoter || "").trim(),
+        promoter_contact: String(row.promoter_contact || "").trim(),
         notes: String(row.notes || "").trim(),
       });
     }

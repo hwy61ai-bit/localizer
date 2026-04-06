@@ -1,6 +1,6 @@
 export const FIELD_ALIASES: Record<string, string[]> = {
   date: ['date', 'show date', 'show_date', 'event date', 'date of show'],
-  event: ['event', 'show', 'event name', 'show name', 'artist', 'act', 'band', 'name'],
+  event: ['event', 'show', 'event name', 'show name', 'artist', 'band', 'name'],
   city: ['city', 'market', 'location', 'town', 'venue city', 'show city'],
   state: ['state', 'st', 'province', 'region', 'state/province'],
   country: ['country', 'nation', 'territory', 'country/region'],
@@ -13,6 +13,7 @@ export const FIELD_ALIASES: Record<string, string[]> = {
   onstage: ['onstage', 'on stage', 'stage time', 'performance time'],
   curfew: ['curfew', 'end time', 'finish'],
   promoter: ['promoter', 'buyer', 'promoter name', 'presented by'],
+  promoter_contact: ['promoter contact', 'contact', 'buyer contact', 'venue contact', 'talent buyer contact', 'local contact'],
   notes: ['notes', 'comments', 'memo', 'details', 'info'],
   backend: ['backend', 'back end', 'percentage', 'vs', 'versus', 'deal terms'],
   support: ['support', 'opener', 'opening act', 'support act'],
@@ -40,6 +41,7 @@ export const MAPPER_FIELDS: MapperField[] = [
   { key: 'onstage', label: 'Onstage', required: false },
   { key: 'curfew', label: 'Curfew', required: false },
   { key: 'promoter', label: 'Promoter', required: false },
+  { key: 'promoter_contact', label: 'Promoter Contact', required: false },
   { key: 'merch', label: 'Merch Deal', required: false },
   { key: 'backend', label: 'Backend / Deal Terms', required: false },
   { key: 'notes', label: 'Notes', required: false },
@@ -54,6 +56,7 @@ export function bestGuess(field: string, hdrs: string[], usedCols: Set<string>):
   }
   // Partial match
   for (const alias of aliases) {
+    if (alias.length <= 3) continue;
     const idx = hdrs.findIndex(h => h.toLowerCase().trim().includes(alias.toLowerCase()) && !usedCols.has(h));
     if (idx >= 0) return hdrs[idx];
   }

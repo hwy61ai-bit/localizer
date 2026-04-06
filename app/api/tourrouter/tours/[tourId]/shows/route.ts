@@ -46,6 +46,7 @@ export async function POST(
     merch: s.merch || null,
     backend: s.backend || null,
     promoter: s.promoter || null,
+    promoter_contact: s.promoter_contact || null,
     notes: s.notes || null,
     support: s.support || null,
   }));
