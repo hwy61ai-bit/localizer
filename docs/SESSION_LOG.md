@@ -733,3 +733,26 @@ Markdown table paste support — users can paste markdown tables from ChatGPT/Cl
 - BUG-1 MEDIUM, BUG-4 HIGH (partial), BUG-6 MEDIUM, BUG-3/7/9/10 LOW
 - BUG-4 HIGH (partial — helper design approved by Tim, rollout pending)
 - BUG-6 MEDIUM, BUG-3/7/9/10 LOW
+
+## April 6, 2026 — BUG-4 full rollout complete
+
+**Shipped:**
+- New helper `lib/tourrouter/requireAccess.ts` — discriminated-union `requireTourRouterAccess({ skipBillingGate? })` + `tourRouterAccessErrorResponse()` one-liner early return
+- Rolled out to all 33 authenticated TourRouter routes (was 6 protected, now 39 total — everything except the 3 public token-based routes)
+- `{ skipBillingGate: true }` applied to: billing/status, billing/checkout, billing/portal, demo-seed, localizer/tours, localizer/events (lapsed users can still reactivate; onboarding + Localizer cross-product reads unblocked)
+- Default gate on everything else: tours sub-routes, expenses, venues, guest-list, contacts, aliases, import (pdf/csv/text), intake, advance/status, advance/send, artists, currency-rates, drive-info, flight-price, finance/report, push-to-localizer, shows/[showId]
+- `npx tsc --noEmit` clean after every group; manual smoke test on dashboard + tour detail + show edit all green
+
+**Public/untouched routes (correct):**
+- `advance/[token]` — public venue form, token auth
+- `advance/cron` — Vercel cron, service role
+- `finance/report/[token]` — public shareable report, token auth
+
+**New bugs discovered during smoke test (NOT from BUG-4, pre-existing):**
+1. Editing the offer field on a show updates the USD column instead of the OFFER column. Need to understand what those columns actually mean before fixing.
+2. `GET /api/tourrouter/guest-list?showId=...` returns 500. Route uses `tour_guest_list` table but demo-seed uses `guest_list` — likely a table name mismatch somewhere. Pre-existing, unrelated to today's refactor.
+
+**Next session should start with:**
+- Triage the offer/USD column bug (figure out column semantics first)
+- Fix guest-list table name mismatch
+- Then BUG-6 (show PUT 500 vs 404) or next QA session on import flow
