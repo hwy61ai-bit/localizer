@@ -30,6 +30,7 @@ export {
   toUSD,
   fmtUSD,
   fmtDist,
+  formatOfferDisplay,
   type OfferObj,
   type RateProvider,
 } from './currency';

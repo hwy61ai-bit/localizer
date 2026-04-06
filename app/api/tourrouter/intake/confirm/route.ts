@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
+import { formatOfferDisplay } from "@/lib/tourrouter/currency";
 
 export async function POST(req: NextRequest) {
   const access = await requireTourRouterAccess();
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
               capacity: fields.capacity || null,
               offer_amount: fields.offer_amount || 0,
               offer_currency: fields.offer_currency || "USD",
-              offer_display: fields.offer_amount ? `${fields.offer_currency || "USD"} ${fields.offer_amount}` : null,
+              offer_display: formatOfferDisplay(fields.offer_amount, fields.offer_currency),
               backend: fields.backend || null,
               doors: fields.doors || null,
               showtime: fields.showtime || null,
@@ -68,7 +69,7 @@ export async function POST(req: NextRequest) {
             }
           }
           if (fields.offer_amount) {
-            update.offer_display = `${fields.offer_currency || "USD"} ${fields.offer_amount}`;
+            update.offer_display = formatOfferDisplay(fields.offer_amount, fields.offer_currency);
           }
           if (Object.keys(update).length > 0) {
             const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);

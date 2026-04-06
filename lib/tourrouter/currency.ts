@@ -24,6 +24,17 @@ export function fmtUSD(n: number | null | undefined): string {
   return '$' + Math.round(n).toLocaleString();
 }
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$', CAD: 'CA$', GBP: '£', EUR: '€', AUD: 'A$',
+};
+
+export function formatOfferDisplay(amount: number | null | undefined, currency: string | null | undefined): string | null {
+  if (!amount) return null;
+  const rounded = Math.round(amount).toLocaleString();
+  const sym = CURRENCY_SYMBOLS[(currency || 'USD').toUpperCase()];
+  return sym ? `${sym}${rounded}` : `${(currency || 'USD').toUpperCase()} ${rounded}`;
+}
+
 export function fmtDist(km: number, country: string | null | undefined): string {
   if (isImperialCountry(country)) {
     return Math.round(km * 0.6214) + ' mi';

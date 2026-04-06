@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 import { createNotification } from "@/lib/notifications";
+import { fetchLiveRates } from "@/lib/tourrouter/fetchLiveRates";
 
 export async function GET() {
   try {
@@ -98,6 +99,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Fetch live currency rates for new tour (non-blocking on failure)
+    let currency_rates: Record<string, number> = {};
+    try {
+      currency_rates = await fetchLiveRates();
+    } catch (e) {
+      console.warn("[TourRouter tours POST] Failed to fetch live rates, tour will start without them:", e);
+    }
+
     console.log("[TourRouter tours POST] Inserting tour:", { org_id: result.orgId, name, artist_id });
 
     const { data: tour, error } = await supabase
@@ -106,6 +115,7 @@ export async function POST(req: NextRequest) {
         org_id: result.orgId,
         name,
         artist_id: artist_id || null,
+        ...(Object.keys(currency_rates).length > 0 ? { currency_rates } : {}),
         ...(tour_roster ? { tour_roster } : {}),
       })
       .select()

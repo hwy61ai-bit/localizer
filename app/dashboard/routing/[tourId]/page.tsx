@@ -30,6 +30,8 @@ import {
   type CommissionType,
   VEHICLE_MPG,
   VEHICLE_L100,
+  toUSD,
+  formatOfferDisplay,
 } from "@/lib/tourrouter";
 import type { Commission } from "@/lib/tourrouter/commissions";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
@@ -255,6 +257,28 @@ export default function RouteTourPage() {
       })
       .catch(() => setLoading(false));
   }, [tourId]);
+
+  // ── Auto-populate currency_rates if empty ────────────────────
+  const ratesFetchedRef = useRef(false);
+  useEffect(() => {
+    if (!tour || ratesFetchedRef.current) return;
+    const hasRates = tour.currency_rates && Object.keys(tour.currency_rates).length > 0;
+    if (hasRates) return;
+    ratesFetchedRef.current = true;
+    fetch("/api/tourrouter/currency-rates")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.rates && Object.keys(data.rates).length > 0) {
+          setTour((prev) => prev ? { ...prev, currency_rates: data.rates } : prev);
+          fetch(`/api/tourrouter/tours/${tourId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ currency_rates: data.rates }),
+          });
+        }
+      })
+      .catch(() => {});
+  }, [tour, tourId]);
 
   // ── Prefetch Mapbox drive data ───────────────────────────────
 
@@ -557,7 +581,7 @@ export default function RouteTourPage() {
             country: newShow.country || null,
             offer_amount: parseFloat(newShow.offer_amount) || 0,
             offer_currency: newShow.offer_currency || "USD",
-            offer_display: newShow.offer_amount ? `${newShow.offer_currency} ${newShow.offer_amount}` : null,
+            offer_display: formatOfferDisplay(parseFloat(newShow.offer_amount) || 0, newShow.offer_currency),
             is_off: false,
             sort_order: shows.length,
           }],
@@ -609,7 +633,17 @@ export default function RouteTourPage() {
     const numFields = ["capacity", "offer_amount", "hotel_rooms", "hotel_rate", "hotel_block_size", "hotel_block_rate", "hotel_attrition_pct", "deposit_amount"];
     const boolFields = ["hotel_block"];
     const parsed: unknown = boolFields.includes(key) ? !!value : numFields.includes(key) ? (parseFloat(value) || 0) : value;
-    const updated = { ...drawerShow, [key]: parsed };
+    let updated = { ...drawerShow, [key]: parsed };
+    // Regenerate offer_display when offer fields change
+    let putBody: Record<string, unknown> = { [key]: parsed };
+    if (key === "offer_amount" || key === "offer_currency") {
+      const newDisplay = formatOfferDisplay(
+        key === "offer_amount" ? (parsed as number) : (drawerShow.offer_amount as number),
+        key === "offer_currency" ? (parsed as string) : (drawerShow.offer_currency as string),
+      );
+      updated = { ...updated, offer_display: newDisplay };
+      putBody.offer_display = newDisplay;
+    }
     setDrawerShow(updated);
     setDrawerSaved(false);
     // Debounce save
@@ -618,9 +652,9 @@ export default function RouteTourPage() {
       fetch(`/api/tourrouter/tours/${tourId}/shows/${drawerShow.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: parsed }),
+        body: JSON.stringify(putBody),
       }).then(() => {
-        setShows((prev) => prev.map((s, i) => i === drawerIdx ? { ...s, [key]: parsed } : s));
+        setShows((prev) => prev.map((s, i) => i === drawerIdx ? { ...s, ...updated } : s));
         setDrawerSaved(true);
         setTimeout(() => setDrawerSaved(false), 1500);
       });
@@ -1138,6 +1172,7 @@ export default function RouteTourPage() {
                         flightPriceCache={flightPriceCache}
                         pax={tour?.pax || 4}
                         dateIso={s.date_iso}
+                        currencyRates={tour?.currency_rates || {}}
                       />
                     );
                   })}
@@ -1644,7 +1679,7 @@ function consolidateShows(showList: ShowRow[]): ConsolidatedShow[] {
 function LegAndShowRow({
   show, showNum, index, leg, flying, suggestFly, fromAP, toAP, sd,
   flightThreshold, onToggleLeg, onClickRow, driveColorBg, driveColor, formatShowDate,
-  onDelete, flightPriceCache, pax, dateIso,
+  onDelete, flightPriceCache, pax, dateIso, currencyRates,
 }: {
   show: ConsolidatedShow;
   showNum: number;
@@ -1665,6 +1700,7 @@ function LegAndShowRow({
   flightPriceCache: Record<string, number>;
   pax: number;
   dateIso: string | null;
+  currencyRates: Record<string, number>;
 }) {
   const hasAP = fromAP && toAP;
   const links = hasAP ? buildFlightLinks(fromAP.iata, toAP.iata) : null;
@@ -1790,7 +1826,7 @@ function LegAndShowRow({
           {show.is_off ? "\u2014" : (show.offer_display || "\u2014")}
         </td>
         <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 13, textAlign: "right", color: show.offer_amount ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
-          {show.is_off ? "\u2014" : (show.offer_amount ? fmtUSD(show.offer_amount) : "\u2014")}
+          {show.is_off ? "\u2014" : (show.offer_amount ? fmtUSD(toUSD({ amount: show.offer_amount, currency: show.offer_currency }, currencyRates)) : "\u2014")}
         </td>
         <td style={{ padding: "12px 12px" }}>
           {sd.label && (
