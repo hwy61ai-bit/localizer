@@ -1,10 +1,22 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 const client = new Anthropic();
 
 export async function POST(request: Request) {
   try {
+    // Auth: require logged-in user with org membership
+    const supabase = await supabaseServer();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    const { data: profile } = await supabase
+      .from("org_members")
+      .select("org_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!profile?.org_id) return NextResponse.json({ error: "no_org" }, { status: 403 });
+
     const { base64, filename, mimeType } = await request.json();
 
     if (!base64 || !filename) {

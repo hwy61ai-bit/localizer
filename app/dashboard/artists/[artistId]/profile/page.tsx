@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -78,6 +80,70 @@ export default function ArtistProfilePage() {
   const advFileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
   const [advDragOver, setAdvDragOver] = useState<string | null>(null);
+  const [photoDragOver, setPhotoDragOver] = useState(false);
+  const [logoDragOver, setLogoDragOver] = useState(false);
+  const [nameHovered, setNameHovered] = useState(false);
+  const [bioDragOver, setBioDragOver] = useState(false);
+  const [bioImportMsg, setBioImportMsg] = useState<string | null>(null);
+  const [bioImporting, setBioImporting] = useState(false);
+
+  function showBioMsg(msg: string) {
+    setBioImportMsg(msg);
+    setTimeout(() => setBioImportMsg(null), 4000);
+  }
+
+  async function handleBioFileDrop(file: File) {
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const allowed = ['txt', 'md', 'docx', 'pdf'];
+    if (!allowed.includes(ext)) {
+      showBioMsg("Unsupported file type — drop a .txt, .md, .docx, or .pdf");
+      return;
+    }
+
+    setBioImporting(true);
+    setBioImportMsg(`Reading ${file.name}...`);
+
+    try {
+      if (ext === 'txt' || ext === 'md') {
+        const text = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(reader.error);
+          reader.readAsText(file);
+        });
+        updateField("bio", text.trim());
+        showBioMsg(`Loaded bio from ${file.name}`);
+      } else {
+        // .docx or .pdf — base64 encode and send to server
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const dataUrl = reader.result as string;
+            resolve(dataUrl.split(',')[1] || '');
+          };
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(file);
+        });
+        const resp = await fetch('/api/import/extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64, filename: file.name, mimeType: file.type }),
+        });
+        const data = await resp.json();
+        if (!resp.ok || data.error) {
+          showBioMsg(data.error || "Couldn't read that file");
+          return;
+        }
+        updateField("bio", (data.text || '').trim());
+        showBioMsg(`Loaded bio from ${file.name}`);
+      }
+    } catch (e) {
+      console.error('[Bio import] Error:', e);
+      showBioMsg("Couldn't read that file");
+    } finally {
+      setBioImporting(false);
+    }
+  }
 
   // Debounced save
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -291,8 +357,16 @@ export default function ArtistProfilePage() {
           >
             &larr; BACK
           </button>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: saving ? "var(--hw-text-muted)" : showSaved ? "var(--hw-green)" : "transparent", transition: "color 0.2s" }}>
-            {saving ? "SAVING..." : showSaved ? "SAVED" : "."}
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <button
+              onClick={() => router.push(`/dashboard/artists/${artistId}`)}
+              style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", cursor: "pointer" }}
+            >
+              VIEW TOURS &rarr;
+            </button>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: saving ? "var(--hw-text-muted)" : showSaved ? "var(--hw-green)" : "transparent", transition: "color 0.2s" }}>
+              {saving ? "SAVING..." : showSaved ? "SAVED" : "."}
+            </div>
           </div>
         </div>
 
@@ -309,18 +383,28 @@ export default function ArtistProfilePage() {
           padding: 28, marginBottom: 20,
         }}>
           {/* Artist Name — full width */}
-          <input
-            value={artist.name || ""}
-            onChange={(e) => updateField("name", e.target.value)}
-            placeholder="Artist Name"
-            style={{
-              fontFamily: "var(--hw-font-display)", fontSize: 48, fontWeight: 400,
-              letterSpacing: "2px", textTransform: "uppercase" as const,
-              border: "none", outline: "none", background: "transparent",
-              color: "var(--hw-text)", width: "100%", padding: 0, marginBottom: 20,
-              animation: "fadeSlideUp 0.5s ease-out both",
-            }}
-          />
+          <div
+            style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}
+            onMouseEnter={() => setNameHovered(true)}
+            onMouseLeave={() => setNameHovered(false)}
+          >
+            <input
+              value={artist.name || ""}
+              onChange={(e) => updateField("name", e.target.value)}
+              placeholder="Click to add band name"
+              style={{
+                fontFamily: "var(--hw-font-display)", fontSize: 48, fontWeight: 400,
+                letterSpacing: "2px", textTransform: "uppercase" as const,
+                border: "none", outline: "none", background: "transparent",
+                color: "var(--hw-text)", flex: 1, padding: 0,
+                animation: "fadeSlideUp 0.5s ease-out both",
+              }}
+            />
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={nameHovered ? "var(--hw-crimson)" : "var(--hw-text-muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: "stroke 0.2s" }}>
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
+          </div>
 
           {/* Three squares row */}
           <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
@@ -335,12 +419,16 @@ export default function ArtistProfilePage() {
               />
               <div
                 onMouseEnter={() => setPhotoHovered(true)}
-                onMouseLeave={() => setPhotoHovered(false)}
+                onMouseLeave={() => { setPhotoHovered(false); setPhotoDragOver(false); }}
                 onClick={() => photoFileRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setPhotoDragOver(true); }}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDragLeave={() => setPhotoDragOver(false)}
+                onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPhotoDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handlePhotoUpload(f); }}
                 style={{
                   width: 94, height: 94,
-                  background: "var(--hw-bg)",
-                  border: artist.image_url ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
+                  background: photoDragOver ? "var(--hw-crimson-ghost)" : "var(--hw-bg)",
+                  border: photoDragOver ? "3px dashed var(--hw-crimson)" : artist.image_url ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: "pointer", overflow: "hidden", position: "relative",
                   flexShrink: 0, transition: "var(--hw-ease)",
@@ -417,12 +505,16 @@ export default function ArtistProfilePage() {
               />
               <div
                 onMouseEnter={() => setLogoHovered(true)}
-                onMouseLeave={() => setLogoHovered(false)}
+                onMouseLeave={() => { setLogoHovered(false); setLogoDragOver(false); }}
                 onClick={() => logoFileRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setLogoDragOver(true); }}
+                onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDragLeave={() => setLogoDragOver(false)}
+                onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setLogoDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleLogoUpload(f); }}
                 style={{
                   width: 94, height: 94,
-                  background: "var(--hw-bg)",
-                  border: artist.logo_url ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
+                  background: logoDragOver ? "var(--hw-crimson-ghost)" : "var(--hw-bg)",
+                  border: logoDragOver ? "3px dashed var(--hw-crimson)" : artist.logo_url ? "3px solid var(--hw-border-strong)" : "3px dashed var(--hw-border-light)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   cursor: "pointer", overflow: "hidden", position: "relative",
                   flexShrink: 0, transition: "var(--hw-ease)",
@@ -473,15 +565,27 @@ export default function ArtistProfilePage() {
         </div>
 
         {/* ══════ Bio ══════ */}
-        <div style={{
-          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
-          padding: 28, marginBottom: 20,
-        }}>
+        <div
+          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (!bioImporting) setBioDragOver(true); }}
+          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onDragLeave={(e) => { e.preventDefault(); setBioDragOver(false); }}
+          onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setBioDragOver(false); if (!bioImporting) { const f = e.dataTransfer.files?.[0]; if (f) handleBioFileDrop(f); } }}
+          style={{
+            background: bioDragOver ? "var(--hw-crimson-ghost)" : "var(--hw-bg-surface)",
+            border: bioDragOver ? "3px dashed var(--hw-crimson)" : "3px solid var(--hw-border-strong)",
+            padding: 28, marginBottom: 20, transition: "var(--hw-ease)",
+          }}
+        >
           <SectionLabel>Bio</SectionLabel>
+          {bioImportMsg && (
+            <div style={{ marginBottom: 10, padding: "8px 14px", background: bioImportMsg.startsWith("Loaded") ? "var(--hw-green-ghost)" : bioImportMsg.startsWith("Reading") ? "var(--hw-bg)" : "var(--hw-red-ghost)", border: bioImportMsg.startsWith("Loaded") ? "2px solid var(--hw-green-border)" : bioImportMsg.startsWith("Reading") ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: bioImportMsg.startsWith("Loaded") ? "var(--hw-green)" : bioImportMsg.startsWith("Reading") ? "var(--hw-text-muted)" : "var(--hw-crimson)" }}>
+              {bioImportMsg}
+            </div>
+          )}
           <textarea
             value={artist.bio || ""}
             onChange={(e) => updateField("bio", e.target.value)}
-            placeholder="Artist biography..."
+            placeholder={bioDragOver ? "Drop .txt, .md, .docx, or .pdf here..." : "Artist biography..."}
             style={{
               width: "100%", boxSizing: "border-box",
               padding: "12px 16px", border: "3px solid var(--hw-border-strong)",
@@ -642,13 +746,13 @@ export default function ArtistProfilePage() {
           title="Promo & Marketing"
           badge={(() => {
             const p = (artist.promo_marketing as any) || {};
-            const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl", "bioShort", "bioLong"];
+            const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl"];
             const filled = fields.filter((f) => p[f]).length;
             return `${filled} of ${fields.length}`;
           })()}
           badgeColor={(() => {
             const p = (artist.promo_marketing as any) || {};
-            const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl", "bioShort", "bioLong"];
+            const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl"];
             const filled = fields.filter((f) => p[f]).length;
             return filled >= 6 ? "green" : filled > 0 ? "amber" : "gray";
           })()}
@@ -664,8 +768,6 @@ export default function ArtistProfilePage() {
             { path: "appleMusicUrl", label: "Apple Music" },
             { path: "bandcampUrl", label: "Bandcamp" },
             { path: "epkUrl", label: "EPK URL" },
-            { path: "bioShort", label: "Short Bio", type: "textarea", placeholder: "1-2 sentences" },
-            { path: "bioLong", label: "Full Bio", type: "textarea" },
             { path: "notes", label: "Notes", type: "textarea" },
           ]} />
         </Accordion>
@@ -966,6 +1068,41 @@ function JsonFieldRows({
 
 // ── Roster Section ─────────────────────────────────────────────
 
+const ROSTER_FIELD_ALIASES: Record<string, string[]> = {
+  legalName: ['name', 'full name', 'legal name', 'member name', 'crew name'],
+  preferredName: ['preferred name', 'nickname', 'goes by'],
+  role: ['role', 'position', 'title', 'job', 'function'],
+  email: ['email', 'e-mail', 'email address'],
+  phone: ['phone', 'cell', 'mobile', 'phone number', 'cell phone', 'mobile phone'],
+  showDayRate: ['show day rate', 'show rate', 'day rate', 'show day'],
+  offDayRate: ['off day rate', 'off rate', 'off day'],
+  travelDayRate: ['travel day rate', 'travel rate', 'travel day'],
+  perDiemRate: ['per diem', 'perdiem', 'per diem rate'],
+  dateOfBirth: ['dob', 'date of birth', 'birthday', 'birth date'],
+  passportNumber: ['passport', 'passport number', 'passport #'],
+};
+
+function rosterBestGuess(field: string, hdrs: string[], usedCols: Set<string>): string {
+  const aliases = ROSTER_FIELD_ALIASES[field] || [field];
+  for (const alias of aliases) {
+    const idx = hdrs.findIndex(h => h.toLowerCase().trim() === alias.toLowerCase() && !usedCols.has(h));
+    if (idx >= 0) return hdrs[idx];
+  }
+  for (const alias of aliases) {
+    if (alias.length <= 3) continue;
+    const idx = hdrs.findIndex(h => h.toLowerCase().trim().includes(alias.toLowerCase()) && !usedCols.has(h));
+    if (idx >= 0) return hdrs[idx];
+  }
+  return '';
+}
+
+function parseRosterNumber(val: string | undefined): number | null {
+  if (!val) return null;
+  const cleaned = val.replace(/[$,\s]/g, '');
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? null : n;
+}
+
 function RosterSection({
   roster, onUpdate,
 }: {
@@ -973,6 +1110,123 @@ function RosterSection({
   onUpdate: (v: any[]) => void;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [rosterDragOver, setRosterDragOver] = useState(false);
+  const [rosterImportMsg, setRosterImportMsg] = useState<string | null>(null);
+
+  function showImportMsg(msg: string) {
+    setRosterImportMsg(msg);
+    setTimeout(() => setRosterImportMsg(null), 4000);
+  }
+
+  function handleRosterFileDrop(file: File) {
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+
+    function processRows(allRows: string[][]) {
+      if (allRows.length < 2) { showImportMsg("No data rows found"); return; }
+
+      // Find header row: first row with both a name-like and role-like header
+      let headerIdx = 0;
+      for (let i = 0; i < Math.min(allRows.length, 10); i++) {
+        const cells = allRows[i].map(c => String(c ?? '').toLowerCase().trim());
+        const hasName = cells.some(c => /\bname\b/.test(c));
+        const hasRole = cells.some(c => /\brole\b|\bposition\b|\btitle\b|\bjob\b|\bfunction\b/.test(c));
+        if (hasName && hasRole) { headerIdx = i; break; }
+      }
+
+      const hdrs = allRows[headerIdx].map(c => String(c ?? ''));
+      const dataRows = allRows.slice(headerIdx + 1);
+
+      // Map columns
+      const usedCols = new Set<string>();
+      const mapping: Record<string, string> = {};
+      for (const field of Object.keys(ROSTER_FIELD_ALIASES)) {
+        const col = rosterBestGuess(field, hdrs, usedCols);
+        mapping[field] = col;
+        if (col) usedCols.add(col);
+      }
+
+      const nameCol = mapping.legalName;
+      if (!nameCol) { showImportMsg("Could not find a Name column"); return; }
+
+      const numFields = new Set(['showDayRate', 'offDayRate', 'travelDayRate', 'perDiemRate']);
+      const newMembers: any[] = [];
+
+      for (const row of dataRows) {
+        const rowObj: Record<string, string> = {};
+        hdrs.forEach((h, i) => { rowObj[h] = String(row[i] ?? '').trim(); });
+
+        const nameVal = rowObj[nameCol]?.trim();
+        if (!nameVal) continue;
+        if (/^totals?$/i.test(nameVal)) continue;
+
+        const member: Record<string, unknown> = {
+          id: crypto.randomUUID(),
+          legalName: "", preferredName: null, role: "",
+          email: null, phone: null, secondaryPhone: null,
+          emergencyContactName: null, emergencyRelationship: null, emergencyPhone: null,
+          dateOfBirth: null, passportNumber: null, passportCountry: null, passportExpiration: null,
+          knownTravelerNumber: null, preferredHomeAirport: null,
+          seatPreference: null, bunkPreference: null,
+          mealNotes: null, nonFoodAllergies: null,
+          tshirtSize: null, shoeSize: null,
+          showDayRate: null, offDayRate: null, travelDayRate: null, perDiemRate: null,
+        };
+
+        for (const [field, col] of Object.entries(mapping)) {
+          if (!col) continue;
+          const raw = rowObj[col]?.trim();
+          if (!raw) continue;
+          if (numFields.has(field)) {
+            member[field] = parseRosterNumber(raw);
+          } else {
+            member[field] = raw;
+          }
+        }
+
+        newMembers.push(member);
+      }
+
+      if (newMembers.length === 0) { showImportMsg("No valid crew rows found"); return; }
+
+      onUpdate([...roster, ...newMembers]);
+      showImportMsg(`Added ${newMembers.length} crew member${newMembers.length > 1 ? 's' : ''} from ${file.name}`);
+    }
+
+    try {
+      if (ext === 'xlsx' || ext === 'xls') {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array', raw: true, cellDates: true });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            processRows(rows);
+          } catch (e) {
+            console.error('[Roster import] XLSX parse error:', e);
+            showImportMsg("Failed to parse spreadsheet");
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const text = ev.target?.result as string;
+            const result = Papa.parse(text, { header: false, skipEmptyLines: true });
+            processRows(result.data as string[][]);
+          } catch (e) {
+            console.error('[Roster import] CSV parse error:', e);
+            showImportMsg("Failed to parse CSV");
+          }
+        };
+        reader.readAsText(file);
+      }
+    } catch (e) {
+      console.error('[Roster import] File read error:', e);
+      showImportMsg("Failed to read file");
+    }
+  }
 
   function addMember() {
     const member = {
@@ -1005,7 +1259,17 @@ function RosterSection({
   }
 
   return (
-    <div>
+    <div
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setRosterDragOver(true); }}
+      onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onDragLeave={(e) => { e.preventDefault(); setRosterDragOver(false); }}
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setRosterDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleRosterFileDrop(f); }}
+    >
+      {rosterImportMsg && (
+        <div style={{ marginBottom: 10, padding: "8px 14px", background: rosterImportMsg.startsWith("Added") ? "var(--hw-green-ghost)" : "var(--hw-red-ghost)", border: rosterImportMsg.startsWith("Added") ? "2px solid var(--hw-green-border)" : "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: rosterImportMsg.startsWith("Added") ? "var(--hw-green)" : "var(--hw-crimson)" }}>
+          {rosterImportMsg}
+        </div>
+      )}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
         {roster.map((member) => {
           const isOpen = expandedId === member.id;
@@ -1104,11 +1368,14 @@ function RosterSection({
         onClick={addMember}
         style={{
           width: "100%", padding: "12px",
-          border: "3px dashed var(--hw-border-light)", background: "transparent",
-          fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer",
+          border: rosterDragOver ? "3px dashed var(--hw-crimson)" : "3px dashed var(--hw-border-light)",
+          background: rosterDragOver ? "var(--hw-crimson-ghost)" : "transparent",
+          fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const,
+          color: rosterDragOver ? "var(--hw-crimson)" : "var(--hw-text-muted)", cursor: "pointer",
+          transition: "var(--hw-ease)",
         }}
       >
-        + ADD CREW MEMBER
+        {rosterDragOver ? "DROP CSV / XLSX TO IMPORT CREW" : "+ ADD CREW MEMBER"}
       </button>
     </div>
   );
