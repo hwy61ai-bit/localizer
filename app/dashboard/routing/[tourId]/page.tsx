@@ -1869,8 +1869,8 @@ function LegAndShowRow({
             : formatShowDate(show.date_iso)}
         </td>
         <td style={{ padding: "12px 12px" }}>
-          <div style={{ fontFamily: "var(--hw-font-body)", fontWeight: 500, fontSize: 14, color: "var(--hw-text)" }}>{show.is_off ? <em style={{ fontStyle: "italic", opacity: 0.7 }}>{show.offDayCount && show.offDayCount > 1 ? `OFF \u00B7 ${show.offDayCount} DAYS` : "OFF DAY"}</em> : (show.event || show.venue || "\u2014")}</div>
-          {show.event && show.venue && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.venue}</div>}
+          <div style={{ fontFamily: "var(--hw-font-body)", fontWeight: 500, fontSize: 14, color: "var(--hw-text)" }}>{show.is_off ? <em style={{ fontStyle: "italic", opacity: 0.7 }}>{show.offDayCount && show.offDayCount > 1 ? `OFF \u00B7 ${show.offDayCount} DAYS` : "OFF DAY"}</em> : (show.venue || show.event || "\u2014")}</div>
+          {show.venue && show.event && show.venue !== show.event && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.event}</div>}
         </td>
         <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{show.city || "\u2014"}</td>
         <td style={{ padding: "12px 12px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)", textTransform: "uppercase" }}>{show.country || "\u2014"}</td>

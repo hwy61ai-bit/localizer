@@ -8,14 +8,38 @@ export async function POST() {
 
   const orgId = result.orgId;
 
-  // 2. Service role client for bulk writes
+  // Service role client for bulk writes
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // Check if demo tour already exists for this org
+  const { data: existingArtist } = await admin
+    .from("artists")
+    .select("id")
+    .eq("org_id", orgId)
+    .eq("name", "Beta Test Band")
+    .maybeSingle();
+  if (existingArtist) {
+    const { data: existingTour } = await admin
+      .from("tours_routing")
+      .select("id")
+      .eq("artist_id", existingArtist.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return NextResponse.json({
+      success: true,
+      artist_id: existingArtist.id,
+      tour_id: existingTour?.id || null,
+      shows_created: 0,
+      already_existed: true,
+    });
+  }
+
   try {
-    // 3. Create artist
+    // Create artist
     const { data: artist, error: artistErr } = await admin
       .from("artists")
       .insert({ name: "Beta Test Band", org_id: orgId })
