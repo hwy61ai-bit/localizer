@@ -32,6 +32,7 @@ import {
   VEHICLE_L100,
   toUSD,
   formatOfferDisplay,
+  TOURING_CURRENCIES,
 } from "@/lib/tourrouter";
 import type { Commission } from "@/lib/tourrouter/commissions";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
@@ -1239,12 +1240,22 @@ export default function RouteTourPage() {
                         {section.fields.map((field) => (
                           <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address"].includes(field.key) ? "1 / -1" : undefined }}>
                             <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>{field.label}</label>
-                            <input
-                              value={String((drawerShow as Record<string, unknown>)[field.key] ?? "")}
-                              onChange={(e) => updateDrawerField(field.key, e.target.value)}
-                              type={field.type || "text"}
-                              style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, outline: "none" }}
-                            />
+                            {field.key === "offer_currency" ? (
+                              <select
+                                value={String((drawerShow as Record<string, unknown>)[field.key] ?? "USD")}
+                                onChange={(e) => updateDrawerField(field.key, e.target.value)}
+                                style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, background: "var(--hw-bg-surface)", outline: "none" }}
+                              >
+                                {TOURING_CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                            ) : (
+                              <input
+                                value={String((drawerShow as Record<string, unknown>)[field.key] ?? "")}
+                                onChange={(e) => updateDrawerField(field.key, e.target.value)}
+                                type={field.type || "text"}
+                                style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, outline: "none" }}
+                              />
+                            )}
                           </div>
                         ))}
                       </div>
@@ -1610,7 +1621,7 @@ export default function RouteTourPage() {
               <div>
                 <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Currency</label>
                 <select value={newShow.offer_currency} onChange={(e) => setNewShow((p) => ({ ...p, offer_currency: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, background: "var(--hw-bg-surface)", outline: "none", appearance: "none" }}>
-                  {["USD", "EUR", "GBP", "CAD", "AUD", "CHF", "SEK", "NOK", "DKK"].map((c) => <option key={c} value={c}>{c}</option>)}
+                  {TOURING_CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>

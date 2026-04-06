@@ -7,6 +7,8 @@ export interface OfferObj {
   pending?: boolean;
 }
 
+export const TOURING_CURRENCIES = ['USD', 'CAD', 'EUR', 'GBP', 'AUD', 'JPY', 'CHF', 'MXN'] as const;
+
 export type RateProvider = (currency: string) => number;
 
 export function getRate(currency: string, rates: Record<string, number>): number {

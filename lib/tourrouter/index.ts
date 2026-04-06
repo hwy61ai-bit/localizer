@@ -31,6 +31,7 @@ export {
   fmtUSD,
   fmtDist,
   formatOfferDisplay,
+  TOURING_CURRENCIES,
   type OfferObj,
   type RateProvider,
 } from './currency';
