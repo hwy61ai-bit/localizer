@@ -756,3 +756,55 @@ Markdown table paste support — users can paste markdown tables from ChatGPT/Cl
 - Triage the offer/USD column bug (figure out column semantics first)
 - Fix guest-list table name mismatch
 - Then BUG-6 (show PUT 500 vs 404) or next QA session on import flow
+
+## April 6, 2026 — BUG-4 full rollout + full QA sweep
+
+**BUG-4 (the big one):**
+- New helper `lib/tourrouter/requireAccess.ts` with discriminated-union return + `tourRouterAccessErrorResponse()` helper
+- Rolled out to all 35 authenticated TourRouter routes (was 6 protected, now all 38 — everything except 3 public token-based routes)
+- `{ skipBillingGate: true }` on: billing/status, billing/checkout, billing/portal, demo-seed, localizer/tours, localizer/events
+- Default gate on all other authenticated routes
+
+**QA bugs closed today:**
+- BUG-3: GET /api/tourrouter/artists now returns 405 with Allow: POST header
+- BUG-4: full rollout (see above)
+- BUG-6: show PUT .single() → .maybeSingle() + explicit 404
+- BUG-7: last two routes (tours/route.ts GET/POST) migrated to requireTourRouterAccess
+- BUG-9: updated_at migration added to tour_shows, run in Supabase, code re-added
+- BUG-10: show DELETE silent no-op → explicit 404
+
+**Import pipeline bugs fixed (major):**
+- Greedy substring bug in `columnMapper.ts bestGuess()` — "contact".includes("act") was mapping Contact → event. Fix: skip aliases ≤3 chars in partial-match pass, removed "act" from event aliases.
+- Added `promoter_contact` as a first-class field in the import pipeline: FIELD_ALIASES, MAPPER_FIELDS, ParsedShow type, applyMapping, and POST /shows handler.
+- Tim's "Contact" column now correctly flows to `tour_shows.promoter_contact`.
+
+**Offer/currency bugs fixed:**
+- New `formatOfferDisplay(amount, currency)` helper in `lib/tourrouter/currency.ts` with proper symbols ($, CA$, £, €, A$)
+- Drawer save now regenerates `offer_display` when amount or currency changes (was saving only offer_amount, leaving offer_display stale)
+- Routing table USD column now uses `toUSD()` with live rates (was just reformatting raw amount as `$X`)
+- New `lib/tourrouter/fetchLiveRates.ts` shared helper (3s AbortController timeout, graceful fallback)
+- POST /tours now seeds `currency_rates` at tour creation
+- Routing page defensively fetches live rates on first load if `tour.currency_rates` is null/empty (covers tours created before this fix)
+- intake/confirm and Add Show modal now use shared `formatOfferDisplay`
+
+**UX improvements:**
+- Offer currency free-text input → dropdown with 8 touring currencies (USD, CAD, EUR, GBP, AUD, JPY, CHF, MXN) in both drawer and Add Show modal
+- Drawer header: `venue || event || "SHOW DETAIL"` (was just `event || "SHOW DETAIL"`)
+- Guest List section moved from bottom of drawer to between Financials and Schedule
+
+**Other fixes:**
+- Guest-list 500 on GET/POST: route handlers were using wrong column names AND wrong org_id scoping. Real schema has no org_id (security via RLS through show_id → tour_shows.org_id), no created_at (use submitted_at), and uses `guest_name`/`plus_ones` not `name`/`plus_one`. Reverted POST columns, removed org_id filters, changed order column.
+- TourTile cleanup delete also changed from `tour_guest_list` to `guest_list`
+- Demo-seed `guest_list` insert fixed to match real schema
+
+**Supabase migrations run today:**
+- `ALTER TABLE tour_shows ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();`
+
+**Still open:**
+- Demo-seed is non-idempotent (calling it twice creates duplicate demo tours) — minor UX issue, not urgent
+- Routing table venue cell precedence edge case (`show.event || show.venue`) — works fine now that Contact mapping is fixed, low priority
+
+**Next session should start with:**
+- Delete any duplicate demo tours Drew accidentally created during today's testing
+- Consider demo-seed idempotency fix (one-line check for existing demo tour)
+- Then either BUG-4 beta test with a lapsed-subscription simulation, or start the next QA session area (import flow stress test with edge cases)
