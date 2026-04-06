@@ -77,6 +77,7 @@ export default function ArtistProfilePage() {
   // Advance materials
   const advFileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
+  const [advDragOver, setAdvDragOver] = useState<string | null>(null);
 
   // Debounced save
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -254,8 +255,9 @@ export default function ArtistProfilePage() {
       const { error } = await supabase.storage.from("localizer-assets").upload(path, file, { upsert: true });
       if (error) throw error;
       const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
-      await supabase.from("artists").update({ [fieldId]: data.publicUrl }).eq("id", artistId);
-      setArtist((prev) => prev ? { ...prev, [fieldId]: data.publicUrl } : prev);
+      const url = data.publicUrl + "?t=" + Date.now();
+      await supabase.from("artists").update({ [fieldId]: url }).eq("id", artistId);
+      setArtist((prev) => prev ? { ...prev, [fieldId]: url } : prev);
     } catch (e) {
       console.error("Upload failed:", e);
     } finally {
@@ -533,10 +535,14 @@ export default function ArtistProfilePage() {
                   />
                   <div
                     onClick={() => advFileRefs.current[field.id]?.click()}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setAdvDragOver(field.id); }}
+                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDragLeave={() => setAdvDragOver(null)}
+                    onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setAdvDragOver(null); const f = e.dataTransfer.files?.[0]; if (f) handleAdvUpload(field.id, f); }}
                     style={{
                       padding: "16px 18px",
-                      background: url ? "var(--hw-green-ghost)" : "var(--hw-bg-surface)",
-                      border: url ? "3px solid var(--hw-green-border)" : "3px solid var(--hw-border-strong)",
+                      background: advDragOver === field.id ? "var(--hw-crimson-ghost)" : url ? "var(--hw-green-ghost)" : "var(--hw-bg-surface)",
+                      border: advDragOver === field.id ? "3px dashed var(--hw-crimson)" : url ? "3px solid var(--hw-green-border)" : "3px solid var(--hw-border-strong)",
                       cursor: "pointer",
                       display: "flex", alignItems: "center", justifyContent: "space-between",
                       transition: "var(--hw-ease)",
