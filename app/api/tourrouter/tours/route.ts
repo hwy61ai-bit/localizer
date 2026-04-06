@@ -1,42 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { checkTourRouterAccess } from "@/lib/tourrouter/billingGate";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 import { createNotification } from "@/lib/notifications";
 
 export async function GET() {
   try {
+    const result = await requireTourRouterAccess();
+    if (!result.ok) return tourRouterAccessErrorResponse(result);
     const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error("[TourRouter tours GET] Auth error:", authError?.message);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: membership, error: memberError } = await supabase
-      .from("org_members")
-      .select("org_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (memberError) {
-      console.error("[TourRouter tours GET] org_members query error:", memberError.message);
-      return NextResponse.json({ error: "Org lookup failed" }, { status: 500 });
-    }
-    if (!membership?.org_id) {
-      console.error("[TourRouter tours GET] No org found for user:", user.id);
-      return NextResponse.json({ error: "No org" }, { status: 403 });
-    }
-
-    // Billing gate
-    const access = await checkTourRouterAccess(membership.org_id, user.email);
-    if (!access.allowed) {
-      return NextResponse.json({ error: "subscription_required", reason: access.reason }, { status: 403 });
-    }
 
     const { data: tours, error } = await supabase
       .from("tours_routing")
       .select("*, artists(name)")
-      .eq("org_id", membership.org_id)
+      .eq("org_id", result.orgId)
       .order("updated_at", { ascending: false });
 
     if (error) {
@@ -52,33 +28,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const result = await requireTourRouterAccess();
+    if (!result.ok) return tourRouterAccessErrorResponse(result);
     const supabase = await supabaseServer();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error("[TourRouter tours POST] Auth error:", authError?.message);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: membership, error: memberError } = await supabase
-      .from("org_members")
-      .select("org_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (memberError) {
-      console.error("[TourRouter tours POST] org_members query error:", memberError.message);
-      return NextResponse.json({ error: "Org lookup failed: " + memberError.message }, { status: 500 });
-    }
-    if (!membership?.org_id) {
-      console.error("[TourRouter tours POST] No org found for user:", user.id, user.email);
-      return NextResponse.json({ error: "No org found for this user" }, { status: 403 });
-    }
-
-    // Billing gate
-    const access = await checkTourRouterAccess(membership.org_id, user.email);
-    if (!access.allowed) {
-      return NextResponse.json({ error: "subscription_required", reason: access.reason }, { status: 403 });
-    }
 
     const body = await req.json();
     const { name, artist_id } = body;
@@ -146,12 +98,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.log("[TourRouter tours POST] Inserting tour:", { org_id: membership.org_id, name, artist_id });
+    console.log("[TourRouter tours POST] Inserting tour:", { org_id: result.orgId, name, artist_id });
 
     const { data: tour, error } = await supabase
       .from("tours_routing")
       .insert({
-        org_id: membership.org_id,
+        org_id: result.orgId,
         name,
         artist_id: artist_id || null,
         ...(tour_roster ? { tour_roster } : {}),
@@ -168,7 +120,7 @@ export async function POST(req: NextRequest) {
 
     await createNotification({
       supabase,
-      orgId: membership.org_id,
+      orgId: result.orgId,
       type: "tour_created",
       title: "New tour created",
       body: name,
