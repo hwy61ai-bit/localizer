@@ -55,7 +55,7 @@ export default function ArtistToursClient({
     if (resp.ok) {
       const data = await resp.json();
       posthog.capture("tour_created");
-      router.push(`/dashboard/routing/${data.tour.id}`);
+      router.push(`/dashboard/routing/${data.tour.id}/import`);
     }
     setCreating(false);
   }
