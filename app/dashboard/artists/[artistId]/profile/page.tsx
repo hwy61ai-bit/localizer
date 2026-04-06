@@ -214,6 +214,189 @@ export default function ArtistProfilePage() {
     [artist, artistId]
   );
 
+  // ── Team Import ─────────────────────────────────────────────
+  const [teamDragOver, setTeamDragOver] = useState(false);
+  const [teamImportMsg, setTeamImportMsg] = useState<string | null>(null);
+
+  function showTeamMsg(msg: string) {
+    setTeamImportMsg(msg);
+    setTimeout(() => setTeamImportMsg(null), 4000);
+  }
+
+  function handleTeamFileDrop(file: File) {
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!['csv', 'xlsx', 'xls'].includes(ext)) {
+      showTeamMsg("Unsupported file type — drop a .csv or .xlsx");
+      return;
+    }
+
+    const ROLE_ALIASES: Record<string, string[]> = {
+      manager: ['manager', 'mgmt', 'management', 'personal manager'],
+      booking_agent: ['booking agent', 'booking', 'booker', 'day to day', 'day-to-day'],
+      publicist: ['publicist', 'press', 'publicity', 'public relations'],
+      agent: ['agent', 'talent agent', 'responsible agent'],
+    };
+    const FIELD_ALIASES: Record<string, string[]> = {
+      name: ['name', 'contact', 'contact name', 'full name'],
+      email: ['email', 'e-mail', 'email address'],
+      phone: ['phone', 'cell', 'mobile', 'phone number', 'telephone'],
+      role: ['role', 'position', 'title', 'type'],
+    };
+
+    function matchAlias(header: string, aliases: string[]): boolean {
+      const h = header.toLowerCase().trim();
+      if (aliases.some(a => h === a)) return true;
+      return aliases.filter(a => a.length > 3).some(a => h.includes(a));
+    }
+
+    function findCol(hdrs: string[], field: string, usedCols: Set<string>): string {
+      const aliases = FIELD_ALIASES[field] || [field];
+      for (const alias of aliases) {
+        const idx = hdrs.findIndex(h => h.toLowerCase().trim() === alias && !usedCols.has(h));
+        if (idx >= 0) return hdrs[idx];
+      }
+      for (const alias of aliases) {
+        if (alias.length <= 3) continue;
+        const idx = hdrs.findIndex(h => h.toLowerCase().trim().includes(alias) && !usedCols.has(h));
+        if (idx >= 0) return hdrs[idx];
+      }
+      return '';
+    }
+
+    function matchRole(cell: string): string | null {
+      const norm = cell.toLowerCase().trim();
+      for (const [role, aliases] of Object.entries(ROLE_ALIASES)) {
+        if (aliases.some(a => norm === a)) return role;
+        if (aliases.filter(a => a.length > 3).some(a => norm.includes(a))) return role;
+      }
+      return null;
+    }
+
+    setTeamImportMsg(`Reading ${file.name}...`);
+
+    function processRows(allRows: string[][]) {
+      if (allRows.length < 2) { showTeamMsg("No data rows found"); return; }
+
+      // Stringify all cells
+      const rows = allRows.map(r => r.map(c => String(c ?? '')));
+
+      // Find header row
+      let headerIdx = 0;
+      for (let i = 0; i < Math.min(rows.length, 10); i++) {
+        const cells = rows[i].map(c => c.toLowerCase().trim());
+        const hasName = cells.some(c => /\bname\b|\bcontact\b/.test(c));
+        const hasRole = cells.some(c => /\brole\b|\bposition\b|\btitle\b|\btype\b/.test(c));
+        if (hasName && hasRole) { headerIdx = i; break; }
+        // Also detect wide format: "manager name" or "booking agent email" style headers
+        if (cells.some(c => /manager|booking|publicist|agent/.test(c) && /name|email|phone/.test(c))) { headerIdx = i; break; }
+      }
+
+      const hdrs = rows[headerIdx];
+      const dataRows = rows.slice(headerIdx + 1);
+
+      // Detect format: long (has a role column) vs wide (role-prefixed columns)
+      const usedCols = new Set<string>();
+      const roleCol = findCol(hdrs, 'role', usedCols);
+
+      const updates: Record<string, string> = {};
+
+      if (roleCol) {
+        // LONG FORMAT: one row per role
+        const nameCol = findCol(hdrs, 'name', usedCols);
+        const emailCol = findCol(hdrs, 'email', usedCols);
+        const phoneCol = findCol(hdrs, 'phone', usedCols);
+
+        for (const row of dataRows) {
+          const rowObj: Record<string, string> = {};
+          hdrs.forEach((h, i) => { rowObj[h] = row[i]?.trim() || ''; });
+
+          const roleVal = rowObj[roleCol];
+          if (!roleVal) continue;
+          const role = matchRole(roleVal);
+          if (!role) continue;
+
+          if (nameCol && rowObj[nameCol]) updates[`${role}_name`] = rowObj[nameCol];
+          if (emailCol && rowObj[emailCol]) updates[`${role}_email`] = rowObj[emailCol];
+          if (phoneCol && rowObj[phoneCol]) updates[`${role}_phone`] = rowObj[phoneCol];
+        }
+      } else {
+        // WIDE FORMAT: role-prefixed columns like "Manager Name", "Booking Agent Email"
+        const rolePrefixes: Record<string, string> = {
+          manager: 'manager',
+          'booking agent': 'booking_agent',
+          booker: 'booking_agent',
+          publicist: 'publicist',
+          agent: 'agent',
+        };
+
+        for (const [prefix, roleKey] of Object.entries(rolePrefixes)) {
+          for (const h of hdrs) {
+            const hLow = h.toLowerCase().trim();
+            if (!hLow.startsWith(prefix)) continue;
+            const suffix = hLow.slice(prefix.length).trim();
+            const colIdx = hdrs.indexOf(h);
+            if (colIdx < 0) continue;
+
+            let field: string | null = null;
+            if (matchAlias(suffix, FIELD_ALIASES.name) || suffix === '' || suffix === 'name') field = 'name';
+            else if (matchAlias(suffix, FIELD_ALIASES.email)) field = 'email';
+            else if (matchAlias(suffix, FIELD_ALIASES.phone)) field = 'phone';
+            if (!field) continue;
+
+            // Read from first data row
+            const val = dataRows[0]?.[colIdx]?.trim();
+            if (val) updates[`${roleKey}_${field}`] = val;
+          }
+        }
+      }
+
+      const filledRoles = new Set(Object.keys(updates).map(k => k.replace(/_(name|email|phone)$/, '')));
+      if (filledRoles.size === 0) {
+        showTeamMsg("No matching team roles found in that file");
+        return;
+      }
+
+      // Save all updates at once
+      saveFields(updates);
+      showTeamMsg(`Updated team from ${file.name} (${filledRoles.size} role${filledRoles.size > 1 ? 's' : ''} filled)`);
+    }
+
+    try {
+      if (ext === 'xlsx' || ext === 'xls') {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = new Uint8Array(ev.target?.result as ArrayBuffer);
+            const workbook = XLSX.read(data, { type: 'array', raw: true, cellDates: true });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows: string[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+            processRows(rows);
+          } catch (e) {
+            console.error('[Team import] XLSX parse error:', e);
+            showTeamMsg("Couldn't read that file");
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const text = ev.target?.result as string;
+            const result = Papa.parse(text, { header: false, skipEmptyLines: true });
+            processRows(result.data as string[][]);
+          } catch (e) {
+            console.error('[Team import] CSV parse error:', e);
+            showTeamMsg("Couldn't read that file");
+          }
+        };
+        reader.readAsText(file);
+      }
+    } catch (e) {
+      console.error('[Team import] File read error:', e);
+      showTeamMsg("Couldn't read that file");
+    }
+  }
+
   function updateField(field: string, value: string) {
     saveFields({ [field]: value || null });
   }
@@ -597,11 +780,23 @@ export default function ArtistProfilePage() {
         </div>
 
         {/* ══════ Team ══════ */}
-        <div style={{
-          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
-          padding: 28, marginBottom: 20,
-        }}>
+        <div
+          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setTeamDragOver(true); }}
+          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onDragLeave={(e) => { e.preventDefault(); setTeamDragOver(false); }}
+          onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setTeamDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleTeamFileDrop(f); }}
+          style={{
+            background: teamDragOver ? "var(--hw-crimson-ghost)" : "var(--hw-bg-surface)",
+            border: teamDragOver ? "3px dashed var(--hw-crimson)" : "3px solid var(--hw-border-strong)",
+            padding: 28, marginBottom: 20, transition: "var(--hw-ease)",
+          }}
+        >
           <SectionLabel>Team</SectionLabel>
+          {teamImportMsg && (
+            <div style={{ marginBottom: 10, padding: "8px 14px", background: teamImportMsg.startsWith("Updated") ? "var(--hw-green-ghost)" : teamImportMsg.startsWith("Reading") ? "var(--hw-bg)" : "var(--hw-red-ghost)", border: teamImportMsg.startsWith("Updated") ? "2px solid var(--hw-green-border)" : teamImportMsg.startsWith("Reading") ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: teamImportMsg.startsWith("Updated") ? "var(--hw-green)" : teamImportMsg.startsWith("Reading") ? "var(--hw-text-muted)" : "var(--hw-crimson)" }}>
+              {teamImportMsg}
+            </div>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             {TEAM_ROLES.map((role) => (
               <TeamCard
