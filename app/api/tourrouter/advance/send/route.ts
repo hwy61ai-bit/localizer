@@ -1,33 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
-  const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
 
   const { showId, recipientEmail, recipientName, emailType } = await req.json();
   if (!showId || !recipientEmail) {
     return NextResponse.json({ error: "showId and recipientEmail required" }, { status: 400 });
   }
 
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!profile?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
+  const supabase = await supabaseServer();
 
   // Fetch show with tour info
   const { data: show } = await supabase
     .from("tour_shows")
     .select("*, tours_routing(name, artist_id, artists(name))")
     .eq("id", showId)
-    .eq("org_id", profile.org_id)
+    .eq("org_id", result.orgId)
     .single();
   if (!show) return NextResponse.json({ error: "Show not found" }, { status: 404 });
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 const ROUTE_SHEET_PROMPT = `You are a music industry route sheet parser. Extract all show information from this document text.
 
@@ -17,9 +17,8 @@ Return ONLY a valid JSON array of show objects. Each object should have these fi
 Return ONLY the JSON array, no other text.`;
 
 export async function POST(req: NextRequest) {
-  const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const access = await requireTourRouterAccess();
+  if (!access.ok) return tourRouterAccessErrorResponse(access);
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "API key not configured" }, { status: 500 });

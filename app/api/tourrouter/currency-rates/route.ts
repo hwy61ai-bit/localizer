@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET() {
-  const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
 
   try {
     const resp = await fetch("https://api.frankfurter.app/latest?base=USD");

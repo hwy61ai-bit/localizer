@@ -1,28 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
+  const result = await requireTourRouterAccess({ skipBillingGate: true });
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!profile?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
 
   // Verify tour belongs to org
   const { data: tour } = await supabase
     .from("tours")
     .select("id")
     .eq("id", tourId)
-    .eq("org_id", profile.org_id)
+    .eq("org_id", result.orgId)
     .single();
   if (!tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
 

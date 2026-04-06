@@ -1,22 +1,16 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET() {
+  const access = await requireTourRouterAccess({ skipBillingGate: true });
+  if (!access.ok) return tourRouterAccessErrorResponse(access);
+
   const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!profile?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
-
   const { data: tours, error } = await supabase
     .from("tours")
     .select("id, name, band_name, artist_id, artists(name), created_at")
-    .eq("org_id", profile.org_id)
+    .eq("org_id", access.orgId)
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

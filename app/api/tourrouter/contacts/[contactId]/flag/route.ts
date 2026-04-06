@@ -1,29 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ contactId: string }> },
 ) {
   const { contactId } = await params;
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!profile?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
 
   // Set my_flag on account_contacts (upsert)
   const { data: existing } = await supabase
     .from("account_contacts")
     .select("id, my_flag")
     .eq("shared_contact_id", contactId)
-    .eq("org_id", profile.org_id)
+    .eq("org_id", result.orgId)
     .maybeSingle();
 
   if (existing) {
@@ -38,7 +31,7 @@ export async function POST(
   } else {
     const { error } = await supabase
       .from("account_contacts")
-      .insert({ shared_contact_id: contactId, org_id: profile.org_id, my_flag: true });
+      .insert({ shared_contact_id: contactId, org_id: result.orgId, my_flag: true });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

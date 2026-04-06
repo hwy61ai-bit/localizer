@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-
-async function getAuthOrg(supabase: Awaited<ReturnType<typeof supabaseServer>>) {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  return profile?.org_id ?? null;
-}
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET(req: NextRequest) {
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const orgId = await getAuthOrg(supabase);
-  if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const orgId = result.orgId;
 
   const showId = req.nextUrl.searchParams.get("showId");
   if (!showId) return NextResponse.json({ error: "showId required" }, { status: 400 });
@@ -32,11 +23,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const orgId = await getAuthOrg(supabase);
-  if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: { user } } = await supabase.auth.getUser();
+  const orgId = result.orgId;
 
   const body = await req.json();
   const { showId, guestName, plusOnes, passType, notes } = body;
@@ -52,7 +42,7 @@ export async function POST(req: NextRequest) {
       pass_type: passType || "GA",
       notes: notes || null,
       status: "pending",
-      submitted_by: user?.email || null,
+      submitted_by: result.userEmail || null,
     })
     .select()
     .single();

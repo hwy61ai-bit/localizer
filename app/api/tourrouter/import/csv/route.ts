@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
 import Papa from "papaparse";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function POST(req: NextRequest) {
-  const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const access = await requireTourRouterAccess();
+  if (!access.ok) return tourRouterAccessErrorResponse(access);
 
   const csvText = await req.text();
   if (!csvText.trim()) return NextResponse.json({ error: "Empty CSV" }, { status: 400 });

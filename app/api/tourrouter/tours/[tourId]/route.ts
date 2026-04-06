@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-
-async function getAuthOrg(supabase: Awaited<ReturnType<typeof supabaseServer>>) {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return null;
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  return profile?.org_id ?? null;
-}
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const orgId = await getAuthOrg(supabase);
-  if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const orgId = result.orgId;
 
   const { data: tour, error: tourError } = await supabase
     .from("tours_routing")
@@ -44,9 +35,10 @@ export async function PUT(
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const orgId = await getAuthOrg(supabase);
-  if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const orgId = result.orgId;
 
   const body = await req.json();
 
@@ -81,9 +73,10 @@ export async function DELETE(
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const orgId = await getAuthOrg(supabase);
-  if (!orgId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const orgId = result.orgId;
 
   const { error } = await supabase
     .from("tours_routing")

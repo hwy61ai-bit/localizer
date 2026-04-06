@@ -1,28 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!profile?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
 
   // Verify tour belongs to org
   const { data: tour } = await supabase
     .from("tours_routing")
     .select("id")
     .eq("id", tourId)
-    .eq("org_id", profile.org_id)
+    .eq("org_id", result.orgId)
     .single();
   if (!tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
 
@@ -33,7 +27,7 @@ export async function POST(
 
   const rows = shows.map((s: Record<string, unknown>, i: number) => ({
     tour_id: tourId,
-    org_id: profile.org_id,
+    org_id: result.orgId,
     sort_order: i,
     date_iso: s.date_iso || s.date || null,
     event: s.event || s.event_name || null,
@@ -93,7 +87,7 @@ export async function POST(
             existingDates.add(iso);
             offDayRows.push({
               tour_id: tourId,
-              org_id: profile.org_id,
+              org_id: result.orgId,
               date_iso: iso,
               is_off: true,
               event: "OFF",

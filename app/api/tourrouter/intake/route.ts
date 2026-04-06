@@ -3,6 +3,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { buildDocumentTypePrompt } from "@/lib/tourrouter/prompts/documentTypePrompt";
 import { PARSE_PROMPTS } from "@/lib/tourrouter/prompts/parsePrompts";
 import { createNotification } from "@/lib/notifications";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 async function callClaude(model: string, max_tokens: number, messages: unknown[]) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -51,16 +52,9 @@ const PAYMENT_FIELDS = [
 ];
 
 export async function POST(req: NextRequest) {
+  const access = await requireTourRouterAccess();
+  if (!access.ok) return tourRouterAccessErrorResponse(access);
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: membership } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!membership?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
 
   const body = await req.json();
   const { base64, fileType, fileName, tourId, showId } = body;
@@ -203,7 +197,7 @@ Respond ONLY with JSON: { "showId": "<id or null>", "confidence": <0.0-1.0>, "re
   let storageUrl = "";
   try {
     const ext = (fileName || "document").split(".").pop() || "pdf";
-    const storagePath = `${membership.org_id}/${tourId}/${Date.now()}-${fileName || `document.${ext}`}`;
+    const storagePath = `${access.orgId}/${tourId}/${Date.now()}-${fileName || `document.${ext}`}`;
     const buffer = Buffer.from(base64, "base64");
 
     const { error: uploadError } = await supabase.storage
@@ -232,7 +226,7 @@ Respond ONLY with JSON: { "showId": "<id or null>", "confidence": <0.0-1.0>, "re
   }
   createNotification({
     supabase,
-    orgId: membership.org_id,
+    orgId: access.orgId,
     type: "document_parsed",
     title: "Document processed",
     body: notifyBody,

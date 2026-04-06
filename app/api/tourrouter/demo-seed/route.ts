@@ -1,21 +1,12 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST() {
-  // 1. Auth — get user + org_id
-  const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const result = await requireTourRouterAccess({ skipBillingGate: true });
+  if (!result.ok) return tourRouterAccessErrorResponse(result);
 
-  const { data: membership } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!membership?.org_id) return NextResponse.json({ error: "No org found" }, { status: 400 });
-
-  const orgId = membership.org_id;
+  const orgId = result.orgId;
 
   // 2. Service role client for bulk writes
   const admin = createClient(

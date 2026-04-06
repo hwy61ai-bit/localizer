@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function POST(req: NextRequest) {
+  const access = await requireTourRouterAccess();
+  if (!access.ok) return tourRouterAccessErrorResponse(access);
   const supabase = await supabaseServer();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: membership } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!membership?.org_id) return NextResponse.json({ error: "No org" }, { status: 403 });
 
   const body = await req.json();
   const { documentType, showId, tourId, fields, storageUrl } = body;
@@ -31,7 +25,7 @@ export async function POST(req: NextRequest) {
             .from("tour_shows")
             .insert({
               tour_id: tourId,
-              org_id: membership.org_id,
+              org_id: access.orgId,
               date_iso: fields.date || null,
               event: fields.event || null,
               venue: fields.venue || null,
@@ -77,7 +71,7 @@ export async function POST(req: NextRequest) {
             update.offer_display = `${fields.offer_currency || "USD"} ${fields.offer_amount}`;
           }
           if (Object.keys(update).length > 0) {
-            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", membership.org_id);
+            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);
             if (error) throw error;
             saved.push(`Updated show ${showId}`);
           }
@@ -91,7 +85,7 @@ export async function POST(req: NextRequest) {
             .from("tour_shows")
             .update({ settlement: fields })
             .eq("id", showId)
-            .eq("org_id", membership.org_id);
+            .eq("org_id", access.orgId);
           if (error) throw error;
           saved.push(`Saved settlement to show ${showId}`);
         }
@@ -104,7 +98,7 @@ export async function POST(req: NextRequest) {
             .from("tour_shows")
             .update({ settlement: fields })
             .eq("id", showId)
-            .eq("org_id", membership.org_id);
+            .eq("org_id", access.orgId);
           if (error) throw error;
           saved.push(`Saved box office data to show ${showId}`);
         }
@@ -126,7 +120,7 @@ export async function POST(req: NextRequest) {
             }
           }
           if (Object.keys(update).length > 0) {
-            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", membership.org_id);
+            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);
             if (error) throw error;
             saved.push(`Updated hotel info on show ${showId}`);
           }
@@ -139,7 +133,7 @@ export async function POST(req: NextRequest) {
           .from("tour_expenses")
           .insert({
             tour_id: tourId,
-            org_id: membership.org_id,
+            org_id: access.orgId,
             date: fields.date || new Date().toISOString().split("T")[0],
             category: fields.category || "Other",
             amount: fields.amount || 0,
@@ -169,7 +163,7 @@ export async function POST(req: NextRequest) {
             }
           }
           if (Object.keys(update).length > 0) {
-            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", membership.org_id);
+            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);
             if (error) throw error;
             saved.push(`Updated advance info on show ${showId}`);
           }
@@ -183,7 +177,7 @@ export async function POST(req: NextRequest) {
             .from("tour_shows")
             .update({ co_headliner: fields })
             .eq("id", showId)
-            .eq("org_id", membership.org_id);
+            .eq("org_id", access.orgId);
           if (error) throw error;
           saved.push(`Saved co-headliner data to show ${showId}`);
         }
@@ -197,14 +191,14 @@ export async function POST(req: NextRequest) {
     // Log the intake record (if table exists, silently skip if not)
     try {
       await supabase.from("intake_documents").insert({
-        org_id: membership.org_id,
+        org_id: access.orgId,
         tour_id: tourId,
         show_id: showId || null,
         document_type: documentType,
         file_name: body.fileName || null,
         storage_url: storageUrl || null,
         fields_saved: fields,
-        processed_by: user.email,
+        processed_by: access.userEmail,
       });
     } catch { /* intake_documents table may not exist yet */ }
 
