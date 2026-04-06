@@ -32,6 +32,7 @@ export async function PUT(
   for (const key of allowed) {
     if (body[key] !== undefined) update[key] = body[key];
   }
+  update.updated_at = new Date().toISOString();
   const { data: show, error } = await supabase
     .from("tour_shows")
     .update(update)
