@@ -32,7 +32,6 @@ export async function PUT(
   for (const key of allowed) {
     if (body[key] !== undefined) update[key] = body[key];
   }
-
   const { data: show, error } = await supabase
     .from("tour_shows")
     .update(update)
@@ -40,9 +39,10 @@ export async function PUT(
     .eq("tour_id", tourId)
     .eq("org_id", orgId)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!show) return NextResponse.json({ error: "Show not found" }, { status: 404 });
   return NextResponse.json({ show });
 }
 
@@ -56,13 +56,16 @@ export async function DELETE(
   const supabase = await supabaseServer();
   const orgId = result.orgId;
 
-  const { error } = await supabase
+  const { data: deleted, error } = await supabase
     .from("tour_shows")
     .delete()
     .eq("id", showId)
     .eq("tour_id", tourId)
-    .eq("org_id", orgId);
+    .eq("org_id", orgId)
+    .select("id")
+    .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!deleted) return NextResponse.json({ error: "Show not found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }
