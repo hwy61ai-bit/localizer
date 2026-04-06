@@ -87,6 +87,79 @@ export default function ArtistProfilePage() {
   const [bioDragOver, setBioDragOver] = useState(false);
   const [bioImportMsg, setBioImportMsg] = useState<string | null>(null);
   const [bioImporting, setBioImporting] = useState(false);
+  const [w9DragOver, setW9DragOver] = useState(false);
+  const [w9Importing, setW9Importing] = useState(false);
+  const [w9ImportMsg, setW9ImportMsg] = useState<string | null>(null);
+
+  function showW9Msg(msg: string) {
+    setW9ImportMsg(msg);
+    setTimeout(() => setW9ImportMsg(null), 4000);
+  }
+
+  async function handleW9Drop(file: File) {
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const allowed = ['pdf', 'jpg', 'jpeg', 'png', 'heic'];
+    if (!allowed.includes(ext)) {
+      showW9Msg("Drop a W-9 PDF or image");
+      return;
+    }
+
+    setW9Importing(true);
+    setW9ImportMsg(`Reading W-9...`);
+
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          resolve(dataUrl.split(',')[1] || '');
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+
+      const resp = await fetch('/api/import/parse-w9', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64, filename: file.name, mimeType: file.type }),
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.ok) {
+        showW9Msg(data.error || "Couldn't parse that W-9");
+        return;
+      }
+
+      const parsed = data.fields as { legalName: string | null; dba: string | null; entityType: string | null; address: string | null; ein: string | null };
+      const current = (artist?.business_entity as Record<string, unknown> | null) || {};
+      const updates: Record<string, unknown> = { ...current };
+      let filledCount = 0;
+
+      if (parsed.legalName) { updates.legalName = parsed.legalName; filledCount++; }
+      if (parsed.dba) { updates.dba = parsed.dba; filledCount++; }
+      if (parsed.entityType) { updates.entityType = parsed.entityType; filledCount++; }
+      if (parsed.ein) { updates.ein = parsed.ein; filledCount++; }
+      if (parsed.address) {
+        updates.businessAddress = parsed.address;
+        filledCount++;
+        if (!current.mailingAddress) {
+          updates.mailingAddress = parsed.address;
+        }
+      }
+
+      if (filledCount === 0) {
+        showW9Msg("No fields could be extracted from that W-9");
+        return;
+      }
+
+      saveJsonColumn("business_entity", updates);
+      showW9Msg(`Filled ${filledCount} field${filledCount > 1 ? 's' : ''} from W-9 (${file.name})`);
+    } catch (e) {
+      console.error('[W-9 import] Error:', e);
+      showW9Msg("Couldn't parse that W-9");
+    } finally {
+      setW9Importing(false);
+    }
+  }
 
   function showBioMsg(msg: string) {
     setBioImportMsg(msg);
@@ -1106,59 +1179,43 @@ export default function ArtistProfilePage() {
         </Accordion>
 
         {/* ══════ 5. Business Entity ══════ */}
-        <Accordion title="Business Entity" badge="" badgeColor="gray">
-          <JsonFieldRows column="business_entity" artist={artist} onUpdate={(p, v) => updateJsonPath("business_entity", p, v)} fields={[
-            { path: "legalName", label: "Legal Name", placeholder: "As registered" },
-            { path: "dba", label: "DBA / Artist Name" },
-            { path: "entityType", label: "Entity Type", placeholder: "LLC, S-Corp, etc." },
-            { path: "ein", label: "EIN / Tax ID", placeholder: "XX-XXXXXXX" },
-            { path: "stateOfFormation", label: "State of Formation" },
-            { path: "countryOfFormation", label: "Country" },
-            { path: "businessAddress", label: "Business Address" },
-            { path: "mailingAddress", label: "Mailing Address" },
-            { path: "businessPhone", label: "Phone" },
-            { path: "businessEmail", label: "Email" },
-            { path: "yearFormed", label: "Year Formed", type: "number" },
-            { path: "registeredAgent", label: "Registered Agent" },
-          ]} />
-        </Accordion>
-
-        {/* ══════ 6. Tax & Compliance ══════ */}
-        <Accordion
-          title="Tax & Compliance"
-          badge={(() => {
-            const t = (artist.tax_compliance as any) || {};
-            const fields = ["taxClassification", "vatNumber", "vatCountry", "defaultWithholdingPct"];
-            const filled = fields.filter((f) => t[f]).length;
-            return `${filled} of ${fields.length}`;
-          })()}
-          badgeColor={(() => {
-            const t = (artist.tax_compliance as any) || {};
-            const fields = ["taxClassification", "vatNumber", "vatCountry", "defaultWithholdingPct"];
-            const filled = fields.filter((f) => t[f]).length;
-            return filled === fields.length ? "green" : filled > 0 ? "amber" : "gray";
-          })()}
+        <div
+          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (!w9Importing) setW9DragOver(true); }}
+          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onDragLeave={(e) => { e.preventDefault(); setW9DragOver(false); }}
+          onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setW9DragOver(false); if (!w9Importing) { const f = e.dataTransfer.files?.[0]; if (f) handleW9Drop(f); } }}
+          style={{
+            border: w9DragOver ? "3px dashed var(--hw-crimson)" : "3px solid transparent",
+            background: w9DragOver ? "var(--hw-crimson-ghost)" : "transparent",
+            transition: "var(--hw-ease)",
+          }}
         >
-          <JsonFieldRows column="tax_compliance" artist={artist} onUpdate={(p, v) => updateJsonPath("tax_compliance", p, v)} fields={[
-            { path: "taxClassification", label: "Tax Classification" },
-            { path: "vatNumber", label: "VAT Number" },
-            { path: "vatCountry", label: "VAT Country" },
-            { path: "defaultWithholdingPct", label: "Default Withholding %", type: "number" },
-            { path: "notes", label: "Notes", type: "textarea" },
-          ]} />
-        </Accordion>
-
-        {/* ══════ 7. Insurance ══════ */}
-        <Accordion
-          title="Insurance"
-          badge={String(((artist.insurance as any)?.policies || []).length)}
-          badgeColor="gray"
-        >
-          <InsuranceSection
-            data={(artist.insurance as any) || { policies: [], notes: null }}
-            onUpdate={(v) => saveJsonColumn("insurance", v)}
-          />
-        </Accordion>
+          <Accordion title="Business Entity" badge="" badgeColor="gray">
+            {w9ImportMsg ? (
+              <div style={{ marginBottom: 10, padding: "8px 14px", background: w9ImportMsg.startsWith("Filled") ? "var(--hw-green-ghost)" : w9ImportMsg.startsWith("Reading") ? "var(--hw-bg)" : "var(--hw-red-ghost)", border: w9ImportMsg.startsWith("Filled") ? "2px solid var(--hw-green-border)" : w9ImportMsg.startsWith("Reading") ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: w9ImportMsg.startsWith("Filled") ? "var(--hw-green)" : w9ImportMsg.startsWith("Reading") ? "var(--hw-text-muted)" : "var(--hw-crimson)" }}>
+                {w9ImportMsg}
+              </div>
+            ) : (
+              <div style={{ marginBottom: 10, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>
+                Drop a W-9 PDF here to autofill
+              </div>
+            )}
+            <JsonFieldRows column="business_entity" artist={artist} onUpdate={(p, v) => updateJsonPath("business_entity", p, v)} fields={[
+              { path: "legalName", label: "Legal Name", placeholder: "As registered" },
+              { path: "dba", label: "DBA / Artist Name" },
+              { path: "entityType", label: "Entity Type", placeholder: "LLC, S-Corp, etc." },
+              { path: "ein", label: "EIN / Tax ID", placeholder: "XX-XXXXXXX" },
+              { path: "stateOfFormation", label: "State of Formation" },
+              { path: "countryOfFormation", label: "Country" },
+              { path: "businessAddress", label: "Business Address" },
+              { path: "mailingAddress", label: "Mailing Address" },
+              { path: "businessPhone", label: "Phone" },
+              { path: "businessEmail", label: "Email" },
+              { path: "yearFormed", label: "Year Formed", type: "number" },
+              { path: "registeredAgent", label: "Registered Agent" },
+            ]} />
+          </Accordion>
+        </div>
 
         {/* ══════ 8. Technical Production ══════ */}
         <Accordion
@@ -1779,75 +1836,6 @@ function VehiclesSection({
           <textarea style={rowTextareaStyle} value={data.notes || ""} placeholder="Trailers, major equipment, etc." onChange={(e) => onUpdate({ ...data, notes: e.target.value || null })} />
         </div>
       </div>
-    </div>
-  );
-}
-
-// ── Insurance Section ──────────────────────────────────────────
-
-function InsuranceSection({
-  data, onUpdate,
-}: {
-  data: any;
-  onUpdate: (v: any) => void;
-}) {
-  const policies = data.policies || [];
-  const typeOptions = [
-    { value: "general_liability", label: "General Liability" },
-    { value: "workers_comp", label: "Workers' Comp" },
-    { value: "equipment", label: "Equipment" },
-    { value: "vehicle", label: "Vehicle" },
-    { value: "cancellation", label: "Cancellation" },
-    { value: "other", label: "Other" },
-  ];
-
-  function addPolicy() {
-    const policy = {
-      id: crypto.randomUUID(), type: "general_liability",
-      carrier: null, policyNumber: null, coverageAmount: null,
-      deductible: null, effectiveDate: null, expirationDate: null, notes: null,
-    };
-    onUpdate({ ...data, policies: [...policies, policy] });
-  }
-
-  function updatePolicy(id: string, field: string, value: unknown) {
-    onUpdate({ ...data, policies: policies.map((p: any) => p.id === id ? { ...p, [field]: value } : p) });
-  }
-
-  function removePolicy(id: string) {
-    onUpdate({ ...data, policies: policies.filter((p: any) => p.id !== id) });
-  }
-
-  return (
-    <div>
-      {policies.map((p: any) => (
-        <div key={p.id} style={{ border: "3px solid var(--hw-border-strong)", padding: 14, marginBottom: 8 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 1fr 32px", gap: 8, marginBottom: 8 }}>
-            <select style={rowInputStyle} value={p.type} onChange={(e) => updatePolicy(p.id, "type", e.target.value)}>
-              {typeOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            <input style={rowInputStyle} value={p.carrier || ""} placeholder="Carrier" onChange={(e) => updatePolicy(p.id, "carrier", e.target.value || null)} />
-            <input style={rowInputStyle} value={p.policyNumber || ""} placeholder="Policy #" onChange={(e) => updatePolicy(p.id, "policyNumber", e.target.value || null)} />
-            <button onClick={() => removePolicy(p.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--hw-text-muted)", fontSize: 14 }}>&times;</button>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
-            <input style={rowInputStyle} value={p.coverageAmount ?? ""} placeholder="Coverage $" type="number" onChange={(e) => updatePolicy(p.id, "coverageAmount", e.target.value ? parseFloat(e.target.value) : null)} />
-            <input style={rowInputStyle} value={p.deductible ?? ""} placeholder="Deductible $" type="number" onChange={(e) => updatePolicy(p.id, "deductible", e.target.value ? parseFloat(e.target.value) : null)} />
-            <input style={rowInputStyle} value={p.effectiveDate || ""} placeholder="Effective" type="date" onChange={(e) => updatePolicy(p.id, "effectiveDate", e.target.value || null)} />
-            <input style={rowInputStyle} value={p.expirationDate || ""} placeholder="Expires" type="date" onChange={(e) => updatePolicy(p.id, "expirationDate", e.target.value || null)} />
-          </div>
-        </div>
-      ))}
-      <button
-        onClick={addPolicy}
-        style={{
-          width: "100%", padding: "12px",
-          border: "3px dashed var(--hw-border-light)", background: "transparent",
-          fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer",
-        }}
-      >
-        + ADD POLICY
-      </button>
     </div>
   );
 }

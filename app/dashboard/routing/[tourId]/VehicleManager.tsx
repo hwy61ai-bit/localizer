@@ -89,6 +89,7 @@ export default function VehicleManager({
 
   const saveVehicles = useCallback(
     async (updated: TourVehicle[]) => {
+      onUpdate(updated);
       setSaving(true);
       try {
         await fetch(`/api/tourrouter/tours/${tourId}`, {
@@ -96,7 +97,6 @@ export default function VehicleManager({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tour_vehicles: updated }),
         });
-        onUpdate(updated);
       } catch (e) {
         console.error('Vehicle save failed:', e);
       } finally {
@@ -184,7 +184,7 @@ export default function VehicleManager({
     marginBottom: 8, background: 'var(--hw-bg-surface)',
   };
   const inputStyle: React.CSSProperties = {
-    padding: '6px 10px', border: '3px solid var(--hw-border-strong)',
+    padding: '6px 10px', border: '3px solid var(--hw-border-strong)', boxSizing: 'border-box',
     fontFamily: 'var(--hw-font-body)', fontSize: 13,
     background: 'var(--hw-bg-surface)', outline: 'none',
   };
@@ -409,12 +409,20 @@ export default function VehicleManager({
                 </div>
                 <div>
                   <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Make / Model</div>
-                  <input
-                    style={{ ...inputStyle, width: '100%' }}
-                    value={`${vehicle.make} ${vehicle.model}`.trim()}
-                    readOnly
-                    title="Select from database or edit label"
-                  />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <input
+                      style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                      value={vehicle.make}
+                      onChange={(e) => updateVehicle(vehicle.id, 'make', e.target.value)}
+                      placeholder="Make"
+                    />
+                    <input
+                      style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                      value={vehicle.model}
+                      onChange={(e) => updateVehicle(vehicle.id, 'model', e.target.value)}
+                      placeholder="Model"
+                    />
+                  </div>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <div style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginBottom: 4 }}>Notes</div>
