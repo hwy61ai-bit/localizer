@@ -1201,7 +1201,7 @@ export default function RouteTourPage() {
             <div className="td-drawer-header" style={{ padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)", position: "sticky", top: 0, background: "var(--hw-bg-surface)", zIndex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 4 }}>{drawerShow.event || "SHOW DETAIL"}</div>
+                  <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 4 }}>{drawerShow.venue || drawerShow.event || "SHOW DETAIL"}</div>
                   <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
                     {[formatShowDate(drawerShow.date_iso), drawerShow.city, drawerShow.country].filter(Boolean).join(" \u00b7 ")}
                   </div>
@@ -1224,7 +1224,155 @@ export default function RouteTourPage() {
             </div>
             {/* Drawer sections */}
             <div style={{ padding: "0 24px 24px" }}>
-              {DRAWER_SECTIONS.map((section) => {
+              {DRAWER_SECTIONS.slice(0, 2).map((section) => {
+                const collapsed = collapsedSections.has(section.title);
+                return (
+                  <div key={section.title} style={{ borderBottom: "2px solid var(--hw-border)" }}>
+                    <div
+                      onClick={() => toggleSection(section.title)}
+                      style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                    >
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, textTransform: "uppercase", letterSpacing: "2px", color: "var(--hw-text-muted)" }}>{section.title}</div>
+                      <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>{collapsed ? "\u25b6" : "\u25bc"}</span>
+                    </div>
+                    {!collapsed && (
+                      <div style={{ paddingBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                        {section.fields.map((field) => (
+                          <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address"].includes(field.key) ? "1 / -1" : undefined }}>
+                            <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>{field.label}</label>
+                            {field.key === "offer_currency" ? (
+                              <select
+                                value={String((drawerShow as Record<string, unknown>)[field.key] ?? "USD")}
+                                onChange={(e) => updateDrawerField(field.key, e.target.value)}
+                                style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, background: "var(--hw-bg-surface)", outline: "none" }}
+                              >
+                                {TOURING_CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                            ) : (
+                              <input
+                                value={String((drawerShow as Record<string, unknown>)[field.key] ?? "")}
+                                onChange={(e) => updateDrawerField(field.key, e.target.value)}
+                                type={field.type || "text"}
+                                style={{ width: "100%", boxSizing: "border-box", padding: "8px 10px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 13, outline: "none" }}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Guest List Section */}
+              {flags.guestList && drawerShow && !drawerShow.is_off && (
+                <div style={{ borderBottom: "3px solid var(--hw-border)" }}>
+                  <div
+                    onClick={() => toggleSection("Guest List")}
+                    style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, textTransform: "uppercase", letterSpacing: "2px", color: "var(--hw-text-muted)" }}>Guest List</div>
+                      {guests.length > 0 && (
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, padding: "2px 8px", background: "var(--hw-bg)", color: "var(--hw-text-secondary)" }}>
+                          {guests.reduce((s, g) => s + 1 + g.plus_ones, 0)} total
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>{collapsedSections.has("Guest List") ? "\u25b6" : "\u25bc"}</span>
+                  </div>
+                  {!collapsedSections.has("Guest List") && (
+                    <div style={{ paddingBottom: 14 }}>
+                      {/* Guest list cutoff */}
+                      <div style={{ marginBottom: 12 }}>
+                        <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", display: "block", marginBottom: 4, letterSpacing: "1.5px", textTransform: "uppercase" }}>Guest List Cutoff</label>
+                        <input
+                          type="datetime-local"
+                          value={String((drawerShow as Record<string, unknown>).guest_list_cutoff ?? "")}
+                          onChange={(e) => updateDrawerField("guest_list_cutoff", e.target.value)}
+                          style={{ padding: "6px 10px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }}
+                        />
+                      </div>
+
+                      {guestLoading ? (
+                        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>Loading...</div>
+                      ) : (
+                        <>
+                          {guests.length > 0 && (
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 10 }}>
+                              <thead>
+                                <tr>
+                                  {["Name", "Party", "Pass", "Notes", "Status", ""].map((h) => (
+                                    <th key={h} style={{ padding: "4px 6px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "1.5px", textTransform: "uppercase", borderBottom: "3px solid var(--hw-border-strong)" }}>{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {guests.map((g) => {
+                                  const stColor = g.status === "confirmed" ? "var(--hw-green)" : g.status === "declined" ? "var(--hw-crimson)" : "var(--hw-amber)";
+                                  const stBg = g.status === "confirmed" ? "var(--hw-green-ghost)" : g.status === "declined" ? "var(--hw-red-ghost)" : "var(--hw-amber-ghost)";
+                                  return (
+                                    <tr key={g.id} style={{ borderBottom: "2px solid var(--hw-border)" }}>
+                                      <td style={{ padding: "5px 6px", fontWeight: 600 }}>{g.guest_name}</td>
+                                      <td style={{ padding: "5px 6px", fontFamily: "var(--hw-font-mono)" }}>{1 + g.plus_ones}</td>
+                                      <td style={{ padding: "5px 6px" }}>{g.pass_type}</td>
+                                      <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--hw-text-muted)", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={g.notes || ""}>{g.notes || "\u2014"}</td>
+                                      <td style={{ padding: "5px 6px" }}>
+                                        <select
+                                          value={g.status}
+                                          onChange={(e) => updateGuestStatus(g.id, e.target.value)}
+                                          style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, padding: "2px 4px", border: "none", background: stBg, color: stColor, cursor: "pointer", outline: "none" }}
+                                        >
+                                          {["pending", "confirmed", "declined"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+                                        </select>
+                                      </td>
+                                      <td style={{ padding: "5px 6px" }}>
+                                        <button onClick={() => deleteGuest(g.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)", padding: "2px 4px" }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-crimson)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-text-muted)"; }}>&times;</button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          )}
+
+                          {addingGuest ? (
+                            <div className="td-guest-add-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 6, alignItems: "end" }}>
+                              <div>
+                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Name</label>
+                                <input value={newGuest.name} onChange={(e) => setNewGuest((p) => ({ ...p, name: e.target.value }))} placeholder="Guest name" onKeyDown={(e) => e.key === "Enter" && addGuest()} style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }} />
+                              </div>
+                              <div style={{ width: 44 }}>
+                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Party</label>
+                                <input type="number" value={newGuest.plusOnes} onChange={(e) => setNewGuest((p) => ({ ...p, plusOnes: parseInt(e.target.value) || 0 }))} min={0} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }} />
+                              </div>
+                              <div style={{ width: 80 }}>
+                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Pass</label>
+                                <select value={newGuest.passType} onChange={(e) => setNewGuest((p) => ({ ...p, passType: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", background: "var(--hw-bg-surface)", outline: "none" }}>
+                                  {["Guest", "VIP", "Photo", "Working", "Will Call"].map((t) => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                              </div>
+                              <div style={{ display: "flex", gap: 4 }}>
+                                <button onClick={addGuest} style={{ padding: "6px 12px", border: "3px solid var(--hw-bg-invert)", background: "var(--hw-bg-invert)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>Add</button>
+                                <button onClick={() => setAddingGuest(false)} style={{ padding: "6px 12px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>Cancel</button>
+                              </div>
+                              <div style={{ gridColumn: "1 / -1" }}>
+                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Notes</label>
+                                <input value={newGuest.notes} onChange={(e) => setNewGuest((p) => ({ ...p, notes: e.target.value }))} placeholder="Optional notes" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }} />
+                              </div>
+                            </div>
+                          ) : (
+                            <button onClick={() => setAddingGuest(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>+ Add Guest</button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Remaining drawer sections */}
+              {DRAWER_SECTIONS.slice(2).map((section) => {
                 const collapsed = collapsedSections.has(section.title);
                 return (
                   <div key={section.title} style={{ borderBottom: "2px solid var(--hw-border)" }}>
@@ -1472,113 +1620,6 @@ export default function RouteTourPage() {
                 </div>
                 );
               })()}
-
-              {/* Guest List Section */}
-              {flags.guestList && drawerShow && !drawerShow.is_off && (
-                <div style={{ borderBottom: "3px solid var(--hw-border)" }}>
-                  <div
-                    onClick={() => toggleSection("Guest List")}
-                    style={{ padding: "14px 0", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, textTransform: "uppercase", letterSpacing: "2px", color: "var(--hw-text-muted)" }}>Guest List</div>
-                      {guests.length > 0 && (
-                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, padding: "2px 8px", background: "var(--hw-bg)", color: "var(--hw-text-secondary)" }}>
-                          {guests.reduce((s, g) => s + 1 + g.plus_ones, 0)} total
-                        </span>
-                      )}
-                    </div>
-                    <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>{collapsedSections.has("Guest List") ? "\u25b6" : "\u25bc"}</span>
-                  </div>
-                  {!collapsedSections.has("Guest List") && (
-                    <div style={{ paddingBottom: 14 }}>
-                      {/* Guest list cutoff */}
-                      <div style={{ marginBottom: 12 }}>
-                        <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", display: "block", marginBottom: 4, letterSpacing: "1.5px", textTransform: "uppercase" }}>Guest List Cutoff</label>
-                        <input
-                          type="datetime-local"
-                          value={String((drawerShow as Record<string, unknown>).guest_list_cutoff ?? "")}
-                          onChange={(e) => updateDrawerField("guest_list_cutoff", e.target.value)}
-                          style={{ padding: "6px 10px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }}
-                        />
-                      </div>
-
-                      {guestLoading ? (
-                        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>Loading...</div>
-                      ) : (
-                        <>
-                          {guests.length > 0 && (
-                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 10 }}>
-                              <thead>
-                                <tr>
-                                  {["Name", "Party", "Pass", "Notes", "Status", ""].map((h) => (
-                                    <th key={h} style={{ padding: "4px 6px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "1.5px", textTransform: "uppercase", borderBottom: "3px solid var(--hw-border-strong)" }}>{h}</th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {guests.map((g) => {
-                                  const stColor = g.status === "confirmed" ? "var(--hw-green)" : g.status === "declined" ? "var(--hw-crimson)" : "var(--hw-amber)";
-                                  const stBg = g.status === "confirmed" ? "var(--hw-green-ghost)" : g.status === "declined" ? "var(--hw-red-ghost)" : "var(--hw-amber-ghost)";
-                                  return (
-                                    <tr key={g.id} style={{ borderBottom: "2px solid var(--hw-border)" }}>
-                                      <td style={{ padding: "5px 6px", fontWeight: 600 }}>{g.guest_name}</td>
-                                      <td style={{ padding: "5px 6px", fontFamily: "var(--hw-font-mono)" }}>{1 + g.plus_ones}</td>
-                                      <td style={{ padding: "5px 6px" }}>{g.pass_type}</td>
-                                      <td style={{ padding: "5px 6px", fontSize: 11, color: "var(--hw-text-muted)", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={g.notes || ""}>{g.notes || "\u2014"}</td>
-                                      <td style={{ padding: "5px 6px" }}>
-                                        <select
-                                          value={g.status}
-                                          onChange={(e) => updateGuestStatus(g.id, e.target.value)}
-                                          style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, padding: "2px 4px", border: "none", background: stBg, color: stColor, cursor: "pointer", outline: "none" }}
-                                        >
-                                          {["pending", "confirmed", "declined"].map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
-                                        </select>
-                                      </td>
-                                      <td style={{ padding: "5px 6px" }}>
-                                        <button onClick={() => deleteGuest(g.id)} style={{ border: "none", background: "none", cursor: "pointer", fontSize: 12, color: "var(--hw-text-muted)", padding: "2px 4px" }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-crimson)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-text-muted)"; }}>&times;</button>
-                                      </td>
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          )}
-
-                          {addingGuest ? (
-                            <div className="td-guest-add-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 6, alignItems: "end" }}>
-                              <div>
-                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Name</label>
-                                <input value={newGuest.name} onChange={(e) => setNewGuest((p) => ({ ...p, name: e.target.value }))} placeholder="Guest name" onKeyDown={(e) => e.key === "Enter" && addGuest()} style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }} />
-                              </div>
-                              <div style={{ width: 44 }}>
-                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Party</label>
-                                <input type="number" value={newGuest.plusOnes} onChange={(e) => setNewGuest((p) => ({ ...p, plusOnes: parseInt(e.target.value) || 0 }))} min={0} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }} />
-                              </div>
-                              <div style={{ width: 80 }}>
-                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Pass</label>
-                                <select value={newGuest.passType} onChange={(e) => setNewGuest((p) => ({ ...p, passType: e.target.value }))} style={{ width: "100%", boxSizing: "border-box", padding: "6px 4px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", background: "var(--hw-bg-surface)", outline: "none" }}>
-                                  {["Guest", "VIP", "Photo", "Working", "Will Call"].map((t) => <option key={t} value={t}>{t}</option>)}
-                                </select>
-                              </div>
-                              <div style={{ display: "flex", gap: 4 }}>
-                                <button onClick={addGuest} style={{ padding: "6px 12px", border: "3px solid var(--hw-bg-invert)", background: "var(--hw-bg-invert)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>Add</button>
-                                <button onClick={() => setAddingGuest(false)} style={{ padding: "6px 12px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>Cancel</button>
-                              </div>
-                              <div style={{ gridColumn: "1 / -1" }}>
-                                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)", display: "block", marginBottom: 2, letterSpacing: "1.5px", textTransform: "uppercase" }}>Notes</label>
-                                <input value={newGuest.notes} onChange={(e) => setNewGuest((p) => ({ ...p, notes: e.target.value }))} placeholder="Optional notes" style={{ width: "100%", boxSizing: "border-box", padding: "6px 8px", border: "3px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-body)", outline: "none" }} />
-                              </div>
-                            </div>
-                          ) : (
-                            <button onClick={() => setAddingGuest(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>+ Add Guest</button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </>

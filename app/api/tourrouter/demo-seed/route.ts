@@ -278,32 +278,30 @@ export async function POST() {
     // 9. Insert guest list entries
     const guestListEntries = [
       // Show 1
-      { show_id_order: 1, name: "Sarah Kwan", plus_one: true, pass_type: "Guest", added_by: "Casey Muller" },
-      { show_id_order: 1, name: "Dev Okonkwo", plus_one: false, pass_type: "Guest", added_by: "Alex Brewer" },
-      { show_id_order: 1, name: "Mike Tierney", plus_one: true, pass_type: "Photo", added_by: "Casey Muller" },
-      { show_id_order: 1, name: "Lisa Chen", plus_one: false, pass_type: "Industry", added_by: "Casey Muller" },
+      { show_id_order: 1, guest_name: "Sarah Kwan", plus_ones: 1, pass_type: "Guest" },
+      { show_id_order: 1, guest_name: "Dev Okonkwo", plus_ones: 0, pass_type: "Guest" },
+      { show_id_order: 1, guest_name: "Mike Tierney", plus_ones: 1, pass_type: "Photo" },
+      { show_id_order: 1, guest_name: "Lisa Chen", plus_ones: 0, pass_type: "Industry" },
       // Show 3 (sort_order 4)
-      { show_id_order: 4, name: "Amara Osei", plus_one: true, pass_type: "Guest", added_by: "Jordan Cross" },
-      { show_id_order: 4, name: "Tom Whitfield", plus_one: true, pass_type: "Industry", added_by: "Casey Muller" },
-      { show_id_order: 4, name: "Priya Nair", plus_one: false, pass_type: "Guest", added_by: "Raj Patel" },
-      { show_id_order: 4, name: "Jake Morrison", plus_one: true, pass_type: "Guest", added_by: "Alex Brewer" },
-      { show_id_order: 4, name: "Rebecca Tran", plus_one: false, pass_type: "Press", added_by: "Casey Muller" },
-      { show_id_order: 4, name: "Chloe Watts", plus_one: true, pass_type: "Industry", added_by: "Casey Muller" },
+      { show_id_order: 4, guest_name: "Amara Osei", plus_ones: 1, pass_type: "Guest" },
+      { show_id_order: 4, guest_name: "Tom Whitfield", plus_ones: 1, pass_type: "Industry" },
+      { show_id_order: 4, guest_name: "Priya Nair", plus_ones: 0, pass_type: "Guest" },
+      { show_id_order: 4, guest_name: "Jake Morrison", plus_ones: 1, pass_type: "Guest" },
+      { show_id_order: 4, guest_name: "Rebecca Tran", plus_ones: 0, pass_type: "Press" },
+      { show_id_order: 4, guest_name: "Chloe Watts", plus_ones: 1, pass_type: "Industry" },
       // Show 9 (sort_order 13)
-      { show_id_order: 13, name: "Noah Kim", plus_one: true, pass_type: "Guest", added_by: "Marco Ruiz" },
-      { show_id_order: 13, name: "Emily Vance", plus_one: false, pass_type: "Industry", added_by: "Casey Muller" },
+      { show_id_order: 13, guest_name: "Noah Kim", plus_ones: 1, pass_type: "Guest" },
+      { show_id_order: 13, guest_name: "Emily Vance", plus_ones: 0, pass_type: "Industry" },
     ];
 
     const guestRows = guestListEntries.map(g => {
       const show = showByOrder(g.show_id_order);
       return {
-        tour_id: tour.id,
         show_id: show?.id,
-        org_id: orgId,
-        name: g.name,
-        plus_one: g.plus_one,
+        guest_name: g.guest_name,
+        plus_ones: g.plus_ones,
         pass_type: g.pass_type,
-        added_by: g.added_by,
+        status: "confirmed",
       };
     }).filter(g => g.show_id);
 
