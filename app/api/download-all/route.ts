@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 
   const { data: artist } = tour?.artist_id ? await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials")
     .eq("id", tour.artist_id)
     .single() : { data: null };
 
@@ -56,11 +56,18 @@ export async function GET(req: NextRequest) {
     { filename: rootFolder + `Video/${bandName}+YouTube_Shorts.mp4`, url: link.render_yt_shorts_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
+  const customMaterials = ((artist as { adv_custom_materials?: Array<{ id: string; label: string; url: string }> } | null)?.adv_custom_materials) || [];
   const advAssets: { filename: string; url: string }[] = [
     { filename: rootFolder + `Advance/${bandName}+Stage_Plot.pdf`,        url: artist?.adv_stage_plot_url },
     { filename: rootFolder + `Advance/${bandName}+Hospitality_Rider.pdf`, url: artist?.adv_hospitality_url },
     { filename: rootFolder + `Advance/${bandName}+FOH_Requirements.pdf`,  url: artist?.adv_foh_url },
     { filename: rootFolder + `Advance/${bandName}+W-9.pdf`,                url: artist?.adv_w9_url },
+    ...customMaterials.filter((c) => c.url).map((c) => {
+      const safeLabel = c.label.replace(/[^a-zA-Z0-9_.-]/g, "_");
+      const cleanUrl = c.url.split("?")[0];
+      const ext = cleanUrl.split(".").pop() || "pdf";
+      return { filename: rootFolder + `Advance/${bandName}+${safeLabel}.${ext}`, url: c.url };
+    }),
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const allAssets = [...imageAssets, ...videoAssets, ...advAssets];

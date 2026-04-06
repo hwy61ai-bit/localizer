@@ -32,7 +32,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, spotify_url")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url")
     .eq("id", (tour as any).artist_id)
     .single();
 
@@ -44,11 +44,13 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
     : null;
 
   const a = artist as any;
+  const customMaterials = (a?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
   const advMaterials: { label: string; url: string | null }[] = [
     { label: "Stage Plot", url: a?.adv_stage_plot_url ?? null },
     { label: "Hospitality Rider", url: a?.adv_hospitality_url ?? null },
     { label: "FOH Requirements", url: a?.adv_foh_url ?? null },
     { label: "W-9", url: a?.adv_w9_url ?? null },
+    ...customMaterials.filter((c) => c.url).map((c) => ({ label: c.label, url: c.url })),
   ];
 
   const venueName = event.venue_name ?? event.venue ?? "";

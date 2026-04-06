@@ -31,6 +31,7 @@ type ArtistData = {
   adv_hospitality_url: string | null;
   adv_foh_url: string | null;
   adv_w9_url: string | null;
+  adv_custom_materials: Array<{ id: string; label: string; url: string }> | null;
   key_contacts: unknown[] | null;
   [key: string]: unknown;
 };
@@ -514,6 +515,63 @@ export default function ArtistProfilePage() {
     }
   }
 
+  // ── Custom Advance Materials ─────────────────────────────────
+
+  async function saveCustomMaterials(arr: Array<{ id: string; label: string; url: string }>) {
+    setArtist((prev) => prev ? { ...prev, adv_custom_materials: arr } : prev);
+    await supabase.from("artists").update({ adv_custom_materials: arr }).eq("id", artistId);
+  }
+
+  async function handleCustomAdvUpload(customId: string, file: File) {
+    setAdvUploading(`custom_${customId}`);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
+      const path = `artist-assets/${artistId}/advance/custom_${customId}.${ext}`;
+      const { error } = await supabase.storage.from("localizer-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
+      const url = data.publicUrl + "?t=" + Date.now();
+      const current = (artist?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
+      const newArr = current.map((m) => m.id === customId ? { ...m, url } : m);
+      await saveCustomMaterials(newArr);
+    } catch (e) {
+      console.error("Custom adv upload failed:", e);
+    } finally {
+      setAdvUploading(null);
+    }
+  }
+
+  function addCustomMaterial() {
+    const label = window.prompt("Label for this material (e.g. 'Insurance COI', 'Tour Manager Bio'):");
+    if (!label?.trim()) return;
+    const current = (artist?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
+    const newEntry = { id: crypto.randomUUID(), label: label.trim(), url: "" };
+    saveCustomMaterials([...current, newEntry]);
+  }
+
+  function renameCustomMaterial(customId: string) {
+    const current = (artist?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
+    const target = current.find((m) => m.id === customId);
+    if (!target) return;
+    const newLabel = window.prompt("New label:", target.label);
+    if (!newLabel?.trim() || newLabel.trim() === target.label) return;
+    saveCustomMaterials(current.map((m) => m.id === customId ? { ...m, label: newLabel.trim() } : m));
+  }
+
+  async function removeCustomMaterial(customId: string) {
+    if (!confirm("Delete this material?")) return;
+    const current = (artist?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
+    const target = current.find((m) => m.id === customId);
+    await saveCustomMaterials(current.filter((m) => m.id !== customId));
+    // Best-effort storage cleanup
+    if (target?.url) {
+      const match = target.url.match(/\/storage\/v1\/object\/public\/localizer-assets\/(.+?)(\?|$)/);
+      if (match) {
+        await supabase.storage.from("localizer-assets").remove([match[1]]).catch(() => {});
+      }
+    }
+  }
+
   // ── Loading ──────────────────────────────────────────────────
 
   if (loading || !artist) {
@@ -872,7 +930,87 @@ export default function ArtistProfilePage() {
                 </div>
               );
             })}
+            {(artist.adv_custom_materials || []).map((custom) => {
+              const fieldKey = `custom_${custom.id}`;
+              const isUploading = advUploading === fieldKey;
+              const url = custom.url || null;
+              return (
+                <div key={fieldKey} style={{ position: "relative" }}>
+                  <input
+                    ref={(el) => { advFileRefs.current[fieldKey] = el; }}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                    style={{ display: "none" }}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCustomAdvUpload(custom.id, f); }}
+                  />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); removeCustomMaterial(custom.id); }}
+                    style={{ position: "absolute", top: 6, right: 6, zIndex: 2, background: "var(--hw-bg-surface)", border: "2px solid var(--hw-border-strong)", color: "var(--hw-text-muted)", fontSize: 12, lineHeight: 1, width: 20, height: 20, cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-crimson)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--hw-crimson)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-text-muted)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--hw-border-strong)"; }}
+                    title="Delete this material"
+                  >
+                    &times;
+                  </button>
+                  <div
+                    onClick={() => advFileRefs.current[fieldKey]?.click()}
+                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setAdvDragOver(fieldKey); }}
+                    onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                    onDragLeave={() => setAdvDragOver(null)}
+                    onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setAdvDragOver(null); const f = e.dataTransfer.files?.[0]; if (f) handleCustomAdvUpload(custom.id, f); }}
+                    style={{
+                      padding: "16px 18px",
+                      background: advDragOver === fieldKey ? "var(--hw-crimson-ghost)" : url ? "var(--hw-green-ghost)" : "var(--hw-bg-surface)",
+                      border: advDragOver === fieldKey ? "3px dashed var(--hw-crimson)" : url ? "3px solid var(--hw-green-border)" : "3px solid var(--hw-border-strong)",
+                      cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "space-between",
+                      transition: "var(--hw-ease)",
+                    }}
+                  >
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div
+                        onClick={(e) => { e.stopPropagation(); renameCustomMaterial(custom.id); }}
+                        style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text)", marginBottom: 2, marginRight: 24, display: "inline-flex", alignItems: "center", gap: 6, cursor: "text" }}
+                        title="Click to rename"
+                      >
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{custom.label}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--hw-text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                          <path d="m15 5 4 4" />
+                        </svg>
+                      </div>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" as const, color: url ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
+                        {isUploading ? "Uploading..." : url ? "Uploaded" : "Not uploaded"}
+                      </div>
+                    </div>
+                    <div>
+                      {url ? (
+                        <span style={{
+                          fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, color: "var(--hw-green)",
+                          background: "var(--hw-green-ghost)", padding: "4px 10px", border: "2px solid var(--hw-green-border)",
+                          textTransform: "uppercase" as const, letterSpacing: "2px",
+                        }}>
+                          FILE
+                        </span>
+                      ) : (
+                        <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, color: "var(--hw-text-muted)" }}>&#8593;</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+          <button
+            onClick={addCustomMaterial}
+            style={{
+              width: "100%", padding: "12px", marginTop: 12,
+              border: "3px dashed var(--hw-border-light)", background: "transparent",
+              fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer",
+            }}
+          >
+            + ADD CUSTOM MATERIAL
+          </button>
         </div>
 
         {/* ══════ Divider ══════ */}
