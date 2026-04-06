@@ -10,7 +10,6 @@ export async function PUT(
   const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const orgId = result.orgId;
 
   const body = await req.json();
   const allowed = ["guest_name", "plus_ones", "pass_type", "status", "notes"];
@@ -20,10 +19,9 @@ export async function PUT(
   }
 
   const { data: entry, error } = await supabase
-    .from("tour_guest_list")
+    .from("guest_list")
     .update(update)
     .eq("id", entryId)
-    .eq("org_id", orgId)
     .select()
     .single();
 
@@ -39,13 +37,11 @@ export async function DELETE(
   const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
-  const orgId = result.orgId;
 
   const { error } = await supabase
-    .from("tour_guest_list")
+    .from("guest_list")
     .delete()
-    .eq("id", entryId)
-    .eq("org_id", orgId);
+    .eq("id", entryId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });

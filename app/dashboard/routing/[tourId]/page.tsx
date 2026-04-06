@@ -229,7 +229,7 @@ export default function RouteTourPage() {
   const [settlementOpen, setSettlementOpen] = useState(false);
 
   // Guest List
-  type GuestEntry = { id: string; guest_name: string; plus_ones: number; pass_type: string; status: string; submitted_by: string | null; notes: string | null };
+  type GuestEntry = { id: string; guest_name: string; plus_ones: number; pass_type: string; status: string; notes: string | null };
   const [guests, setGuests] = useState<GuestEntry[]>([]);
   const [guestLoading, setGuestLoading] = useState(false);
   const [addingGuest, setAddingGuest] = useState(false);

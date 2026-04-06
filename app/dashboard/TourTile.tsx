@@ -49,8 +49,8 @@ export default function TourTile({
           const { data: shows } = await supabase.from("tour_shows").select("id").in("tour_id", routingTourIds);
           const showIds = (shows ?? []).map(s => s.id);
           if (showIds.length > 0) {
-            const { error: glErr } = await supabase.from("tour_guest_list").delete().in("show_id", showIds);
-            if (glErr) console.error("tour_guest_list delete:", glErr.message);
+            const { error: glErr } = await supabase.from("guest_list").delete().in("show_id", showIds);
+            if (glErr) console.error("guest_list delete:", glErr.message);
             const { error: aeErr } = await supabase.from("advance_emails").delete().in("show_id", showIds);
             if (aeErr) console.error("advance_emails delete:", aeErr.message);
           }
