@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
+import VehicleManager from "@/app/components/tourrouter/VehicleManager";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -1111,10 +1112,40 @@ export default function ArtistProfilePage() {
           })()}
           badgeColor="gray"
         >
-          <VehiclesSection
-            data={(artist.vehicles_equipment as any) || {}}
-            onUpdate={(v) => saveJsonColumn("vehicles_equipment", v)}
+          <VehicleManager
+            vehicles={((artist.vehicles_equipment as any)?.vehicles || []) as never[]}
+            defaultFuelPrice={4.00}
+            onSave={async (updated) => {
+              const current = (artist.vehicles_equipment as any) || {};
+              const next = { ...current, vehicles: updated };
+              saveJsonColumn("vehicles_equipment", next);
+            }}
           />
+          <div style={{ borderTop: "2px solid var(--hw-border)", marginTop: 16, paddingTop: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
+              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Storage Location</label>
+              <input
+                style={rowInputStyle}
+                value={(artist.vehicles_equipment as any)?.storageLocation || ""}
+                onChange={(e) => {
+                  const current = (artist.vehicles_equipment as any) || {};
+                  saveJsonColumn("vehicles_equipment", { ...current, storageLocation: e.target.value || null });
+                }}
+              />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
+              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Notes</label>
+              <textarea
+                style={rowTextareaStyle}
+                value={(artist.vehicles_equipment as any)?.notes || ""}
+                placeholder="Trailers, major equipment, etc."
+                onChange={(e) => {
+                  const current = (artist.vehicles_equipment as any) || {};
+                  saveJsonColumn("vehicles_equipment", { ...current, notes: e.target.value || null });
+                }}
+              />
+            </div>
+          </div>
         </Accordion>
 
         {/* ══════ 3. Hospitality & Rider ══════ */}
@@ -1351,7 +1382,7 @@ function Accordion({
   return (
     <div style={{
       background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
-      marginBottom: 10, overflow: "hidden",
+      marginBottom: 10,
     }}>
       <div
         onClick={() => setOpen(!open)}
@@ -1767,75 +1798,6 @@ function RosterSection({
       >
         {rosterDragOver ? "DROP CSV / XLSX TO IMPORT CREW" : "+ ADD CREW MEMBER"}
       </button>
-    </div>
-  );
-}
-
-// ── Vehicles Section ───────────────────────────────────────────
-
-function VehiclesSection({
-  data, onUpdate,
-}: {
-  data: any;
-  onUpdate: (v: any) => void;
-}) {
-  const vehicles = data.vehicles || [];
-
-  function addVehicle() {
-    const vehicle = { id: crypto.randomUUID(), name: "", type: "", mpg: null, notes: "" };
-    onUpdate({ ...data, vehicles: [...vehicles, vehicle] });
-  }
-
-  function updateVehicle(id: string, field: string, value: unknown) {
-    onUpdate({ ...data, vehicles: vehicles.map((v: any) => v.id === id ? { ...v, [field]: value } : v) });
-  }
-
-  function removeVehicle(id: string) {
-    onUpdate({ ...data, vehicles: vehicles.filter((v: any) => v.id !== id) });
-  }
-
-  return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
-        {vehicles.map((v: any) => (
-          <div key={v.id} style={{ padding: "14px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <input
-                value={v.name || ""}
-                onChange={(e) => updateVehicle(v.id, "name", e.target.value || null)}
-                placeholder="Vehicle name"
-                style={{ ...rowInputStyle, fontFamily: "var(--hw-font-display)", fontWeight: 400, fontSize: 16, letterSpacing: "2px", textTransform: "uppercase" as const }}
-              />
-              <button onClick={() => removeVehicle(v.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--hw-text-muted)", fontSize: 14, marginLeft: 8 }}>&times;</button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-              <input value={v.type || ""} onChange={(e) => updateVehicle(v.id, "type", e.target.value || null)} placeholder="Type / purpose" style={rowInputStyle} />
-              <input value={v.mpg ?? ""} onChange={(e) => updateVehicle(v.id, "mpg", e.target.value ? parseFloat(e.target.value) : null)} placeholder="MPG" type="number" style={rowInputStyle} />
-            </div>
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={addVehicle}
-        style={{
-          width: "100%", padding: "12px",
-          border: "3px dashed var(--hw-border-light)", background: "transparent",
-          fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer", marginBottom: 16,
-        }}
-      >
-        + ADD VEHICLE
-      </button>
-
-      <div style={{ borderTop: "2px solid var(--hw-border)", paddingTop: 12 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-          <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Storage Location</label>
-          <input style={rowInputStyle} value={data.storageLocation || ""} onChange={(e) => onUpdate({ ...data, storageLocation: e.target.value || null })} />
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-          <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Notes</label>
-          <textarea style={rowTextareaStyle} value={data.notes || ""} placeholder="Trailers, major equipment, etc." onChange={(e) => onUpdate({ ...data, notes: e.target.value || null })} />
-        </div>
-      </div>
     </div>
   );
 }

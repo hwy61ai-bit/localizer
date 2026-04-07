@@ -42,19 +42,17 @@ export interface TourVehicle {
 }
 
 interface VehicleManagerProps {
-  tourId: string;
   vehicles: TourVehicle[];
   defaultFuelPrice: number;
-  onUpdate: (vehicles: TourVehicle[]) => void;
+  onSave: (vehicles: TourVehicle[]) => Promise<void> | void;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function VehicleManager({
-  tourId,
   vehicles,
   defaultFuelPrice,
-  onUpdate,
+  onSave,
 }: VehicleManagerProps) {
   const [addingNew, setAddingNew] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,21 +87,16 @@ export default function VehicleManager({
 
   const saveVehicles = useCallback(
     async (updated: TourVehicle[]) => {
-      onUpdate(updated);
       setSaving(true);
       try {
-        await fetch(`/api/tourrouter/tours/${tourId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tour_vehicles: updated }),
-        });
+        await onSave(updated);
       } catch (e) {
         console.error('Vehicle save failed:', e);
       } finally {
         setSaving(false);
       }
     },
-    [tourId, onUpdate]
+    [onSave]
   );
 
   // ─── Add from Database ────────────────────────────────────────────

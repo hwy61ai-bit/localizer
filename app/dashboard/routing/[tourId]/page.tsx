@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import IntakeDropZone from "../IntakeDropZone";
 import SettlementPanel from "./SettlementPanel";
 import RosterPanel from "./RosterPanel";
-import VehicleManager from "./VehicleManager";
+import VehicleManager from "@/app/components/tourrouter/VehicleManager";
 import {
   getRoadKm,
   estimateDriveHours,
@@ -833,10 +833,16 @@ export default function RouteTourPage() {
               <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: "var(--hw-text-muted)" }}>&times;</button>
             </div>
             {flags.multiVehicle && <VehicleManager
-              tourId={tourId}
               vehicles={(tour?.tour_vehicles || []) as never[]}
               defaultFuelPrice={tour?.fuel_price_usd || 3.50}
-              onUpdate={(updated) => setTour((prev) => prev ? { ...prev, tour_vehicles: updated as unknown as Record<string, unknown>[] } : prev)}
+              onSave={async (updated) => {
+                setTour((prev) => prev ? { ...prev, tour_vehicles: updated as unknown as Record<string, unknown>[] } : prev);
+                await fetch(`/api/tourrouter/tours/${tourId}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ tour_vehicles: updated }),
+                });
+              }}
             />}
 
             {/* Legacy single-vehicle settings — show only if no multi-vehicle config */}
