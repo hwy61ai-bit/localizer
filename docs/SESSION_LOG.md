@@ -841,3 +841,11 @@ Markdown table paste support — users can paste markdown tables from ChatGPT/Cl
 ✅ BUG-11 — tour_roster added to PUT allowed list
 ✅ NEW-A — per-leg fuel math now uses multi-vehicle logic
 ✅ NEW-B — vehicles_equipment DB default fixed to {}
+
+Today's full scorecard:
+
+✅ BUG-11 — tour_roster added to PUT allowed list
+✅ NEW-A — per-leg fuel math now uses multi-vehicle logic
+✅ NEW-B — vehicles_equipment DB default fixed
+✅ BUG-2 — finance_report_links added to artist delete cascade
+✅ BUG-4 — confirmed not a bug, gate works by default
