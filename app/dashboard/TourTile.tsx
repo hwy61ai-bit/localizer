@@ -63,6 +63,9 @@ export default function TourTile({
           // Delete intake_documents
           const { error: idErr } = await supabase.from("intake_documents").delete().in("tour_id", routingTourIds);
           if (idErr) console.error("intake_documents delete:", idErr.message);
+          // Delete finance_report_links
+          const { error: frlErr } = await supabase.from("finance_report_links").delete().in("tour_id", routingTourIds);
+          if (frlErr) console.error("finance_report_links delete:", frlErr.message);
           // Delete tours_routing
           const { error: trErr } = await supabase.from("tours_routing").delete().in("id", routingTourIds);
           if (trErr) throw trErr;
