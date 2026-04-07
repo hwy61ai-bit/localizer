@@ -868,3 +868,6 @@ Advance sheet drag-drop:
 ✅ Drag flicker fixed
 ✅ Progress bar added to processing modal
 ✅ Anthropic API key replaced and old key disabled
+
+
+#StatusHowBUG-1✅ ClosedLogo route has auth checkBUG-2✅ Closedfinance_report_links added to cascade todayBUG-3✅ ClosedGET /api/tourrouter/artists fixed just nowBUG-4✅ Not a bugGate works by default in requireTourRouterAccess()BUG-5✅ ClosedExport routes return 404 correctlyBUG-6✅ ClosedPUT returns 404 for non-existent showBUG-7✅ Closedno_org correctly returns 403BUG-8✅ ClosedMissing env var returns proper errorBUG-9✅ Closedupdated_at is set on PUTBUG-10✅ ClosedDELETE returns 404 when show doesn't existBUG-11✅ Closedtour_roster added to PUT allowed list todayNEW-A✅ ClosedPer-leg fuel math fixed todayNEW-B✅ Closedvehicles_equipment DB default fixed today

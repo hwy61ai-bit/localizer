@@ -3,10 +3,23 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET() {
-  return NextResponse.json(
-    { error: "Method not allowed" },
-    { status: 405, headers: { Allow: "POST" } }
-  );
+  try {
+    const result = await requireTourRouterAccess();
+    if (!result.ok) return tourRouterAccessErrorResponse(result);
+    const supabase = await supabaseServer();
+
+    const { data: artists, error } = await supabase
+      .from("artists")
+      .select("*")
+      .eq("org_id", result.orgId)
+      .order("name", { ascending: true });
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ artists: artists ?? [] });
+  } catch (e) {
+    console.error("[Artists GET] Unexpected error:", e);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
