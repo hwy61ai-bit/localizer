@@ -849,3 +849,22 @@ Today's full scorecard:
 ✅ NEW-B — vehicles_equipment DB default fixed
 ✅ BUG-2 — finance_report_links added to artist delete cascade
 ✅ BUG-4 — confirmed not a bug, gate works by default
+
+Bug fixes:
+
+✅ BUG-11 — roster edits no longer silently lost
+✅ BUG-2 — artist delete cascade now includes finance_report_links
+✅ BUG-4 — confirmed not a bug
+✅ NEW-A — per-leg fuel math now uses multi-vehicle logic
+✅ NEW-B — vehicles_equipment DB default fixed
+
+Advance sheet drag-drop:
+
+✅ soundcheck_time and load_in_time added to schema + drawer
+✅ New "Venue Info" drawer section — WiFi, parking, venue notes, backline, hospitality
+✅ age_limit moved to Schedule section
+✅ Intake fields operator precedence bug fixed
+✅ Advance prompt updated — soundcheck, age limit, parking extracted separately
+✅ Drag flicker fixed
+✅ Progress bar added to processing modal
+✅ Anthropic API key replaced and old key disabled
