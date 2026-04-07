@@ -1138,6 +1138,16 @@ export default function RouteTourPage() {
         {shows.length > 0 && (
           <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
             {/* Table header */}
+            <p style={{
+              fontFamily: "var(--hw-font-mono)",
+              fontSize: 11,
+              letterSpacing: "1px",
+              color: "var(--hw-text-muted)",
+              margin: "10px 12px 8px 12px",
+              textTransform: "uppercase" as const,
+            }}>
+              Tip — click any show to edit details in the side drawer
+            </p>
             <div className="td-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
