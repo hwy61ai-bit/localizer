@@ -836,3 +836,8 @@ Markdown table paste support — users can paste markdown tables from ChatGPT/Cl
 - Bridge fix available as fallback (writes lead vehicle's fuel price to tour.fuel_price_usd on save)
 
 **Next session:** check Tim's email reply first.
+
+
+✅ BUG-11 — tour_roster added to PUT allowed list
+✅ NEW-A — per-leg fuel math now uses multi-vehicle logic
+✅ NEW-B — vehicles_equipment DB default fixed to {}
