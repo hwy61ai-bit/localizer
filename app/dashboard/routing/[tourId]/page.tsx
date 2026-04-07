@@ -35,6 +35,7 @@ import {
   TOURING_CURRENCIES,
 } from "@/lib/tourrouter";
 import type { Commission } from "@/lib/tourrouter/commissions";
+import type { TourVehicle } from "@/lib/tourrouter/vehicleTypes";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
 
 import "./tour-detail.css";
@@ -379,6 +380,7 @@ export default function RouteTourPage() {
       vehicleType,
       vehicleCount,
       fuelPriceOverride: tour.fuel_price_usd || null,
+      tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
       flightPriceCache,
       driveData,
     });

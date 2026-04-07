@@ -20,6 +20,7 @@ import {
   type VehicleType,
   type DriveDataMap,
 } from "@/lib/tourrouter";
+import type { TourVehicle } from "@/lib/tourrouter/vehicleTypes";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
 
 // ── Types ────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ type TourData = {
   currency_rates: Record<string, number> | null;
   leg_choices: Record<string, string> | null;
   tour_commissions: Record<string, unknown>[] | null;
+  tour_vehicles: Record<string, unknown>[] | null;
 };
 
 type ShowRow = {
@@ -176,6 +178,7 @@ export default function FinancialsPage() {
       vehicleType: tour.vehicle_type || "van",
       vehicleCount: 1,
       fuelPriceOverride: tour.fuel_price_usd || null,
+      tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
       flightPriceCache: {},
       commissions: (tour.tour_commissions || []) as never[],
       driveData,

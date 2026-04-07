@@ -17,6 +17,7 @@ import {
   type FinancialResults,
   type DriveDataMap,
 } from "@/lib/tourrouter";
+import type { TourVehicle } from "@/lib/tourrouter/vehicleTypes";
 import { prefetchDriveDataServer } from "@/lib/tourrouter/mapbox";
 
 export type ExportData = {
@@ -123,6 +124,7 @@ export async function getExportData(tourId: string): Promise<ExportResult> {
     vehicleType,
     vehicleCount,
     fuelPriceOverride: (tour.fuel_price_usd as number) || null,
+    tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
     flightPriceCache: {},
     driveData,
   });

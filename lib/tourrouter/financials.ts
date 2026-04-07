@@ -5,6 +5,7 @@ import { getAirport } from './flights';
 import { calculateShowIncome, type DealTerms, type SettlementData, type ShowForCalc } from './calculateShowIncome';
 import { calculatePersonnelCosts, determineDayType, type RosterMember, type TourStats, type PersonnelCostResult } from './personnelPay';
 import { calculateCommissions, type Commission, type CommissionResult } from './commissions';
+import type { TourVehicle } from './vehicleTypes';
 
 // ============================================================
 // TYPES
@@ -47,6 +48,7 @@ export interface FinancialParams {
   vehicleType: VehicleType;
   vehicleCount: number;
   fuelPriceOverride: number | null;
+  tourVehicles?: TourVehicle[];
   flightPriceCache: Record<string, number>;
   roster?: RosterMember[];
   commissions?: Commission[];
@@ -126,6 +128,36 @@ function calcFuelCostUSD(
   }
 }
 
+function calcFuelCostMultiVehicle(
+  km: number,
+  fromCountry: string | null | undefined,
+  toCountry: string | null | undefined,
+  vehicles: TourVehicle[],
+  rates: Record<string, number>,
+): number {
+  if (!km) return 0;
+  const legCtry = legCountry(fromCountry, toCountry);
+  const activeVehicles = vehicles.filter(v => v.isActive);
+  if (activeVehicles.length === 0) return 0;
+
+  let total = 0;
+  for (const v of activeVehicles) {
+    const mpg = v.mpg > 0 ? v.mpg : 20; // defensive default
+    const pricePerGal = v.fuelPricePerGallon > 0 ? v.fuelPricePerGallon : 3.50;
+    if (legCtry === 'usa') {
+      const miles = km * 0.6214;
+      total += (miles / mpg) * pricePerGal;
+    } else {
+      // Convert MPG -> L/100km, gal price -> USD/litre
+      const l100 = 235.215 / mpg;
+      const litres = (km / 100) * l100;
+      const pricePerLitre = pricePerGal / 3.785;
+      total += litres * pricePerLitre;
+    }
+  }
+  return total;
+}
+
 // ============================================================
 // SINGLE SOURCE OF TRUTH — calcTourFinancials
 // ============================================================
@@ -136,6 +168,7 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     flightThreshold, blanketShowAmt, blanketOffAmt,
     vehicleType, vehicleCount, fuelPriceOverride, flightPriceCache,
     blanketShowLabel, blanketOffLabel, roster, commissions, driveData,
+    tourVehicles,
   } = params;
 
   let totalIncome = 0, totalFuel = 0, totalFlights = 0, totalManual = 0;
@@ -198,7 +231,13 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
           if (cached) totalFlights += cached;
         }
       } else {
-        if (km) totalFuel += calcFuelCostUSD(km, prev.country, s.country, vehicleType, vehicleCount, fuelPriceOverride, rates);
+        if (km) {
+          if (tourVehicles && tourVehicles.some(v => v.isActive)) {
+            totalFuel += calcFuelCostMultiVehicle(km, prev.country, s.country, tourVehicles, rates);
+          } else {
+            totalFuel += calcFuelCostUSD(km, prev.country, s.country, vehicleType, vehicleCount, fuelPriceOverride, rates);
+          }
+        }
       }
       totalManual += showExpenses[i] || 0;
     }

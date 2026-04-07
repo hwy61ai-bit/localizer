@@ -21,25 +21,11 @@ import {
   type VehicleSpec,
   type VehicleCategory,
 } from '@/lib/tourrouter/vehicleDatabase';
+import type { TourVehicle } from '@/lib/tourrouter/vehicleTypes';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface TourVehicle {
-  id: string;               // unique per tour vehicle instance
-  vehicleDbId: string | null; // reference to VEHICLE_DATABASE id, null if custom
-  label: string;            // display name (e.g. "Band Van", "Gear Truck", "Bus 1")
-  make: string;
-  model: string;
-  category: VehicleCategory;
-  fuelType: 'gasoline' | 'diesel' | 'electric' | 'hybrid';
-  mpg: number;
-  passengers: number;
-  cargo: string;
-  ownership: 'owned' | 'leased' | 'rented' | 'provided';
-  fuelPricePerGallon: number;
-  notes: string;
-  isActive: boolean;
-}
+export type { TourVehicle } from '@/lib/tourrouter/vehicleTypes';
 
 interface VehicleManagerProps {
   vehicles: TourVehicle[];

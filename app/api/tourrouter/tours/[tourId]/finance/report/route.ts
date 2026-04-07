@@ -8,6 +8,7 @@ import {
   type TourShow,
   type VehicleType,
 } from "@/lib/tourrouter";
+import type { TourVehicle } from "@/lib/tourrouter/vehicleTypes";
 
 export async function GET(
   _req: NextRequest,
@@ -78,6 +79,7 @@ export async function GET(
     vehicleType: (tour.vehicle_type as VehicleType) || "van",
     vehicleCount: 1,
     fuelPriceOverride: (tour.fuel_price_usd as number) || null,
+    tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
     flightPriceCache: {},
     commissions: (tour.tour_commissions as never[]) || [],
   });

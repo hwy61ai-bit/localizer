@@ -39,13 +39,17 @@ export async function POST(req: NextRequest) {
 
     // If artist_id provided, fetch default_roster and map RosterEntry → RosterMember
     let tour_roster: Record<string, unknown>[] | null = null;
+    let tour_vehicles: Record<string, unknown>[] = [];
     if (artist_id) {
       try {
         const { data: artist } = await supabase
           .from("artists")
-          .select("default_roster")
+          .select("default_roster, vehicles_equipment")
           .eq("id", artist_id)
-          .single();
+          .maybeSingle();
+        if (!artist) {
+          console.warn("[TourRouter tours POST] Artist not found, tour will start with empty roster + fleet:", artist_id);
+        }
         if (artist?.default_roster && Array.isArray(artist.default_roster) && artist.default_roster.length > 0) {
           tour_roster = artist.default_roster.map((entry: Record<string, unknown>) => {
             // Seed pay components from artist-level rates if present
@@ -94,8 +98,13 @@ export async function POST(req: NextRequest) {
             };
           });
         }
+        // Copy artist fleet template into new tour (Decision A: bare copy, no defaults)
+        const fleetVehicles = (artist?.vehicles_equipment as { vehicles?: unknown })?.vehicles;
+        if (Array.isArray(fleetVehicles)) {
+          tour_vehicles = fleetVehicles as Record<string, unknown>[];
+        }
       } catch (e) {
-        console.error("[TourRouter tours POST] Failed to fetch default_roster, skipping:", e);
+        console.error("[TourRouter tours POST] Failed to fetch artist roster + fleet, skipping:", e);
       }
     }
 
@@ -115,6 +124,7 @@ export async function POST(req: NextRequest) {
         org_id: result.orgId,
         name,
         artist_id: artist_id || null,
+        tour_vehicles,
         ...(Object.keys(currency_rates).length > 0 ? { currency_rates } : {}),
         ...(tour_roster ? { tour_roster } : {}),
       })
