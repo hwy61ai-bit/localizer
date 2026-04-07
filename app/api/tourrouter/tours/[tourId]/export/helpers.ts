@@ -124,7 +124,7 @@ export async function getExportData(tourId: string): Promise<ExportResult> {
     vehicleType,
     vehicleCount,
     fuelPriceOverride: (tour.fuel_price_usd as number) || null,
-    tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
+    tourVehicles: (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [],
     flightPriceCache: {},
     driveData,
   });

@@ -98,7 +98,7 @@ export async function GET(
     vehicleType: (tour.vehicle_type as VehicleType) || "van",
     vehicleCount: 1,
     fuelPriceOverride: (tour.fuel_price_usd as number) || null,
-    tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
+    tourVehicles: (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [],
     flightPriceCache: {},
     commissions: (tour.tour_commissions as never[]) || [],
   });

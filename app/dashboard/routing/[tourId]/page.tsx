@@ -380,7 +380,7 @@ export default function RouteTourPage() {
       vehicleType,
       vehicleCount,
       fuelPriceOverride: tour.fuel_price_usd || null,
-      tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
+      tourVehicles: (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [],
       flightPriceCache,
       driveData,
     });

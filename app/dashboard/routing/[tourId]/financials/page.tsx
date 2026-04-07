@@ -178,7 +178,7 @@ export default function FinancialsPage() {
       vehicleType: tour.vehicle_type || "van",
       vehicleCount: 1,
       fuelPriceOverride: tour.fuel_price_usd || null,
-      tourVehicles: (tour.tour_vehicles as TourVehicle[] | undefined) ?? [],
+      tourVehicles: (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [],
       flightPriceCache: {},
       commissions: (tour.tour_commissions || []) as never[],
       driveData,
