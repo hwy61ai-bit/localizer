@@ -165,7 +165,7 @@ Respond ONLY with JSON: { "showId": "<id or null>", "confidence": <0.0-1.0>, "re
       const parsePrompt = PARSE_PROMPTS[documentType](extractedText);
       const parseRaw = await callClaude("claude-sonnet-4-20250514", 4096, [{ role: "user", content: parsePrompt }]);
       const parseResult = JSON.parse(parseRaw);
-      fields = parseResult.fields || parseResult.contacts ? { contacts: parseResult.contacts } : {};
+      fields = parseResult.fields || (parseResult.contacts ? { contacts: parseResult.contacts } : {});
       confidence = parseResult.confidence || {};
     } catch (e) {
       console.error("[Intake] Field parsing failed:", e);

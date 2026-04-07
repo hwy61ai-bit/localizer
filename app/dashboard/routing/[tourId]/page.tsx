@@ -86,6 +86,12 @@ type ShowRow = {
   curfew: string | null;
   load_in_time: string | null;
   soundcheck_time: string | null;
+  venue_wifi_name: string | null;
+  venue_wifi_password: string | null;
+  parking_notes: string | null;
+  venue_notes: string | null;
+  backline_notes: string | null;
+  hospitality_notes: string | null;
   merch: string | null;
   backend: string | null;
   promoter: string | null;
@@ -145,6 +151,17 @@ const DRAWER_SECTIONS = [
       { key: "onstage", label: "Onstage" },
       { key: "curfew", label: "Curfew" },
       { key: "age_limit", label: "Age Limit" },
+    ],
+  },
+  {
+    title: "Venue Info",
+    fields: [
+      { key: "venue_wifi_name", label: "WiFi Network" },
+      { key: "venue_wifi_password", label: "WiFi Password" },
+      { key: "parking_notes", label: "Parking" },
+      { key: "venue_notes", label: "Venue Notes" },
+      { key: "backline_notes", label: "Backline Notes" },
+      { key: "hospitality_notes", label: "Hospitality Notes" },
     ],
   },
   {
@@ -1266,7 +1283,7 @@ export default function RouteTourPage() {
                     {!collapsed && (
                       <div style={{ paddingBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                         {section.fields.map((field) => (
-                          <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address"].includes(field.key) ? "1 / -1" : undefined }}>
+                          <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address", "parking_notes", "venue_notes", "backline_notes", "hospitality_notes"].includes(field.key) ? "1 / -1" : undefined }}>
                             <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>{field.label}</label>
                             {field.key === "offer_currency" ? (
                               <select
@@ -1414,7 +1431,7 @@ export default function RouteTourPage() {
                     {!collapsed && (
                       <div style={{ paddingBottom: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                         {section.fields.map((field) => (
-                          <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address"].includes(field.key) ? "1 / -1" : undefined }}>
+                          <div key={field.key} style={{ gridColumn: ["notes", "backend", "hotel_notes", "hotel_address", "parking_notes", "venue_notes", "backline_notes", "hospitality_notes"].includes(field.key) ? "1 / -1" : undefined }}>
                             <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>{field.label}</label>
                             {field.key === "offer_currency" ? (
                               <select

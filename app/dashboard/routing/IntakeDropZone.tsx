@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import posthog from "posthog-js";
 
 type IntakeResult = {
@@ -55,6 +55,7 @@ export default function IntakeDropZone({
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
+  const dragCounterRef = useRef(0);
 
   // Prevent browser from opening dropped files
   useEffect(() => {
@@ -70,6 +71,7 @@ export default function IntakeDropZone({
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    dragCounterRef.current = 0;
     setDragOver(false);
 
     const file = e.dataTransfer.files?.[0];
@@ -184,8 +186,19 @@ export default function IntakeDropZone({
 
   return (
     <div
-      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
-      onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
+      onDragEnter={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current++;
+        setDragOver(true);
+      }}
+      onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current--;
+        if (dragCounterRef.current === 0) setDragOver(false);
+      }}
       onDrop={handleDrop}
       style={{ position: "relative" }}
     >
@@ -219,6 +232,10 @@ export default function IntakeDropZone({
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>PROCESSING DOCUMENT</div>
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 16 }}>{fileName}</div>
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", color: "var(--hw-text)" }}>{processingStep}</div>
+            <style>{`@keyframes intakeProgress { from { width: 0%; } to { width: 85%; } }`}</style>
+            <div style={{ width: "100%", height: 4, background: "var(--hw-border)", marginTop: 16 }}>
+              <div style={{ height: "100%", background: "var(--hw-crimson)", animation: "intakeProgress 15s linear forwards" }} />
+            </div>
           </div>
         </div>
       )}

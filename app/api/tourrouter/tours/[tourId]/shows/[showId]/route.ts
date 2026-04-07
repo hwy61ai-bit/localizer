@@ -19,6 +19,7 @@ export async function PUT(
     "venue", "offer_display", "offer_amount", "offer_currency", "capacity",
     "status", "billing", "age_limit", "is_off", "load_in_time", "soundcheck_time", "doors", "showtime", "onstage", "curfew",
     "merch", "backend", "promoter", "promoter_contact", "production_contact",
+    "venue_wifi_name", "venue_wifi_password", "parking_notes", "venue_notes", "backline_notes", "hospitality_notes",
     "hotel_name", "hotel_address", "hotel_checkin", "hotel_checkout",
     "hotel_rooms", "hotel_rate", "hotel_currency", "hotel_confirmation",
     "hotel_notes", "hotel_block", "hotel_block_size", "hotel_block_rate",

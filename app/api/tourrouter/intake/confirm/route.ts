@@ -151,18 +151,103 @@ export async function POST(req: NextRequest) {
       case "advance_response": {
         if (showId) {
           const update: Record<string, unknown> = {};
-          const advFields = [
-            "load_in_time", "soundcheck_time", "load_in_location", "venue_wifi_name", "venue_wifi_password",
-            "venue_notes", "backline_notes", "hospitality_notes",
+
+          // Schedule fields
+          const schedule = fields.schedule as Record<string, unknown> | undefined;
+          if (schedule) {
+            if (schedule.load_in_time) update.load_in_time = schedule.load_in_time;
+            if (schedule.soundcheck_time) update.soundcheck_time = schedule.soundcheck_time;
+            if (schedule.doors_time) update.doors = schedule.doors_time;
+            if (schedule.headliner_set_time) update.showtime = schedule.headliner_set_time;
+            if (schedule.curfew) update.curfew = schedule.curfew;
+          }
+
+          // Venue fields
+          const venue = fields.venue as Record<string, unknown> | undefined;
+          if (venue) {
+            if (venue.age_restriction) update.age_limit = venue.age_restriction;
+            if (venue.capacity) update.capacity = venue.capacity;
+          }
+
+          // Backstage fields
+          const backstage = fields.backstage as Record<string, unknown> | undefined;
+          if (backstage) {
+            if (backstage.wifi_network) update.venue_wifi_name = backstage.wifi_network;
+            if (backstage.wifi_password) update.venue_wifi_password = backstage.wifi_password;
+            if (backstage.catering) update.hospitality_notes = backstage.catering;
+          }
+
+          // Parking notes
+          const parking = fields.parking as Record<string, unknown> | undefined;
+          if (parking?.notes) update.parking_notes = String(parking.notes);
+
+          // Load in directions as part of venue notes
+          const loadIn = fields.load_in as Record<string, unknown> | undefined;
+          if (loadIn?.directions) update.venue_notes = String(loadIn.directions);
+
+          // Production — backline notes
+          const production = fields.production as Record<string, unknown> | undefined;
+          if (production) {
+            const prodParts: string[] = [];
+            if (production.pa_system) prodParts.push(`PA: ${production.pa_system}`);
+            if (production.monitor_wedges) prodParts.push(`Monitors: ${production.monitor_wedges}`);
+            if (production.foh_console) prodParts.push(`FOH: ${production.foh_console}`);
+            if (production.monitor_console) prodParts.push(`MON: ${production.monitor_console}`);
+            if (production.backline_available) prodParts.push(`Backline: ${production.backline_available}`);
+            if (prodParts.length > 0) update.backline_notes = prodParts.join(". ");
+          }
+
+          // Contacts — map production and settlement contacts
+          const contacts = fields.contacts as Array<Record<string, unknown>> | undefined;
+          if (Array.isArray(contacts)) {
+            const prodContact = contacts.find((c) =>
+              typeof c.role === "string" && c.role.toLowerCase().includes("production")
+            );
+            if (prodContact) {
+              if (prodContact.name) update.production_contact = prodContact.name;
+              if (prodContact.phone) update.production_contact_phone = prodContact.phone;
+              if (prodContact.email) update.production_contact_email = prodContact.email;
+            }
+            const settlementContact = contacts.find((c) =>
+              typeof c.role === "string" && c.role.toLowerCase().includes("settlement")
+            );
+            if (settlementContact) {
+              if (settlementContact.name) update.settlement_contact = settlementContact.name;
+              if (settlementContact.phone) update.settlement_contact_phone = settlementContact.phone;
+              if (settlementContact.email) update.settlement_contact_email = settlementContact.email;
+            }
+          }
+
+          // Settlement info fallback
+          const settlementInfo = fields.settlement_info as Record<string, unknown> | undefined;
+          if (settlementInfo?.settlement_contact && !update.settlement_contact) {
+            update.settlement_contact = settlementInfo.settlement_contact;
+          }
+
+          // Notes — combine house_rules and special_notes
+          const noteParts: string[] = [];
+          if (fields.house_rules) noteParts.push(String(fields.house_rules));
+          if (fields.special_notes) noteParts.push(String(fields.special_notes));
+          if (noteParts.length > 0) update.notes = noteParts.join("\n\n");
+
+          // Merch
+          const merch = fields.merch as Record<string, unknown> | undefined;
+          if (merch?.notes) update.merch = String(merch.notes);
+
+          // Flat field fallback for backwards compatibility
+          const flatFields = [
+            "load_in_time", "soundcheck_time", "venue_wifi_name", "venue_wifi_password",
+            "venue_notes", "backline_notes", "hospitality_notes", "parking_notes",
             "production_contact", "production_contact_phone", "production_contact_email",
             "settlement_contact", "settlement_contact_phone", "settlement_contact_email",
-            "doors", "showtime", "curfew", "notes",
+            "doors", "showtime", "curfew", "age_limit",
           ];
-          for (const key of advFields) {
-            if (fields[key] !== undefined && fields[key] !== null && fields[key] !== "") {
+          for (const key of flatFields) {
+            if (fields[key] !== undefined && fields[key] !== null && fields[key] !== "" && !update[key]) {
               update[key] = fields[key];
             }
           }
+
           if (Object.keys(update).length > 0) {
             const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);
             if (error) throw error;

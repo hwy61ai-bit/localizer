@@ -107,11 +107,14 @@ export function buildAdvanceResponsePrompt(text: string): string {
   return `Extract venue advance response information from this document:
 
 - load_in_time
+- soundcheck_time
 - load_in_location
 - venue_wifi_name
 - venue_wifi_password
-- venue_notes (parking, green room, dressing room info)
-- backline_notes (available backline equipment)
+- age_limit (e.g. "18+", "21+", "all ages")
+- parking_notes (parking location, directions, reserved spots)
+- venue_notes (green room, dressing room, merch table location — NOT parking)
+- backline_notes (available backline equipment, stage specs, PA, monitors)
 - hospitality_notes (catering, rider fulfillment, buyout amount)
 - production_contact (name)
 - production_contact_phone
