@@ -20,6 +20,7 @@ import {
   getAirport,
   buildFlightLinks,
   calcTourFinancials,
+  calcFuelCostMultiVehicle,
   prefetchDriveData,
   buildDriveDataKey,
   type TourShow,
@@ -298,6 +299,7 @@ export default function RouteTourPage() {
     const rates = tour.currency_rates || {};
     const vehicleType = tour.vehicle_type || "van";
     const vehicleCount = 1;
+    const tourVehicles = (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [];
     const pax = tour.pax || 4;
     const flightThreshold = tour.flight_threshold_h || 6;
 
@@ -321,18 +323,22 @@ export default function RouteTourPage() {
       // Fuel cost for this leg
       let fuelCost: number | null = null;
       if (km) {
-        const lc = legCtry;
-        if (lc === "usa") {
-          const mpgVal = VEHICLE_MPG[vehicleType] || 20;
-          const miles = km * 0.6214;
-          const pricePerGal = tour.fuel_price_usd || 3.50;
-          fuelCost = (miles / mpgVal) * pricePerGal;
+        if (tourVehicles.some(v => v.isActive)) {
+          fuelCost = calcFuelCostMultiVehicle(km, prev.country, s.country, tourVehicles, rates);
         } else {
-          const l100 = VEHICLE_L100[vehicleType] || 11.8;
-          const litres = (km / 100) * l100;
-          const eurRate = rates["EUR"] || 1.09;
-          const pricePerLitre = 1.65 * eurRate;
-          fuelCost = litres * (tour.fuel_price_usd ? tour.fuel_price_usd / 3.785 : pricePerLitre);
+          const lc = legCtry;
+          if (lc === "usa") {
+            const mpgVal = VEHICLE_MPG[vehicleType] || 20;
+            const miles = km * 0.6214;
+            const pricePerGal = tour.fuel_price_usd || 3.50;
+            fuelCost = (miles / mpgVal) * pricePerGal;
+          } else {
+            const l100 = VEHICLE_L100[vehicleType] || 11.8;
+            const litres = (km / 100) * l100;
+            const eurRate = rates["EUR"] || 1.09;
+            const pricePerLitre = 1.65 * eurRate;
+            fuelCost = litres * (tour.fuel_price_usd ? tour.fuel_price_usd / 3.785 : pricePerLitre);
+          }
         }
       }
       return { km, driveH, fuelCost, distStr, legCtry, dayGap, fromCity: prev.city || "?", toCity: s.city || "?" };
@@ -380,7 +386,7 @@ export default function RouteTourPage() {
       vehicleType,
       vehicleCount,
       fuelPriceOverride: tour.fuel_price_usd || null,
-      tourVehicles: (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [],
+      tourVehicles,
       flightPriceCache,
       driveData,
     });

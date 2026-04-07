@@ -46,6 +46,7 @@ export {
 
 export {
   calcTourFinancials,
+  calcFuelCostMultiVehicle,
   type TourShow,
   type FinancialParams,
   type FinancialResults,

@@ -128,7 +128,7 @@ function calcFuelCostUSD(
   }
 }
 
-function calcFuelCostMultiVehicle(
+export function calcFuelCostMultiVehicle(
   km: number,
   fromCountry: string | null | undefined,
   toCountry: string | null | undefined,
