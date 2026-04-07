@@ -808,3 +808,31 @@ Markdown table paste support — users can paste markdown tables from ChatGPT/Cl
 - Delete any duplicate demo tours Drew accidentally created during today's testing
 - Consider demo-seed idempotency fix (one-line check for existing demo tour)
 - Then either BUG-4 beta test with a lapsed-subscription simulation, or start the next QA session area (import flow stress test with edge cases)
+
+
+## April 6, 2026 (afternoon) — Master artist profile blitz + vehicle architecture question to Tim
+
+**Master artist profile drag-and-drop blitz:**
+- Roster: drag CSV/XLSX to bulk-add crew with column mapping
+- Bio: drag .txt/.md/.docx/.pdf to autofill (uses /api/import/extract)
+- Logo + band photo: drag-and-drop alongside click-to-upload
+- Team section: drag CSV/XLSX with both long and wide format support; added 4 missing phone columns to artists table that the UI was silently dropping
+- Advance materials: "+ Add Custom Material" with rename, delete, drag-drop upload — flows through to venue link and download-all zip
+- W-9 autofill: new /api/import/parse-w9 endpoint, drag a W-9 onto Business Entity to autofill Legal Name, DBA, Entity Type, Address, EIN
+- Hid Tax & Compliance and Insurance sections (data preserved)
+- Removed duplicate Short Bio / Full Bio from Promo & Marketing
+- VIEW TOURS button + artist name UX (placeholder + pencil icon)
+- Auth added to /api/import/extract (was completely unauthenticated, could burn Claude credits)
+
+**VehicleManager bug fixes:**
+- Optimistic update fix — saveVehicles now calls onUpdate BEFORE fetch (was causing input revert mid-keystroke)
+- Make and Model split into two editable inputs (was one readOnly composite)
+- boxSizing: border-box added to inputStyle, fixes overflow
+
+**Sent to Tim:** vehicle architecture questions email
+- The whole multi-vehicle system is currently a UI shell with no calculation engine integration
+- Tim needs to answer Q1 (data location), Q2 (allowed to touch financials.ts?), Q3 (multi-vehicle calc strategy)
+- Until Tim answers, do NOT touch financials.ts and do NOT start building Master Artist Profile vehicle UI
+- Bridge fix available as fallback (writes lead vehicle's fuel price to tour.fuel_price_usd on save)
+
+**Next session:** check Tim's email reply first.
