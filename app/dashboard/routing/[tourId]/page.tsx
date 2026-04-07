@@ -84,6 +84,8 @@ type ShowRow = {
   showtime: string | null;
   onstage: string | null;
   curfew: string | null;
+  load_in_time: string | null;
+  soundcheck_time: string | null;
   merch: string | null;
   backend: string | null;
   promoter: string | null;
@@ -130,17 +132,19 @@ const DRAWER_SECTIONS = [
       { key: "offer_currency", label: "Currency" },
       { key: "status", label: "Status" },
       { key: "billing", label: "Billing" },
-      { key: "age_limit", label: "Age Limit" },
       { key: "backend", label: "Backend / Deal Terms" },
     ],
   },
   {
     title: "Schedule",
     fields: [
+      { key: "load_in_time", label: "Load In" },
+      { key: "soundcheck_time", label: "Sound Check" },
       { key: "doors", label: "Doors" },
       { key: "showtime", label: "Showtime" },
       { key: "onstage", label: "Onstage" },
       { key: "curfew", label: "Curfew" },
+      { key: "age_limit", label: "Age Limit" },
     ],
   },
   {

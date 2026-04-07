@@ -17,7 +17,7 @@ export async function PUT(
   const allowed = [
     "sort_order", "date_iso", "event", "city", "country", "country_norm",
     "venue", "offer_display", "offer_amount", "offer_currency", "capacity",
-    "status", "billing", "age_limit", "is_off", "doors", "showtime", "onstage", "curfew",
+    "status", "billing", "age_limit", "is_off", "load_in_time", "soundcheck_time", "doors", "showtime", "onstage", "curfew",
     "merch", "backend", "promoter", "promoter_contact", "production_contact",
     "hotel_name", "hotel_address", "hotel_checkin", "hotel_checkout",
     "hotel_rooms", "hotel_rate", "hotel_currency", "hotel_confirmation",

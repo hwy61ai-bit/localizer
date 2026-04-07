@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
         if (showId) {
           const update: Record<string, unknown> = {};
           const advFields = [
-            "load_in_time", "load_in_location", "venue_wifi_name", "venue_wifi_password",
+            "load_in_time", "soundcheck_time", "load_in_location", "venue_wifi_name", "venue_wifi_password",
             "venue_notes", "backline_notes", "hospitality_notes",
             "production_contact", "production_contact_phone", "production_contact_email",
             "settlement_contact", "settlement_contact_phone", "settlement_contact_email",
