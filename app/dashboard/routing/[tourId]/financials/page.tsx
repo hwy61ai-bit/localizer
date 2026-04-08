@@ -73,6 +73,7 @@ type ShowRow = {
   hotel_rooms: number | null;
   hotel_checkin: string | null;
   hotel_checkout: string | null;
+  hotel_name: string | null;
 };
 
 // ── Component ────────────────────────────────────────────────
@@ -534,6 +535,62 @@ export default function FinancialsPage() {
                   >{cat}{cat !== "All" && expTotalByCategory[cat] ? ` (${fmtUSD(expTotalByCategory[cat])})` : ""}</button>
                 ))}
               </div>
+
+              {expFilter === "Accommodation" && fin && (fin.totalHotel > 0 || shows.some(s => s.hotel_rate || s.hotel_cost_actual)) && (
+                <div style={{ margin: "16px 20px", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
+                  <div style={{ padding: "12px 16px", background: "var(--hw-bg-warm)", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>Hotel Cost Breakdown</div>
+                    <div style={{ display: "flex", gap: 16, fontFamily: "var(--hw-font-mono)", fontSize: 10 }}>
+                      {fin.hotelCostByState.actual > 0 && <span style={{ color: "var(--hw-green)" }}>Actual: {fmtUSD(fin.hotelCostByState.actual)}</span>}
+                      {fin.hotelCostByState.confirmed > 0 && <span style={{ color: "var(--hw-amber)" }}>Confirmed: {fmtUSD(fin.hotelCostByState.confirmed)}</span>}
+                      {fin.hotelCostByState.projected > 0 && <span style={{ color: "var(--hw-text-muted)" }}>Projected: {fmtUSD(fin.hotelCostByState.projected)}</span>}
+                      <span style={{ fontWeight: 800, color: "var(--hw-crimson)" }}>Total: {fmtUSD(fin.totalHotel)}</span>
+                    </div>
+                  </div>
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ background: "var(--hw-bg-invert)" }}>
+                        {["Date", "City", "Hotel", "Rooms", "Rate", "Nights", "Total", "Source"].map((h) => (
+                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "1.5px" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shows.filter(s => !s.is_off).map((s) => {
+                        const hasActual = s.hotel_cost_actual && s.hotel_cost_actual > 0;
+                        const hasConfirmed = s.hotel_rate && s.hotel_rooms;
+                        const nights = (s.hotel_checkin && s.hotel_checkout)
+                          ? Math.max(1, Math.round((new Date(s.hotel_checkout).getTime() - new Date(s.hotel_checkin).getTime()) / (1000 * 60 * 60 * 24)))
+                          : 1;
+                        const confirmedCost = hasConfirmed ? (s.hotel_rate! * s.hotel_rooms! * nights) : null;
+                        const source = hasActual ? "actual" : hasConfirmed ? "confirmed" : "projected";
+                        const total = hasActual ? s.hotel_cost_actual! : hasConfirmed ? confirmedCost! : null;
+                        if (!hasActual && !hasConfirmed) return null;
+                        return (
+                          <tr key={s.id} style={{ borderTop: "2px solid var(--hw-border)" }}>
+                            <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{s.date_iso || "—"}</td>
+                            <td style={{ padding: "8px 12px", fontSize: 13 }}>{s.city || "—"}</td>
+                            <td style={{ padding: "8px 12px", fontSize: 13 }}>{s.hotel_name || "—"}</td>
+                            <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{s.hotel_rooms || "—"}</td>
+                            <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{s.hotel_rate ? fmtUSD(s.hotel_rate) : "—"}</td>
+                            <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{hasConfirmed ? nights : "—"}</td>
+                            <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600, color: "var(--hw-crimson)" }}>{total ? fmtUSD(total) : "—"}</td>
+                            <td style={{ padding: "8px 12px" }}>
+                              <span style={{
+                                padding: "2px 8px",
+                                border: "2px solid",
+                                fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase",
+                                borderColor: source === "actual" ? "var(--hw-green)" : source === "confirmed" ? "var(--hw-amber)" : "var(--hw-border)",
+                                color: source === "actual" ? "var(--hw-green)" : source === "confirmed" ? "var(--hw-amber)" : "var(--hw-text-muted)",
+                              }}>{source}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
