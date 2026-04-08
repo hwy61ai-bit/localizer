@@ -93,7 +93,7 @@ export function buildExpenseReceiptPrompt(text: string): string {
 - amount (number)
 - currency (USD, EUR, etc.)
 - vendor (store/business name)
-- description (brief description of what was purchased)
+- description (brief description of what was purchased. For fuel receipts, always format as: "X.X gallons unleaded" or "X.X gallons diesel" — gallons first, then fuel type, no other text)
 - notes
 
 DOCUMENT TEXT:
