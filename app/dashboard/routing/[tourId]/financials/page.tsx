@@ -66,6 +66,11 @@ type ShowRow = {
   promoter: string | null;
   notes: string | null;
   support: string | null;
+  hotel_cost_actual: number | null;
+  hotel_rate: number | null;
+  hotel_rooms: number | null;
+  hotel_checkin: string | null;
+  hotel_checkout: string | null;
 };
 
 // ── Component ────────────────────────────────────────────────
@@ -163,6 +168,11 @@ export default function FinancialsPage() {
       doors: s.doors || undefined,
       showtime: s.showtime || undefined,
       merch: s.merch || undefined,
+      hotelCostActual: s.hotel_cost_actual || null,
+      hotelRate: s.hotel_rate || null,
+      hotelRooms: s.hotel_rooms || null,
+      hotelCheckin: s.hotel_checkin || null,
+      hotelCheckout: s.hotel_checkout || null,
     }));
 
     const result = calcTourFinancials({
@@ -184,6 +194,8 @@ export default function FinancialsPage() {
       flightPriceCache: {},
       commissions: (tour.tour_commissions || []) as never[],
       driveData,
+      lodgingDefaults: null,
+      hotelBudgetOverride: null,
     });
     setFin(result);
   }, [shows, tour, blanketShowAmt, blanketOffAmt, blanketShowLabel, blanketOffLabel, showExpenses, rates, driveData]);

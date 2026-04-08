@@ -97,6 +97,11 @@ type ShowRow = {
   promoter: string | null;
   notes: string | null;
   support: string | null;
+  hotel_cost_actual: number | null;
+  hotel_rate: number | null;
+  hotel_rooms: number | null;
+  hotel_checkin: string | null;
+  hotel_checkout: string | null;
   advance_status: string | null;
   advance_sent_at: string | null;
   advance_form_token: string | null;
@@ -390,6 +395,11 @@ export default function RouteTourPage() {
       notes: s.notes || undefined,
       support: s.support || undefined,
       promoter: s.promoter || undefined,
+      hotelCostActual: s.hotel_cost_actual || null,
+      hotelRate: s.hotel_rate || null,
+      hotelRooms: s.hotel_rooms || null,
+      hotelCheckin: s.hotel_checkin || null,
+      hotelCheckout: s.hotel_checkout || null,
     }));
 
     // SINGLE SOURCE OF TRUTH: calcTourFinancials
@@ -410,6 +420,8 @@ export default function RouteTourPage() {
       tourVehicles,
       flightPriceCache,
       driveData,
+      lodgingDefaults: null,
+      hotelBudgetOverride: null,
     });
     setFinancials(fin);
   }, [shows, tour, legChoices, driveData, flightPriceCache]);
