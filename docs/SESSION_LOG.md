@@ -882,3 +882,33 @@ The hotel/lodging feature is now fully complete end to end:
 ✅ Accommodations tab — collapsible per-show breakdown
 ✅ All tab — hotel summary strip with "See Breakdown →"
 ✅ Hotel receipt → hotel_cost_actual stacks additively, replaces estimate
+
+
+Hotel/Lodging — full feature:
+
+Artist Profile Lodging section (rooms by type, bed config, star rating, budget override)
+HOTEL_MARKET_RATES table added to constants.ts (130+ cities)
+HOTEL_FALLBACK_RATES by region
+getProjectedHotelRate() helper in lib/tourrouter/hotelRates.ts
+Three-state hotel cost waterfall in calcTourFinancials() — actual receipt → confirmation estimate → planning projection
+Hotel costs now flow into totalExpenses, netIncome, margin, avgPerShow
+lodging_defaults and hotel_budget_override wired through tour creation, PUT allowlist, routing and financials pages
+Accommodations tab — collapsible per-show breakdown with Actual/Confirmed/Projected source flags
+All tab — hotel summary strip with "See Breakdown →" button
+Hotel receipt confirm route writes to hotel_cost_actual additively
+Show match confidence indicator on intake review screen
+
+Fuel receipts:
+
+vendor column added to tour_expenses (was causing 500 on receipt save)
+Fuel added to CATEGORIES array
+Fuel summary strip on All tab — Est vs Actual receipts side by side
+Transport Costs section updated — shows Est. fuel cost + Actual receipts line
+Fuel receipt description format normalized in receipt prompt
+Tim's decision documented in financials.ts comment — estimates persist, actuals stack separately
+
+Tim docs:
+
+TIM_MASTER_STATUS_April_8_2026.md — comprehensive technical reference including Mapbox clarification
+TIM_HOTEL_LODGING_BRIEF.md
+Hotel lodging decisions, Road App v1 spec, Onboarding wizard spec saved to repo
