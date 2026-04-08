@@ -912,3 +912,5 @@ Tim docs:
 TIM_MASTER_STATUS_April_8_2026.md — comprehensive technical reference including Mapbox clarification
 TIM_HOTEL_LODGING_BRIEF.md
 Hotel lodging decisions, Road App v1 spec, Onboarding wizard spec saved to repo
+
+Fixed intake document storage RLS — added 3 policies to tour-documents bucket (upload, read, delete). Then:
