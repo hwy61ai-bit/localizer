@@ -1102,7 +1102,29 @@ export default function ArtistProfilePage() {
           />
         </Accordion>
 
-        {/* ══════ 2. Vehicles & Equipment ══════ */}
+        {/* ══════ 2. Lodging ══════ */}
+        <Accordion
+          title="Lodging"
+          badge={(() => {
+            const ld = (artist.lodging_defaults as any) || {};
+            const rooms = (ld.rooms as any[] || []);
+            const total = rooms.reduce((sum: number, r: any) => sum + (r.count || 1), 0);
+            return total ? `${total} room${total !== 1 ? "s" : ""}` : "Not set";
+          })()}
+          badgeColor={(() => {
+            const ld = (artist.lodging_defaults as any) || {};
+            const rooms = (ld.rooms as any[] || []);
+            const total = rooms.reduce((sum: number, r: any) => sum + (r.count || 1), 0);
+            return total > 0 ? "green" : "gray";
+          })()}
+        >
+          <LodgingSection
+            lodging={(artist.lodging_defaults as any) || {}}
+            onUpdate={(v) => saveJsonColumn("lodging_defaults", v)}
+          />
+        </Accordion>
+
+        {/* ══════ 3. Vehicles & Equipment ══════ */}
         <Accordion
           title="Vehicles & Equipment"
           badge={(() => {
@@ -1148,7 +1170,7 @@ export default function ArtistProfilePage() {
           </div>
         </Accordion>
 
-        {/* ══════ 3. Hospitality & Rider ══════ */}
+        {/* ══════ 4. Hospitality & Rider ══════ */}
         <Accordion
           title="Hospitality & Rider"
           badge={(() => {
@@ -1178,7 +1200,7 @@ export default function ArtistProfilePage() {
           ]} />
         </Accordion>
 
-        {/* ══════ 4. Promo & Marketing ══════ */}
+        {/* ══════ 5. Promo & Marketing ══════ */}
         <Accordion
           title="Promo & Marketing"
           badge={(() => {
@@ -1209,7 +1231,7 @@ export default function ArtistProfilePage() {
           ]} />
         </Accordion>
 
-        {/* ══════ 5. Business Entity ══════ */}
+        {/* ══════ 6. Business Entity ══════ */}
         <div
           onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (!w9Importing) setW9DragOver(true); }}
           onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
@@ -1248,7 +1270,7 @@ export default function ArtistProfilePage() {
           </Accordion>
         </div>
 
-        {/* ══════ 8. Technical Production ══════ */}
+        {/* ══════ 9. Technical Production ══════ */}
         <Accordion
           title="Technical Production"
           badge={(() => {
@@ -1848,6 +1870,149 @@ function RosterMemberField({
           updateRef.current(member.id, field, v);
         }}
       />
+    </div>
+  );
+}
+
+// ── Lodging Section ────────────────────────────────────────────
+
+interface LodgingRoom {
+  type: string;
+  bed_config: string;
+  count: number;
+}
+
+interface LodgingDefaults {
+  rooms: LodgingRoom[];
+  star_minimum: number;
+  nightly_budget_override?: number | null;
+}
+
+function LodgingSection({
+  lodging,
+  onUpdate,
+}: {
+  lodging: Partial<LodgingDefaults>;
+  onUpdate: (v: LodgingDefaults) => void;
+}) {
+  const rooms: LodgingRoom[] = lodging.rooms || [];
+  const starMinimum = lodging.star_minimum || 3;
+  const budgetOverride = lodging.nightly_budget_override || null;
+
+  function save(updated: Partial<LodgingDefaults>) {
+    onUpdate({
+      rooms: updated.rooms ?? rooms,
+      star_minimum: updated.star_minimum ?? starMinimum,
+      nightly_budget_override: updated.nightly_budget_override !== undefined ? updated.nightly_budget_override : budgetOverride,
+    });
+  }
+
+  function addRoom() {
+    save({ rooms: [...rooms, { type: "double", bed_config: "2 queens", count: 1 }] });
+  }
+
+  function updateRoom(idx: number, field: keyof LodgingRoom, value: string | number) {
+    const updated = rooms.map((r, i) => i === idx ? { ...r, [field]: value } : r);
+    save({ rooms: updated });
+  }
+
+  function removeRoom(idx: number) {
+    save({ rooms: rooms.filter((_, i) => i !== idx) });
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: "var(--hw-font-mono)",
+    fontSize: 11,
+    letterSpacing: "1.5px",
+    textTransform: "uppercase",
+    color: "var(--hw-text-secondary)",
+    fontWeight: 400,
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "6px 8px",
+    border: "2px solid var(--hw-border)",
+    fontFamily: "var(--hw-font-body)",
+    fontSize: 13,
+    background: "var(--hw-bg-surface)",
+    color: "var(--hw-text)",
+    outline: "none",
+  };
+
+  return (
+    <div>
+      {/* Star rating + budget override */}
+      <div style={{ display: "grid", gridTemplateColumns: "160px 1fr 160px 1fr", gap: 10, marginBottom: 16, padding: "6px 0" }}>
+        <label style={labelStyle}>Min Star Rating</label>
+        <select
+          value={starMinimum}
+          onChange={(e) => save({ star_minimum: Number(e.target.value) })}
+          style={inputStyle}
+        >
+          <option value={2}>2-Star (Budget)</option>
+          <option value={3}>3-Star (Standard)</option>
+          <option value={4}>4-Star (Upscale)</option>
+          <option value={5}>5-Star (Luxury)</option>
+        </select>
+        <label style={labelStyle}>Nightly Budget Override</label>
+        <input
+          type="number"
+          placeholder="Leave blank to use market rates"
+          value={budgetOverride ?? ""}
+          onChange={(e) => save({ nightly_budget_override: e.target.value ? Number(e.target.value) : null })}
+          style={inputStyle}
+        />
+      </div>
+
+      {/* Room list */}
+      <div style={{ borderTop: "2px solid var(--hw-border)", paddingTop: 12, marginBottom: 8 }}>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", marginBottom: 8 }}>
+          Room Breakdown
+        </div>
+        {rooms.length === 0 && (
+          <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text-muted)", marginBottom: 8 }}>
+            No rooms added yet. Add rooms to enable hotel cost projections.
+          </div>
+        )}
+        {rooms.map((room, idx) => (
+          <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 80px 40px", gap: 8, marginBottom: 6, alignItems: "center" }}>
+            <input
+              placeholder="Room type (e.g. TM Single, Band Double)"
+              value={room.type}
+              onChange={(e) => updateRoom(idx, "type", e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              placeholder="Bed config (e.g. 1 king, 2 queens)"
+              value={room.bed_config}
+              onChange={(e) => updateRoom(idx, "bed_config", e.target.value)}
+              style={inputStyle}
+            />
+            <input
+              type="number"
+              min={1}
+              placeholder="Qty"
+              value={room.count}
+              onChange={(e) => updateRoom(idx, "count", Number(e.target.value) || 1)}
+              style={inputStyle}
+            />
+            <button
+              onClick={() => removeRoom(idx)}
+              style={{ padding: "4px 8px", border: "2px solid var(--hw-crimson)", background: "transparent", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 11, cursor: "pointer" }}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={addRoom}
+          style={{ marginTop: 4, padding: "6px 14px", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}
+        >
+          + Add Room
+        </button>
+      </div>
     </div>
   );
 }

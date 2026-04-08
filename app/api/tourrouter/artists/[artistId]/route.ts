@@ -44,7 +44,7 @@ export async function PUT(
     "spotify_url",
     "business_entity", "key_contacts", "tax_compliance", "insurance",
     "technical_production", "hospitality_rider", "promo_marketing",
-    "merch_defaults", "vehicles_equipment", "default_roster", "default_commissions",
+    "merch_defaults", "vehicles_equipment", "lodging_defaults", "default_roster", "default_commissions",
   ];
 
   const update: Record<string, unknown> = {};
