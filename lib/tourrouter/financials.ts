@@ -6,6 +6,7 @@ import { calculateShowIncome, type DealTerms, type SettlementData, type ShowForC
 import { calculatePersonnelCosts, determineDayType, type RosterMember, type TourStats, type PersonnelCostResult } from './personnelPay';
 import { calculateCommissions, type Commission, type CommissionResult } from './commissions';
 import type { TourVehicle } from './vehicleTypes';
+import { getProjectedHotelRate } from './hotelRates';
 
 // ============================================================
 // TYPES
@@ -32,6 +33,11 @@ export interface TourShow {
   promoter?: string;
   deal?: DealTerms | null;
   settlement?: SettlementData | null;
+  hotelCostActual?: number | null;
+  hotelRate?: number | null;
+  hotelRooms?: number | null;
+  hotelCheckin?: string | null;
+  hotelCheckout?: string | null;
 }
 
 export interface FinancialParams {
@@ -53,6 +59,8 @@ export interface FinancialParams {
   roster?: RosterMember[];
   commissions?: Commission[];
   driveData?: DriveDataMap;
+  lodgingDefaults?: { rooms: Array<{ type: string; bed_config: string; count: number }>; star_minimum: number; nightly_budget_override?: number } | null;
+  hotelBudgetOverride?: number | null;
 }
 
 export interface FinancialResults {
@@ -75,6 +83,8 @@ export interface FinancialResults {
   showDayCount: number;
   offDayCount: number;
   totalExpenses: number;
+  totalHotel: number;
+  hotelCostByState: { actual: number; confirmed: number; projected: number };
   netIncome: number;
   margin: number;
   totalKm: number;
@@ -272,7 +282,49 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
 
   const totalBlanketShow = personnelResult ? 0 : blanketShowAmt * showDayCount;
   const totalBlanketOff = personnelResult ? 0 : blanketOffAmt * offDayCount;
-  const totalExpenses = totalFuel + totalFlights + totalManual + totalBlanketShow + totalBlanketOff + totalPersonnel;
+
+  // Hotel costs — three-state waterfall per show
+  // State 1: actual receipt (hotel_cost_actual)
+  // State 2: confirmation estimate (hotel_rate × hotel_rooms × nights)
+  // State 3: planning projection (artist lodging defaults × market rate)
+  const { lodgingDefaults, hotelBudgetOverride } = params;
+  let totalHotel = 0;
+  const hotelCostByState = { actual: 0, confirmed: 0, projected: 0 };
+
+  const starRating = lodgingDefaults?.star_minimum || 3;
+  const defaultRoomCount = lodgingDefaults?.rooms
+    ? lodgingDefaults.rooms.reduce((sum, r) => sum + (r.count || 1), 0)
+    : 0;
+
+  tourShows.forEach((s) => {
+    // State 1 — actual receipt
+    if (s.hotelCostActual && s.hotelCostActual > 0) {
+      totalHotel += s.hotelCostActual;
+      hotelCostByState.actual += s.hotelCostActual;
+      return;
+    }
+    // State 2 — confirmation estimate
+    if (s.hotelRate && s.hotelRooms) {
+      const nights = (s.hotelCheckin && s.hotelCheckout)
+        ? Math.max(1, Math.round((new Date(s.hotelCheckout).getTime() - new Date(s.hotelCheckin).getTime()) / (1000 * 60 * 60 * 24)))
+        : 1;
+      const confirmationCost = s.hotelRate * s.hotelRooms * nights;
+      totalHotel += confirmationCost;
+      hotelCostByState.confirmed += confirmationCost;
+      return;
+    }
+    // State 3 — planning projection
+    if (defaultRoomCount > 0) {
+      const rateOverride = hotelBudgetOverride || lodgingDefaults?.nightly_budget_override || null;
+      const nightlyRate = rateOverride || getProjectedHotelRate(s.city, s.countryNorm || s.country, starRating);
+      const projectedCost = nightlyRate * defaultRoomCount;
+      totalHotel += projectedCost;
+      hotelCostByState.projected += projectedCost;
+    }
+  });
+
+  // Add hotel to total expenses
+  const totalExpenses = totalFuel + totalFlights + totalManual + totalBlanketShow + totalBlanketOff + totalPersonnel + totalHotel;
 
   // Commissions
   let commissionResult: CommissionResult | null = null;
@@ -315,7 +367,7 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     totalFuel, totalFlights, flightLegs, totalManual,
     blanketShowAmt, blanketOffAmt, totalBlanketShow, totalBlanketOff,
     showDayCount, offDayCount,
-    totalExpenses, netIncome, margin,
+    totalExpenses, totalHotel, hotelCostByState, netIncome, margin,
     totalKm, imperialTour, longDrives,
     byCurrency, countries: [...countries],
     firstDate, lastDate, spanDays,
