@@ -300,6 +300,18 @@ export default function IntakeDropZone({
                   <option value="">No show selected</option>
                   {(shows || []).map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
+                {result.matchedShowId && (
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, marginTop: 4, color: result.matchedShowConfidence >= 0.8 ? "var(--hw-green)" : "var(--hw-amber)" }}>
+                    {result.matchedShowConfidence >= 0.8
+                      ? `Auto-matched (${Math.round(result.matchedShowConfidence * 100)}% confidence)`
+                      : `Low confidence match (${Math.round(result.matchedShowConfidence * 100)}%) — please verify`}
+                  </div>
+                )}
+                {!result.matchedShowId && (
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, marginTop: 4, color: "var(--hw-text-muted)" }}>
+                    No show auto-matched — please select from the list
+                  </div>
+                )}
               </div>
             </div>
 
