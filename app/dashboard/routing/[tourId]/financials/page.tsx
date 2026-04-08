@@ -41,6 +41,7 @@ type TourData = {
   leg_choices: Record<string, string> | null;
   tour_commissions: Record<string, unknown>[] | null;
   tour_vehicles: Record<string, unknown>[] | null;
+  tour_roster: Record<string, unknown>[] | null;
 };
 
 type ShowRow = {
@@ -179,6 +180,7 @@ export default function FinancialsPage() {
       vehicleCount: 1,
       fuelPriceOverride: tour.fuel_price_usd || null,
       tourVehicles: (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [],
+      roster: (tour.tour_roster || []) as never[],
       flightPriceCache: {},
       commissions: (tour.tour_commissions || []) as never[],
       driveData,
