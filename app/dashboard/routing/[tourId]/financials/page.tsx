@@ -885,9 +885,17 @@ export default function FinancialsPage() {
                     <span style={{ fontSize: 13, color: "var(--hw-text-secondary)" }}>Total drive time</span>
                     <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{fmtHours(totalDriveH)}</span>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid var(--hw-border)", paddingTop: 8, marginTop: 4 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700 }}>Fuel cost</span>
-                    <span style={{ fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFuel)}</span>
+                  <div style={{ borderTop: "2px solid var(--hw-border)", paddingTop: 8, marginTop: 4 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700 }}>Est. fuel cost</span>
+                      <span style={{ fontSize: 14, fontFamily: "var(--hw-font-mono)", fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFuel)}</span>
+                    </div>
+                    {expTotalByCategory["Fuel"] > 0 && (
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 12, color: "var(--hw-text-secondary)" }}>Actual receipts</span>
+                        <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600, color: "var(--hw-green)" }}>{fmtUSD(expTotalByCategory["Fuel"])}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

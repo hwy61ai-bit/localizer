@@ -181,6 +181,14 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     tourVehicles,
   } = params;
 
+  // ── Fuel cost — ESTIMATED only (never replaced by receipts)
+  // Hotel costs use a three-state waterfall where receipts replace estimates.
+  // Fuel is different: receipts are scattered partial purchases (multiple gas stops per leg)
+  // so replacing the estimate with a partial actual would understate total fuel cost mid-tour.
+  // Decision (Tim, April 8 2026): estimates persist permanently in totalFuel.
+  // Actual fuel receipts live in tour_expenses (category: "Fuel") and are summed separately
+  // via expTotalByCategory["Fuel"] on the finance page. Both are shown side-by-side.
+  // At end-of-tour report time, use actuals when available, estimates as fallback.
   let totalIncome = 0, totalFuel = 0, totalFlights = 0, totalManual = 0;
   let confirmedShows = 0, pendingShows = 0, backendShows = 0;
   let totalCapacity = 0, totalWOP = 0, totalKm = 0;
