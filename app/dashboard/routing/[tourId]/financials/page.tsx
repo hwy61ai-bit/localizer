@@ -310,7 +310,7 @@ export default function FinancialsPage() {
 
   // ── Expense CRUD ────────────────────────────────────────────
 
-  const CATEGORIES = ["Transport", "Accommodation", "Food", "Gear", "Misc", "Merch", "Promo", "Other"];
+  const CATEGORIES = ["Transport", "Fuel", "Accommodation", "Food", "Gear", "Misc", "Merch", "Promo", "Other"];
 
   async function addExpense() {
     if (!newExp.amount || !tourId) return;
@@ -548,6 +548,19 @@ export default function FinancialsPage() {
                   </div>
                   <button onClick={() => { setExpFilter("Accommodation"); setHotelBreakdownExpanded(true); }} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-muted)", padding: "4px 10px", cursor: "pointer" }}>
                     See Breakdown →
+                  </button>
+                </div>
+              )}
+
+              {expFilter === "All" && fin && (fin.totalFuel > 0 || expTotalByCategory["Fuel"] > 0) && (
+                <div style={{ margin: "0 20px 12px", padding: "10px 16px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)" }}>Fuel</span>
+                    {fin.totalFuel > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>Est: {fmtUSD(fin.totalFuel)}</span>}
+                    {expTotalByCategory["Fuel"] > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 800, color: "var(--hw-crimson)" }}>Actual receipts: {fmtUSD(expTotalByCategory["Fuel"])}</span>}
+                  </div>
+                  <button onClick={() => setExpFilter("Fuel")} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-muted)", padding: "4px 10px", cursor: "pointer" }}>
+                    See Fuel →
                   </button>
                 </div>
               )}

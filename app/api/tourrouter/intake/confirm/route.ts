@@ -312,7 +312,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, saved });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Save failed";
-    console.error("[Intake Confirm] Error:", message);
+    console.error("[Intake Confirm] Error:", message, e);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
