@@ -107,6 +107,7 @@ export default function FinancialsPage() {
 
   // Computed
   const [fin, setFin] = useState<FinancialResults | null>(null);
+  const [hotelBreakdownExpanded, setHotelBreakdownExpanded] = useState(false);
 
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -536,6 +537,21 @@ export default function FinancialsPage() {
                 ))}
               </div>
 
+              {expFilter === "All" && fin && fin.totalHotel > 0 && (
+                <div style={{ margin: "0 20px 12px", padding: "10px 16px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)" }}>Hotel Costs</span>
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalHotel)}</span>
+                    {fin.hotelCostByState.actual > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-green)" }}>Actual: {fmtUSD(fin.hotelCostByState.actual)}</span>}
+                    {fin.hotelCostByState.confirmed > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-amber)" }}>Confirmed: {fmtUSD(fin.hotelCostByState.confirmed)}</span>}
+                    {fin.hotelCostByState.projected > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>Projected: {fmtUSD(fin.hotelCostByState.projected)}</span>}
+                  </div>
+                  <button onClick={() => { setExpFilter("Accommodation"); setHotelBreakdownExpanded(true); }} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-muted)", padding: "4px 10px", cursor: "pointer" }}>
+                    See Breakdown →
+                  </button>
+                </div>
+              )}
+
               {expFilter === "Accommodation" && fin && (fin.totalHotel > 0 || shows.some(s => s.hotel_rate || s.hotel_cost_actual)) && (
                 <div style={{ margin: "16px 20px", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
                   <div style={{ padding: "12px 16px", background: "var(--hw-bg-warm)", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -545,8 +561,21 @@ export default function FinancialsPage() {
                       {fin.hotelCostByState.confirmed > 0 && <span style={{ color: "var(--hw-amber)" }}>Confirmed: {fmtUSD(fin.hotelCostByState.confirmed)}</span>}
                       {fin.hotelCostByState.projected > 0 && <span style={{ color: "var(--hw-text-muted)" }}>Projected: {fmtUSD(fin.hotelCostByState.projected)}</span>}
                       <span style={{ fontWeight: 800, color: "var(--hw-crimson)" }}>Total: {fmtUSD(fin.totalHotel)}</span>
+                      <button
+                        onClick={() => setHotelBreakdownExpanded(!hotelBreakdownExpanded)}
+                        style={{
+                          fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+                          letterSpacing: "1.5px", textTransform: "uppercase",
+                          border: "2px solid var(--hw-border-strong)", background: "transparent",
+                          color: "var(--hw-text)", padding: "4px 10px", cursor: "pointer",
+                          marginLeft: 8,
+                        }}
+                      >
+                        {hotelBreakdownExpanded ? "Hide breakdown ▲" : "Show breakdown ▼"}
+                      </button>
                     </div>
                   </div>
+                  {hotelBreakdownExpanded && (
                   <table style={{ width: "100%", borderCollapse: "collapse" }}>
                     <thead>
                       <tr style={{ background: "var(--hw-bg-invert)" }}>
@@ -589,6 +618,7 @@ export default function FinancialsPage() {
                       })}
                     </tbody>
                   </table>
+                  )}
                 </div>
               )}
 

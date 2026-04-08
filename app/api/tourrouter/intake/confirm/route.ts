@@ -144,6 +144,27 @@ export async function POST(req: NextRequest) {
             notes: fields.notes || null,
           });
         if (error) throw error;
+        // If this is a hotel/lodging receipt and we have a matched show, write to hotel_cost_actual
+        // Multiple receipts stack additively per Tim's spec
+        const isHotelReceipt = ["Lodging", "Accommodation", "Hotel"].includes(fields.category as string);
+        if (isHotelReceipt && showId && fields.amount) {
+          // Fetch current hotel_cost_actual to stack additively
+          const { data: currentShow } = await supabase
+            .from("tour_shows")
+            .select("hotel_cost_actual")
+            .eq("id", showId)
+            .eq("org_id", access.orgId)
+            .maybeSingle();
+          const existing = (currentShow?.hotel_cost_actual as number) || 0;
+          const newTotal = existing + (fields.amount as number);
+          const { error: hotelErr } = await supabase
+            .from("tour_shows")
+            .update({ hotel_cost_actual: newTotal })
+            .eq("id", showId)
+            .eq("org_id", access.orgId);
+          if (hotelErr) console.error("[Intake confirm] hotel_cost_actual update failed:", hotelErr.message);
+          else saved.push(`Updated hotel_cost_actual to ${newTotal} on show ${showId}`);
+        }
         saved.push("Created expense");
         break;
       }
