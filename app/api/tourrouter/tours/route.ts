@@ -40,11 +40,12 @@ export async function POST(req: NextRequest) {
     // If artist_id provided, fetch default_roster and map RosterEntry → RosterMember
     let tour_roster: Record<string, unknown>[] | null = null;
     let tour_vehicles: Record<string, unknown>[] = [];
+    let lodging_defaults: Record<string, unknown> | null = null;
     if (artist_id) {
       try {
         const { data: artist } = await supabase
           .from("artists")
-          .select("default_roster, vehicles_equipment")
+          .select("default_roster, vehicles_equipment, lodging_defaults")
           .eq("id", artist_id)
           .maybeSingle();
         if (!artist) {
@@ -103,6 +104,11 @@ export async function POST(req: NextRequest) {
         if (Array.isArray(fleetVehicles)) {
           tour_vehicles = fleetVehicles as Record<string, unknown>[];
         }
+        // Copy artist lodging defaults into new tour
+        const artistLodging = artist?.lodging_defaults;
+        if (artistLodging && typeof artistLodging === 'object') {
+          lodging_defaults = artistLodging as Record<string, unknown>;
+        }
       } catch (e) {
         console.error("[TourRouter tours POST] Failed to fetch artist roster + fleet, skipping:", e);
       }
@@ -127,6 +133,7 @@ export async function POST(req: NextRequest) {
         tour_vehicles,
         ...(Object.keys(currency_rates).length > 0 ? { currency_rates } : {}),
         ...(tour_roster ? { tour_roster } : {}),
+        ...(lodging_defaults ? { lodging_defaults } : {}),
       })
       .select()
       .single();

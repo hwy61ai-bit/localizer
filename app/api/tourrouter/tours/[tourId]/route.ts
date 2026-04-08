@@ -48,7 +48,7 @@ export async function PUT(
     "fuel_price_usd", "flight_threshold_h",
     "blanket_show_amount", "blanket_off_amount",
     "blanket_show_label", "blanket_off_label",
-    "currency_rates", "leg_choices", "image_url", "advance_config", "tour_vehicles", "tour_commissions", "tour_roster",
+    "currency_rates", "leg_choices", "image_url", "advance_config", "tour_vehicles", "tour_commissions", "tour_roster", "lodging_defaults", "hotel_budget_override",
   ];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {

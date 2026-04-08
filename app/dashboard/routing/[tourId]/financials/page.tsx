@@ -42,6 +42,8 @@ type TourData = {
   tour_commissions: Record<string, unknown>[] | null;
   tour_vehicles: Record<string, unknown>[] | null;
   tour_roster: Record<string, unknown>[] | null;
+  lodging_defaults: Record<string, unknown> | null;
+  hotel_budget_override: number | null;
 };
 
 type ShowRow = {
@@ -194,8 +196,8 @@ export default function FinancialsPage() {
       flightPriceCache: {},
       commissions: (tour.tour_commissions || []) as never[],
       driveData,
-      lodgingDefaults: null,
-      hotelBudgetOverride: null,
+      lodgingDefaults: (tour.lodging_defaults as any) || null,
+      hotelBudgetOverride: tour.hotel_budget_override || null,
     });
     setFin(result);
   }, [shows, tour, blanketShowAmt, blanketOffAmt, blanketShowLabel, blanketOffLabel, showExpenses, rates, driveData]);
