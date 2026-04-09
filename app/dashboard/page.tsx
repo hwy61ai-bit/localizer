@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
@@ -32,33 +32,7 @@ export default async function DashboardPage() {
 
   let orgId = membership?.org_id as string | undefined;
 
-  if (!orgId) {
-    const newOrgId = randomUUID();
-    const { error: orgError } = await supabase
-      .from("orgs")
-      .insert({ id: newOrgId, name: "My Workspace", owner_email: user.email ?? null, trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
-    if (orgError) throw new Error(orgError.message);
-    orgId = newOrgId;
-    const { error: memberError } = await supabase.from("org_members").insert({
-      org_id: orgId,
-      user_id: user.id,
-      role: "owner",
-    });
-    if (memberError) throw new Error(memberError.message);
-
-    // Send welcome email
-    if (user.email) {
-      try {
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/welcome`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email }),
-        });
-      } catch {
-        // Non-blocking — don't fail onboarding if email fails
-      }
-    }
-  }
+  if (!orgId) redirect("/login?error=no_org");
 
   // Fetch org plan + trial status
   const { data: org } = await supabase
