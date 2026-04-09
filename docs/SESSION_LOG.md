@@ -919,3 +919,36 @@ Fixed intake document storage RLS — added 3 policies to tour-documents bucket 
 audited Tim's 6 April 8 docs, wrote v6 master context (docs/HWY61_MASTER_CONTEXT_FOR_TIM_April_8_2026.md), audited geo_cities spec and identified 4 must-fix issues before building, drafted email to Tim with 6 questions. Next session picks up with Tim's answers — then geo_cities build + Mac mini hardening + demo tour schema audit.
 
 open -a TextEdit docs/SESSION_LOG.md
+
+
+## April 9, 2026
+
+**Shipped (commits cd2c250, cb50c9f, 9f88d03):**
+
+1. `CLAUDE.md` at repo root (157 lines) — persistent rules, workflow, key file locations loaded automatically on every future Claude Code session start. First session to benefit was the Issue 2 refactor later in the day.
+
+2. Phase 7H onboarding wizard shell. Three-step flow (org name → user name → role) at `/dashboard/onboarding`. Server page with auth + org lookup + redirect. Client `WelcomeWizard` with HwCard/HwInput/HwSelect/HwAlert, Enter-to-submit, skip/resume via `orgs.onboarding_step`, back button with preserved state. API route at `/api/onboarding/step` with RLS silent-write guards and orgId/userId cross-check. Shared role source of truth at `lib/onboarding/roles.ts`. Old tour creation wizard moved from `/dashboard/onboarding` to `/dashboard/onboarding/tour` (git mv, history preserved). `OnboardingGate` GET STARTED link updated to new tour path.
+
+3. Refactored org auto-creation out of `app/dashboard/page.tsx` into `app/auth/callback/route.ts` via a new `ensureOrgExists()` helper. Idempotent, RLS-guarded, non-blocking welcome email. Dashboard's create branch replaced with `redirect("/login?error=no_org")`.
+
+4. `docs/BACKLOG.md` created with post-launch considerations: in-app chatbot (Tier 1 + Tier 2), per-user vs per-org onboarding state mismatch, stale test workspace cleanup, OnboardingGate retirement, dashboard org auto-create refactor (now done, can be removed from backlog).
+
+**Bugs found and fixed during testing:**
+
+- Migration default didn't backfill existing orgs. Every existing org would have shown the wizard on first login. Fixed with `UPDATE orgs SET onboarding_completed = true, onboarding_step = 4 WHERE onboarding_completed = false`.
+- `org_members` had no UPDATE RLS policy. All updates to the table were silently failing since the table was created. Added `org_members_update_self` policy: `USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid())`.
+- `orgs` INSERT RLS policy was fundamentally broken. Old policy had `WITH CHECK ((auth.uid() IS NOT NULL) AND (id = gen_random_uuid()))` — the `gen_random_uuid()` clause could never match a client-supplied UUID. Dropped old policy, created `orgs_insert_authenticated` with `WITH CHECK (auth.uid() IS NOT NULL)`. This had been latent since day one and would have blocked every new signup.
+- Production "Something went wrong" error after first deploy was caused by a stale session cookie, not by today's code. Clearing cookies and signing in fresh resolved it. The underlying dashboard-side auto-create path that the stale cookie triggered is now gone as of commit 9f88d03.
+
+**Deferred (still blocked on Tim):**
+- Demo tour seed data for Beta Test Band (onboarding wizard demo button)
+- Upgrade prompt copy for freemium hard walls
+- Full 41-route billing gate helper design
+
+**Known design gap (in BACKLOG.md):** `onboarding_completed` is per-org but `user_role` is per-user. Users joining an existing onboarded org skip the wizard and never set their role. Confirmed during testing — Tim is a member of HWY 61 TEST CO. with `user_role = null`. Decision needed before beta launch.
+
+**Next session starts with:** Freemium API enforcement — 402 Payment Required on `POST /api/tourrouter/tours/[tourId]/shows` when show count >= 5 on free tier, and blocking the Localizer export/download API route for free tier. Next bounded unit in the onboarding wizard spec, not blocked on Tim.
+
+**Notes for Tim on next async pass:**
+- Three RLS policy changes were made live today without prior sign-off (per Tim's standing "don't wait on me for bug fixes" rule): `org_members_update_self` added, `orgs` INSERT policy replaced, plus the backfill UPDATE on existing orgs. All three were reversions of broken state, not new architectural decisions.
+- `app/components/OnboardingWizard.tsx` (the old welcome choice screen with GET STARTED / EXPLORE DEMO / SKIP) still renders on dashboard for users with zero artists. Its role will be absorbed by the new WelcomeWizard + demo tour button once demo tour seed data lands. Both flows coexist for now.
