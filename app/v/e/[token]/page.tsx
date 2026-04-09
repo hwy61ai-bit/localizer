@@ -138,7 +138,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                   <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{asset.dims}</div>
                 </div>
                 {asset.url && (
-                  <a href={`/api/download?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(asset.label.replace(/ /g,"_") + ".jpg")}`} download
+                  <a href={`/api/download?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(asset.label.replace(/ /g,"_") + ".jpg")}&token=${token}`} download
                     style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16 }}>
                     ↓
                   </a>
@@ -176,7 +176,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                       <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 500, color: "var(--hw-text)", marginBottom: 2 }}>{video.label}</div>
                       <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{video.dims}</div>
                     </div>
-                    <a href={`/api/download?url=${encodeURIComponent(video.url)}&filename=${encodeURIComponent(video.label.replace(/ /g,"_") + ".mp4")}`} download
+                    <a href={`/api/download?url=${encodeURIComponent(video.url)}&filename=${encodeURIComponent(video.label.replace(/ /g,"_") + ".mp4")}&token=${token}`} download
                       style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16 }}>
                       ↓
                     </a>

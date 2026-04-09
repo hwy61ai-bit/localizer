@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { getLocalizerAccessLevel } from "@/lib/localizer/billingGate";
 import JSZip from "jszip";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,20 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (!link) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // Paid gate by link owner (public venue-facing route — viewer is not
+  // authenticated, so we check the org that created the share link). No
+  // userEmail passed: admin bypass is deliberately off for venue downloads.
+  const level = await getLocalizerAccessLevel(link.org_id);
+  if (level !== "paid") {
+    return NextResponse.json(
+      {
+        error: "download_requires_paid",
+        message: "Downloading assets requires a paid Localizer subscription.",
+      },
+      { status: 402 },
+    );
+  }
 
   const { data: event } = await supabase
     .from("events")
