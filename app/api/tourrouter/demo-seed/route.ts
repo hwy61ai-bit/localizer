@@ -3,7 +3,7 @@ import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/to
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST() {
-  const result = await requireTourRouterAccess({ skipBillingGate: true });
+  const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
 
   const orgId = result.orgId;

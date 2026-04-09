@@ -3,7 +3,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET() {
-  const access = await requireTourRouterAccess({ skipBillingGate: true });
+  const access = await requireTourRouterAccess();
   if (!access.ok) return tourRouterAccessErrorResponse(access);
 
   const supabase = await supabaseServer();

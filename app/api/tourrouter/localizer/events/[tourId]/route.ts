@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
-  const result = await requireTourRouterAccess({ skipBillingGate: true });
+  const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
 

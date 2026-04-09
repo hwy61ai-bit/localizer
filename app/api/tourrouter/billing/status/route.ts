@@ -4,7 +4,7 @@ import { checkTourRouterAccess } from "@/lib/tourrouter/billingGate";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
 
 export async function GET() {
-  const result = await requireTourRouterAccess({ skipBillingGate: true });
+  const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
 
   const supabase = await supabaseServer();

@@ -1,5 +1,5 @@
 import { supabaseServer } from "@/lib/supabaseServer";
-import { checkTourRouterAccess } from "@/lib/tourrouter/billingGate";
+import { requirePaidTourRouterAccess } from "@/lib/tourrouter/requireAccess";
 import {
   buildExportRows,
   calcTourFinancials,
@@ -30,33 +30,25 @@ export type ExportData = {
   driveData: DriveDataMap;
 };
 
-type ExportFailure = { ok: false; reason: "unauthorized" | "no_org" | "subscription_required" | "not_found"; detail?: string };
+type ExportFailure = { ok: false; reason: "unauthorized" | "no_org" | "export_requires_paid" | "not_found"; detail?: string };
 type ExportSuccess = { ok: true; data: ExportData };
 export type ExportResult = ExportFailure | ExportSuccess;
 
 export async function getExportData(tourId: string): Promise<ExportResult> {
-  const supabase = await supabaseServer();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return { ok: false, reason: "unauthorized" };
-
-  const { data: profile } = await supabase
-    .from("org_members")
-    .select("org_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!profile?.org_id) return { ok: false, reason: "no_org" };
-
-  // Billing gate
-  const access = await checkTourRouterAccess(profile.org_id, user.email);
-  if (!access.allowed) {
-    return { ok: false, reason: "subscription_required", detail: access.reason };
+  const access = await requirePaidTourRouterAccess();
+  if (!access.ok) {
+    // access.reason is "unauthorized" | "no_org" | "export_requires_paid" —
+    // all three are valid ExportFailure reasons.
+    return { ok: false, reason: access.reason };
   }
+
+  const supabase = await supabaseServer();
 
   const { data: tour } = await supabase
     .from("tours_routing")
     .select("*, artists(name)")
     .eq("id", tourId)
-    .eq("org_id", profile.org_id)
+    .eq("org_id", access.orgId)
     .single();
   if (!tour) return { ok: false, reason: "not_found" };
 

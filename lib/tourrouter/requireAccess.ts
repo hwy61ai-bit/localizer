@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { checkTourRouterAccess } from "@/lib/tourrouter/billingGate";
+import { getTourRouterAccessLevel } from "@/lib/tourrouter/billingGate";
 import type { User } from "@supabase/supabase-js";
 
-type AccessSuccess = { ok: true; user: User; orgId: string; userEmail: string };
+type AccessSuccess = {
+  ok: true;
+  user: User;
+  orgId: string;
+  userEmail: string;
+  accessLevel: "free" | "paid";
+};
 type AccessFailure =
   | { ok: false; reason: "unauthorized"; status: 401 }
   | { ok: false; reason: "no_org"; status: 403 }
-  | { ok: false; reason: "subscription_required"; status: 403 };
+  | { ok: false; reason: "export_requires_paid"; status: 402 };
 
 export type TourRouterAccessResult = AccessSuccess | AccessFailure;
 
-export async function requireTourRouterAccess(
-  options?: { skipBillingGate?: boolean }
-): Promise<TourRouterAccessResult> {
+export async function requireTourRouterAccess(): Promise<TourRouterAccessResult> {
   const supabase = await supabaseServer();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return { ok: false, reason: "unauthorized", status: 401 };
@@ -25,14 +29,49 @@ export async function requireTourRouterAccess(
     .maybeSingle();
   if (!profile?.org_id) return { ok: false, reason: "no_org", status: 403 };
 
-  if (!options?.skipBillingGate) {
-    const access = await checkTourRouterAccess(profile.org_id, user.email);
-    if (!access.allowed) return { ok: false, reason: "subscription_required", status: 403 };
+  const level = await getTourRouterAccessLevel(profile.org_id, user.email);
+  // Membership exists, so the org exists — 'none' should be unreachable here.
+  // If it happens (e.g. transient RLS hiccup), log and fall back to 'free'.
+  if (level === "none") {
+    console.warn(
+      `[requireTourRouterAccess] getTourRouterAccessLevel returned 'none' for orgId=${profile.org_id} despite active membership — falling back to 'free'`,
+    );
   }
+  const accessLevel: "free" | "paid" = level === "paid" ? "paid" : "free";
 
-  return { ok: true, user, orgId: profile.org_id, userEmail: user.email ?? "" };
+  return {
+    ok: true,
+    user,
+    orgId: profile.org_id,
+    userEmail: user.email ?? "",
+    accessLevel,
+  };
+}
+
+/**
+ * Like requireTourRouterAccess, but additionally requires accessLevel === 'paid'.
+ * Use on export routes and any other surface that should be gated behind a paid
+ * TourRouter or bundle subscription. Free users get a 402 with reason
+ * 'export_requires_paid'.
+ */
+export async function requirePaidTourRouterAccess(): Promise<TourRouterAccessResult> {
+  const result = await requireTourRouterAccess();
+  if (!result.ok) return result;
+  if (result.accessLevel !== "paid") {
+    return { ok: false, reason: "export_requires_paid", status: 402 };
+  }
+  return result;
 }
 
 export function tourRouterAccessErrorResponse(result: AccessFailure): NextResponse {
+  if (result.reason === "export_requires_paid") {
+    return NextResponse.json(
+      {
+        error: "export_requires_paid",
+        message: "Exporting requires a paid TourRouter subscription.",
+      },
+      { status: 402 },
+    );
+  }
   return NextResponse.json({ error: result.reason }, { status: result.status });
 }

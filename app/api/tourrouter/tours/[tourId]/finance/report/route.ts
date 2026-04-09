@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
-import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
+import {
+  requireTourRouterAccess,
+  requirePaidTourRouterAccess,
+  tourRouterAccessErrorResponse,
+} from "@/lib/tourrouter/requireAccess";
 import {
   calcTourFinancials,
   fmtUSD,
@@ -161,7 +165,7 @@ export async function POST(
   { params }: { params: Promise<{ tourId: string }> },
 ) {
   const { tourId } = await params;
-  const result = await requireTourRouterAccess();
+  const result = await requirePaidTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
   const supabase = await supabaseServer();
   const orgId = result.orgId;
