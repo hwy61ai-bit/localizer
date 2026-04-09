@@ -43,7 +43,7 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: 
   }
 
   function handleWizard() {
-    router.push('/dashboard/onboarding');
+    router.push('/dashboard/onboarding/tour');
   }
 
   const cards = [
