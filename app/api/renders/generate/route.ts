@@ -192,13 +192,35 @@ function buildCloudinaryUrl(
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
 }
 
+function buildLogoLayer(
+  logoUrl: string,
+  logoCfg: { x: number; y: number; size: number },
+  color: string,
+  canvasW: number,
+  canvasH: number
+): string {
+  // URL-safe base64 for l_fetch, no padding
+  const base64Url = Buffer.from(logoUrl).toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  // Center-relative positioning, same convention as buildTextLayer
+  const xPx = Math.round((logoCfg.x - 0.5) * canvasW);
+  const yPx = Math.round((logoCfg.y - 0.5) * canvasH);
+
+  // Scale logo by height (width auto-preserved), colorize to text color, layer at center-relative position
+  return `l_fetch:${base64Url}/c_scale,h_${logoCfg.size}/e_colorize:100,co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
+}
+
 function buildCloudinaryVideoUrl(
   publicId: string,
   cloudName: string,
   format: VideoFormat,
   overlayConfig: any,
   eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string },
-  customFontsMap: Map<string, string>
+  customFontsMap: Map<string, string>,
+  logoUrl: string | null
 ): string {
   const { w, h } = VIDEO_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
@@ -241,8 +263,12 @@ function buildCloudinaryVideoUrl(
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
 
+  const showLogo = cfg.showLogo ?? false;
+  const logoCfg = cfg.logo ?? null;
+
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
+    ...(showLogo && logoUrl && logoCfg ? [buildLogoLayer(logoUrl, logoCfg, color, w, h)] : []),
     ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
     buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign),
     buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign),
@@ -289,7 +315,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config")
+    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, artist_id")
     .eq("id", tourId_resolved)
     .eq("org_id", orgId)
     .single();
@@ -301,6 +327,17 @@ export async function POST(req: NextRequest) {
     }
   } else {
     if (!tour.image_square_id) return NextResponse.json({ error: "No images uploaded. Go to Import Assets first." }, { status: 400 });
+  }
+
+  // Resolve artist logo URL for video overlays
+  let logoUrl: string | null = null;
+  if ((tour as any).artist_id) {
+    const { data: artist } = await supabase
+      .from("artists")
+      .select("logo_url")
+      .eq("id", (tour as any).artist_id)
+      .single();
+    logoUrl = artist?.logo_url ?? null;
   }
 
   // Fetch events
@@ -362,7 +399,7 @@ export async function POST(req: NextRequest) {
         }
         const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
-        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap);
+        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl);
       }
 
       // Upsert venue_link
