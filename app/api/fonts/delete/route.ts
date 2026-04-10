@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req: NextRequest) {
   const { fontName, orgId } = await req.json();
@@ -32,8 +39,16 @@ export async function POST(req: NextRequest) {
 
   if (!font) return NextResponse.json({ error: "Font not found" }, { status: 404 });
 
-  // Delete from Supabase Storage
   const storagePath = `${orgId}/${fontName}.${font.file_extension}`;
+
+  // Delete from Cloudinary (non-blocking — don't prevent font deletion if this fails)
+  try {
+    await cloudinary.uploader.destroy(storagePath, { resource_type: "raw", type: "authenticated" });
+  } catch (e) {
+    console.warn("Cloudinary delete failed (non-blocking):", e);
+  }
+
+  // Delete from Supabase Storage
   await supabase.storage.from("fonts").remove([storagePath]);
 
   // Delete from DB

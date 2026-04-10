@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -71,6 +78,28 @@ export async function POST(req: NextRequest) {
 
     if (uploadError) throw uploadError;
 
+    // Upload to Cloudinary as raw asset (needed for video text overlay l_text references)
+    try {
+      await new Promise<void>((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          {
+            resource_type: "raw",
+            public_id: storagePath,
+            overwrite: true,
+            type: "authenticated",
+          },
+          (error) => {
+            if (error) reject(error);
+            else resolve();
+          }
+        ).end(buffer);
+      });
+    } catch (cloudinaryError: any) {
+      // Cleanup: remove the Supabase file we just uploaded
+      await supabase.storage.from("fonts").remove([storagePath]);
+      throw new Error("Cloudinary upload failed: " + (cloudinaryError?.message ?? String(cloudinaryError)));
+    }
+
     // Get public URL
     const { data: urlData } = supabase.storage
       .from("fonts")
@@ -89,7 +118,12 @@ export async function POST(req: NextRequest) {
         storage_url: storageUrl,
       });
 
-    if (dbError) throw dbError;
+    if (dbError) {
+      // Cleanup both uploads
+      await supabase.storage.from("fonts").remove([storagePath]);
+      try { await cloudinary.uploader.destroy(storagePath, { resource_type: "raw", type: "authenticated" }); } catch {}
+      throw dbError;
+    }
 
     return NextResponse.json({
       success: true,

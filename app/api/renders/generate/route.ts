@@ -268,8 +268,14 @@ export async function POST(req: NextRequest) {
   
   const customFontsMap = new Map(
     (customFontsData || []).map(f => {
+      // cloudinary_public_id may already include the file extension
+      // (depends on how the font was uploaded). Guard against double-append.
+      const ext = `.${f.file_extension}`;
+      const base = f.cloudinary_public_id.endsWith(ext)
+        ? f.cloudinary_public_id
+        : `${f.cloudinary_public_id}${ext}`;
       // Cloudinary requires slashes to be replaced with colons in font paths
-      const cloudinaryPath = `${f.cloudinary_public_id}.${f.file_extension}`.replace(/\//g, ":");
+      const cloudinaryPath = base.replace(/\//g, ":");
       return [f.font_name, cloudinaryPath];
     })
   );
