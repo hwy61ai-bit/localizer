@@ -1012,3 +1012,5 @@ All four fixed tonight. End-to-end verified against JESUS ETC (video-only test) 
 **Session context preserved:** All bug diagnoses and architectural findings from this session are captured in `docs/BACKLOG.md` entries committed in the same change as this session log entry.
 
 **Next session should start with:** (a) run `git pull`, (b) read this session log entry and the five new backlog items, (c) decide between Unit D rate limiting vs the logo-on-videos fix based on user priorities in the morning.
+
+**April 10 morning continuation:** shipped logo overlays on videos (74fb7fb), fixed Generate All progress bar freezing at 0/total on video-only tours (4de79e8), reverted HWY 61 TEST CO. bundle_plan_status to null, confirmed no tours use the two unmigrated custom fonts (deferred re-upload), cleaned up duplicate Uncle Lucius artist (deleted artist eab49bf6-6fe8-4535-833b-0131a42ed96d and its two test tours d6852cca and e767a79e), created handoff doc docs/HANDOFF_April10_2026.md for future sessions. Template editor stale video preview on asset replacement discovered and added to backlog.

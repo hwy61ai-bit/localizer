@@ -114,3 +114,13 @@ Fourth unit of the April 9 freemium work, not started. Tim's decision doc specif
 ### Custom font upload architectural debt
 
 The current font pipeline writes fonts to both Supabase storage (for browser Canvas previews + image rendering) and Cloudinary (for video `l_text` overlays). Two sources of truth means race conditions on partial failures (handled via cleanup logic tonight, but real complexity). Post-launch consideration: move to Cloudinary-only font storage with the browser renderer loading fonts from Cloudinary's URL via `@font-face`. One source of truth. Requires touching `lib/clientRender.ts` (protected code) and a one-time backfill script for existing fonts.
+
+---
+
+### Template editor stale video preview on asset replacement
+
+When a user replaces a video in Import Assets and navigates to the template editor without a full page reload, the editor displays the old video instead of the newly uploaded one. Hard refresh (Cmd+Shift+R) resolves it. Likely cause: either browser video caching keyed on a stable URL, or stale React state in the template editor component not reacting to prop changes on navigation. Not a data integrity issue — the database and render pipeline correctly use the new video. Only the in-page preview is stale.
+
+Discovered April 10, 2026 during post-session testing on production. Affected artist: Uncle Lucius.
+
+Fix options: (a) include a version/timestamp query param in the template editor's video src so the browser treats new uploads as different URLs, (b) reload the tour state from the server on asset-replacement events, or (c) add a `key` prop to the video element that changes on replacement so React remounts it. Option (a) is probably the simplest and most robust.
