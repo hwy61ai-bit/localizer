@@ -6,7 +6,7 @@ import ArtistDetailClient from "./ArtistDetailClient";
 import ArtistToursClient from "./ArtistToursClient";
 import { HwTabs, HwTab, HwPageHeader, HwBreadcrumb, HwButton, HwCard, HwCardTitle, HwCardDesc } from "@/app/components/hw";
 
-const ADMIN_EMAILS = ["hwy61ai@gmail.com", "hwy61regan@gmail.com"];
+const ADMIN_EMAILS = ["hwy61ai@gmail.com", "tentenpm@gmail.com"];
 
 type AccessState = {
   loading: boolean;

@@ -1,7 +1,7 @@
 import { supabaseServer } from "@/lib/supabaseServer";
 
 // Admin emails that always have access (dev bypass)
-const ADMIN_EMAILS = ["hwy61ai@gmail.com", "hwy61regan@gmail.com"];
+const ADMIN_EMAILS = ["hwy61ai@gmail.com", "tentenpm@gmail.com"];
 
 export type TourRouterAccessLevel = "none" | "free" | "paid";
 

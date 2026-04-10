@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     // Check plan - custom fonts are Pro/Agency only (admin bypass)
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    const isAdmin = authUser?.email === "hwy61ai@gmail.com" || authUser?.email === "hwy61regan@gmail.com";
+    const isAdmin = authUser?.email === "hwy61ai@gmail.com" || authUser?.email === "tentenpm@gmail.com";
 
     if (!isAdmin) {
       const { data: org } = await supabase

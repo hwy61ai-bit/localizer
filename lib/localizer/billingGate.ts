@@ -5,7 +5,7 @@ import { supabaseServer } from "@/lib/supabaseServer";
 // download routes (app/api/download, app/api/download-all) deliberately omit
 // the userEmail argument so admin-owned venue shares are treated the same as
 // any other org for the public download gate.
-const ADMIN_EMAILS = ["hwy61ai@gmail.com", "hwy61regan@gmail.com"];
+const ADMIN_EMAILS = ["hwy61ai@gmail.com", "tentenpm@gmail.com"];
 
 export type LocalizerAccessLevel = "none" | "free" | "paid";
 
