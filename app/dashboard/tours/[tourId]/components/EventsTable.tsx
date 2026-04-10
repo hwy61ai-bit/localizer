@@ -291,11 +291,14 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
       const errors: string[] = [];
 
       for (const event of serverEvents) {
-        const renderUrls: Record<string, string> = {};
+        const renderUrls: Record<string, string | null> = {};
 
         for (const fmt of formats) {
           const pid = imageIds[fmt];
-          if (!pid) continue;
+          if (!pid) {
+            renderUrls["render_" + fmt + "_url"] = null;
+            continue;
+          }
 
           const dims = formatDims[fmt];
           const cfg = overlayConfig[fmt] ?? {};
@@ -369,6 +372,19 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
         setEvents(prev => prev.map(e => ({ ...e, render_status: "ready" })));
       } else {
         setEvents(prev => prev.map(e => ({ ...e, render_status: "ready" })));
+      }
+
+      // Generate video render URLs via server-side Cloudinary (non-blocking).
+      // Runs after all image renders and venue_links writes have completed so
+      // the videosOnly upsert only touches video columns on existing rows.
+      try {
+        await fetch("/api/renders/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tourId, orgId, videosOnly: true }),
+        });
+      } catch (e) {
+        console.warn("Video render pass failed (non-blocking):", e);
       }
 
     } catch (err: any) {

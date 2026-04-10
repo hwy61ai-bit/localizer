@@ -15,7 +15,14 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (tourError || !tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
-  if (!tour.image_square_id) return NextResponse.json({ error: "No images uploaded" }, { status: 400 });
+  const hasAnyAsset =
+    tour.image_square_id ||
+    tour.image_story_id ||
+    tour.image_landscape_id ||
+    tour.image_print_id ||
+    tour.video_tiktok_id ||
+    tour.video_yt_shorts_id;
+  if (!hasAnyAsset) return NextResponse.json({ error: "No assets uploaded" }, { status: 400 });
 
   const { data: events } = await supabase
     .from("events")

@@ -253,7 +253,7 @@ function buildCloudinaryVideoUrl(
 }
 
 export async function POST(req: NextRequest) {
-  const { tourId, eventId, orgId } = await req.json();
+  const { tourId, eventId, orgId, videosOnly } = await req.json();
   if (!orgId) return NextResponse.json({ error: "Missing orgId" }, { status: 400 });
   if (!tourId && !eventId) return NextResponse.json({ error: "Missing tourId or eventId" }, { status: 400 });
 
@@ -289,7 +289,13 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (tourError || !tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
-  if (!tour.image_square_id) return NextResponse.json({ error: "No images uploaded. Go to Import Assets first." }, { status: 400 });
+  if (videosOnly) {
+    if (!(tour as any).video_tiktok_id && !(tour as any).video_yt_shorts_id) {
+      return NextResponse.json({ ok: true, count: 0 });
+    }
+  } else {
+    if (!tour.image_square_id) return NextResponse.json({ error: "No images uploaded. Go to Import Assets first." }, { status: 400 });
+  }
 
   // Fetch events
   let events: any[] = [];
@@ -322,13 +328,18 @@ export async function POST(req: NextRequest) {
         cityState: [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),
       };
 
-      const renderUrls: Record<string, string> = {};
-      for (const format of FORMATS) {
-        const pid = formatPublicIds[format];
-        if (!pid) continue;
-        const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
-        const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
-        renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap);
+      const renderUrls: Record<string, string | null> = {};
+      if (!videosOnly) {
+        for (const format of FORMATS) {
+          const pid = formatPublicIds[format];
+          if (!pid) {
+            renderUrls[`render_${format}_url`] = null;
+            continue;
+          }
+          const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
+          const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
+          renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap);
+        }
       }
 
       // Generate video render URLs
@@ -339,7 +350,10 @@ export async function POST(req: NextRequest) {
 
       for (const vformat of VIDEO_FORMATS) {
         const pid = videoPublicIds[vformat];
-        if (!pid) continue;
+        if (!pid) {
+          if (!videosOnly) renderUrls[`render_${vformat}_url`] = null;
+          continue;
+        }
         const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
         renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap);
