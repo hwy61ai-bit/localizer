@@ -711,11 +711,11 @@ export default function ArtistProfilePage() {
                 fontFamily: "var(--hw-font-display)", fontSize: 48, fontWeight: 400,
                 letterSpacing: "2px", textTransform: "uppercase" as const,
                 border: "none", outline: "none", background: "transparent",
-                color: "var(--hw-text)", flex: 1, padding: 0,
+                color: "var(--hw-text)", padding: 0,
                 animation: "fadeSlideUp 0.5s ease-out both",
               }}
             />
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={nameHovered ? "var(--hw-crimson)" : "var(--hw-text-muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: "stroke 0.2s" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={nameHovered ? "var(--hw-crimson)" : "var(--hw-text-muted)"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: "stroke 0.2s" }}>
               <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
               <path d="m15 5 4 4" />
             </svg>
