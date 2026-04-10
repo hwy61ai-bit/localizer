@@ -34,7 +34,9 @@ import {
   toUSD,
   formatOfferDisplay,
   TOURING_CURRENCIES,
+  type AirportInfo,
 } from "@/lib/tourrouter";
+import { cacheKey as geoCacheKey } from "@/lib/tourrouter/geocoding";
 import type { Commission } from "@/lib/tourrouter/commissions";
 import type { TourVehicle } from "@/lib/tourrouter/vehicleTypes";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";
@@ -124,6 +126,19 @@ type LegInfo = {
   fromCity: string;
   toCity: string;
 };
+
+// ── Airport lookup helper (map-first, sync fallback) ─────────
+function lookupAirport(
+  city: string | null | undefined,
+  country: string | null | undefined,
+  map: Map<string, AirportInfo>
+): AirportInfo | null {
+  if (city && country) {
+    const fromMap = map.get(geoCacheKey(city, country));
+    if (fromMap) return fromMap;
+  }
+  return getAirport(city, country);
+}
 
 // ── Drawer field helpers ─────────────────────────────────────
 
@@ -221,6 +236,8 @@ export default function RouteTourPage() {
   const [financials, setFinancials] = useState<FinancialResults | null>(null);
   const [legs, setLegs] = useState<(LegInfo | null)[]>([]);
   const [driveData, setDriveData] = useState<DriveDataMap>({});
+  const [coordsMap, setCoordsMap] = useState<Map<string, [number, number]>>(new Map());
+  const [airportMap, setAirportMap] = useState<Map<string, AirportInfo>>(new Map());
   const [flightPriceCache, setFlightPriceCache] = useState<Record<string, number>>({});
   const flightPriceCacheRef = useRef<Record<string, number>>({});
   // Keep ref in sync with state
@@ -246,6 +263,97 @@ export default function RouteTourPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newShow, setNewShow] = useState({ date_iso: "", venue: "", city: "", country: "", offer_amount: "", offer_currency: "USD", event: "" });
   const [addingSaving, setAddingSaving] = useState(false);
+
+  // City autocomplete
+  type CitySuggestion = { name: string; state: string; country: string; lat: number; lng: number; iata_code: string | null };
+  const [citySuggestions, setCitySuggestions] = useState<CitySuggestion[]>([]);
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const [cityHighlight, setCityHighlight] = useState(-1);
+  const cityDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const cityAbortRef = useRef<AbortController | null>(null);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
+
+  const ISO_TO_DISPLAY: Record<string, string> = {
+    US: "USA", CA: "Canada", MX: "Mexico", GB: "UK", IE: "Ireland",
+    DE: "Germany", FR: "France", NL: "Netherlands", BE: "Belgium",
+    AT: "Austria", CH: "Switzerland", CZ: "Czech Republic", PL: "Poland",
+    HU: "Hungary", DK: "Denmark", SE: "Sweden", NO: "Norway", FI: "Finland",
+    IT: "Italy", ES: "Spain", PT: "Portugal", LU: "Luxembourg",
+    BR: "Brazil", AR: "Argentina", CL: "Chile", CO: "Colombia",
+    PE: "Peru", EC: "Ecuador", UY: "Uruguay", JP: "Japan",
+    AU: "Australia", NZ: "New Zealand",
+  };
+
+  function handleCityInput(value: string) {
+    setNewShow((p) => ({ ...p, city: value }));
+    setCityHighlight(-1);
+
+    if (cityDebounceRef.current) clearTimeout(cityDebounceRef.current);
+
+    if (!value.trim()) {
+      setCitySuggestions([]);
+      setCityDropdownOpen(false);
+      return;
+    }
+
+    cityDebounceRef.current = setTimeout(() => {
+      cityAbortRef.current?.abort();
+      cityAbortRef.current = new AbortController();
+
+      fetch(`/api/tourrouter/geocode?q=${encodeURIComponent(value.trim())}&limit=8`, {
+        signal: cityAbortRef.current.signal,
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          const results: CitySuggestion[] = data.cities || [];
+          setCitySuggestions(results);
+          setCityDropdownOpen(true);
+        })
+        .catch((err) => {
+          if (err.name === "AbortError") return;
+          setCitySuggestions([]);
+          setCityDropdownOpen(false);
+        });
+    }, 250);
+  }
+
+  function selectCity(suggestion: CitySuggestion) {
+    setNewShow((p) => ({
+      ...p,
+      city: suggestion.state ? `${suggestion.name}, ${suggestion.state}` : suggestion.name,
+      country: ISO_TO_DISPLAY[suggestion.country] || suggestion.country,
+    }));
+    setCitySuggestions([]);
+    setCityDropdownOpen(false);
+  }
+
+  function handleCityKeyDown(e: React.KeyboardEvent) {
+    if (!cityDropdownOpen || citySuggestions.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setCityHighlight((h) => Math.min(h + 1, citySuggestions.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setCityHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === "Enter" && cityHighlight >= 0) {
+      e.preventDefault();
+      selectCity(citySuggestions[cityHighlight]);
+    } else if (e.key === "Escape") {
+      setCityDropdownOpen(false);
+    }
+  }
+
+  // Close city dropdown on click outside
+  useEffect(() => {
+    if (!cityDropdownOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(e.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [cityDropdownOpen]);
 
   // Delete show
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -317,6 +425,42 @@ export default function RouteTourPage() {
     if (shows.length < 2) return;
     const showPairs = shows.map((s) => ({ city: s.city || "", country: s.country || "", isOff: s.is_off }));
     prefetchDriveData(showPairs).then(setDriveData);
+  }, [shows]);
+
+  // ── Prefetch geo coordinates + airports ─────────────────────
+
+  useEffect(() => {
+    if (!shows.length) return;
+    const showPairs = shows
+      .filter((s) => s.city && s.country)
+      .map((s) => ({ city: s.city!, country: s.country! }));
+    if (showPairs.length === 0) return;
+
+    fetch("/api/tourrouter/geocode/prefetch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shows: showPairs }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.coords) {
+          const newCoordsMap = new Map<string, [number, number]>();
+          for (const [k, v] of Object.entries(data.coords)) {
+            newCoordsMap.set(k, v as [number, number]);
+          }
+          setCoordsMap(newCoordsMap);
+        }
+        if (data.airports) {
+          const newAirportMap = new Map<string, AirportInfo>();
+          for (const [k, v] of Object.entries(
+            data.airports as Record<string, { iata: string; coords: [number, number] | null }>
+          )) {
+            newAirportMap.set(k, { iata: v.iata, coords: v.coords ?? undefined });
+          }
+          setAirportMap(newAirportMap);
+        }
+      })
+      .catch(() => {});
   }, [shows]);
 
   // ── Compute legs & financials ──────────────────────────────
@@ -422,11 +566,13 @@ export default function RouteTourPage() {
       tourVehicles,
       flightPriceCache,
       driveData,
+      coordsMap,
+      airportMap,
       lodgingDefaults: (tour.lodging_defaults as any) || null,
       hotelBudgetOverride: tour.hotel_budget_override || null,
     });
     setFinancials(fin);
-  }, [shows, tour, legChoices, driveData, flightPriceCache]);
+  }, [shows, tour, legChoices, driveData, flightPriceCache, coordsMap, airportMap]);
 
   useEffect(() => { compute(); }, [compute]);
 
@@ -476,8 +622,8 @@ export default function RouteTourPage() {
     if (choice === "fly" && idx > 0) {
       const prevShow = shows[idx - 1];
       const thisShow = shows[idx];
-      const fromAP = getAirport(prevShow?.city, prevShow?.country);
-      const toAP = getAirport(thisShow?.city, thisShow?.country);
+      const fromAP = lookupAirport(prevShow?.city, prevShow?.country, airportMap);
+      const toAP = lookupAirport(thisShow?.city, thisShow?.country, airportMap);
       console.log("[toggleLeg] fly idx:", idx, "from:", prevShow?.city, "→", fromAP, "to:", thisShow?.city, "→", toAP);
       if (fromAP && toAP && thisShow?.date_iso) {
         fetchFlightPrice(fromAP.iata, toAP.iata, thisShow.date_iso, tour?.pax || 4);
@@ -1207,8 +1353,8 @@ export default function RouteTourPage() {
                     const suggestFly = leg && leg.driveH !== null && leg.driveH > flightThreshold;
                     const showNum = shows.slice(0, origIdx + 1).filter((x) => !x.is_off).length;
                     const sd = statusDot(s.status);
-                    const fromAP = origIdx > 0 ? getAirport(shows[origIdx - 1].city, shows[origIdx - 1].country) : null;
-                    const toAP = getAirport(s.city, s.country);
+                    const fromAP = origIdx > 0 ? lookupAirport(shows[origIdx - 1].city, shows[origIdx - 1].country, airportMap) : null;
+                    const toAP = lookupAirport(s.city, s.country, airportMap);
 
                     return (
                       <LegAndShowRow
@@ -1706,9 +1852,50 @@ export default function RouteTourPage() {
                 <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Venue</label>
                 <input value={newShow.venue} onChange={(e) => setNewShow((p) => ({ ...p, venue: e.target.value }))} placeholder="Venue name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }} />
               </div>
-              <div>
+              <div ref={cityDropdownRef} style={{ position: "relative" }}>
                 <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>City</label>
-                <input value={newShow.city} onChange={(e) => setNewShow((p) => ({ ...p, city: e.target.value }))} placeholder="City" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }} />
+                <input
+                  value={newShow.city}
+                  onChange={(e) => handleCityInput(e.target.value)}
+                  onKeyDown={handleCityKeyDown}
+                  onFocus={() => { if (citySuggestions.length > 0) setCityDropdownOpen(true); }}
+                  placeholder="City"
+                  autoComplete="off"
+                  aria-autocomplete="list"
+                  aria-activedescendant={cityHighlight >= 0 ? `city-option-${cityHighlight}` : undefined}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, outline: "none" }}
+                />
+                {cityDropdownOpen && (
+                  <div role="listbox" style={{ position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10, maxHeight: 240, overflowY: "auto", background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", borderTop: "none", boxShadow: "var(--hw-shadow-lg)" }}>
+                    {citySuggestions.length === 0 ? (
+                      <div style={{ padding: "10px 16px", fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "1px", textTransform: "uppercase" }}>No matches</div>
+                    ) : citySuggestions.map((s, idx) => (
+                      <div
+                        key={`${s.name}-${s.state}-${s.country}`}
+                        id={`city-option-${idx}`}
+                        role="option"
+                        aria-selected={idx === cityHighlight}
+                        onClick={() => selectCity(s)}
+                        onMouseEnter={() => setCityHighlight(idx)}
+                        style={{
+                          padding: "10px 16px", cursor: "pointer",
+                          background: idx === cityHighlight ? "var(--hw-crimson-ghost)" : "var(--hw-bg-surface)",
+                          borderTop: idx > 0 ? "1px solid var(--hw-border)" : undefined,
+                          display: "flex", justifyContent: "space-between", alignItems: "center",
+                        }}
+                      >
+                        <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 14 }}>
+                          <span style={{ fontWeight: 500 }}>{s.name}</span>
+                          {s.state && <span style={{ color: "var(--hw-text-muted)", fontWeight: 300 }}>, {s.state}</span>}
+                          <span style={{ color: "var(--hw-text-muted)", fontWeight: 300 }}>, {ISO_TO_DISPLAY[s.country] || s.country}</span>
+                        </span>
+                        {s.iata_code && (
+                          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-secondary)", background: "var(--hw-bg)", padding: "2px 6px", border: "1px solid var(--hw-border)" }}>{s.iata_code}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>Country</label>

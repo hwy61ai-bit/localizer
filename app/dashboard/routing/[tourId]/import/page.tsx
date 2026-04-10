@@ -15,6 +15,7 @@ import {
   detectCountry,
 } from "@/lib/tourrouter";
 import { normalizeState } from "@/lib/tourrouter/stateNames";
+import { cacheKey as geoCacheKey } from "@/lib/tourrouter/geocoding";
 
 function cleanMarkdownTable(text: string): string {
   const lines = text.split("\n");
@@ -81,6 +82,8 @@ export default function ImportPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [resolving, setResolving] = useState(false);
+  const [geoResolved, setGeoResolved] = useState<Map<string, boolean>>(new Map());
+  const [geoResolvedReady, setGeoResolvedReady] = useState(false);
 
   const [dragOverSpreadsheet, setDragOverSpreadsheet] = useState(false);
   const [dragOverPdf, setDragOverPdf] = useState(false);
@@ -105,6 +108,42 @@ export default function ImportPage() {
       .then((data) => setTour(data.tour))
       .catch(() => {});
   }, [tourId]);
+
+  // ── Prefetch geo resolution for import preview ───────────────
+
+  useEffect(() => {
+    if (step !== 3 || shows.length === 0) return;
+    setGeoResolvedReady(false);
+
+    const pairs = shows
+      .filter(s => s.city && s.country && !s.is_off)
+      .map(s => ({ city: s.city, country: s.country }));
+    if (pairs.length === 0) {
+      setGeoResolvedReady(true);
+      return;
+    }
+
+    fetch("/api/tourrouter/geocode/prefetch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shows: pairs }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        const resolved = new Map<string, boolean>();
+        for (const s of shows) {
+          if (!s.city || !s.country || s.is_off) continue;
+          const key = geoCacheKey(s.city, s.country);
+          resolved.set(key, !!data.coords?.[key]);
+        }
+        setGeoResolved(resolved);
+        setGeoResolvedReady(true);
+      })
+      .catch((err) => {
+        console.warn("[import] geocode prefetch failed:", err);
+        setGeoResolvedReady(true);
+      });
+  }, [step, shows]);
 
   // ── Handle file drops ────────────────────────────────────────
   function handleSpreadsheetDrop(e: React.DragEvent) {
@@ -705,7 +744,9 @@ export default function ImportPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {shows.map((s, i) => (
+                  {shows.map((s, i) => {
+                    const unresolved = !s.is_off && geoResolvedReady && s.city && s.country && geoResolved.get(geoCacheKey(s.city, s.country)) === false;
+                    return (
                     <tr
                       key={i}
                       style={{ background: s.is_off ? "var(--hw-bg-warm)" : "var(--hw-bg-surface)", borderTop: "2px solid var(--hw-border)", transition: "var(--hw-ease)" }}
@@ -715,7 +756,12 @@ export default function ImportPage() {
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 12, color: s.is_off ? "var(--hw-text-muted)" : "var(--hw-text)" }}>{s.is_off ? "OFF" : i + 1}</td>
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 12, whiteSpace: "nowrap", fontWeight: 500, color: "var(--hw-text)" }}>{s.date_iso || "\u2014"}</td>
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, color: "var(--hw-text)" }}>{s.event}</td>
-                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.city}</td>
+                      <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", background: unresolved ? "var(--hw-amber-ghost)" : undefined }}>
+                        {s.city}
+                        {unresolved && (
+                          <span style={{ marginLeft: 6, fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1px", color: "var(--hw-amber)", textTransform: "uppercase" }}>&#9888; NOT FOUND</span>
+                        )}
+                      </td>
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.country}</td>
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.venue}</td>
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 13, textAlign: "right", color: s.offer_amount ? "var(--hw-green)" : "var(--hw-text-muted)" }}>{s.offer_amount ? `$${s.offer_amount.toLocaleString()}` : "\u2014"}</td>
@@ -723,7 +769,8 @@ export default function ImportPage() {
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.status || "\u2014"}</td>
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-mono)", fontSize: 12, textAlign: "right", color: "var(--hw-text)" }}>{s.capacity || "\u2014"}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
