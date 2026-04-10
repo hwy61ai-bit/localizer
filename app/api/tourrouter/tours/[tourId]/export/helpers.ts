@@ -19,6 +19,7 @@ import {
 } from "@/lib/tourrouter";
 import type { TourVehicle } from "@/lib/tourrouter/vehicleTypes";
 import { prefetchDriveDataServer } from "@/lib/tourrouter/mapbox";
+import { resolveAllCityCoords, resolveAllAirports } from "@/lib/tourrouter/geocoding";
 
 export type ExportData = {
   tour: Record<string, unknown>;
@@ -93,14 +94,20 @@ export async function getExportData(tourId: string): Promise<ExportResult> {
     merch: (s.merch as string) || undefined,
   }));
 
-  // Prefetch Mapbox drive data for all consecutive pairs
-  const driveData = await prefetchDriveDataServer(
-    showsArr.map((s: Record<string, unknown>) => ({
-      city: (s.city as string) || "",
-      country: (s.country as string) || "",
-      isOff: (s.is_off as boolean) || false,
-    }))
-  );
+  // Prefetch Mapbox drive data and geo coordinates in parallel
+  const showPairs = showsArr.map((s: Record<string, unknown>) => ({
+    city: (s.city as string) || "",
+    country: (s.country as string) || "",
+    isOff: (s.is_off as boolean) || false,
+  }));
+
+  const [driveData, coordsMap] = await Promise.all([
+    prefetchDriveDataServer(showPairs),
+    resolveAllCityCoords(showPairs),
+  ]);
+
+  // Airports need coordsMap for nearest-airport fallback, so resolve after coords
+  const airportMap = await resolveAllAirports(showPairs, coordsMap);
 
   const fin = calcTourFinancials({
     tourShows,
@@ -119,6 +126,8 @@ export async function getExportData(tourId: string): Promise<ExportResult> {
     tourVehicles: (tour.tour_vehicles as unknown as TourVehicle[] | undefined) ?? [],
     flightPriceCache: {},
     driveData,
+    coordsMap,
+    airportMap,
   });
 
   const rows = buildExportRows({

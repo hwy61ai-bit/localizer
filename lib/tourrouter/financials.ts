@@ -1,7 +1,8 @@
 import { VEHICLE_MPG, VEHICLE_L100, type VehicleType } from './constants';
 import { getRoadKm, getCityCoords, estimateDriveHours, isImperialCountry, legCountry, buildDriveDataKey, type DriveDataMap } from './geography';
 import { getRate, toUSD, type OfferObj } from './currency';
-import { getAirport } from './flights';
+import { getAirport, type AirportInfo } from './flights';
+import { cacheKey as geoCacheKey } from './geocoding';
 import { calculateShowIncome, type DealTerms, type SettlementData, type ShowForCalc } from './calculateShowIncome';
 import { calculatePersonnelCosts, determineDayType, type RosterMember, type TourStats, type PersonnelCostResult } from './personnelPay';
 import { calculateCommissions, type Commission, type CommissionResult } from './commissions';
@@ -59,6 +60,8 @@ export interface FinancialParams {
   roster?: RosterMember[];
   commissions?: Commission[];
   driveData?: DriveDataMap;
+  coordsMap?: Map<string, [number, number]>;
+  airportMap?: Map<string, AirportInfo>;
   lodgingDefaults?: { rooms: Array<{ type: string; bed_config: string; count: number }>; star_minimum: number; nightly_budget_override?: number } | null;
   hotelBudgetOverride?: number | null;
 }
@@ -178,7 +181,7 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
     flightThreshold, blanketShowAmt, blanketOffAmt,
     vehicleType, vehicleCount, fuelPriceOverride, flightPriceCache,
     blanketShowLabel, blanketOffLabel, roster, commissions, driveData,
-    tourVehicles,
+    tourVehicles, coordsMap, airportMap,
   } = params;
 
   // ── Fuel cost — ESTIMATED only (never replaced by receipts)
@@ -231,7 +234,11 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
       const cached = driveData?.[driveKey];
       const km = cached ? cached.distanceKm : getRoadKm(prev.city, prev.country, s.city, s.country);
       if (!km && typeof window !== 'undefined') {
-        console.warn(`[TourRouter] No distance: "${prev.city}" → "${s.city}" (coords: ${getCityCoords(prev.city, prev.country) ? 'found' : 'MISSING'} → ${getCityCoords(s.city, s.country) ? 'found' : 'MISSING'})`);
+        const prevCoordsKey = geoCacheKey(prev.city, prev.country);
+        const curCoordsKey = geoCacheKey(s.city, s.country);
+        const prevHasCoords = coordsMap?.get(prevCoordsKey) || getCityCoords(prev.city, prev.country);
+        const curHasCoords = coordsMap?.get(curCoordsKey) || getCityCoords(s.city, s.country);
+        console.warn(`[TourRouter] No distance: "${prev.city}" → "${s.city}" (coords: ${prevHasCoords ? 'found' : 'MISSING'} → ${curHasCoords ? 'found' : 'MISSING'})`);
       }
       const driveH = cached ? cached.driveHours : (km ? estimateDriveHours(km) : null);
       const flying = legChoices[i] === 'fly';
@@ -240,8 +247,8 @@ export function calcTourFinancials(params: FinancialParams): FinancialResults {
 
       if (flying) {
         flightLegs++;
-        const fromAP = getAirport(prev.city, prev.country);
-        const toAP = getAirport(s.city, s.country);
+        const fromAP = airportMap?.get(geoCacheKey(prev.city, prev.country)) ?? getAirport(prev.city, prev.country);
+        const toAP = airportMap?.get(geoCacheKey(s.city, s.country)) ?? getAirport(s.city, s.country);
         if (fromAP && toAP) {
           const dateStr = s.date ? s.date.toISOString().split('T')[0] : '';
           const key = fromAP.iata + '-' + toAP.iata + '-' + dateStr + '-' + pax + 'pax';
