@@ -273,8 +273,8 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
 
       const imageIds: Record<string, string | null> = {
         square: tour.image_square_id,
-        story: tour.image_story_id ?? tour.image_square_id,
-        landscape: tour.image_landscape_id ?? tour.image_square_id,
+        story: tour.image_story_id,
+        landscape: tour.image_landscape_id,
       };
 
       const formatDims: Record<string, { w: number; h: number }> = {
