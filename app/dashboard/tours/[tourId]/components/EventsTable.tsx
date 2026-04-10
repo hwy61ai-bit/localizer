@@ -297,6 +297,8 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
           const pid = imageIds[fmt];
           if (!pid) {
             renderUrls["render_" + fmt + "_url"] = null;
+            done++;
+            setRenderProgress({ done, total });
             continue;
           }
 
