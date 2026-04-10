@@ -78,3 +78,39 @@ Until then, both flows coexist: WelcomeWizard runs once per org on first login, 
 **Priority:** Medium. Not blocking launch, but a real conversion lever — when a promoter sees the day sheet branded with HWY61, that is free marketing. Worth doing in the first month post-launch, alongside the tutorial video production.
 
 **Dependencies:** Tim sign-off on final visual treatment, logo files at the right export resolution, any typography licensing questions resolved.
+
+---
+
+### Logo overlays on videos
+
+Logos have never rendered on Cloudinary video text overlays. `buildCloudinaryVideoUrl` in `app/api/renders/generate/route.ts` only builds text layers (venue, date, city, optional band name) and has no `l_image` or `l_fetch` layer for the logo. Images render logos via the Canvas renderer in `lib/clientRender.ts`, which is a completely separate code path — that's why "logos work on images" but "logos don't work on videos."
+
+The fix requires: reading `lib/clientRender.ts` to understand how the logo is resolved and positioned on image renders, mirroring that logic into a new Cloudinary transformation layer in `buildCloudinaryVideoUrl`, handling the logo URL resolution (the logo lives on Cloudinary as part of the artist record already), and testing across multiple logo positions and sizes. Estimated 1–2 hours. Out of scope for the April 9 Localizer bug-fix session.
+
+Discovered tonight while verifying the font fix worked — Tim's video renders with correct text and font, but the logo was missing. Not a regression, a latent missing feature.
+
+---
+
+### Remaining custom fonts need to be re-uploaded
+
+Two of the three existing `custom_fonts` rows still point at Cloudinary assets that don't exist: BebasNeue-Regular and Pragmatica-Extended-Extra-Bold. They were uploaded under the old broken pipeline that never wrote to Cloudinary. The render code will silently fail on any tour that uses these two fonts on a video overlay.
+
+BullandRegular-d91g6 was already re-uploaded tonight and verified working on Uncle Lucius. The other two just need to be deleted via the UI and re-uploaded from their original font files (sources in Supabase storage URLs from the `custom_fonts.storage_url` column if Drew no longer has the local originals).
+
+---
+
+### Font upload route uses old plan schema
+
+`app/api/fonts/upload/route.ts` lines 37–54 check `org.plan` against `"pro"` or `"agency"` for the plan gate on custom font uploads. That's the old pre-freemium billing schema. The April 9 freemium rollout is replacing those checks with `localizer_plan_status` and `bundle_plan_status` (see `lib/localizer/billingGate.ts`). When the 41-route billing gate rollout happens, this route should be migrated to use `requirePaidLocalizerAccess()` or the Localizer-side three-state enum instead of the raw `plan` column.
+
+---
+
+### Unit D — Rate limiting (Upstash Redis)
+
+Fourth unit of the April 9 freemium work, not started. Tim's decision doc specifies Upstash Redis with four priority tiers: AI parsing routes (50/hr/org), venue/contact reads (200/hr/org), exports (30/hr/org), everything else (500/hr/org). Returns 429 with `Retry-After` header on limit. Scoped for roughly 90 minutes when tackled fresh. Deferred to a future session because Tim's Localizer bug (discovered mid-session) took priority and consumed the remaining time in the April 9 session.
+
+---
+
+### Custom font upload architectural debt
+
+The current font pipeline writes fonts to both Supabase storage (for browser Canvas previews + image rendering) and Cloudinary (for video `l_text` overlays). Two sources of truth means race conditions on partial failures (handled via cleanup logic tonight, but real complexity). Post-launch consideration: move to Cloudinary-only font storage with the browser renderer loading fonts from Cloudinary's URL via `@font-face`. One source of truth. Requires touching `lib/clientRender.ts` (protected code) and a one-time backfill script for existing fonts.

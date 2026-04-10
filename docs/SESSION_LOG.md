@@ -954,3 +954,61 @@ open -a TextEdit docs/SESSION_LOG.md
 - `app/components/OnboardingWizard.tsx` (the old welcome choice screen with GET STARTED / EXPLORE DEMO / SKIP) still renders on dashboard for users with zero artists. Its role will be absorbed by the new WelcomeWizard + demo tour button once demo tour seed data lands. Both flows coexist for now.
 
 **Started on freemium enforcement late evening.** Realized the current binary checkTourRouterAccess doesn't fit the spec. Tim delivered HWY61_TOURROUTER_FREE_TIER_DECISION_FOR_DREW.md (the 'none' | 'free' | 'paid' model) mid-session. Sent async follow-up to Tim with two Localizer questions (plan column, bundle handling). Prompt drafted and staged for when Tim replies. Nothing shipped yet.TODO: flip HWY 61 TEST CO. bundle_plan_status back to null before beta launch — set to 'active' April 9 during Unit C testing
+
+## April 9, 2026 — Freemium rollout + Localizer critical fixes + hidden schema debts
+
+**Commits shipped today (10):**
+
+1. `cd2c250` — CLAUDE.md infrastructure (157-line persistent rules file)
+2. `cb50c9f` — Phase 7H onboarding wizard shell (three-field org/user/role flow)
+3. `9f88d03` — Dashboard auto-create org refactor (moved from dashboard render to auth callback)
+4. `3872874` — Tim's April 9 decision docs (access gate + free tier specs)
+5. `0a3ff9a` — TourRouter free tier (Unit B): three-state access model, exports gated at 402
+6. `3feada1` — Backlog: stylized export files (PDF, day sheets, advance sheets)
+7. `1625fa2` — Localizer free tier (Unit C): access helpers, venue-share download gate, SSRF fix
+8. `65ab420` — Session log: TODO to revert bundle_plan_status on test org before beta
+9. `ae091df` — Localizer Generate All: video rendering + stale URL cleanup (three bugs)
+10. `2465c9f` — Custom fonts on videos: end-to-end fix (double extension + missing Cloudinary upload + authenticated type)
+
+**Freemium rollout — Units A/B/C completed, Unit D deferred:**
+
+- **Unit A (schema migration):** Four new columns on `orgs`: `localizer_plan`, `localizer_plan_status`, `bundle_plan`, `bundle_plan_status`. Applied via Supabase SQL Editor.
+- **Unit B (TourRouter refactor):** New `getTourRouterAccessLevel()` returning `'none' | 'free' | 'paid'` with admin bypass and bundle OR clause. `checkTourRouterAccess` rewritten as deprecated wrapper. `requireTourRouterAccess()` now always succeeds for authenticated+org users (free tier passes through). New `requirePaidTourRouterAccess()` returns 402 `export_requires_paid` on the six export routes. `skipBillingGate` option removed from all call sites. 15 files modified, zero type errors.
+- **Unit C (Localizer gate):** New `getLocalizerAccessLevel()` and `requireLocalizerAccess()` / `requirePaidLocalizerAccess()` helpers mirroring TourRouter. Critical discovery: `/api/download` and `/api/download-all` are public venue-facing routes (venues don't have accounts), so gating them on `requirePaidLocalizerAccess()` would have broken the entire venue-share flow. Instead, both routes gate by the **link owner's org**, not the viewer. `getLocalizerAccessLevel(link.org_id)` — no userEmail, admin bypass deliberately off. `/api/download` also gained SSRF protection: the `url` query param is now validated against the `render_*_url` columns on the `venue_links` row, closing a pre-existing open-proxy vulnerability. 5 files (2 new, 3 modified).
+- **Unit D (rate limiting):** Deferred. Tim's Localizer bug discovery consumed the remaining session time. Spec captured in backlog: Upstash Redis, four priority tiers, 429 with Retry-After.
+
+**Hidden schema debts discovered and fixed:**
+
+- **`orgs` INSERT RLS policy was unsatisfiable from day one.** Old policy: `WITH CHECK ((auth.uid() IS NOT NULL) AND (id = gen_random_uuid()))` — the `gen_random_uuid()` clause generates a fresh UUID on every evaluation and can never match a client-supplied UUID. Every signup since launch relied on the auth callback's service-role client to create orgs, bypassing RLS entirely. Fixed during the dashboard refactor (commit 9f88d03).
+- **Custom font upload pipeline never actually wrote to Cloudinary.** The `cloudinary_public_id` column on `custom_fonts` was misnamed — it stored the Supabase storage path, with no Cloudinary upload step anywhere in the route. All custom-font video renders silently produced broken URLs pointing at Cloudinary assets that didn't exist. Masked by: (a) nobody exercising the video-with-custom-font code path until tonight, (b) image renders use the Canvas path which loads fonts from Supabase, not Cloudinary. Fixed in commit 2465c9f.
+- **`org_members` had no UPDATE RLS policy.** All updates to user_role, onboarding state, etc. were silently failing since the table was created. Fixed earlier in the day during onboarding wizard testing.
+
+**Localizer bug chain — Tim's report to resolution:**
+
+Tim reported: "Generate All shows red error and no video on link" on a video-only tour. Investigation surfaced four separate bugs stacked on top of each other:
+
+1. **`/api/renders/tour-data` line-18 guard required `image_square_id`** and rejected video-only tours with 400 "No images uploaded." The check was added before video formats existed. Fixed: replaced with `hasAnyAsset` check across all six asset ID columns (commit ae091df).
+
+2. **Bulk `generateAll()` in `EventsTable.tsx` never rendered videos at all.** The three image formats were rendered client-side via Canvas, but no video handling existed. The per-event re-render path through `/api/renders/generate` already handled videos correctly via `VIDEO_FORMATS` and `buildCloudinaryVideoUrl`. Fixed: added `videosOnly` flag to `/api/renders/generate` that skips the FORMATS image loop and only writes video URL columns. `generateAll()` now fires a non-blocking `videosOnly: true` call after the image loop completes (commit ae091df).
+
+3. **Missing render URLs after asset deletion were not cleared from `venue_links`.** When a user deleted a source image from Import Assets, the corresponding `render_*_url` column retained its stale value. The loop skipped missing formats entirely, so the spread never wrote NULL. Fixed: explicitly assign `null` to `renderUrls` when the source ID is null, in both the client-side loop and the server-side generate route (commit ae091df).
+
+4. **Custom fonts on videos never worked** due to three cascading causes: (a) double `.ttf` extension in `customFontsMap` construction — `cloudinary_public_id` already contained the extension, template literal appended it again (commit 2465c9f). (b) Font upload route never uploaded to Cloudinary at all — only Supabase (commit 2465c9f). (c) Cloudinary requires `type: "authenticated"` for raw font files used in `l_text` overlays — public raw uploads return 400 on the transformation (commit 2465c9f).
+
+All four fixed tonight. End-to-end verified against JESUS ETC (video-only test) and Uncle Lucius (custom font test).
+
+**TODO before beta:**
+
+- Revert HWY 61 TEST CO. `bundle_plan_status` from `'active'` back to `null` (was set during Unit C testing)
+
+**TODO next session:**
+
+- Unit D rate limiting (Upstash Redis, ~90 min)
+- Logo overlays on videos (missing feature, ~1–2 hrs)
+- Re-upload BebasNeue-Regular and Pragmatica-Extended-Extra-Bold under new pipeline
+- 41-route billing gate rollout pending Tim's architectural input
+- Stripe product restructure pending EIN
+
+**Session context preserved:** All bug diagnoses and architectural findings from this session are captured in `docs/BACKLOG.md` entries committed in the same change as this session log entry.
+
+**Next session should start with:** (a) run `git pull`, (b) read this session log entry and the five new backlog items, (c) decide between Unit D rate limiting vs the logo-on-videos fix based on user priorities in the morning.

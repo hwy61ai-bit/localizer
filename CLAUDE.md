@@ -56,6 +56,8 @@ These are the rules that silently break production when violated. Do not deviate
 
 16. **Google Fonts `.ttf` fetching requires a `User-Agent: Mozilla/5.0` header.** Without it, Google returns `.woff2` which `pdf-lib` cannot embed. If you touch PDF font loading, preserve the user-agent spoof.
 
+17. **When committing code, never add a Co-Authored-By trailer to the commit message** (e.g. `Co-Authored-By: Claude <noreply@anthropic.com>`). Commits should be attributed to the user only. This applies to all commit messages you write via `git commit -m`, `git commit -F`, or any other method.
+
 ---
 
 ## Workflow rules
