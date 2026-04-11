@@ -1170,9 +1170,9 @@ export default function ArtistProfilePage() {
           </div>
         </Accordion>
 
-        {/* ══════ 4. Hospitality & Rider ══════ */}
+        {/* ══════ 4. Hospitality ══════ */}
         <Accordion
-          title="Hospitality & Rider"
+          title="Hospitality"
           badge={(() => {
             const h = (artist.hospitality_rider as any) || {};
             const fields = ["dressingRoomRequirements", "cateringRequirements", "hospitalityRequirements", "dietaryNotes", "alcoholPreferences", "buyoutAmount", "towelCount", "greenRoomRequirements"];

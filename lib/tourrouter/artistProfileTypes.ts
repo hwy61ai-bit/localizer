@@ -97,7 +97,7 @@ export interface TechnicalProduction {
   notes: string | null;
 }
 
-// ─── Section F: Hospitality & Rider ─────────────────────────────────────────
+// ─── Section F: Hospitality ─────────────────────────────────────────
 
 export interface HospitalityRider {
   riderUrl: string | null;
@@ -303,7 +303,7 @@ export const PROFILE_SECTIONS = [
   { key: 'taxCompliance', label: 'Tax & Compliance', icon: '📋' },
   { key: 'insurance', label: 'Insurance', icon: '🛡️' },
   { key: 'technicalProduction', label: 'Technical Production', icon: '🎛️' },
-  { key: 'hospitalityRider', label: 'Hospitality & Rider', icon: '🍽️' },
+  { key: 'hospitalityRider', label: 'Hospitality', icon: '🍽️' },
   { key: 'promoMarketing', label: 'Promo & Marketing', icon: '📸' },
   { key: 'merchDefaults', label: 'Merch Defaults', icon: '👕' },
   { key: 'vehiclesEquipment', label: 'Vehicles & Equipment', icon: '🚐' },

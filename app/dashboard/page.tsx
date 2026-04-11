@@ -78,7 +78,7 @@ export default async function DashboardPage() {
     const { error } = await supabase.from("artists").insert({
       id: newArtistId,
       org_id: orgId,
-      name: "New Artist",
+      name: "",
     });
     if (error) throw new Error(error.message);
     redirect(`/dashboard/artists/${newArtistId}/profile`);
