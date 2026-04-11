@@ -88,14 +88,10 @@ export {
 } from './featureFlags';
 
 // geocoding is server-only (uses supabaseServer for geo_cities lookups)
-export {
-  getCityCoordinates,
-  getAirportForCity,
-  searchCities,
-  resolveAllCityCoords,
-  resolveAllAirports,
-  cacheKey,
-} from './geocoding';
+// Import directly: import { getCityCoordinates, ... } from '@/lib/tourrouter/geocoding'
+
+// cacheKey is pure — safe for both server and client
+export { cacheKey } from './geocoding-shared';
 
 // billingGate is server-only (uses next/headers via supabaseServer)
 // Import directly: import { checkTourRouterAccess } from '@/lib/tourrouter/billingGate'

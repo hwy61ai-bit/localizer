@@ -36,7 +36,7 @@ import {
   TOURING_CURRENCIES,
   type AirportInfo,
 } from "@/lib/tourrouter";
-import { cacheKey as geoCacheKey } from "@/lib/tourrouter/geocoding";
+import { cacheKey as geoCacheKey } from "@/lib/tourrouter/geocoding-shared";
 import type { Commission } from "@/lib/tourrouter/commissions";
 import type { TourVehicle } from "@/lib/tourrouter/vehicleTypes";
 import { useFeatureFlags } from "@/lib/tourrouter/FeatureFlagContext";

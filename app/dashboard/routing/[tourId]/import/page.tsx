@@ -15,7 +15,7 @@ import {
   detectCountry,
 } from "@/lib/tourrouter";
 import { normalizeState } from "@/lib/tourrouter/stateNames";
-import { cacheKey as geoCacheKey } from "@/lib/tourrouter/geocoding";
+import { cacheKey as geoCacheKey } from "@/lib/tourrouter/geocoding-shared";
 
 function cleanMarkdownTable(text: string): string {
   const lines = text.split("\n");

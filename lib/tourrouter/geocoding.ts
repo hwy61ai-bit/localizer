@@ -24,6 +24,9 @@
 import { CITY_COORDS, CITY_AIRPORTS, AIRPORT_COORDS } from './constants';
 import type { AirportInfo } from './flights';
 import { supabaseServer } from '@/lib/supabaseServer';
+import { cacheKey } from './geocoding-shared';
+
+export { cacheKey } from './geocoding-shared';
 
 // ---------------------------------------------------------------------------
 // In-memory coordinate cache
@@ -37,13 +40,6 @@ const coordsCache = new Map<string, { lat: number; lng: number }>();
 // checking the legacy bare key, which is how CITY_COORDS entries get found.
 for (const [rawKey, [lat, lng]] of Object.entries(CITY_COORDS)) {
   coordsCache.set(rawKey.toLowerCase().trim(), { lat, lng });
-}
-
-// ---------------------------------------------------------------------------
-// Cache key builder
-// ---------------------------------------------------------------------------
-export function cacheKey(city: string, country: string): string {
-  return `${city.toLowerCase().trim()}|${country.toUpperCase().trim()}`;
 }
 
 // ---------------------------------------------------------------------------

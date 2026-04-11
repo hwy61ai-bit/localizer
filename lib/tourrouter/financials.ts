@@ -2,7 +2,7 @@ import { VEHICLE_MPG, VEHICLE_L100, type VehicleType } from './constants';
 import { getRoadKm, getCityCoords, estimateDriveHours, isImperialCountry, legCountry, buildDriveDataKey, type DriveDataMap } from './geography';
 import { getRate, toUSD, type OfferObj } from './currency';
 import { getAirport, type AirportInfo } from './flights';
-import { cacheKey as geoCacheKey } from './geocoding';
+import { cacheKey as geoCacheKey } from './geocoding-shared';
 import { calculateShowIncome, type DealTerms, type SettlementData, type ShowForCalc } from './calculateShowIncome';
 import { calculatePersonnelCosts, determineDayType, type RosterMember, type TourStats, type PersonnelCostResult } from './personnelPay';
 import { calculateCommissions, type Commission, type CommissionResult } from './commissions';
