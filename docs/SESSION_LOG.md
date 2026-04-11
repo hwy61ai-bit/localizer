@@ -1020,3 +1020,43 @@ All four fixed tonight. End-to-end verified against JESUS ETC (video-only test) 
 ✅ Square image prefilling story + FB cover — fixed by removing the ?? tour.image_square_id fallback in EventsTable.tsx generateAll() at line ~273.
 ✅ Individual file names missing show info — fixed by adding filenameSlug (band+venue+date) to the download anchor filenames in page.tsx.
 ✅ Stale .next cache was also briefly in the mix — cleared it once.
+
+
+## 2026-04-10 — GEO_CITIES build, curated pivot, client bundle fix
+
+**Shipped (6 commits on main):**
+- docs: Tim's GEO_CITIES build spec added to /docs
+- feat: geocoding backend — geo_cities table, three-tier lookup, API routes
+- feat: calcTourFinancials + export helpers wired with optional coordsMap/airportMap params (mirrors driveData prefetch pattern, keeps calcTourFinancials sync)
+- feat: client-side geocoding — routing page prefetch + autocomplete on Add Show modal, import page unresolved-city flagging
+- feat: replaced GeoNames seed with curated 332-city list
+- fix: split cacheKey into geocoding-shared.ts to fix Next.js client bundle (supabaseServer was transitively leaking next/headers into client code via the geocoding.ts import chain)
+
+**Data layer decision:**
+Originally followed Tim's spec for a GeoNames + OurAirports seed. Ran into multiple issues: Supabase PostgREST 1000-row cap on .range() broke airport matching, transient Node fetch failures killed 6 countries mid-seed, GeoNames feature-class filtering missed major US cities (Miami FL, Philadelphia PA), and Strategy 1/2 airport matching produced ~14 wrong IATA assignments for name-collision cases. Fixed the infrastructure bugs (keyset pagination, retry with exponential backoff) and ran a second seed, but name-match ambiguity is fundamental to the approach.
+
+After a call with Tim, pivoted to a hand-curated 332-city list covering major US touring markets plus dense Europe per Tim's request. Every row has verified coordinates and primary commercial airport IATA code. Zero ambiguity, zero data quality issues.
+
+**Build fix learning:**
+`npx tsc --noEmit` validates types but does NOT catch Next.js server/client boundary violations. Claude Code's "clean compile" check gave a false sense of safety. The first push broke production because `geocoding.ts` imported from `supabaseServer.ts` (which uses `next/headers`), and the client page was importing `cacheKey` from `geocoding.ts`, dragging the entire server chain into the client bundle. Fix was to move `cacheKey` to a new `geocoding-shared.ts` with zero server deps, then update three importers (both client pages + `financials.ts`). Also pruned the barrel file to stop re-exporting server-only geocoding functions. **Going forward: always run `npm run build` before pushing changes that touch shared lib files.**
+
+**Current state:**
+- geo_cities table: 332 rows, all source='curated'
+- 292 cities have IATA codes, 40 fall back to nearest-airport RPC
+- 24 countries: US 150, GB 28, CA 20, DE 20, FR 15, IT 12, ES 10, JP 10, AU 10, NL 8, IE 5, BE 5, CH 5, PL 5, PT 4, AT 4, NZ 4, CZ 3, DK 3, NO 3, SE 3, HU 2, FI 2, IS 1
+- calcTourFinancials still protected, still sync, two new optional params (coordsMap, airportMap) following driveData prefetch pattern
+- cacheKey lives in lib/tourrouter/geocoding-shared.ts, imported by both server (geocoding.ts, financials.ts) and client (routing page, import page)
+- Old seed script scripts/seed-geo-cities.ts deleted
+
+**Known watch items:**
+- mapbox.ts line 79, flights.ts line 73, geography.ts lines 56-57 still use sync getCityCoords (hit CITY_COORDS only). These are haversine fallbacks — only matter if Mapbox Directions API fails AND city is outside CITY_COORDS. Not urgent.
+- If any wrong airport assignments surface in production, fix via CITY_AIRPORTS constant in lib/tourrouter/constants.ts (Tier 1, hit first, 30-second fix per case).
+- Mapbox default token "HWY61 Production" created today to replace leaked token. Old token still exists on Mapbox account (can't be deleted because it's the default) but is unused by the app. Long-term TODO: split into public/secret tokens.
+- Pre-push workflow: run `npm run build` locally before any push that touches lib/tourrouter/* or lib/supabase* files. `tsc --noEmit` is insufficient.
+
+**Next session starts with:**
+- End-to-end test on live site: create tour with show in Miami FL, Austin TX, Philadelphia PA. Confirm correct airports resolve. Test autocomplete on Add Show modal. Test import flow with unresolved-city flag.
+- Onboarding wizard — Tim owes wizard steps + demo tour data.
+- Full 41-route billing gate (pending Tim's shared helper design approval).
+- docs/DESIGN_SYSTEM.md — Warhol system doc dump via Claude Code.
+- Workflow conversation with Tim about spec review step before major builds (pattern: Tim writes specs in 15 min without working through failure modes, then Drew builds something prone to failure).
