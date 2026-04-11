@@ -64,8 +64,8 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "story",     label: "IG Story",      w: 1080, h: 1350 },
   { key: "landscape", label: "FB Cover",      w: 820,  h: 312 },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: 3300, h: 5100 },
-  { key: "tiktok",    label: "TikTok/Reels",  w: 1080, h: 1920 },
-  { key: "yt_shorts", label: "YT Shorts",     w: 1080, h: 1920 },
+  { key: "tiktok",    label: "TikTok, IG Reels, FB Stories, YouTube Shorts",  w: 1080, h: 1920 },
+  { key: "yt_shorts", label: "Square",     w: 1080, h: 1080 },
 ];
 
 const FIELD_LABELS: Record<FieldKey, string> = {
@@ -110,7 +110,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
     landscape: { w: 1920, h: 1080 },
     print:     { w: 3300, h: 5100 },
     tiktok:    { w: 1080, h: 1920 },
-    yt_shorts: { w: 1080, h: 1920 },
+    yt_shorts: { w: 1080, h: 1080 },
   }[format];
   const font = cfg.fontFamily.replace(/ /g, "%20");
   const color = cfg.textColor;
@@ -552,7 +552,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   if (!pid) { toast.error('No image uploaded for this format.'); return; }
                   const fd: Record<string, { w: number; h: number }> = {
                     square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 },
-                    landscape: { w: 820, h: 312 }, tiktok: { w: 1080, h: 1920 }, yt_shorts: { w: 1080, h: 1920 },
+                    landscape: { w: 820, h: 312 }, tiktok: { w: 1080, h: 1920 }, yt_shorts: { w: 1080, h: 1080 },
                   };
                   const dims = fd[activeFormat] ?? fd.square;
                   const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/c_fill,g_center,w_' + dims.w + ',h_' + dims.h + '/' + pid;

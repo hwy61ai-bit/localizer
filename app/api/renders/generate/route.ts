@@ -18,7 +18,7 @@ const FORMATS: RenderFormat[] = ["square", "story", "landscape"];
 type VideoFormat = "tiktok" | "yt_shorts";
 const VIDEO_DIMS: Record<VideoFormat, { w: number; h: number }> = {
   tiktok:    { w: 1080, h: 1920 },
-  yt_shorts: { w: 1080, h: 1920 },
+  yt_shorts: { w: 1080, h: 1080 },
 };
 const VIDEO_FORMATS: VideoFormat[] = ["tiktok", "yt_shorts"];
 

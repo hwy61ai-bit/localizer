@@ -218,7 +218,7 @@ export default function ImportPage() {
               </div>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", margin: 0 }}>IMPORT SCHEDULE</div>
               <div style={{ marginTop: 8, fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", maxWidth: 520, lineHeight: 1.6 }}>
-                Paste a tour schedule or upload a file. The AI will extract every
+                Paste a tour schedule or upload a file. HWY61 Labs will extract every
                 date, venue, city, and email automatically.
               </div>
             </div>

@@ -170,8 +170,8 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
               {[
-                { label: "TikTok / Reels", dims: "1080 × 1920", url: (link as any).render_tiktok_url },
-                { label: "YouTube Shorts", dims: "1080 × 1920", url: (link as any).render_yt_shorts_url },
+                { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", dims: "1080 × 1920", url: (link as any).render_tiktok_url },
+                { label: "Square", dims: "1080 × 1080", url: (link as any).render_yt_shorts_url },
               ].filter(v => !!v.url).map((video) => (
                 <div key={video.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
                   <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>

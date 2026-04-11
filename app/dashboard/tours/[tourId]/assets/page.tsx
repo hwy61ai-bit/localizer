@@ -12,8 +12,8 @@ const FORMATS = [
   { id: "ig_story",    label: "Instagram Story / Reels / Facebook Story",        w: 1080, h: 1350, aspect: "4 / 5",     section: "photo", sub: "PORTRAIT" },
   { id: "facebook",    label: "Facebook Cover Image",  w: 820,  h: 312,  aspect: "820 / 312", section: "photo", sub: "LANDSCAPE" },
   { id: "print", label: "Local Poster For Print (PDF)", w: 3300, h: 5100, aspect: "3300 / 5100", section: "photo", sub: "11×17 / 300 DPI" },
-  { id: "tiktok",      label: "Instagram Reels / TikTok",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL" },
-  { id: "yt_shorts",   label: "YouTube Shorts / FB Stories",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL" },
+  { id: "tiktok",      label: "TikTok, IG Reels, FB Stories, YouTube Shorts — 1080 × 1920",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL" },
+  { id: "yt_shorts",   label: "Square — 1080 × 1080",  w: 1080, h: 1080, aspect: "1 / 1",   section: "video", sub: "SQUARE" },
 ];
 
 export default function AssetsPage() {
