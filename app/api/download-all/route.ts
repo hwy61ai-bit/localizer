@@ -56,32 +56,34 @@ export async function GET(req: NextRequest) {
   const bandName = (tour?.band_name ?? tour?.name ?? "Artist").replace(/[^a-zA-Z0-9_-]/g, "_");
   const cleanVenue = event.venue?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "Venue";
   const cleanDate = event.date_iso?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "";
-  const slug = [bandName, cleanVenue, cleanDate].filter(Boolean).join("+");
+  const cleanCity = event.city?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "";
+  const slug = [bandName, cleanDate, cleanCity].filter(Boolean).join("_");
+  const filePrefix = [bandName, cleanDate, cleanCity].filter(Boolean).join("_");
   const rootFolder = slug + "/";
 
   const imageAssets: { filename: string; url: string }[] = [
-    { filename: rootFolder + `Social/${bandName}+IG_Post.jpg`,   url: link.render_square_url },
-    { filename: rootFolder + `Social/${bandName}+IG_Story.jpg`,  url: link.render_story_url },
-    { filename: rootFolder + `Social/${bandName}+FB_Cover.jpg`,  url: link.render_landscape_url },
-    { filename: rootFolder + `Social/${bandName}+Tour_Poster.jpg`, url: link.render_poster_url },
+    { filename: rootFolder + `Social/${filePrefix}_IG_Post.jpg`,   url: link.render_square_url },
+    { filename: rootFolder + `Social/${filePrefix}_IG_Story.jpg`,  url: link.render_story_url },
+    { filename: rootFolder + `Social/${filePrefix}_FB_Cover.jpg`,  url: link.render_landscape_url },
+    { filename: rootFolder + `Social/${filePrefix}_Tour_Poster.jpg`, url: link.render_poster_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const videoAssets: { filename: string; url: string }[] = [
-    { filename: rootFolder + `Video/${bandName}+TikTok_Reels.mp4`,   url: link.render_tiktok_url },
-    { filename: rootFolder + `Video/${bandName}+YouTube_Shorts.mp4`, url: link.render_yt_shorts_url },
+    { filename: rootFolder + `Video/${filePrefix}_TikTok_Reels.mp4`,   url: link.render_tiktok_url },
+    { filename: rootFolder + `Video/${filePrefix}_Square.mp4`, url: link.render_yt_shorts_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const customMaterials = ((artist as { adv_custom_materials?: Array<{ id: string; label: string; url: string }> } | null)?.adv_custom_materials) || [];
   const advAssets: { filename: string; url: string }[] = [
-    { filename: rootFolder + `Advance/${bandName}+Stage_Plot.pdf`,        url: artist?.adv_stage_plot_url },
-    { filename: rootFolder + `Advance/${bandName}+Hospitality_Rider.pdf`, url: artist?.adv_hospitality_url },
-    { filename: rootFolder + `Advance/${bandName}+FOH_Requirements.pdf`,  url: artist?.adv_foh_url },
-    { filename: rootFolder + `Advance/${bandName}+W-9.pdf`,                url: artist?.adv_w9_url },
+    { filename: rootFolder + `Advance/${filePrefix}_Stage_Plot.pdf`,        url: artist?.adv_stage_plot_url },
+    { filename: rootFolder + `Advance/${filePrefix}_Hospitality_Rider.pdf`, url: artist?.adv_hospitality_url },
+    { filename: rootFolder + `Advance/${filePrefix}_FOH_Requirements.pdf`,  url: artist?.adv_foh_url },
+    { filename: rootFolder + `Advance/${filePrefix}_W-9.pdf`,                url: artist?.adv_w9_url },
     ...customMaterials.filter((c) => c.url).map((c) => {
       const safeLabel = c.label.replace(/[^a-zA-Z0-9_.-]/g, "_");
       const cleanUrl = c.url.split("?")[0];
       const ext = cleanUrl.split(".").pop() || "pdf";
-      return { filename: rootFolder + `Advance/${bandName}+${safeLabel}.${ext}`, url: c.url };
+      return { filename: rootFolder + `Advance/${filePrefix}_${safeLabel}.${ext}`, url: c.url };
     }),
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 

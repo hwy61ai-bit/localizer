@@ -454,8 +454,11 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             >
               {generating ? "GENERATING..." : allReady ? "RE-GENERATE ALL" : "GENERATE ALL"}
             </button>
+            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 4, textAlign: "right" }}>Hit Generate to create all localized assets.</div>
           </div>
         </div>
+
+        <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", padding: "8px 0 4px 16px" }}>All info can be edited below.</div>
 
         <div style={{ display: "grid", gridTemplateColumns: COLS + " 80px", gap: 0, padding: "12px 16px", background: "var(--hw-bg-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#fff" }}>
           <div>DATE</div><div>DAY</div><div>CITY, ST</div><div>VENUE</div>
@@ -481,12 +484,15 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
               <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <div style={{ opacity: 0.8, display: "flex", alignItems: "center", gap: 4 }}>
-                <button onClick={() => { const current = e.promoter_email ?? ""; startEdit(e, "promoter_email"); setTimeout(() => { setDraft(current ? current + ", " : ""); inputRef.current?.focus(); }, 50); }} title="Add email" style={{ width: 22, height: 22, borderRadius: 0, border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text-muted)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, lineHeight: 1 }}>+</button>
+                <button onClick={() => { const current = e.promoter_email ?? ""; startEdit(e, "promoter_email"); setTimeout(() => { setDraft(current ? current + ", " : ""); inputRef.current?.focus(); }, 50); }} title="Hit + to add another email address" style={{ width: 22, height: 22, borderRadius: 0, border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text-muted)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, lineHeight: 1 }}>+</button>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   {editing?.id === e.id && editing?.field === "promoter_email" ? (
-                    <div style={{ padding: "2px 4px", borderRadius: 0, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
-                      <input ref={inputRef} value={draft} onChange={ev => setDraft(ev.target.value)} onBlur={commitEdit} onKeyDown={handleKey} style={{ border: "none", outline: "none", width: "100%", fontSize: 14, background: "transparent", padding: 0 }} />
-                    </div>
+                    <>
+                      <div style={{ padding: "2px 4px", borderRadius: 0, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
+                        <input ref={inputRef} value={draft} onChange={ev => setDraft(ev.target.value)} onBlur={commitEdit} onKeyDown={handleKey} style={{ border: "none", outline: "none", width: "100%", fontSize: 14, background: "transparent", padding: 0 }} />
+                      </div>
+                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 10, color: "var(--hw-text-secondary)", marginTop: 3, paddingLeft: 2 }}>Hit + to add another email address</div>
+                    </>
                   ) : (() => {
                     const emails = (e.promoter_email ?? "").split(",").map(x => x.trim()).filter(Boolean);
                     if (emails.length === 0) return <div onClick={() => startEdit(e, "promoter_email")} style={{ cursor: "text", padding: "2px 4px", borderRadius: 0, border: "2px solid transparent", minHeight: 24 }} onMouseEnter={ev => (ev.currentTarget.style.borderColor = "var(--hw-border)")} onMouseLeave={ev => (ev.currentTarget.style.borderColor = "transparent")}><span style={{ fontSize: 14, color: "var(--hw-text-muted)" }}>&mdash;</span></div>;
@@ -513,12 +519,13 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                   <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NOT READY</span>
                 )}
               </div>
-              <div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
                 <button onClick={async () => {
                   const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
                   const data = await res.json();
                   if (data.token) window.open(`/v/e/${data.token}`, "_blank");
                 }} style={{ padding: "4px 12px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase" }}>LINK</button>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 9, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 3, textAlign: "center" }}>Preview assets</div>
               </div>
               {hoveredRow === e.id && (
                 <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
