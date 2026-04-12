@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
   const { data: event } = await supabase
     .from("events")
-    .select("venue, date_iso, tour_id")
+    .select("venue, date_iso, city, tour_id")
     .eq("id", link.event_id)
     .single();
 
