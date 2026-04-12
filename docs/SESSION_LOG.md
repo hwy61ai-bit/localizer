@@ -1084,3 +1084,19 @@ Deferred:
 #4 — Next → button (Tim happy with current UX)
 #9 — Optional third video slot (low priority)
 #15 — Tour-level Download All page (half-day build, needs own session)
+
+## April 12, 2026
+
+**Shipped: Tour Manager field (Tim's deferred item #2 from April 11)**
+- SQL migration: added `tour_manager_name`, `tour_manager_email`, `tour_manager_phone` (text) to `artists` table
+- UI: added `tour_manager` to `TEAM_ROLES` in artist profile, slotted between Manager and Booking Agent
+- Removed unused `agent` role from `TEAM_ROLES` and dropped `agent_name/email/phone` from `ArtistData` type
+- DB columns `agent_name/email/phone` left in place — not yet cleaned up, no UI references them anymore
+- Round-trip verified: name, email, phone all persist independently
+
+**Notes**
+- Hit corrupted `.next` cache mid-smoke-test ("missing required error components") — fixed with `rm -rf .next node_modules/.cache` and full restart. Same family as the recurring cache issues. First diagnostic step rule held up.
+- Production build clean on first try — no other files referenced the old `agent_*` fields.
+
+**Next session**
+- Freemium Unit D — rate limiting (Upstash Redis, four priority tiers, ~90 min, spec in docs/BACKLOG.md)
