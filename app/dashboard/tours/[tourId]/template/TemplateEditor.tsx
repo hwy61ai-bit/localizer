@@ -36,6 +36,9 @@ type FormatConfig = {
   fontFamily: string;
   textColor: string;
   showBandName: boolean;
+  showVenue?: boolean;
+  showCity?: boolean;
+  showDate?: boolean;
   bandSize: number;
   shortDate?: boolean;
   allCaps?: boolean;
@@ -51,12 +54,15 @@ const DEFAULT_FORMAT: FormatConfig = {
   fontFamily: "Oswald",
   textColor: "ffffff",
   showBandName: false,
+  showVenue: true,
+  showCity: true,
+  showDate: true,
   bandSize: 48,
-  shortDate: false,
-  allCaps: false,
-  date:  { x: 0.5, y: 0.84, size: 28, align: "center" },
+  shortDate: true,
+  allCaps: true,
+  date:  { x: 0.5, y: 0.91, size: 28, align: "center" },
   venue: { x: 0.5, y: 0.76, size: 36, align: "center" },
-  city:  { x: 0.5, y: 0.91, size: 28, align: "center" },
+  city:  { x: 0.5, y: 0.84, size: 28, align: "center" },
 };
 
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
@@ -71,7 +77,7 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
 const FIELD_LABELS: Record<FieldKey, string> = {
   venue: "Venue",
   date:  "Date",
-  city:  "City & State",
+  city:  "City",
 };
 
 const SAMPLE_TEXT: Record<FieldKey, string> = {
@@ -143,9 +149,9 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
     ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(caps ? (bandNameStr ?? "Band Name").toUpperCase() : (bandNameStr ?? "Band Name"))},co_rgb:${color}/fl_layer_apply,g_${bp.gravity},x_${bp.xPx},y_${bp.yPx}`] : []),
-    `l_text:${font}_${cfg.venue.size}_bold:${san(caps ? (fe?.venue ?? "Stubbs Waller Creek Amphitheater").toUpperCase() : (fe?.venue ?? "Stubbs Waller Creek Amphitheater"))},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`,
-    `l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "SAT. APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`,
-    `l_text:${font}_${cfg.city.size}_bold:${san(caps ? (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR").toUpperCase() : (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR"))},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`,
+    ...((cfg.showVenue ?? true) ? [`l_text:${font}_${cfg.venue.size}_bold:${san(caps ? (fe?.venue ?? "Stubbs Waller Creek Amphitheater").toUpperCase() : (fe?.venue ?? "Stubbs Waller Creek Amphitheater"))},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`] : []),
+    ...((cfg.showDate ?? true) ? [`l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "SAT. APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`] : []),
+    ...((cfg.showCity ?? true) ? [`l_text:${font}_${cfg.city.size}_bold:${san(caps ? (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR").toUpperCase() : (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR"))},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`] : []),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -522,13 +528,13 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", lineHeight: 1, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</div>
                 <div style={{ borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 6 }} />
               </div>
-              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>TEMPLATE</div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>DESIGN TEMPLATE</div>
             </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
               <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>1. IMPORT SCHEDULE</Link>
               <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>2. IMPORT ASSETS</Link>
-              <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. TEMPLATE</Link>
+              <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. DESIGN TEMPLATE</Link>
               <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>4. GIGS</Link>
             </div>
             </div>
@@ -604,8 +610,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   {dragging && (
                     <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 0, borderLeft: "1px dashed rgba(255,255,255,0.9)", pointerEvents: "none", zIndex: 20 }} />
                   )}
-                  {(["venue", "date", "city"] as FieldKey[]).flatMap(a =>
-                    (["venue", "date", "city"] as FieldKey[]).filter(b => b !== a && Math.abs(cfg[a].y - cfg[b].y) < 0.025).map(b => (
+                  {(["venue", "city", "date"] as FieldKey[]).flatMap(a =>
+                    (["venue", "city", "date"] as FieldKey[]).filter(b => b !== a && Math.abs(cfg[a].y - cfg[b].y) < 0.025).map(b => (
                       <div key={a + b} style={{ position: "absolute", top: `${cfg[a].y * 100}%`, left: 0, right: 0, height: 0, borderTop: "1px dashed rgba(255,220,0,0.8)", pointerEvents: "none", zIndex: 19 }} />
                     ))
                   )}
@@ -655,10 +661,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     );
                   })()}
 
-                  {(["venue", "date", "city"] as FieldKey[]).map(field => {
+                  {(["venue", "city", "date"] as FieldKey[]).map(field => {
                     const fc = cfg[field];
                     const align = fc.align ?? "center";
                     const isActive = dragging === field;
+                    const visKey = `show${field.charAt(0).toUpperCase() + field.slice(1)}` as keyof FormatConfig;
+                    if ((cfg[visKey] ?? true) === false) return null;
 
                     return (
                       <div key={field} onMouseDown={(e) => { 
@@ -804,7 +812,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
-              {(["venue", "date", "city"] as FieldKey[]).map(field => {
+              {(["venue", "city", "date"] as FieldKey[]).map(field => {
                 const textMax = isPrintFormat ? 400 : 120;
                 return (
                 <div key={field} style={{ marginBottom: 16 }}>
@@ -875,6 +883,27 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   </div>
                 </div>
               )}
+            </div>
+
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <span onClick={() => updateCfg("showVenue", !(cfg.showVenue ?? true))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showVenue ?? true) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {(cfg.showVenue ?? true) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Venue</div>
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <span onClick={() => updateCfg("showCity", !(cfg.showCity ?? true))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCity ?? true) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {(cfg.showCity ?? true) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>City</div>
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <span onClick={() => updateCfg("showDate", !(cfg.showDate ?? true))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showDate ?? true) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {(cfg.showDate ?? true) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Date</div>
+              </label>
             </div>
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
