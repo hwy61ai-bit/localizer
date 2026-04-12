@@ -64,7 +64,7 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "story",     label: "IG Story",      w: 1080, h: 1350 },
   { key: "landscape", label: "FB Cover",      w: 820,  h: 312 },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: 3300, h: 5100 },
-  { key: "tiktok",    label: "TikTok, IG Reels, FB Stories, YouTube Shorts",  w: 1080, h: 1920 },
+  { key: "tiktok",    label: "TikTok, IG Reels, FB Stories,\nYouTube Shorts",  w: 1080, h: 1920 },
   { key: "yt_shorts", label: "Square",     w: 1080, h: 1080 },
 ];
 
@@ -536,10 +536,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {FORMATS.map(f => (
               <button key={f.key} onClick={() => { setActiveFormat(f.key); }}
-                style={{ padding: "8px 16px", border: activeFormat === f.key ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)", background: activeFormat === f.key ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: activeFormat === f.key ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: activeFormat === f.key ? 700 : 400, fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
+                style={{ padding: "8px 16px", whiteSpace: "pre-line", border: activeFormat === f.key ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)", background: activeFormat === f.key ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: activeFormat === f.key ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: activeFormat === f.key ? 700 : 400, fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
                 {f.label}
               </button>
             ))}
