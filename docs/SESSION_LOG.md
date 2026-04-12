@@ -1060,3 +1060,27 @@ After a call with Tim, pivoted to a hand-curated 332-city list covering major US
 - Full 41-route billing gate (pending Tim's shared helper design approval).
 - docs/DESIGN_SYSTEM.md — Warhol system doc dump via Claude Code.
 - Workflow conversation with Tim about spec review step before major builds (pattern: Tim writes specs in 15 min without working through failure modes, then Drew builds something prone to failure).
+
+
+Summary of what shipped today:
+
+Middleware getSession() fix — no more rate limit bursts on login
+New Artist field starts empty (#1)
+Hospitality & Rider → Hospitality (#3)
+Import Scheduler copy — "HWY61 Labs" not "The AI" (#5)
+Video labels updated, yt_shorts changed to square 1080×1080 across all render paths (#6, #7, #8)
+Template format tabs wrap, TikTok label two-line (#layout fix)
+Design Template rename throughout (#10)
+Text element order: Venue → City → Date (#11)
+City & State → City (#12)
+Venue/City/Date visibility toggles (#13)
+Short Date and All Caps on by default (#14)
+Gigs page helper texts (#16, #17, #18, #19)
+Download-all BandName_Date_City file naming (#20)
+
+Deferred:
+
+#2 — Tour Manager field (needs DB migration)
+#4 — Next → button (Tim happy with current UX)
+#9 — Optional third video slot (low priority)
+#15 — Tour-level Download All page (half-day build, needs own session)
