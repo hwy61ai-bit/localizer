@@ -19,15 +19,15 @@ type ArtistData = {
   manager_name: string | null;
   manager_email: string | null;
   manager_phone: string | null;
+  tour_manager_name: string | null;
+  tour_manager_email: string | null;
+  tour_manager_phone: string | null;
   booking_agent_name: string | null;
   booking_agent_email: string | null;
   booking_agent_phone: string | null;
   publicist_name: string | null;
   publicist_email: string | null;
   publicist_phone: string | null;
-  agent_name: string | null;
-  agent_email: string | null;
-  agent_phone: string | null;
   adv_stage_plot_url: string | null;
   adv_hospitality_url: string | null;
   adv_foh_url: string | null;
@@ -46,9 +46,9 @@ const ADV_FIELDS = [
 
 const TEAM_ROLES = [
   { key: "manager", label: "Manager" },
+  { key: "tour_manager", label: "Tour Manager" },
   { key: "booking_agent", label: "Booking Agent" },
   { key: "publicist", label: "Publicist" },
-  { key: "agent", label: "Agent" },
 ] as const;
 
 // ── Component ────────────────────────────────────────────────
