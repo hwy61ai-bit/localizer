@@ -1142,3 +1142,28 @@ Every beta tester would have hit this bug. Any user who logged in, closed their 
 
 ### Files touched
 - `middleware.ts` (39 lines added, 39 removed)
+
+
+## April 12, 2026
+
+**Shipped: Tour Manager field**
+- SQL migration: 3 columns added to `artists` (tour_manager_name/email/phone)
+- UI: tour_manager added to TEAM_ROLES between Manager and Booking Agent
+- Removed unused `agent` role from UI; DB columns left in place
+- Round-trip verified, build clean, pushed
+- Closes Tim's deferred item #2 from April 11
+
+**Scoped: Tour Marketing Hub (Tim's deferred item #15, redesigned)**
+- Original "one giant zip" idea killed — Vercel function size/timeout limits
+- New design: token-based shareable hub at /v/tour/[token] linking to marketing-only per-show pages at /v/m/[token], with a /api/download-all/marketing endpoint that excludes advance materials
+- Structural security boundary: marketing pages physically don't query adv_* fields
+- Tim approved concept; full plan in docs/SESSION_KICKOFF_April_13_2026.md
+- 5-step build, est 2.5–3 hours, ready to execute next session
+
+**Gotchas hit**
+- zsh ate brackets in `git add app/dashboard/artists/[artistId]/...` — first commit pushed only the session log without the actual code change. Fixed by quoting the path. Memory bank updated with the rule.
+- `.next` cache corruption mid-smoke-test ("missing required error components") — `rm -rf .next node_modules/.cache` fixed it.
+
+**Next session**
+- Execute marketing hub build per docs/SESSION_KICKOFF_April_13_2026.md
+- After that: Freemium Unit D rate limiting (still top of queue from April 9)
