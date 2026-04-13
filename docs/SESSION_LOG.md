@@ -1100,3 +1100,45 @@ Deferred:
 
 **Next session**
 - Freemium Unit D — rate limiting (Upstash Redis, four priority tiers, ~90 min, spec in docs/BACKLOG.md)
+
+---
+
+## April 13, 2026 — Middleware session rotation fix (CRITICAL for beta)
+
+**Commit:** 3df9c99 — fix(middleware): preserve Supabase session rotation across all return paths
+
+### The bug
+Users logging in to prod after overnight idle periods were hit with "session expired" and bounced to /login every morning. Root cause: two separate bugs in middleware.ts that broke Supabase refresh token rotation.
+
+1. **Coming Soon block used `getUser()` (network call) and threw away rotated cookies.** It created a local `comingSoonRes`, wrote Supabase's rotated cookies to it, then fell through to the rewrite/auth logic below which created a different `res` object. The rotated cookies never reached the browser. Next request, browser sent the old (now server-invalidated) refresh token → session expired.
+
+2. **Main auth guard's `setAll` only wrote to `res.cookies`, not `req.cookies`.** The canonical @supabase/ssr pattern requires writing to both so downstream code in the same request sees the rotated session.
+
+3. Compounding factor: `getUser()` in the Coming Soon block was hitting the Supabase `/token` endpoint on every marketing-route request, contributing to burst rate-limiting (matches the existing known-issue note about closing prod tabs before dev sessions).
+
+### The fix
+- Single shared `res` object and single shared Supabase client at the top of `middleware()`, reused across Coming Soon, rewrite, and auth guard blocks
+- `setAll` writes to both `req.cookies` and `res.cookies` in place — does NOT reassign `res` (reassigning clobbers rewrites and custom headers like x-hwy61-diy)
+- Coming Soon uses `getSession()` (cookie-only, no network) instead of `getUser()`
+- Rewrite path (`NextResponse.rewrite`) copies cookies from old `res` onto the new rewrite response before reassigning
+- Both redirect paths (coming-soon and login) copy cookies from `res` onto the redirect response using `.set(cookie)` with the full cookie object — preserves httpOnly/secure/sameSite/path options that get dropped if you use `.set(name, value)`
+
+### How this was diagnosed
+Symptom: "session expired" every morning in regular browser, but incognito always worked perfectly. Incognito = fresh cookie jar with no broken rotation state. Regular browser = poisoned cookie jar carrying an old refresh token that Supabase had already rotated server-side but the browser never received the new one.
+
+### Why this matters for beta testing
+Every beta tester would have hit this bug. Any user who logged in, closed their laptop overnight, and came back the next morning would have been greeted with "session expired" — a terrible first impression for a paid SaaS product. This fix MUST be in place before any external user touches prod.
+
+### Required checks before onboarding beta users
+1. Confirm `COMING_SOON=false` in Vercel env vars (removes the Coming Soon gate entirely, eliminating that code path as a risk area)
+2. Test the overnight-idle scenario manually: log in, wait >1 hour (ideally overnight), return to the site, confirm session is still active
+3. If any future middleware edits are made, re-verify all return paths preserve cookies from the shared `res` — this is a load-bearing invariant now
+
+### Rules to remember
+- **Never use `supabase.auth.getUser()` in middleware.** Always `getSession()`. getUser() is a network call and causes burst /token rate limiting on Supabase.
+- **Middleware rule:** one shared `res`, one shared Supabase client, every return path must preserve cookies from `res` (either return it directly, or copy `res.cookies.getAll()` onto a new response using `.set(cookie)` with the full object).
+- **Never reassign `res` inside `setAll`.** It clobbers rewrites and custom headers when rotation fires mid-request.
+- **When copying cookies onto a redirect or rewrite response, always pass the full cookie object** (`.set(cookie)`) — not `.set(name, value)` — or you'll drop httpOnly/secure/sameSite/path.
+
+### Files touched
+- `middleware.ts` (39 lines added, 39 removed)
