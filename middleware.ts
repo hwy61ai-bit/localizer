@@ -69,63 +69,10 @@ export async function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") || "";
   const url = req.nextUrl.clone();
 
-  // --- Coming Soon gate ---
-  if (process.env.COMING_SOON === "true") {
-    const { pathname } = url;
-    const isPassthrough = COMING_SOON_PASSTHROUGH_PREFIXES.some(
-      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-    );
-    const isPreview = req.nextUrl.searchParams.get("preview") === "true";
-    if (!isPassthrough && !isPreview && COMING_SOON_MARKETING_ROUTES.has(pathname)) {
-      // Check if user has a valid session — authenticated users bypass coming soon
-      const comingSoonRes = NextResponse.next();
-      const comingSoonSupabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            getAll() { return req.cookies.getAll(); },
-            setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value, options }) => {
-                comingSoonRes.cookies.set(name, value, options);
-              });
-            },
-          },
-        }
-      );
-      const { data: { user: comingSoonUser } } = await comingSoonSupabase.auth.getUser();
-      if (!comingSoonUser) {
-        return NextResponse.redirect(new URL("/coming-soon", req.url));
-      }
-    }
-  }
+  // Shared response — every return path must use or copy cookies from this object.
+  let res = NextResponse.next({ request: req });
 
-  // --- Hostname-based rewriting ---
-  const rewriteBase = getRewriteForHost(hostname);
-
-  // Public hosts — serve the root landing page, skip auth
-  if (isPublicHost(hostname)) {
-    return NextResponse.next();
-  }
-
-  if (rewriteBase !== null) {
-    // App hosts — rewrite root to the app's base path
-    if (url.pathname === "/") {
-      url.pathname = rewriteBase;
-    }
-  }
-
-  // Set DIY feature flag header so downstream pages can detect DIY mode
-  const res = NextResponse.next();
-  if (isDiyHost(hostname)) {
-    res.headers.set("x-hwy61-diy", "1");
-  }
-
-  // --- Auth guard (dashboard routes only) ---
-  if (!url.pathname.startsWith("/dashboard")) {
-    return res;
-  }
-
+  // Single Supabase client with canonical cookie-rotation pattern
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -136,6 +83,7 @@ export async function middleware(req: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
+            req.cookies.set(name, value);
             res.cookies.set(name, value, options);
           });
         },
@@ -143,10 +91,62 @@ export async function middleware(req: NextRequest) {
     }
   );
 
+  // --- Coming Soon gate ---
+  if (process.env.COMING_SOON === "true") {
+    const { pathname } = url;
+    const isPassthrough = COMING_SOON_PASSTHROUGH_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+    );
+    const isPreview = req.nextUrl.searchParams.get("preview") === "true";
+    if (!isPassthrough && !isPreview && COMING_SOON_MARKETING_ROUTES.has(pathname)) {
+      // Check session (cookie-only, no network call) — authenticated users bypass
+      const { data: { session: comingSoonSession } } = await supabase.auth.getSession();
+      if (!comingSoonSession) {
+        const redirectRes = NextResponse.redirect(new URL("/coming-soon", req.url));
+        res.cookies.getAll().forEach((cookie) => {
+          redirectRes.cookies.set(cookie);
+        });
+        return redirectRes;
+      }
+    }
+  }
+
+  // --- Hostname-based rewriting ---
+  const rewriteBase = getRewriteForHost(hostname);
+
+  // Public hosts — serve the root landing page, skip auth
+  if (isPublicHost(hostname)) {
+    return res;
+  }
+
+  if (rewriteBase !== null) {
+    // App hosts — rewrite root to the app's base path
+    if (url.pathname === "/") {
+      url.pathname = rewriteBase;
+      const rewriteRes = NextResponse.rewrite(url, { request: req });
+      res.cookies.getAll().forEach((c) => rewriteRes.cookies.set(c));
+      res = rewriteRes;
+    }
+  }
+
+  // Set DIY feature flag header so downstream pages can detect DIY mode
+  if (isDiyHost(hostname)) {
+    res.headers.set("x-hwy61-diy", "1");
+  }
+
+  // --- Auth guard (dashboard routes only) ---
+  if (!url.pathname.startsWith("/dashboard")) {
+    return res;
+  }
+
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    const redirectRes = NextResponse.redirect(new URL("/login", req.url));
+    res.cookies.getAll().forEach((cookie) => {
+      redirectRes.cookies.set(cookie);
+    });
+    return redirectRes;
   }
 
   return res;
