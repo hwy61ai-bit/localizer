@@ -1363,3 +1363,35 @@ QA report open question about Tim's admin email: confirmed
    behavior.
 3. BUG-B fix when Tour Manager field gets surfaced in any flow
    that uses the tourrouter artist API route.
+
+
+## 2026-04-14 (afternoon + evening) — Backlog cleanup
+
+**Shipped (8 commits):**
+- b75c9a2 — BUG-A + BUG-D: saveFields debounce data loss
+- fac700b — QA report 2026-04-14
+- 5255a82 — PKCE verifier fix on HTTP localhost (root cause of daily auth pain)
+- df9d1a3 — BUG-C: .single() → .maybeSingle() in marketing viewer
+- da31c98 — docs housekeeping (QA runbook, backlog, session log)
+- 640ee13 — BUG-B: expand artist PUT whitelist (12 missing fields) + harden post-update read with .maybeSingle() + 404 on null
+- a5c733c — BUG-E closed as misdiagnosis (render_poster_url is a live column on venue_links, written by Print Poster pipeline; low population reflects opt-in format, not dead column)
+- fde2452 — refactor: centralize admin email check in lib/auth/adminEmails.ts (3 call sites, pure refactor, preserved venue-download caveat comment)
+
+**Backlog status:** BUG-A, B, C, D, E all resolved. ADMIN_EMAILS centralization done. Today's backlog is clear.
+
+**Follow-ups surfaced this session:**
+- **Tour Manager field is unblocked.** The deferred item from Tim's April 12 Localizer UI list noted it needed a DB migration, but tour_manager_name/email/phone columns already exist on the artists table and as of 640ee13 the PUT handler now accepts writes to them. Frontend-only task whenever ready. Tell Tim.
+- **Venue-download billing gate caveat** — documented in source as a comment in lib/localizer/billingGate.ts above the isAdminEmail check. Should be ratified by Tim and folded into the billing gate audit backlog item. Currently only captured in code.
+
+**Still open (not touched today):**
+- Mapbox write-back silent RLS risk in lib/tourrouter/geocoding.ts (fire-and-forget without .select().maybeSingle())
+- Full billing gate audit across 41 API routes (partially done, shared helper design pending Tim input)
+- Hardcoded CITY_COORDS in lib/tourrouter/constants.ts (deferred)
+- Tour-level Download All page /v/tour/[tourId] (dedicated half-day session, not started)
+- Remaining expense tabs (Transport, Food, Gear, Misc, Merch, Promo, Other)
+- Onboarding wizard (blocked on Tim's steps + demo data)
+- Stripe restructure (blocked on EIN)
+
+**Next session starts with:** Drew to pick from — (a) Tour Manager UI addition (now unblocked), (b) remaining expense tabs following the Accommodation pattern, (c) tour-level Download All page if ready for a dedicated session, or (d) cat docs/BACKLOG.md first to see if there are items we haven't looked at.
+
+**Key learning reinforced today:** Grep-verify before editing. BUG-E would have broken tour poster downloads for 9 venue_links if we'd trusted the backlog note and stripped the column references. The DB query + grep caught it in under a minute.
