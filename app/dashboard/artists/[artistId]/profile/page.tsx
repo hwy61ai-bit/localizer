@@ -222,6 +222,7 @@ export default function ArtistProfilePage() {
 
   // Debounced save
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingUpdatesRef = useRef<Record<string, unknown>>({});
 
   // ── Fetch ────────────────────────────────────────────────────
 
@@ -245,17 +246,29 @@ export default function ArtistProfilePage() {
       setArtist((prev) => prev ? { ...prev, ...updates } : prev);
 
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      pendingUpdatesRef.current = { ...pendingUpdatesRef.current, ...updates };
       saveTimerRef.current = setTimeout(async () => {
+        const toSave = pendingUpdatesRef.current;
+        pendingUpdatesRef.current = {};
         setSaving(true);
         try {
           // Save flat columns via Supabase directly
-          await supabase.from("artists").update(updates).eq("id", artistId);
+          const { data: saved, error: saveErr } = await supabase
+            .from("artists")
+            .update(toSave)
+            .eq("id", artistId)
+            .select()
+            .maybeSingle();
+          if (saveErr || !saved) {
+            console.error("Save failed — RLS or validation rejected write:", saveErr, { toSave });
+            throw saveErr || new Error("Write returned no row");
+          }
 
           // Also sync to key_contacts JSON if a team field changed
           const teamKeys = TEAM_ROLES.flatMap((r) => [`${r.key}_name`, `${r.key}_email`, `${r.key}_phone`]);
-          const touchedTeam = Object.keys(updates).some((k) => teamKeys.includes(k));
+          const touchedTeam = Object.keys(toSave).some((k) => teamKeys.includes(k));
           if (touchedTeam) {
-            const fresh = { ...artist, ...updates };
+            const fresh = { ...artist, ...toSave };
             const contacts = TEAM_ROLES.map((role) => ({
               id: role.key,
               name: (fresh as any)[`${role.key}_name`] || "",
@@ -270,11 +283,15 @@ export default function ArtistProfilePage() {
               notes: null,
               roleLabel: role.label,
             })).filter((c) => c.name);
-            await fetch(`/api/tourrouter/artists/${artistId}`, {
+            const res = await fetch(`/api/tourrouter/artists/${artistId}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ key_contacts: contacts }),
             });
+            if (!res.ok) {
+              console.error("key_contacts PUT failed:", res.status, await res.text().catch(() => ""));
+              throw new Error(`key_contacts PUT failed: ${res.status}`);
+            }
           }
 
           setSavedAt(Date.now());
