@@ -1167,3 +1167,39 @@ Every beta tester would have hit this bug. Any user who logged in, closed their 
 **Next session**
 - Execute marketing hub build per docs/SESSION_KICKOFF_April_13_2026.md
 - After that: Freemium Unit D rate limiting (still top of queue from April 9)
+
+
+---
+
+## April 13, 2026 — Tour Marketing Hub shipped
+
+### Done
+- **Step 1:** `marketing_tokens` Supabase table + RLS policy keyed to org_members
+- **Step 2:** `/v/m/[token]` marketing-only per-show page (mirrors `/v/e/[token]` minus advance materials)
+- **Step 2.5:** `/api/download/marketing` per-asset proxy (added on the fly — kickoff doc didn't include it but the venue page pattern needed a marketing twin)
+- **Step 3:** `/api/download-all/marketing` zip endpoint (Social/ + Video/ only, no Advance/ folder)
+- **Step 4:** `/v/tour/[token]` tour marketing hub landing page with READY/RENDERING badges per show
+- **Step 5a:** Three management API routes — create, list, revoke — with auth + org membership checks
+- **Step 5b:** `ShareWithMarketingButton` client component + modal slotted into the tour view's EVENTS header
+- All five end-to-end flows tested locally and verified
+
+### Architecture note
+Marketing routes are physically separated from venue routes — they cannot query `artist.adv_*` fields because their code does not select those columns. Security model is structural, not runtime-filtered.
+
+### Gotchas hit
+- **Cross-segment client component imports break the App Router runtime.** `import PrintDownloadButton from "../../e/[token]/PrintDownloadButton"` built fine but threw `Cannot read properties of undefined (reading 'clientModules')` at request time. Fix: use the `@/` path alias (`@/app/v/e/[token]/PrintDownloadButton`). Worth remembering for future cross-route component sharing.
+- **Stale `.next` cache after Claude Code creates new routes while dev is running.** Hit this three times in this session — every new route file caused `Cannot find module './vendor-chunks/...'` errors on first request. Fix: stop dev, `rm -rf .next node_modules/.cache`, restart. **Better practice next session: stop dev before any Claude Code file creation, restart after.**
+- **`render_status` value is `'ready'`, not `'completed'`.** Kickoff doc had it wrong. Always verify enum values via SQL before hardcoding.
+- **Claude Code's bracket-path glob warning** is a false positive — option 1 (Yes) is always correct for `[token]` directories.
+
+### Backlog flagged for Tim
+- **`/api/renders/print-pdf` has no auth.** PrintDownloadButton hits it with just `eventId`, no token. Anyone with an event ID can generate the print PDF. Pre-existing, not introduced by this work, but worth fixing.
+- **`/api/tours/[tourId]/overlay-config` has a service-role fallback that bypasses RLS** with no explicit auth or org membership check. Anyone who can hit the endpoint can update any tour's overlay config. Pre-existing.
+- **`HwToastProvider` is defined but never mounted anywhere in the app.** `useToast()` would throw if used. Should be wrapped in root layout if we want toasts available. Worked around in Step 5b with an inline COPIED indicator.
+- **`fetchTokens` in ShareWithMarketingButton doesn't clear stale errors on retry success.** Cosmetic, low priority.
+
+### Deferred
+- Nothing — full sprint shipped. Tour-level Download All page (the dedicated half-day session) is still on the horizon as previously planned.
+
+### Next session priority
+Per existing roadmap: probably Freemium Unit D, or whichever item Tim flags next. Tour Marketing Hub is done.
