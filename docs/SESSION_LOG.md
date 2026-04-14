@@ -1203,3 +1203,9 @@ Marketing routes are physically separated from venue routes — they cannot quer
 
 ### Next session priority
 Per existing roadmap: probably Freemium Unit D, or whichever item Tim flags next. Tour Marketing Hub is done.
+
+Shipped: Sponsor logos end-to-end (migration → API → UI → canvas → video → PDF)
+Key decisions: No-tint confirmed (Tim's spec), sponsor panels collapse to single row, click-empty-checkbox opens file picker
+Gotcha hit: Confusion about which render pipeline produces the square/story/landscape JPEGs — turns out EventsTable uses clientRender.ts (browser canvas) for images, and /api/renders/generate with videosOnly: true only for videos. The image path in buildCloudinaryUrl is effectively dead code. Not our job to clean up today.
+Deferred: Tim open question — should there be an optional "tint sponsor to text color" toggle for monochrome logos on mismatched backgrounds? Flagged during session when Drew tested a black logo on a dark image.
+Next session priority: Production smoke test follow-up + Tim's tint question + whatever's next on the roadmap
