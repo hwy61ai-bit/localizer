@@ -44,6 +44,10 @@ type FormatConfig = {
   allCaps?: boolean;
   showLogo?: boolean;
   logo?: FieldConfig;
+  showSponsorLogo1?: boolean;
+  sponsorLogo1?: FieldConfig;
+  showSponsorLogo2?: boolean;
+  sponsorLogo2?: FieldConfig;
   band?: FieldConfig;
   date: FieldConfig;
   venue: FieldConfig;
@@ -87,6 +91,8 @@ const SAMPLE_TEXT: Record<FieldKey, string> = {
 };
 
 const BAND_DEFAULT: FieldConfig = { x: 0.5, y: 0.65, size: 80, align: "center" };
+const SPONSOR_1_DEFAULT: FieldConfig = { x: 0.35, y: 0.88, size: 60, align: "center" };
+const SPONSOR_2_DEFAULT: FieldConfig = { x: 0.65, y: 0.88, size: 60, align: "center" };
 
 type Tour = {
   id: string;
@@ -211,7 +217,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts },
   });
   const [previewLongest, setPreviewLongest] = useState(false);
-  const [dragging, setDragging] = useState<FieldKey | "band" | "logo" | null>(null);
+  const [dragging, setDragging] = useState<FieldKey | "band" | "logo" | "sponsorLogo1" | "sponsorLogo2" | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [containerWidth, setContainerWidth] = useState(700);
   const [saving, setSaving] = useState(false);
@@ -228,6 +234,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const toast = useToast();
+  const [sponsorLogo1Url, setSponsorLogo1Url] = useState<string | null>(null);
+  const [sponsorLogo2Url, setSponsorLogo2Url] = useState<string | null>(null);
+  const [uploadingSponsor1, setUploadingSponsor1] = useState(false);
+  const [uploadingSponsor2, setUploadingSponsor2] = useState(false);
+  const sponsor1FileRef = useRef<HTMLInputElement>(null);
+  const sponsor2FileRef = useRef<HTMLInputElement>(null);
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
 
   // Load artist logo
@@ -240,6 +252,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           setLogoUrl(data.logoUrl ?? null);
         }
       } catch {}
+      try {
+        const sRes = await fetch(`/api/tours/${tourId}/sponsor-logo`);
+        if (sRes.ok) {
+          const sData = await sRes.json();
+          setSponsorLogo1Url(sData.sponsorLogo1Url ?? null);
+          setSponsorLogo2Url(sData.sponsorLogo2Url ?? null);
+        }
+      } catch (e) { console.error(e); }
     }
     loadLogo();
   }, [orgId, tourId]);
@@ -333,6 +353,24 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           [activeFormat]: {
             ...prev[activeFormat],
             logo: { ...(prev[activeFormat].logo ?? { x: 0.5, y: 0.15, size: 80, align: "center" }), x, y },
+          },
+        }));
+      } else if (dragging === "sponsorLogo1") {
+        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            sponsorLogo1: { ...(prev[activeFormat].sponsorLogo1 ?? SPONSOR_1_DEFAULT), x, y },
+          },
+        }));
+      } else if (dragging === "sponsorLogo2") {
+        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            sponsorLogo2: { ...(prev[activeFormat].sponsorLogo2 ?? SPONSOR_2_DEFAULT), x, y },
           },
         }));
       } else if (dragging === "band") {
@@ -508,6 +546,62 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }
   }
 
+  async function handleSponsorLogoUpload(slot: 1 | 2, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".png")) {
+      toast.error("Sponsor logo must be a PNG file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Sponsor logo must be under 5MB");
+      return;
+    }
+    const setUploading = slot === 1 ? setUploadingSponsor1 : setUploadingSponsor2;
+    const setUrl = slot === 1 ? setSponsorLogo1Url : setSponsorLogo2Url;
+    const fileRef = slot === 1 ? sponsor1FileRef : sponsor2FileRef;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`/api/tours/${tourId}/sponsor-logo?slot=${slot}`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error);
+      }
+      const data = await res.json();
+      setUrl(data.url);
+      toast.success(`Sponsor logo ${slot} uploaded`);
+    } catch (err: any) {
+      console.error("Sponsor logo upload failed:", err);
+      toast.error(`Upload failed: ${err.message}`);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  async function handleSponsorLogoDelete(slot: 1 | 2) {
+    if (!window.confirm(`Remove sponsor logo ${slot}? It will be deleted from all formats.`)) return;
+    const setUrl = slot === 1 ? setSponsorLogo1Url : setSponsorLogo2Url;
+    try {
+      const res = await fetch(`/api/tours/${tourId}/sponsor-logo?slot=${slot}`, { method: "DELETE" });
+      if (!res.ok) {
+        const { error } = await res.json();
+        throw new Error(error);
+      }
+      setUrl(null);
+      updateCfg(slot === 1 ? "showSponsorLogo1" : "showSponsorLogo2", false);
+      toast.success(`Sponsor logo ${slot} removed`);
+    } catch (err: any) {
+      console.error("Sponsor logo delete failed:", err);
+      toast.error(`Delete failed: ${err.message}`);
+    }
+  }
+
   return (
     <>
     <div className="template-mobile-gate">
@@ -658,6 +752,38 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         style={{ position: "absolute", left: lc.x * 100 + "%", top: lc.y * 100 + "%", transform: "translate(-50%, -50%)", cursor: "grab", zIndex: 6 }}>
                         <div style={{ height: Math.round(lc.size * previewScale) + "px", width: Math.round(lc.size * previewScale * 2) + "px", backgroundColor: "#" + cfg.textColor, WebkitMaskImage: "url(" + logoUrl + ")", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: "url(" + logoUrl + ")", maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", opacity: 0.9, pointerEvents: "none" }} />
                       </div>
+                    );
+                  })()}
+
+                  {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (() => {
+                    const sc = cfg.sponsorLogo1 ?? SPONSOR_1_DEFAULT;
+                    return (
+                      <img key="sponsorLogo1" src={sponsorLogo1Url}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
+                          const mouseX = (e.clientX - rect.left) / rect.width;
+                          const mouseY = (e.clientY - rect.top) / rect.height;
+                          setDragOffset({ x: mouseX - sc.x, y: mouseY - sc.y });
+                          setDragging("sponsorLogo1");
+                        }}
+                        style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, height: "auto", cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }} />
+                    );
+                  })()}
+
+                  {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (() => {
+                    const sc = cfg.sponsorLogo2 ?? SPONSOR_2_DEFAULT;
+                    return (
+                      <img key="sponsorLogo2" src={sponsorLogo2Url}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
+                          const mouseX = (e.clientX - rect.left) / rect.width;
+                          const mouseY = (e.clientY - rect.top) / rect.height;
+                          setDragOffset({ x: mouseX - sc.x, y: mouseY - sc.y });
+                          setDragging("sponsorLogo2");
+                        }}
+                        style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, height: "auto", cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }} />
                     );
                   })()}
 
@@ -960,6 +1086,122 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       [activeFormat]: {
                         ...prev[activeFormat],
                         logo: { ...(prev[activeFormat].logo ?? { x: 0.5, y: 0.15, size: 80, align: "center" }), size: parseInt(e.target.value) },
+                      },
+                    }))}
+                    style={{ width: "100%", cursor: "pointer" }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <input ref={sponsor1FileRef} type="file" accept=".png" style={{ display: "none" }} onChange={(e) => handleSponsorLogoUpload(1, e)} />
+              {!sponsorLogo1Url ? (
+                <button onClick={() => sponsor1FileRef.current?.click()} disabled={uploadingSponsor1}
+                  style={{ width: "100%", padding: 12, border: "2px dashed var(--hw-border-light)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" as const, cursor: uploadingSponsor1 ? "not-allowed" : "pointer", textAlign: "center" as const, marginBottom: 10 }}>
+                  {uploadingSponsor1 ? "UPLOADING..." : "+ UPLOAD SPONSOR LOGO (.png)"}
+                </button>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <img src={sponsorLogo1Url} alt="Sponsor 1" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
+                  <button onClick={() => sponsor1FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
+                  <button onClick={() => handleSponsorLogoDelete(1)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
+                </div>
+              )}
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: sponsorLogo1Url ? "pointer" : "not-allowed", opacity: sponsorLogo1Url ? 1 : 0.4, marginBottom: (cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url ? 12 : 0 }}>
+                <span onClick={() => sponsorLogo1Url && updateCfg("showSponsorLogo1", !(cfg.showSponsorLogo1 ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showSponsorLogo1 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: sponsorLogo1Url ? "pointer" : "not-allowed" }}>
+                  {(cfg.showSponsorLogo1 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
+                <div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Show Sponsor Logo 1</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in native colors" : "Upload a sponsor logo to enable"}</div>
+                </div>
+              </label>
+              {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo1?.size ?? 60}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val) && val >= 1 && val <= 9999) setConfigs(prev => ({
+                            ...prev,
+                            [activeFormat]: {
+                              ...prev[activeFormat],
+                              sponsorLogo1: { ...(prev[activeFormat].sponsorLogo1 ?? SPONSOR_1_DEFAULT), size: val },
+                            },
+                          }));
+                        }}
+                        style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                      />
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                    </div>
+                  </div>
+                  <input type="range" min={20} max={isPrintFormat ? 1800 : 400} step={2} value={cfg.sponsorLogo1?.size ?? 60}
+                    onChange={(e) => setConfigs(prev => ({
+                      ...prev,
+                      [activeFormat]: {
+                        ...prev[activeFormat],
+                        sponsorLogo1: { ...(prev[activeFormat].sponsorLogo1 ?? SPONSOR_1_DEFAULT), size: parseInt(e.target.value) },
+                      },
+                    }))}
+                    style={{ width: "100%", cursor: "pointer" }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <input ref={sponsor2FileRef} type="file" accept=".png" style={{ display: "none" }} onChange={(e) => handleSponsorLogoUpload(2, e)} />
+              {!sponsorLogo2Url ? (
+                <button onClick={() => sponsor2FileRef.current?.click()} disabled={uploadingSponsor2}
+                  style={{ width: "100%", padding: 12, border: "2px dashed var(--hw-border-light)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" as const, cursor: uploadingSponsor2 ? "not-allowed" : "pointer", textAlign: "center" as const, marginBottom: 10 }}>
+                  {uploadingSponsor2 ? "UPLOADING..." : "+ UPLOAD SPONSOR LOGO 2 (.png)"}
+                </button>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <img src={sponsorLogo2Url} alt="Sponsor 2" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
+                  <button onClick={() => sponsor2FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
+                  <button onClick={() => handleSponsorLogoDelete(2)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
+                </div>
+              )}
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: sponsorLogo2Url ? "pointer" : "not-allowed", opacity: sponsorLogo2Url ? 1 : 0.4, marginBottom: (cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url ? 12 : 0 }}>
+                <span onClick={() => sponsorLogo2Url && updateCfg("showSponsorLogo2", !(cfg.showSponsorLogo2 ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showSponsorLogo2 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: sponsorLogo2Url ? "pointer" : "not-allowed" }}>
+                  {(cfg.showSponsorLogo2 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
+                <div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Show Sponsor Logo 2</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in native colors" : "Upload a sponsor logo to enable"}</div>
+                </div>
+              </label>
+              {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo2?.size ?? 60}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val) && val >= 1 && val <= 9999) setConfigs(prev => ({
+                            ...prev,
+                            [activeFormat]: {
+                              ...prev[activeFormat],
+                              sponsorLogo2: { ...(prev[activeFormat].sponsorLogo2 ?? SPONSOR_2_DEFAULT), size: val },
+                            },
+                          }));
+                        }}
+                        style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                      />
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                    </div>
+                  </div>
+                  <input type="range" min={20} max={isPrintFormat ? 1800 : 400} step={2} value={cfg.sponsorLogo2?.size ?? 60}
+                    onChange={(e) => setConfigs(prev => ({
+                      ...prev,
+                      [activeFormat]: {
+                        ...prev[activeFormat],
+                        sponsorLogo2: { ...(prev[activeFormat].sponsorLogo2 ?? SPONSOR_2_DEFAULT), size: parseInt(e.target.value) },
                       },
                     }))}
                     style={{ width: "100%", cursor: "pointer" }}
