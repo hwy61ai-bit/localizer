@@ -1209,3 +1209,35 @@ Key decisions: No-tint confirmed (Tim's spec), sponsor panels collapse to single
 Gotcha hit: Confusion about which render pipeline produces the square/story/landscape JPEGs — turns out EventsTable uses clientRender.ts (browser canvas) for images, and /api/renders/generate with videosOnly: true only for videos. The image path in buildCloudinaryUrl is effectively dead code. Not our job to clean up today.
 Deferred: Tim open question — should there be an optional "tint sponsor to text color" toggle for monochrome logos on mismatched backgrounds? Flagged during session when Drew tested a black logo on a dark image.
 Next session priority: Production smoke test follow-up + Tim's tint question + whatever's next on the roadmap
+
+## April 14, 2026 — Sponsor logos shipped end-to-end
+
+**Shipped:** Two-slot sponsor logo feature across the full render pipeline.
+- Supabase: `sponsor_logo_1_url`, `sponsor_logo_2_url` text columns on `tours`
+- API: POST/DELETE/GET at `/api/tours/[tourId]/sponsor-logo?slot=1|2`
+- API: `sponsorLogo1Url`/`sponsorLogo2Url` returned from `/api/renders/tour-data`
+- UI: Template editor sidebar — collapsible single-row panels, click empty checkbox to upload, drag/resize in preview, per-format position saved to overlay_config
+- Client canvas (`lib/clientRender.ts`): plain `ctx.drawImage`, no tint, renders on square/story/landscape/print via EventsTable → Cloudinary upload flow
+- Server video renderer (`/api/renders/generate`): new `buildSponsorLogoLayer()` helper — identical to `buildLogoLayer` minus `e_colorize`. Renders on tiktok + yt_shorts.
+- Print PDF (`/api/renders/print-pdf`): `pdf-lib` `embedPng` + `page.drawImage`, native colors via PNG alpha channel.
+
+**Tested on production:** all six formats + print PDF render sponsor logos correctly on first try.
+
+**Key decisions:**
+- No-tint confirmed with Tim upfront — sponsor logos render as uploaded. Users are expected to upload a PNG in the color they need.
+- Sponsor panels collapse to one-row toggle, matching the Text Color panel footprint. Clicking the empty checkbox opens the file picker directly.
+- Click-to-upload on empty toggle + auto-expand on upload success → minimum friction.
+
+**Gotcha: render pipeline confusion mid-Step-6.**
+The kickoff doc assumed `/api/renders/generate` drew the band logo on all formats. It doesn't — only videos. For square/story/landscape JPEGs, EventsTable calls `renderPoster()` in the browser canvas and uploads the blob directly to Cloudinary, then POSTs to `/api/renders/save-urls`. The `buildCloudinaryUrl` image path in `/api/renders/generate` is effectively dead code (gets immediately overwritten). Not our job to clean up today, but worth knowing for future work.
+
+**Deferred / open question for Tim:**
+Drew tested with a black sponsor PNG on a dark background image — not visible. Kickoff doc says no-tint and that's what shipped. But this is a real usability gotcha. Options for follow-up:
+1. Keep strict no-tint + update upload helper text ("upload a PNG in the color you need for your background")
+2. Add an optional "tint to text color" toggle per sponsor slot for monochrome logos
+Needs Tim's call before next session.
+
+**Next session priorities:**
+- Resolve sponsor tint question with Tim
+- Tour-level Download All page (`/v/tour/[tourId]`) — dedicated half-day session, still on the board
+- Remaining expense tabs (Transport, Food, Gear, Misc, Merch, Promo, Other)
