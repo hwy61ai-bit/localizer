@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_url, image_print_id, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config")
+    .select("id, org_id, name, band_name, band_tour_label, image_url, image_print_id, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, sponsor_logo_1_url, sponsor_logo_2_url")
     .eq("id", tourId)
     .eq("org_id", orgId)
     .single();
@@ -67,5 +67,7 @@ export async function POST(req: NextRequest) {
     events: events ?? [],
     customFonts: (fonts ?? []).map(f => ({ fontName: f.font_name, url: f.storage_url })),
     logoUrl,
+    sponsorLogo1Url: tour.sponsor_logo_1_url ?? null,
+    sponsorLogo2Url: tour.sponsor_logo_2_url ?? null,
   });
 }
