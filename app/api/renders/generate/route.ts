@@ -213,6 +213,26 @@ function buildLogoLayer(
   return `l_fetch:${base64Url}/c_scale,h_${logoCfg.size}/e_colorize:100,co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
 }
 
+function buildSponsorLogoLayer(
+  logoUrl: string,
+  logoCfg: { x: number; y: number; size: number },
+  canvasW: number,
+  canvasH: number
+): string {
+  // URL-safe base64 for l_fetch, no padding
+  const base64Url = Buffer.from(logoUrl).toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  // Center-relative positioning, same convention as buildTextLayer
+  const xPx = Math.round((logoCfg.x - 0.5) * canvasW);
+  const yPx = Math.round((logoCfg.y - 0.5) * canvasH);
+
+  // Scale logo by height, native colors (NO colorize), layer at center-relative position
+  return `l_fetch:${base64Url}/c_scale,h_${logoCfg.size}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
+}
+
 function buildCloudinaryVideoUrl(
   publicId: string,
   cloudName: string,
@@ -220,7 +240,9 @@ function buildCloudinaryVideoUrl(
   overlayConfig: any,
   eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string },
   customFontsMap: Map<string, string>,
-  logoUrl: string | null
+  logoUrl: string | null,
+  sponsorLogo1Url: string | null,
+  sponsorLogo2Url: string | null
 ): string {
   const { w, h } = VIDEO_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
@@ -265,10 +287,16 @@ function buildCloudinaryVideoUrl(
 
   const showLogo = cfg.showLogo ?? false;
   const logoCfg = cfg.logo ?? null;
+  const showSponsorLogo1 = cfg.showSponsorLogo1 ?? false;
+  const sponsorLogo1Cfg = cfg.sponsorLogo1 ?? null;
+  const showSponsorLogo2 = cfg.showSponsorLogo2 ?? false;
+  const sponsorLogo2Cfg = cfg.sponsorLogo2 ?? null;
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
     ...(showLogo && logoUrl && logoCfg ? [buildLogoLayer(logoUrl, logoCfg, color, w, h)] : []),
+    ...(showSponsorLogo1 && sponsorLogo1Url && sponsorLogo1Cfg ? [buildSponsorLogoLayer(sponsorLogo1Url, sponsorLogo1Cfg, w, h)] : []),
+    ...(showSponsorLogo2 && sponsorLogo2Url && sponsorLogo2Cfg ? [buildSponsorLogoLayer(sponsorLogo2Url, sponsorLogo2Cfg, w, h)] : []),
     ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
     buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign),
     buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign),
@@ -315,7 +343,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, artist_id")
+    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, artist_id, sponsor_logo_1_url, sponsor_logo_2_url")
     .eq("id", tourId_resolved)
     .eq("org_id", orgId)
     .single();
@@ -339,6 +367,8 @@ export async function POST(req: NextRequest) {
       .single();
     logoUrl = artist?.logo_url ?? null;
   }
+  const sponsorLogo1Url = (tour as any).sponsor_logo_1_url ?? null;
+  const sponsorLogo2Url = (tour as any).sponsor_logo_2_url ?? null;
 
   // Fetch events
   let events: any[] = [];
@@ -399,7 +429,7 @@ export async function POST(req: NextRequest) {
         }
         const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
-        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl);
+        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url);
       }
 
       // Upsert venue_link
