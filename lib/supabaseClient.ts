@@ -5,6 +5,9 @@ const COOKIE_DOMAIN =
     ? ".hwy61labs.com"
     : "";
 
+const IS_HTTPS =
+  typeof window !== "undefined" && window.location.protocol === "https:";
+
 function cookieStorage() {
   return {
     getItem(key: string) {
@@ -15,7 +18,8 @@ function cookieStorage() {
     setItem(key: string, value: string) {
       if (typeof document === "undefined") return;
       const domainAttr = COOKIE_DOMAIN ? `domain=${COOKIE_DOMAIN};` : "";
-      document.cookie = `${key}=${encodeURIComponent(value)};${domainAttr}path=/;max-age=3600;SameSite=Lax;Secure`;
+      const secureAttr = IS_HTTPS ? "Secure" : "";
+      document.cookie = `${key}=${encodeURIComponent(value)};${domainAttr}path=/;max-age=3600;SameSite=Lax;${secureAttr}`;
     },
     removeItem(key: string) {
       if (typeof document === "undefined") return;
@@ -33,7 +37,7 @@ export const supabase = createBrowserClient(
       domain: COOKIE_DOMAIN,
       path: "/",
       sameSite: "lax" as const,
-      secure: true,
+      secure: IS_HTTPS,
     },
     auth: {
       storage: cookieStorage(),
