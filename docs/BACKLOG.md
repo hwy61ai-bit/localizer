@@ -167,6 +167,13 @@ selects or drop from schema.
 
 Found in QA report 2026-04-14.
 
+**Resolution (2026-04-14):** Closed as misdiagnosis. No code change required.
+
+- Verified: `render_poster_url` is a LIVE column on the `venue_links` table (90 rows total, 9 populated).
+- It is written by the Print Poster render pipeline (`lib/clientRender.ts` + `app/api/renders/print-pdf/route.ts`) and read correctly by all 4 download routes alongside the other 5 render format URLs.
+- The low population rate reflects that Print Poster is an optional/opt-in format, not that the column is dead.
+- Stripping these references would break tour poster downloads for the 9 venue_links that have rendered posters.
+
 ---
 
 ### Centralize `ADMIN_EMAILS` constant
