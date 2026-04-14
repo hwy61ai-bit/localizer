@@ -72,6 +72,16 @@ export default function ArtistHubClient({
       } else if (hasLocalizer) {
         setActiveTab("localizer");
       }
+
+      // URL override for landing on a specific tab
+      if (typeof window !== "undefined") {
+        const tabParam = new URLSearchParams(window.location.search).get("tab");
+        if (tabParam === "localizer" && hasLocalizer) {
+          setActiveTab("localizer");
+        } else if (tabParam === "tourrouter" && hasTourRouter) {
+          setActiveTab("tourrouter");
+        }
+      }
     }
 
     checkAccess();
