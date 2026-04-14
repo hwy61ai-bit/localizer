@@ -124,3 +124,96 @@ When a user replaces a video in Import Assets and navigates to the template edit
 Discovered April 10, 2026 during post-session testing on production. Affected artist: Uncle Lucius.
 
 Fix options: (a) include a version/timestamp query param in the template editor's video src so the browser treats new uploads as different URLs, (b) reload the tour state from the server on asset-replacement events, or (c) add a `key` prop to the video element that changes on replacement so React remounts it. Option (a) is probably the simplest and most robust.
+
+---
+
+### BUG-B — Stale `allowed` whitelist in tourrouter artist PUT route
+
+`app/api/tourrouter/artists/[artistId]/route.ts` lines 38–48
+has a stale `allowed` field whitelist. Missing: `tour_manager_name`,
+`tour_manager_email`, `tour_manager_phone`, plus phone fields for
+all existing roles (`manager_phone`, `booking_agent_phone`,
+`publicist_phone`). Stale entries that should be removed:
+`agent_name`, `agent_email` (Agent role removed from UI in commit
+12db1b5, April 12).
+
+**Why not broken today:** the profile page saves flat team columns
+via the browser Supabase client directly, not through this API
+route. Only `key_contacts` and other JSON columns flow through the
+route, and those are in the whitelist.
+
+**Why it matters:** any future code that tries to update
+`tour_manager_*` fields via the API route will get a silent 400
+"No valid fields to update."
+
+Found in QA report 2026-04-14. Single-file fix.
+
+---
+
+### BUG-E — `render_poster_url` dead column in venue_links
+
+Four download routes (`app/api/download/route.ts`,
+`app/api/download/marketing/route.ts`,
+`app/api/download-all/route.ts`,
+`app/api/download-all/marketing/route.ts`) still `SELECT
+render_poster_url` from `venue_links`. The `tour_poster` format
+was removed from the codebase March 25, so this column is always
+null for post-March-25 renders. Routes filter it out with
+`.filter((a) => !!a.url)` before zipping, so no runtime impact.
+
+Schema check on 2026-04-14 confirmed the column still exists in
+`venue_links` (not dropped). LOW cleanup: either remove from
+selects or drop from schema.
+
+Found in QA report 2026-04-14.
+
+---
+
+### Centralize `ADMIN_EMAILS` constant
+
+Admin emails (`hwy61ai@gmail.com`, `tentenpm@gmail.com`) are
+duplicated across five locations, three as exported `ADMIN_EMAILS`
+arrays and two as inline hardcoded email comparisons:
+
+1. `lib/tourrouter/billingGate.ts` line 4 (array)
+2. `lib/localizer/billingGate.ts` line 8 (array)
+3. `app/dashboard/artists/[artistId]/ArtistHubClient.tsx` line 9 (array)
+4. `app/dashboard/page.tsx` line 46 (inline hardcoded)
+5. `app/api/fonts/upload/route.ts` line 45 (inline hardcoded)
+
+Any update requires touching all five. The inline checks in
+locations 4 and 5 will drift silently if someone updates the
+three array locations expecting them to be authoritative.
+
+**Fix:** extract to `lib/auth/adminEmails.ts` as a single
+exported constant, import everywhere, convert inline checks to
+`ADMIN_EMAILS.includes(email)`.
+
+Effort: ~30 minutes. Not urgent. Do before launch so new admin
+additions don't require five-file edits.
+
+---
+
+### Verify new-user signup works end-to-end before launch
+
+Supabase email signups are currently DISABLED at the project
+level (Authentication → Providers → Email). No new user can sign
+up on production right now. This is deliberate during the Coming
+Soon gate.
+
+**Before flipping `COMING_SOON=false`:**
+1. Re-enable Supabase email signups
+2. Create a fresh test email (e.g. `yourname+test1@gmail.com`
+   via Gmail plus-addressing)
+3. Run through full signup → magic link → auth callback →
+   onboarding wizard flow
+4. Verify `ensureOrgExists` correctly provisions a new org and
+   `org_members` row (it has never been tested from this code
+   path — HWY 61 TEST CO. was created manually on March 10,
+   before `ensureOrgExists` was moved to the auth callback in
+   commit 9f88d03 on April 9)
+5. Verify the beta invite gate at app level correctly blocks
+   un-invited signups
+6. Verify Google OAuth also works for a fresh account
+
+**Launch blocker if untested.**

@@ -1241,3 +1241,125 @@ Needs Tim's call before next session.
 - Resolve sponsor tint question with Tim
 - Tour-level Download All page (`/v/tour/[tourId]`) — dedicated half-day session, still on the board
 - Remaining expense tabs (Transport, Food, Gear, Misc, Merch, Promo, Other)
+
+---
+
+## 2026-04-14 — QA session, data-loss fix, and root-cause of daily auth pain
+
+### Shipped
+
+- **QA full-pass report** committed at
+  `localizer-qa-reports/2026-04-14_full-qa-pass.md`. Run on the
+  Mac mini via `qa-start`. Agent did static code review across 11
+  focus areas (primary from QA briefing plus shipped-since-
+  April-12 items: sponsor logos, marketing tokens, download-all
+  for marketing, onboarding wizard, Localizer billing gate).
+  Found 1 HIGH + 1 MEDIUM + 3 LOW + 1 open question. No CRITICAL.
+  Live functional testing deferred to a follow-up session.
+
+- **BUG-A (HIGH) — saveFields debounce data loss.** Commit `b75c9a2`.
+  `app/dashboard/artists/[artistId]/profile/page.tsx` — the
+  debounce in saveFields captured `updates` in the timer closure,
+  so rapid Tab-between-fields edits within 600ms overwrote each
+  other and only the last-typed field reached the database.
+  Affected all 12 flat team columns across manager/tour_manager/
+  booking_agent/publicist. Pre-existed commit 12db1b5 (tour_manager
+  add) but hit Tour Manager fields identically. Fix: added
+  `pendingUpdatesRef` that accumulates across calls, snapshots
+  and clears when the timer fires. Same edit also fixed BUG-D
+  (missing `.select().maybeSingle()` on the Supabase update +
+  missing `res.ok` check on the key_contacts fetch, per Rule #6).
+  Verified via hard-reload test on incognito window.
+
+- **PKCE verifier loss on HTTP localhost.** Commit `5255a82`.
+  `lib/supabaseClient.ts` — auth cookies set `Secure` flag
+  unconditionally. Browsers silently drop Secure cookies on HTTP
+  origins, so every magic-link sign-in on localhost dev was
+  losing the PKCE code verifier client-side, and the server
+  callback failed with "PKCE code verifier not found in storage."
+  Fix: compute `IS_HTTPS` from `window.location.protocol` and
+  gate the Secure attribute on it in both the `cookieStorage`
+  wrapper and `createBrowserClient` cookieOptions. Cross-subdomain
+  COOKIE_DOMAIN logic untouched — still applies for production
+  hwy61labs.com subdomains. **This was almost certainly the root
+  cause of recurring daily magic-link login failures on local dev.**
+
+- **BUG-C (LOW) — marketing viewer artist query.** Commit `df9d1a3`.
+  `app/v/m/[token]/page.tsx` — changed `.single()` to
+  `.maybeSingle()` on the artists select. `.single()` was
+  throwing PGRST116 when `artist_id` was null or the row didn't
+  exist, silently discarded since only `data` was destructured,
+  but spamming PostgREST logs. Also tightened `(tour as any)` to
+  `(tour as Record<string, any>)` on the same line.
+
+### Auth rabbit hole (resolved)
+
+Started the day hitting a stack of auth issues in the non-incognito
+browser. Walked through them in order:
+
+1. `drewarrison@gmail.com` was an orphaned `auth.users` row with no
+   `org_members` entry. `ensureOrgExists` tried to provision a new
+   org and hit RLS 42501. Had one live `marketing_tokens` row
+   (`test_marketing_001`). Cleaned up via SQL: deleted the token,
+   the org_members row, and the auth user.
+
+2. Google OAuth on `hwy61ai@gmail.com` returned `signup_disabled`
+   because Supabase project-level signups are currently off. The
+   account has `provider: email` as primary with `google` as a
+   linked secondary provider — in that configuration, Google
+   OAuth hits gotrue's signup-permission path, which is blocked.
+
+3. Magic link sending failed with "550 The hwy61.ai domain is not
+   verified" on Resend. Supabase's sender email was configured
+   for `hwy61.ai` (defunct or typo'd) instead of the actual
+   verified `hwy61labs.com`. Fixed in Supabase dashboard →
+   Authentication → Emails → Sender email.
+
+4. Magic link *then* arrived, but clicking it returned
+   `?error=auth`. Root cause: PKCE verifier loss on HTTP (fixed
+   via the commit above).
+
+Daily auth pain is almost certainly gone. If it recurs, the most
+likely next suspects are the Google OAuth linked-provider path
+(still untested after the PKCE fix) and the beta invite gate on
+new-user signups (untestable while signups are disabled).
+
+### Deferred / backlog
+
+Added to `docs/BACKLOG.md`:
+
+- BUG-B (stale artist PUT whitelist) — not currently broken,
+  single-file fix
+- BUG-E (`render_poster_url` dead column) — LOW cleanup,
+  schema check confirmed column still exists
+- Centralize `ADMIN_EMAILS` constant across 5 files
+- Verify new-user signup end-to-end before launch (signups
+  currently disabled at Supabase project level)
+
+### Housekeeping
+
+- Archived stale `docs/SESSION_KICKOFF_April_14_2026.md`
+  (sponsor logos build kickoff, completed April 14) to
+  `docs/archive/`
+- Created `docs/QA_RUNBOOK.md` as a reusable guide for running
+  QA sessions on the Mac mini. Replaces the per-session
+  "State of the Union" pattern.
+
+### Q1 closed
+
+QA report open question about Tim's admin email: confirmed
+`tentenpm@gmail.com` is current (not `hwy61regan@gmail.com`).
+`ADMIN_EMAILS` arrays already correct. No code change needed.
+
+### Next session priorities
+
+1. Live functional QA pass on the mini covering everything the
+   static review deferred: sponsor logo upload + render with
+   red/blue PNGs, hotel receipt stacking, fuel estimate
+   persistence, advance sheet drag-drop, roster pay calculations,
+   onboarding wizard walkthrough, ShareWithMarketingButton UI.
+2. Before launch: centralize ADMIN_EMAILS, verify new-user
+   signup flow, investigate Google OAuth linked-provider
+   behavior.
+3. BUG-B fix when Tour Manager field gets surfaced in any flow
+   that uses the tourrouter artist API route.
