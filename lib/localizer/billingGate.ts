@@ -1,11 +1,5 @@
 import { supabaseServer } from "@/lib/supabaseServer";
-
-// Admin emails that always have access (dev bypass).
-// Note: this bypass only fires when a userEmail is passed through. Venue-facing
-// download routes (app/api/download, app/api/download-all) deliberately omit
-// the userEmail argument so admin-owned venue shares are treated the same as
-// any other org for the public download gate.
-const ADMIN_EMAILS = ["hwy61ai@gmail.com", "tentenpm@gmail.com"];
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 export type LocalizerAccessLevel = "none" | "free" | "paid";
 
@@ -26,8 +20,11 @@ export async function getLocalizerAccessLevel(
 ): Promise<LocalizerAccessLevel> {
   if (!orgId) return "none";
 
-  // Admin bypass
-  if (userEmail && ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
+  // Note: this admin bypass only fires when a userEmail is passed through.
+  // Venue-facing download routes (app/api/download, app/api/download-all)
+  // deliberately omit the userEmail argument so admin-owned venue shares
+  // are treated the same as any other org for the public download gate.
+  if (isAdminEmail(userEmail)) {
     return "paid";
   }
 

@@ -1,7 +1,5 @@
 import { supabaseServer } from "@/lib/supabaseServer";
-
-// Admin emails that always have access (dev bypass)
-const ADMIN_EMAILS = ["hwy61ai@gmail.com", "tentenpm@gmail.com"];
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 export type TourRouterAccessLevel = "none" | "free" | "paid";
 
@@ -25,7 +23,7 @@ export async function getTourRouterAccessLevel(
   if (!orgId) return "none";
 
   // Admin bypass
-  if (userEmail && ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
+  if (isAdminEmail(userEmail)) {
     return "paid";
   }
 
@@ -60,7 +58,7 @@ export async function getTourRouterAccessLevel(
 export async function checkTourRouterAccess(orgId: string, userEmail?: string | null): Promise<BillingAccess> {
   const level = await getTourRouterAccessLevel(orgId, userEmail);
   if (level === "paid") {
-    const isAdmin = !!userEmail && ADMIN_EMAILS.includes(userEmail.toLowerCase());
+    const isAdmin = isAdminEmail(userEmail);
     return { allowed: true, plan: isAdmin ? "admin" : "basic" };
   }
   if (level === "none") {

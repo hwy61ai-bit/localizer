@@ -5,8 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import ArtistDetailClient from "./ArtistDetailClient";
 import ArtistToursClient from "./ArtistToursClient";
 import { HwTabs, HwTab, HwPageHeader, HwBreadcrumb, HwButton, HwCard, HwCardTitle, HwCardDesc } from "@/app/components/hw";
-
-const ADMIN_EMAILS = ["hwy61ai@gmail.com", "tentenpm@gmail.com"];
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 type AccessState = {
   loading: boolean;
@@ -31,7 +30,7 @@ export default function ArtistHubClient({
 
   useEffect(() => {
     async function checkAccess() {
-      const isAdmin = ADMIN_EMAILS.includes(userEmail.toLowerCase());
+      const isAdmin = isAdminEmail(userEmail);
 
       // Check Localizer access
       let hasLocalizer = false;
