@@ -1,6 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { tourId: string } }
+) {
+  try {
+    const { tourId } = params;
+    const supabase = await supabaseServer();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: tour } = await supabase
+      .from("tours")
+      .select("org_id, sponsor_logo_1_url, sponsor_logo_2_url")
+      .eq("id", tourId)
+      .maybeSingle();
+
+    if (!tour) {
+      return NextResponse.json({ error: "Tour not found" }, { status: 404 });
+    }
+
+    const { data: membership } = await supabase
+      .from("org_members")
+      .select("org_id")
+      .eq("user_id", user.id)
+      .eq("org_id", tour.org_id)
+      .maybeSingle();
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: "Not a member of this org" },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({
+      sponsorLogo1Url: tour.sponsor_logo_1_url ?? null,
+      sponsorLogo2Url: tour.sponsor_logo_2_url ?? null,
+    });
+  } catch (error: any) {
+    console.error("Sponsor logo GET error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { tourId: string } }
