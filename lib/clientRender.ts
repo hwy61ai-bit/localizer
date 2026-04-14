@@ -6,6 +6,10 @@ type FieldConfig = { x: number; y: number; size: number; align?: string };
 type FormatConfig = {
   showLogo?: boolean;
   logo?: { x: number; y: number; size: number; align?: string };
+  showSponsorLogo1?: boolean;
+  sponsorLogo1?: { x: number; y: number; size: number; align?: string };
+  showSponsorLogo2?: boolean;
+  sponsorLogo2?: { x: number; y: number; size: number; align?: string };
   fontFamily: string;
   textColor: string;
   showBandName: boolean;
@@ -118,7 +122,9 @@ export async function renderPoster(
   cfg: FormatConfig,
   formatKey: string,
   eventData: EventData,
-  logoUrl?: string | null
+  logoUrl?: string | null,
+  sponsorLogo1Url?: string | null,
+  sponsorLogo2Url?: string | null
 ): Promise<Blob> {
   const dims = FORMAT_DIMS[formatKey] ?? FORMAT_DIMS.square;
   const scale = SCALE_FACTORS[formatKey] ?? 1.0;
@@ -162,6 +168,36 @@ export async function renderPoster(
       ctx.drawImage(logoCanvas, logoX, logoY);
     } catch (e) {
       console.warn("Failed to draw logo:", e);
+    }
+  }
+
+  // Draw sponsor logo 1 if enabled (no tint — renders in native colors)
+  if (cfg.showSponsorLogo1 && sponsorLogo1Url) {
+    try {
+      const sponsorImg = await loadImage(sponsorLogo1Url);
+      const sponsorCfg = cfg.sponsorLogo1 ?? { x: 0.35, y: 0.88, size: 60 };
+      const sponsorH = Math.round(sponsorCfg.size * scale);
+      const sponsorW = Math.round(sponsorH * (sponsorImg.width / sponsorImg.height));
+      const sponsorX = sponsorCfg.x * w - sponsorW / 2;
+      const sponsorY = sponsorCfg.y * h - sponsorH / 2;
+      ctx.drawImage(sponsorImg, sponsorX, sponsorY, sponsorW, sponsorH);
+    } catch (e) {
+      console.warn("Failed to draw sponsor logo 1:", e);
+    }
+  }
+
+  // Draw sponsor logo 2 if enabled (no tint — renders in native colors)
+  if (cfg.showSponsorLogo2 && sponsorLogo2Url) {
+    try {
+      const sponsorImg = await loadImage(sponsorLogo2Url);
+      const sponsorCfg = cfg.sponsorLogo2 ?? { x: 0.65, y: 0.88, size: 60 };
+      const sponsorH = Math.round(sponsorCfg.size * scale);
+      const sponsorW = Math.round(sponsorH * (sponsorImg.width / sponsorImg.height));
+      const sponsorX = sponsorCfg.x * w - sponsorW / 2;
+      const sponsorY = sponsorCfg.y * h - sponsorH / 2;
+      ctx.drawImage(sponsorImg, sponsorX, sponsorY, sponsorW, sponsorH);
+    } catch (e) {
+      console.warn("Failed to draw sponsor logo 2:", e);
     }
   }
 

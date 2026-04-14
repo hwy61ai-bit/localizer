@@ -670,7 +670,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     cityState: 'Little Rock, AR',
                   };
                   try {
-                    const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl);
+                    const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url);
                     const url = URL.createObjectURL(blob);
                     window.open(url, '_blank');
                   } catch (err: any) {

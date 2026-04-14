@@ -253,7 +253,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
       const tourData = await dataRes.json();
       if (!dataRes.ok) throw new Error(tourData.error ?? "Failed to load tour data");
 
-      const { tour, events: serverEvents, customFonts, logoUrl } = tourData;
+      const { tour, events: serverEvents, customFonts, logoUrl, sponsorLogo1Url, sponsorLogo2Url } = tourData;
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
       const overlayConfig = tour.overlay_config ?? {};
       const bandName = tour.band_name ?? tour.band_tour_label ?? tour.name ?? "Artist";
@@ -334,7 +334,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               await document.fonts.ready;
             }
 
-            const blob = await renderPoster(baseUrl, cfg, fmt, eventData, logoUrl);
+            const blob = await renderPoster(baseUrl, cfg, fmt, eventData, logoUrl, sponsorLogo1Url, sponsorLogo2Url);
 
             // Upload to Cloudinary
             const fd = new FormData();
