@@ -60,8 +60,8 @@ export default async function MarketingPage({
   const { data: artist } = await supabase
     .from("artists")
     .select("spotify_url")
-    .eq("id", (tour as any).artist_id)
-    .single();
+    .eq("id", (tour as Record<string, any>).artist_id)
+    .maybeSingle();
 
   const t = tour as any;
   const bandName = t.band_name ?? t.band_tour_label ?? t.name ?? "Artist";
