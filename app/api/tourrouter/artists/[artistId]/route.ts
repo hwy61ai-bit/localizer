@@ -37,14 +37,16 @@ export async function PUT(
 
   const allowed = [
     "name", "bio", "image_url", "logo_url",
-    "manager_name", "manager_email",
-    "booking_agent_name", "booking_agent_email",
-    "publicist_name", "publicist_email",
-    "agent_name", "agent_email",
+    "manager_name", "manager_email", "manager_phone",
+    "booking_agent_name", "booking_agent_email", "booking_agent_phone",
+    "publicist_name", "publicist_email", "publicist_phone",
+    "agent_name", "agent_email", "agent_phone",
+    "tour_manager_name", "tour_manager_email", "tour_manager_phone",
     "spotify_url",
     "business_entity", "key_contacts", "tax_compliance", "insurance",
     "technical_production", "hospitality_rider", "promo_marketing",
     "merch_defaults", "vehicles_equipment", "lodging_defaults", "default_roster", "default_commissions",
+    "adv_stage_plot_url", "adv_hospitality_url", "adv_foh_url", "adv_w9_url", "adv_custom_materials",
   ];
 
   const update: Record<string, unknown> = {};
@@ -62,8 +64,9 @@ export async function PUT(
     .eq("id", artistId)
     .eq("org_id", orgId)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!artist) return NextResponse.json({ error: "Artist not found" }, { status: 404 });
   return NextResponse.json({ artist });
 }
