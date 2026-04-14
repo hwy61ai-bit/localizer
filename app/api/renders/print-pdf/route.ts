@@ -81,7 +81,7 @@ export async function GET(req: NextRequest) {
   // Fetch tour
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, image_print_id, overlay_config, artist_id, band_name, name")
+    .select("id, org_id, image_print_id, overlay_config, artist_id, band_name, name, sponsor_logo_1_url, sponsor_logo_2_url")
     .eq("id", event.tour_id)
     .single();
 
@@ -141,6 +141,28 @@ export async function GET(req: NextRequest) {
         }
       } catch {}
     }
+  }
+
+  // Fetch sponsor logo 1 if enabled
+  let sponsorLogo1Bytes: Uint8Array | null = null;
+  if (printConfig.showSponsorLogo1 && (tour as any).sponsor_logo_1_url) {
+    try {
+      const res = await fetch((tour as any).sponsor_logo_1_url);
+      if (res.ok) {
+        sponsorLogo1Bytes = new Uint8Array(await res.arrayBuffer());
+      }
+    } catch {}
+  }
+
+  // Fetch sponsor logo 2 if enabled
+  let sponsorLogo2Bytes: Uint8Array | null = null;
+  if (printConfig.showSponsorLogo2 && (tour as any).sponsor_logo_2_url) {
+    try {
+      const res = await fetch((tour as any).sponsor_logo_2_url);
+      if (res.ok) {
+        sponsorLogo2Bytes = new Uint8Array(await res.arrayBuffer());
+      }
+    } catch {}
   }
 
   // Build PDF — dynamic import fontkit to avoid webpack CJS bundling issues
@@ -317,6 +339,56 @@ export async function GET(req: NextRequest) {
       });
     } catch (e) {
       console.warn("Failed to embed logo in PDF:", e);
+    }
+  }
+
+  // Draw sponsor logo 1 if enabled (native colors — no tint)
+  if (printConfig.showSponsorLogo1 && sponsorLogo1Bytes) {
+    try {
+      let embeddedSponsor1;
+      try {
+        embeddedSponsor1 = await pdfDoc.embedPng(sponsorLogo1Bytes);
+      } catch {
+        embeddedSponsor1 = await pdfDoc.embedJpg(sponsorLogo1Bytes);
+      }
+      const sponsorCfg = (printConfig as any).sponsorLogo1 ?? { x: 0.35, y: 0.88, size: 60 };
+      const sponsorH = sponsorCfg.size * SCALE_FACTOR;
+      const sponsorW = sponsorH * (embeddedSponsor1.width / embeddedSponsor1.height);
+      const sponsorX = sponsorCfg.x * PAGE_WIDTH_PT - sponsorW / 2;
+      const sponsorY = PAGE_HEIGHT_PT - sponsorCfg.y * PAGE_HEIGHT_PT - sponsorH / 2;
+      page.drawImage(embeddedSponsor1, {
+        x: sponsorX,
+        y: sponsorY,
+        width: sponsorW,
+        height: sponsorH,
+      });
+    } catch (e) {
+      console.warn("Failed to embed sponsor logo 1 in PDF:", e);
+    }
+  }
+
+  // Draw sponsor logo 2 if enabled (native colors — no tint)
+  if (printConfig.showSponsorLogo2 && sponsorLogo2Bytes) {
+    try {
+      let embeddedSponsor2;
+      try {
+        embeddedSponsor2 = await pdfDoc.embedPng(sponsorLogo2Bytes);
+      } catch {
+        embeddedSponsor2 = await pdfDoc.embedJpg(sponsorLogo2Bytes);
+      }
+      const sponsorCfg = (printConfig as any).sponsorLogo2 ?? { x: 0.65, y: 0.88, size: 60 };
+      const sponsorH = sponsorCfg.size * SCALE_FACTOR;
+      const sponsorW = sponsorH * (embeddedSponsor2.width / embeddedSponsor2.height);
+      const sponsorX = sponsorCfg.x * PAGE_WIDTH_PT - sponsorW / 2;
+      const sponsorY = PAGE_HEIGHT_PT - sponsorCfg.y * PAGE_HEIGHT_PT - sponsorH / 2;
+      page.drawImage(embeddedSponsor2, {
+        x: sponsorX,
+        y: sponsorY,
+        width: sponsorW,
+        height: sponsorH,
+      });
+    } catch (e) {
+      console.warn("Failed to embed sponsor logo 2 in PDF:", e);
     }
   }
 
