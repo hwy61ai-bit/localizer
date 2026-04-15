@@ -159,7 +159,7 @@ export default async function MarketingPage({
                   <img src={asset.url} alt={asset.label} style={{ width: "100%", display: "block" }} />
                 ) : (
                   <div style={{ aspectRatio: asset.aspect, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", fontSize: 11, letterSpacing: "1px", textTransform: "uppercase" }}>
-                    Rendering soon
+                    Not provided
                   </div>
                 )}
               </div>
