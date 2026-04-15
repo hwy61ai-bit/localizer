@@ -84,7 +84,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
   const hasPrintPoster = !!(t.image_print_id && overlayConfig?.print);
 
   return (
-    <div style={{ background: "var(--hw-bg)", minHeight: "100vh", color: "var(--hw-text)" }}>
+    <div style={{ minHeight: "100vh", color: "var(--hw-text)" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 24px 64px" }}>
 
         {/* Header */}
