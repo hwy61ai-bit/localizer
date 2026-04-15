@@ -224,3 +224,21 @@ Soon gate.
 6. Verify Google OAuth also works for a fresh account
 
 **Launch blocker if untested.**
+
+---
+
+### Send to All Promoters — bulk send button on gigs page (proposed, awaiting Tim sign-off)
+
+Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three sub-questions before build.
+
+**Build constraints (don't lose these when implementing):**
+- **Resend rate limits:** Sends must fire serially with a small delay between them, not in parallel. Resend has per-second and per-minute rate limits, and clustered sends also increase spam-folder risk because mailbox providers flag bursts of identical-template emails to similar domains. A 25-show tour firing 25 sends in parallel could trip both rate limiting and spam classifiers. Recommend serial sends with 200–500ms delay between each (final number to be tuned during build), or a proper queue if Resend's batch API is more appropriate.
+- **Idempotency:** Default behavior must skip rows already sent — re-sending the same link to a promoter who already received it would damage trust with promoters and the platform's reputation.
+- **Failure handling:** A failure mid-loop must not block the rest of the sends. Collect failures and surface them in the final summary.
+- **Reuse existing send mechanism:** Must call the same per-promoter send route as the single-send button, not duplicate the email path. Otherwise we'll have two send code paths to maintain.
+- **Confirmation modal required:** Bulk email actions need a "Will send to N of M, K skipped, L missing email" confirmation before firing. No one-click bulk sends.
+
+**Open questions for Tim (carried in TIM_STATUS_2026-04-15.md):**
+- Force re-send checkbox in the modal? (Off by default if added.)
+- Handling for rows missing a promoter email — silent skip or surface in confirmation?
+- Button label preference?
