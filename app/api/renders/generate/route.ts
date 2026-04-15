@@ -184,9 +184,9 @@ function buildCloudinaryUrl(
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
     ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
-    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign),
-    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign),
-    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign),
+    ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
+    ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
+    ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign)]  : []),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -298,9 +298,9 @@ function buildCloudinaryVideoUrl(
     ...(showSponsorLogo1 && sponsorLogo1Url && sponsorLogo1Cfg ? [buildSponsorLogoLayer(sponsorLogo1Url, sponsorLogo1Cfg, w, h)] : []),
     ...(showSponsorLogo2 && sponsorLogo2Url && sponsorLogo2Cfg ? [buildSponsorLogoLayer(sponsorLogo2Url, sponsorLogo2Cfg, w, h)] : []),
     ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
-    buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign),
-    buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign),
-    buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign),
+    ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
+    ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
+    ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign)]  : []),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/video/upload/${layers.join("/")}/${publicId}`;

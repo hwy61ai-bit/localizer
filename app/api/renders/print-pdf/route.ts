@@ -304,16 +304,22 @@ export async function GET(req: NextRequest) {
   }
 
   // Draw venue
-  const venueText = allCaps ? venueName.toUpperCase() : venueName;
-  drawTextField(venueText, printConfig.venue, true);
+  if (printConfig.showVenue ?? true) {
+    const venueText = allCaps ? venueName.toUpperCase() : venueName;
+    drawTextField(venueText, printConfig.venue, true);
+  }
 
   // Draw date
-  const dateText = allCaps ? dateStr.toUpperCase() : dateStr;
-  drawTextField(dateText, printConfig.date);
+  if (printConfig.showDate ?? true) {
+    const dateText = allCaps ? dateStr.toUpperCase() : dateStr;
+    drawTextField(dateText, printConfig.date);
+  }
 
   // Draw city
-  const cityText = allCaps ? cityState.toUpperCase() : cityState;
-  drawTextField(cityText, printConfig.city);
+  if (printConfig.showCity ?? true) {
+    const cityText = allCaps ? cityState.toUpperCase() : cityState;
+    drawTextField(cityText, printConfig.city);
+  }
 
   // Draw logo if enabled
   if (printConfig.showLogo && logoBytes) {

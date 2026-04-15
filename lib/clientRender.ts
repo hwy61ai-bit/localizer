@@ -20,6 +20,9 @@ type FormatConfig = {
   date: FieldConfig;
   venue: FieldConfig;
   city: FieldConfig;
+  showVenue?: boolean;
+  showCity?: boolean;
+  showDate?: boolean;
 };
 
 type EventData = {
@@ -265,16 +268,21 @@ export async function renderPoster(
   }
 
   // Venue — auto-shrink to fit
-  const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
-
-  drawText(rawVenue, cfg.venue, cfg.venue.size, true, formatKey);
+  if (cfg.showVenue ?? true) {
+    const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
+    drawText(rawVenue, cfg.venue, cfg.venue.size, true, formatKey);
+  }
 
   // Date
-  drawText(eventData.dateFormatted, cfg.date, cfg.date.size);
+  if (cfg.showDate ?? true) {
+    drawText(eventData.dateFormatted, cfg.date, cfg.date.size);
+  }
 
   // City — auto-shrink to fit
-  const rawCity = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-  drawText(rawCity, cfg.city, cfg.city.size);
+  if (cfg.showCity ?? true) {
+    const rawCity = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
+    drawText(rawCity, cfg.city, cfg.city.size);
+  }
 
   // Export as JPEG
   return new Promise<Blob>((resolve, reject) => {
