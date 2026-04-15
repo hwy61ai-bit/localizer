@@ -1395,3 +1395,56 @@ QA report open question about Tim's admin email: confirmed
 **Next session starts with:** Drew to pick from — (a) Tour Manager UI addition (now unblocked), (b) remaining expense tabs following the Accommodation pattern, (c) tour-level Download All page if ready for a dedicated session, or (d) cat docs/BACKLOG.md first to see if there are items we haven't looked at.
 
 **Key learning reinforced today:** Grep-verify before editing. BUG-E would have broken tour poster downloads for 9 venue_links if we'd trusted the backlog note and stripped the column references. The DB query + grep caught it in under a minute.
+
+
+## 2026-04-15 — Localizer render bugs + Tim catch-up + bulk send proposal
+
+**Shipped (5 commits):**
+- 2a07a68 — docs: session kickoff April 15
+- 2ba4626 — fix: change null-URL placeholder from 'Rendering soon' to 'Not provided' (app/v/e/[token]/page.tsx + app/v/m/[token]/page.tsx)
+- a39d5be — fix: honor venue/city/date visibility toggles in saved renders (lib/clientRender.ts + app/api/renders/generate/route.ts both blocks + app/api/renders/print-pdf/route.ts)
+- 8dd7c28 — docs: status update for Tim 2026-04-15 (delta off the April 14 catch-up)
+- 31f68d5 — docs: add bulk send proposal to backlog with build constraints
+
+**Bugs fixed:**
+
+1. **"Rendering soon" was misleading** on venue/marketing pages. The text appeared whenever a render URL was null, but in practice that almost always means the user never uploaded a source for that format, not that a render is in progress. Changed to "Not provided" in both `/v/e/[token]` and `/v/m/[token]`. Pure copy fix.
+
+2. **Visibility toggles ignored in saved renders.** The April 11 commit (495f898) wired showVenue/showCity/showDate flags into the template editor preview and the on-screen draggable overlay, but missed all four downstream render paths. Toggles worked at design time but were silently ignored at render time — every saved JPEG/video/PDF drew all three fields regardless. Wired the flags into all four paths (Canvas in clientRender.ts, both Cloudinary builders in generate/route.ts, pdf-lib in print-pdf/route.ts) using the same `?? true` default pattern as the editor preview, so existing tours behave identically.
+
+**Tour Manager correction:**
+
+Yesterday's Tim doc flagged the Tour Manager Localizer UI as still pending. That was wrong — it shipped April 12 as part of the artist profile page, persists correctly, and both products read from the same source. Today's Tim doc opens with a correction. Future-self: don't re-flag this.
+
+**Lessons reinforced:**
+
+- **Stale `.next` cache strikes again.** Bug 2 testing initially failed (toggle still appeared on saved render). Diagnosed correctly as cache before going down a rabbit hole on save-path or read-path bugs. `rm -rf .next node_modules/.cache` + restart fixed it. The "first diagnostic step" rule paid off.
+- **"Worked in the renderer" can mean two different things.** Drew said the toggles worked in the renderer but not the saved output. I initially interpreted "renderer" as the Cloudinary preview URL builder, but Drew meant the draggable overlay on the editor screen. Clarification saved a wrong-direction diagnosis. Worth double-checking ambiguous UI terms early in any bug conversation.
+- **Claude Code modified an undisclosed second block** in generate/route.ts (also patched buildCloudinaryUrl, not just buildCloudinaryVideoUrl that was in the prompt). The change was correct (and arguably the right call), but it violated "always show diff before applying." Caught it via `git diff` before commit. Worth flagging Claude Code on next time.
+
+**Tim status:**
+
+Sent (well — wrote, ready for Drew to send) `docs/TIM_STATUS_2026-04-15.md` with three open questions:
+1. Sponsor logo tint — strict no-tint + helper text vs optional tint toggle (carried from April 14)
+2. Venue-download billing gate caveat — needs ratification (carried from April 14)
+3. NEW: Send to All Promoters bulk button proposal with three sub-questions (force re-send checkbox, missing-email handling, button label)
+
+**Bulk send build constraints captured in BACKLOG.md** so when Tim greenlights, the constraints aren't lost (Resend rate limits → serial sends with 200–500ms delay, idempotency, failure handling, reuse single-send route, mandatory confirmation modal).
+
+**Still open (no movement today):**
+- Mapbox write-back silent RLS risk in lib/tourrouter/geocoding.ts
+- Full billing gate audit (blocked on Tim's helper design)
+- Tour-level Download All page (`/v/tour/[tourId]`)
+- Remaining expense tabs (Transport, Food, Gear, Misc, Merch, Promo, Other)
+- Onboarding wizard (blocked on Tim's wizard steps + demo data)
+- Stripe restructure (blocked on EIN)
+- Freemium Unit D rate limiting
+
+**Next session starts with:**
+
+Check whether Tim has replied to the April 15 status doc. If yes, prioritize whichever of the three open questions he answers (especially bulk send if greenlit — backlog entry has all the constraints). If no, pick from:
+- (a) Mapbox RLS hardening — small, self-contained, ~30 min, same pattern as yesterday's BUG-B/BUG-C
+- (b) Tour-level Download All page — dedicated half-day session
+- (c) Remaining expense tabs — mechanical work following Accommodation pattern
+
+Working tree clean at session end. 5 commits pushed to main.
