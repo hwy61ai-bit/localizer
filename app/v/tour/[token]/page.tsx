@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export default async function TourMarketingHubPage({
   params,
@@ -7,7 +7,7 @@ export default async function TourMarketingHubPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
 
   // 1. Validate marketing token (tour-scoped)
   const { data: marketingToken } = await supabase
