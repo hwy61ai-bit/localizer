@@ -791,7 +791,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (() => {
                     const sc = cfg.sponsorLogo1 ?? SPONSOR_1_DEFAULT;
                     return (
-                      <img key="sponsorLogo1" src={sponsorLogo1Url}
+                      <div key="sponsorLogo1"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
@@ -800,14 +800,17 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           setDragOffset({ x: mouseX - sc.x, y: mouseY - sc.y });
                           setDragging("sponsorLogo1");
                         }}
-                        style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, height: "auto", cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }} />
+                        style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }}>
+                        <img src={sponsorLogo1Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
+                        <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo1Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo1Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
+                      </div>
                     );
                   })()}
 
                   {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (() => {
                     const sc = cfg.sponsorLogo2 ?? SPONSOR_2_DEFAULT;
                     return (
-                      <img key="sponsorLogo2" src={sponsorLogo2Url}
+                      <div key="sponsorLogo2"
                         onMouseDown={(e) => {
                           e.preventDefault();
                           const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
@@ -816,7 +819,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           setDragOffset({ x: mouseX - sc.x, y: mouseY - sc.y });
                           setDragging("sponsorLogo2");
                         }}
-                        style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, height: "auto", cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }} />
+                        style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }}>
+                        <img src={sponsorLogo2Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
+                        <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo2Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo2Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
+                      </div>
                     );
                   })()}
 
