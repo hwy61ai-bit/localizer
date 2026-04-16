@@ -16,7 +16,7 @@ export async function fetchFontBytes(
 
   // 2. Google Font — fetch the CSS, extract .ttf URL
   // User-Agent: Mozilla/5.0 forces Google to return .ttf instead of .woff2
-  const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}&display=swap`;
+  const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@700&display=swap`;
   const cssRes = await fetch(cssUrl, {
     headers: { "User-Agent": "Mozilla/5.0" },
   });
