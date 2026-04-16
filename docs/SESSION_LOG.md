@@ -1467,3 +1467,50 @@ Working tree clean at session end. 5 commits pushed to main.
 - If reply: build whatever he greenlit (bulk send is highest-impact)
 - If no reply: pick between Tier 2B (Download All, half-day commit) or Tier 2C (expense tabs, batchable)
 - Optional audit: check Vercel logs for the three `[geocoding]` strings — should still be zero hits; any appearance is a real signal.
+
+
+## 2026-04-16 (evening update)
+
+**Total commits today:** 11
+- 4e745f2 — fix: harden Mapbox geocoding write-back with .select().maybeSingle() to catch silent RLS rejections
+- 1f9d529 — docs: session log 2026-04-16 (morning)
+- d30ac70 — feat: add lib/supabaseAdmin for public token-based service-role access
+- 1894bd9 — fix: /v/e viewer uses supabaseAdmin to allow anonymous access (RLS bypass via token)
+- cc0c35b — fix: /v/m viewer uses supabaseAdmin to allow anonymous access (RLS bypass via token)
+- 355d050 — fix: /v/tour hub uses supabaseAdmin to allow anonymous access (RLS bypass via token)
+- 571165e — fix: /api/download uses supabaseAdmin for public token-based access
+- 90a3ec6 — fix: /api/download-all uses supabaseAdmin for public token-based access
+- 0e7fe4f — fix: /api/download/marketing uses supabaseAdmin for public token-based access
+- 62ba419 — fix: /api/download-all/marketing uses supabaseAdmin for public token-based access
+- 337b2b1 — fix: billingGate uses supabaseAdmin so anon download routes resolve plan status correctly
+
+**Warm-up (Tier 2A from morning kickoff):** Mapbox geocoding write-back in lib/tourrouter/geocoding.ts now uses .select().maybeSingle() after insert. Catches silent RLS rejections (the 200-with-null-error pattern). Three distinct log strings for grep-based prod monitoring: "[geocoding] write-back failed", "[geocoding] write-back silently rejected", "[geocoding] write-back promise rejected". Confirmed zero hits in Vercel logs post-deploy — expected, write-back has been healthy, we just now have visibility.
+
+**Major fix — public share system was completely broken for anonymous users.** Surfaced during a live Localizer test pass with Tim. Started with "tour-level Share with Marketing link 404s in a different browser" and widened once we checked RLS policies across the affected tables.
+
+Root cause: every /v/* public viewer page, every /api/download* route, and the billingGate helper were all using supabaseServer() — the cookie-aware, RLS-bound client. When an anonymous user (promoter, venue, anyone without a login) hit these routes, queries ran as the anon Postgres role. RLS on marketing_tokens, events, tours, and artists restricts SELECT to org_members, so anon users got silent empty results and the pages 404'd. The billingGate helper hit the same problem on the orgs table, which caused every public download to return 402 even for paid orgs.
+
+Scope turned out to be 8 files — 3 viewer pages, 4 download API routes, 1 shared billing gate helper. All 8 refactored to use a new lib/supabaseAdmin helper that wraps createClient() with the service role key and disables session persistence. Token validation, URL allow-lists, billing gate logic, and all other business rules stayed intact. Only the Supabase client changed.
+
+venue_links table is the one exception — it already has a "Public can select active venue_links" RLS policy, which is why /v/e/[token] was the least-broken of the three (the token lookup succeeded, then downstream queries to events/tours/artists failed). The other tables (marketing_tokens, events, tours, artists) have no public SELECT policy. Rather than adding anon policies across four tables (broadens attack surface, harder to reason about), chose to use service-role in the specific public code paths where token is the access credential. Cleaner trust model.
+
+Verified end-to-end in Safari (anonymous, no session): tour hub loads ✓, per-event marketing page loads ✓, venue viewer loads ✓, per-asset downloads work ✓, Download All zip works ✓.
+
+**Why this slipped through until now:** Me and Tim have only ever tested public share links while logged in. Cookies leak across tabs; org-member sessions in other browser windows masked the bug. Real external test users never existed, so the auth boundary was never crossed in testing. Structural lesson filed: anything under /v/, /advance/, or /report/ is public and must use supabaseAdmin. Anything under /dashboard/ is authenticated and uses supabaseServer. Worth a future ESLint rule or header-comment convention to enforce.
+
+**Backlog items surfaced by this work (not fixed today):**
+- lib/tourrouter/billingGate.ts likely has the same RLS issue for any TourRouter public routes. Check before launch. If so, same one-line fix as lib/localizer/billingGate.ts.
+- Comment in billingGate.ts around the /api/download vs admin-bypass behavior was accurate and we kept it — worth re-reading if future auth questions come up.
+- Structural: consider adding an ESLint rule or pre-commit check that flags supabaseServer() imports in app/v/**, app/advance/**, app/report/** paths.
+
+**Tim status:** Localizer test pass surfaced 5–6 issues total. Today's session fixed issue #1 (the share-link 404, which expanded into this 8-file public-share refactor). Other 4–5 items not yet triaged in writing — Drew had a verbal conversation with Tim during the test, will reconvene. Tim also said he'd follow up by email on the April 15 status doc (sponsor logo tint, venue-download billing gate caveat, Send to All Promoters proposal — all still open).
+
+**What didn't get done:** Tour-level Download All page (Tier 2B), remaining expense tabs (Tier 2C), and the other 4–5 Tim test-pass issues. All deferred to next session.
+
+**Next session should start with:**
+- git pull, git status, confirm clean
+- Check Tim's email for written reply on April 15 doc (sponsor tint, billing gate caveat, bulk send)
+- Get the written list of the remaining 4–5 issues from Tim's test pass — avoid diagnosing from memory
+- Once list is in hand, triage: mechanical fixes batched today-style, anything that needs copy/design input parked for Tim
+- Optional: check lib/tourrouter/billingGate.ts to confirm whether it has the same RLS-bound Supabase client as the Localizer one we fixed today, and refactor to supabaseAdmin if so — single-file mechanical change
+- Vercel log spot-check on the three "[geocoding] write-back..." strings — should still be zero hits; any appearance is real signal
