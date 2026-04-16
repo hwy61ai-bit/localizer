@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, rgb } from "pdf-lib";
-import sharp from "sharp";
 import { createClient } from "@supabase/supabase-js";
 import { fetchFontBytes } from "@/lib/fetchFont";
 
@@ -60,30 +59,6 @@ function hexToRgb(hex: string) {
     parseInt(h.substring(2, 4), 16) / 255,
     parseInt(h.substring(4, 6), 16) / 255
   );
-}
-
-async function tintPng(bytes: Uint8Array, hexColor: string): Promise<Uint8Array> {
-  const h = hexColor.replace("#", "");
-  const r = parseInt(h.substring(0, 2), 16);
-  const g = parseInt(h.substring(2, 4), 16);
-  const b = parseInt(h.substring(4, 6), 16);
-  const tinted = await sharp(Buffer.from(bytes))
-    .ensureAlpha()
-    .composite([{
-      input: {
-        create: {
-          width: 1,
-          height: 1,
-          channels: 4,
-          background: { r, g, b, alpha: 1 },
-        },
-      },
-      tile: true,
-      blend: "in",
-    }])
-    .png()
-    .toBuffer();
-  return new Uint8Array(tinted);
 }
 
 export async function GET(req: NextRequest) {
@@ -352,8 +327,7 @@ export async function GET(req: NextRequest) {
       let embeddedLogo;
       // Try PNG first, fallback to JPG
       try {
-        const tintedBytes = await tintPng(logoBytes, printConfig.textColor || "ffffff");
-        embeddedLogo = await pdfDoc.embedPng(tintedBytes);
+        embeddedLogo = await pdfDoc.embedPng(logoBytes);
       } catch {
         embeddedLogo = await pdfDoc.embedJpg(logoBytes);
       }
@@ -374,13 +348,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Draw sponsor logo 1 if enabled (tinted to text color)
+  // Draw sponsor logo 1 if enabled (native colors — no tint)
   if (printConfig.showSponsorLogo1 && sponsorLogo1Bytes) {
     try {
       let embeddedSponsor1;
       try {
-        const tintedSponsor1Bytes = await tintPng(sponsorLogo1Bytes, printConfig.textColor || "ffffff");
-        embeddedSponsor1 = await pdfDoc.embedPng(tintedSponsor1Bytes);
+        embeddedSponsor1 = await pdfDoc.embedPng(sponsorLogo1Bytes);
       } catch {
         embeddedSponsor1 = await pdfDoc.embedJpg(sponsorLogo1Bytes);
       }
@@ -400,13 +373,12 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Draw sponsor logo 2 if enabled (tinted to text color)
+  // Draw sponsor logo 2 if enabled (native colors — no tint)
   if (printConfig.showSponsorLogo2 && sponsorLogo2Bytes) {
     try {
       let embeddedSponsor2;
       try {
-        const tintedSponsor2Bytes = await tintPng(sponsorLogo2Bytes, printConfig.textColor || "ffffff");
-        embeddedSponsor2 = await pdfDoc.embedPng(tintedSponsor2Bytes);
+        embeddedSponsor2 = await pdfDoc.embedPng(sponsorLogo2Bytes);
       } catch {
         embeddedSponsor2 = await pdfDoc.embedJpg(sponsorLogo2Bytes);
       }
