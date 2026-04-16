@@ -106,9 +106,18 @@ export async function getCityCoordinates(
       lat: geocoded.lat,
       lng: geocoded.lng,
       source: 'geocode_api',
-    }).then(({ error }) => {
-      if (error) console.warn('[geocoding] write-back failed:', error.message);
-    });
+    }).select().maybeSingle().then(
+      ({ data, error }) => {
+        if (error) {
+          console.warn(`[geocoding] write-back failed for ${city}, ${country}:`, error.message);
+        } else if (!data) {
+          console.warn(`[geocoding] write-back silently rejected (RLS or no row returned) for ${city}, ${country}`);
+        }
+      },
+      (err: unknown) => {
+        console.warn(`[geocoding] write-back promise rejected for ${city}, ${country}:`, err);
+      }
+    );
 
     return { lat: geocoded.lat, lng: geocoded.lng, source: 'geocode_api' };
   }
