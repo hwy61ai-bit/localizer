@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getLocalizerAccessLevel } from "@/lib/localizer/billingGate";
 import JSZip from "jszip";
 
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
 
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
 
   const { data: link } = await supabase
     .from("venue_links")
