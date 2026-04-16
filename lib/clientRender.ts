@@ -174,7 +174,7 @@ export async function renderPoster(
     }
   }
 
-  // Draw sponsor logo 1 if enabled (no tint — renders in native colors)
+  // Draw sponsor logo 1 if enabled (tinted to text color)
   if (cfg.showSponsorLogo1 && sponsorLogo1Url) {
     try {
       const sponsorImg = await loadImage(sponsorLogo1Url);
@@ -183,13 +183,25 @@ export async function renderPoster(
       const sponsorW = Math.round(sponsorH * (sponsorImg.width / sponsorImg.height));
       const sponsorX = sponsorCfg.x * w - sponsorW / 2;
       const sponsorY = sponsorCfg.y * h - sponsorH / 2;
-      ctx.drawImage(sponsorImg, sponsorX, sponsorY, sponsorW, sponsorH);
+
+      const sponsorCanvas = document.createElement("canvas");
+      sponsorCanvas.width = sponsorW;
+      sponsorCanvas.height = sponsorH;
+      const sponsorCtx = sponsorCanvas.getContext("2d")!;
+      sponsorCtx.drawImage(sponsorImg, 0, 0, sponsorW, sponsorH);
+
+      // Apply text color tint: draw color over logo using source-in composite
+      sponsorCtx.globalCompositeOperation = "source-in";
+      sponsorCtx.fillStyle = "#" + (cfg.textColor ?? "ffffff");
+      sponsorCtx.fillRect(0, 0, sponsorW, sponsorH);
+
+      ctx.drawImage(sponsorCanvas, sponsorX, sponsorY);
     } catch (e) {
       console.warn("Failed to draw sponsor logo 1:", e);
     }
   }
 
-  // Draw sponsor logo 2 if enabled (no tint — renders in native colors)
+  // Draw sponsor logo 2 if enabled (tinted to text color)
   if (cfg.showSponsorLogo2 && sponsorLogo2Url) {
     try {
       const sponsorImg = await loadImage(sponsorLogo2Url);
@@ -198,7 +210,19 @@ export async function renderPoster(
       const sponsorW = Math.round(sponsorH * (sponsorImg.width / sponsorImg.height));
       const sponsorX = sponsorCfg.x * w - sponsorW / 2;
       const sponsorY = sponsorCfg.y * h - sponsorH / 2;
-      ctx.drawImage(sponsorImg, sponsorX, sponsorY, sponsorW, sponsorH);
+
+      const sponsorCanvas = document.createElement("canvas");
+      sponsorCanvas.width = sponsorW;
+      sponsorCanvas.height = sponsorH;
+      const sponsorCtx = sponsorCanvas.getContext("2d")!;
+      sponsorCtx.drawImage(sponsorImg, 0, 0, sponsorW, sponsorH);
+
+      // Apply text color tint: draw color over logo using source-in composite
+      sponsorCtx.globalCompositeOperation = "source-in";
+      sponsorCtx.fillStyle = "#" + (cfg.textColor ?? "ffffff");
+      sponsorCtx.fillRect(0, 0, sponsorW, sponsorH);
+
+      ctx.drawImage(sponsorCanvas, sponsorX, sponsorY);
     } catch (e) {
       console.warn("Failed to draw sponsor logo 2:", e);
     }
