@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import PrintDownloadButton from "@/app/v/e/[token]/PrintDownloadButton";
 
 export default async function MarketingPage({
@@ -11,7 +11,7 @@ export default async function MarketingPage({
 }) {
   const { token } = await params;
   const { eventId } = await searchParams;
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
 
   // 1. Look up marketing token (tour-scoped)
   const { data: marketingToken } = await supabase
