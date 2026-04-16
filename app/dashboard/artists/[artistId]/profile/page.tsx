@@ -1837,6 +1837,19 @@ function RosterSection({
       >
         {rosterDragOver ? "DROP CSV / XLSX TO IMPORT CREW" : "+ ADD CREW MEMBER"}
       </button>
+      {!rosterDragOver && (
+        <div style={{
+          marginTop: 8,
+          fontFamily: "var(--hw-font-mono)",
+          fontSize: 10,
+          fontWeight: 400,
+          letterSpacing: "1px",
+          color: "var(--hw-text-muted)",
+          textAlign: "center" as const,
+        }}>
+          Drag and drop your roster and pay here
+        </div>
+      )}
     </div>
   );
 }

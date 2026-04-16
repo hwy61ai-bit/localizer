@@ -228,8 +228,8 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
         {/* Footer */}
         <div style={{ borderTop: "3px solid var(--hw-border-strong)", paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "3px", color: "var(--hw-crimson)" }}>HWY61</span>
-          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>POWERED BY HWY61</span>
+          <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "3px" }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span></span>
+          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>POWERED BY HWY61 LABS</span>
         </div>
       </div>
     </div>
