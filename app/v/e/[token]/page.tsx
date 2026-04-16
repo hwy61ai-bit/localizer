@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import PrintDownloadButton from "./PrintDownloadButton";
 
 export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
 
   const { data: link } = await supabase
     .from("venue_links")
