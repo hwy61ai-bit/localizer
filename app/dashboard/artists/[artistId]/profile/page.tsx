@@ -872,7 +872,7 @@ export default function ArtistProfilePage() {
                 )}
               </div>
               <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 8, color: "var(--hw-text-muted)", marginTop: 6, textAlign: "center", maxWidth: 94, letterSpacing: "0.5px", textTransform: "uppercase" }}>
-                LOGO (TRANSPARENT .PNG)
+                LOGO — ORIGINAL COLOR ON PRINT PDF
               </div>
             </div>
           </div>
