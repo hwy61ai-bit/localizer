@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getLocalizerAccessLevel } from "@/lib/localizer/billingGate";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   // The url query param must match one of the render_*_url columns on the row,
   // which scopes this proxy to legitimate per-share assets and closes the
   // pre-existing open-proxy behavior.
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
   const { data: link } = await supabase
     .from("venue_links")
     .select("org_id, render_square_url, render_story_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url")
