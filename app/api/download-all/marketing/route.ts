@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getLocalizerAccessLevel } from "@/lib/localizer/billingGate";
 import JSZip from "jszip";
 
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 });
   if (!eventId) return NextResponse.json({ error: "Missing eventId" }, { status: 400 });
 
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
 
   // 1. Validate marketing token (tour-scoped)
   const { data: marketingToken } = await supabase
