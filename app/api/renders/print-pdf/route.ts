@@ -7,7 +7,7 @@ import { fetchFontBytes } from "@/lib/fetchFont";
 // Public route — no auth required (called from venue link page)
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
