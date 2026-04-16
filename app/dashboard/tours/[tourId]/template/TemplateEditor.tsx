@@ -703,6 +703,38 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
 
                   {dragging && (
+                    <svg
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 18 }}
+                    >
+                      {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((p) => (
+                        <line
+                          key={`v${p}`}
+                          x1={p}
+                          y1={0}
+                          x2={p}
+                          y2={100}
+                          stroke="rgba(0,0,0,0.08)"
+                          strokeWidth={0.1}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      ))}
+                      {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((p) => (
+                        <line
+                          key={`h${p}`}
+                          x1={0}
+                          y1={p}
+                          x2={100}
+                          y2={p}
+                          stroke="rgba(0,0,0,0.08)"
+                          strokeWidth={0.1}
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      ))}
+                    </svg>
+                  )}
+                  {dragging && (
                     <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 0, borderLeft: "1px dashed rgba(255,255,255,0.9)", pointerEvents: "none", zIndex: 20 }} />
                   )}
                   {(["venue", "city", "date"] as FieldKey[]).flatMap(a =>
