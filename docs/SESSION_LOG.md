@@ -1448,3 +1448,22 @@ Check whether Tim has replied to the April 15 status doc. If yes, prioritize whi
 - (c) Remaining expense tabs — mechanical work following Accommodation pattern
 
 Working tree clean at session end. 5 commits pushed to main.
+
+## 2026-04-16
+
+**Commits:** 2
+- 4e745f2 — fix: harden Mapbox geocoding write-back with .select().maybeSingle() to catch silent RLS rejections
+- [kickoff doc commit SHA] — docs: session kickoff April 16
+
+**What shipped:**
+- Mapbox write-back RLS hardening (Tier 2A from kickoff doc). `lib/tourrouter/geocoding.ts` now uses `.select().maybeSingle()` after the insert to catch silent RLS rejections, with distinct log strings for each failure mode (`write-back failed`, `write-back silently rejected`, `write-back promise rejected`). City + country included in every log line for grepability. Fix confirmed deployed to prod; zero hits on any of the three strings in Vercel logs after ~15min (expected — write-back has been working, we just couldn't prove it before).
+
+**Tim status:** Still waiting on written reply to April 15 status doc. Discussed items verbally but nothing firm enough to build on. Three open questions still pending: sponsor logo tint, venue-download billing gate caveat, Send to All Promoters bulk button.
+
+**What didn't get done:** Tour-level Download All page (Tier 2B), remaining expense tabs (Tier 2C). Both deferred — Download All wants a dedicated half-day, expense tabs are batchable whenever.
+
+**Next session should start with:**
+- Check Tim's email for reply to April 15 status doc
+- If reply: build whatever he greenlit (bulk send is highest-impact)
+- If no reply: pick between Tier 2B (Download All, half-day commit) or Tier 2C (expense tabs, batchable)
+- Optional audit: check Vercel logs for the three `[geocoding]` strings — should still be zero hits; any appearance is a real signal.
