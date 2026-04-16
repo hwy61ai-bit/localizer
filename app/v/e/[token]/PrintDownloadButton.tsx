@@ -1,9 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function PrintDownloadButton({ eventId, venueName }: { eventId: string; venueName: string }) {
   const [generating, setGenerating] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!generating) {
+      setElapsed(0);
+      return;
+    }
+    const started = Date.now();
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - started) / 1000));
+    }, 250);
+    return () => clearInterval(interval);
+  }, [generating]);
 
   const handlePrintDownload = async () => {
     setGenerating(true);
@@ -29,10 +42,11 @@ export default function PrintDownloadButton({ eventId, venueName }: { eventId: s
       onClick={handlePrintDownload}
       disabled={generating}
       style={{
-        display: "inline-flex",
-        alignItems: "center",
+        display: "flex",
+        flexDirection: generating ? "column" : "row",
+        alignItems: generating ? "stretch" : "center",
         gap: 10,
-        padding: "16px 28px",
+        padding: generating ? "20px 28px" : "16px 28px",
         border: "3px solid var(--hw-border-strong)",
         background: "var(--hw-bg-invert)",
         color: "var(--hw-text-invert)",
@@ -48,8 +62,21 @@ export default function PrintDownloadButton({ eventId, venueName }: { eventId: s
     >
       {generating ? (
         <>
-          <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: 16 }}>&#9696;</span>
-          Generating PDF...
+          <style>{`
+            @keyframes hwStripeMove {
+              0% { background-position: 0 0; }
+              100% { background-position: 28px 0; }
+            }
+          `}</style>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", textAlign: "center" }}>
+            GENERATING PDF — {elapsed}s
+          </div>
+          <div style={{ width: "100%", height: 8, background: "var(--hw-bg-surface)", overflow: "hidden" }}>
+            <div style={{ width: "100%", height: "100%", background: "repeating-linear-gradient(45deg, var(--hw-crimson) 0px, var(--hw-crimson) 10px, transparent 10px, transparent 20px)", animation: "hwStripeMove 1s linear infinite" }} />
+          </div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "1px", textAlign: "center" }}>
+            This can take up to 30 seconds. Please don't refresh.
+          </div>
         </>
       ) : (
         <>
