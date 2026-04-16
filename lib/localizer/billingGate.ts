@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 export type LocalizerAccessLevel = "none" | "free" | "paid";
@@ -28,7 +28,7 @@ export async function getLocalizerAccessLevel(
     return "paid";
   }
 
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
   const { data: org } = await supabase
     .from("orgs")
     .select("localizer_plan_status, bundle_plan_status")
