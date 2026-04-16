@@ -715,8 +715,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           y1={0}
                           x2={p}
                           y2={100}
-                          stroke="rgba(0,0,0,0.08)"
-                          strokeWidth={0.1}
+                          stroke="rgba(220,60,60,0.9)"
+                          strokeWidth={0.5}
                           vectorEffect="non-scaling-stroke"
                         />
                       ))}
@@ -727,8 +727,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           y1={p}
                           x2={100}
                           y2={p}
-                          stroke="rgba(0,0,0,0.08)"
-                          strokeWidth={0.1}
+                          stroke="rgba(220,60,60,0.9)"
+                          strokeWidth={0.5}
                           vectorEffect="non-scaling-stroke"
                         />
                       ))}
