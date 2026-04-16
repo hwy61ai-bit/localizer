@@ -22,6 +22,7 @@ export default function AssetsPage() {
   const toast = useToast();
   const [assets, setAssets] = useState<{ formatId: string; url: string }[]>([]);
   const [uploading, setUploading] = useState<string | null>(null);
+  const [videoProgress, setVideoProgress] = useState<{ [key: string]: number }>({});
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const initialLoadDone = useRef(false);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
@@ -91,19 +92,44 @@ export default function AssetsPage() {
     }
     setUploading(formatId);
     try {
-      // All photo formats upload directly to Cloudinary
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
       const isVideo = formatId === "tiktok" || formatId === "yt_shorts";
       const fd = new FormData();
       fd.append("file", file);
       fd.append("upload_preset", "localizer_tours");
       fd.append("public_id", `tour_${tourId}_${formatId}_${Date.now()}`);
-      const resourceType = isVideo ? "video" : "image";
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
-        method: "POST",
-        body: fd,
-      });
-      const result = await res.json();
+
+      let result: any;
+
+      if (isVideo) {
+        result = await new Promise<any>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percent = Math.round((event.loaded / event.total) * 100);
+              setVideoProgress(prev => ({ ...prev, [formatId]: percent }));
+            }
+          };
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              reject(new Error(`Upload failed with status ${xhr.status}`));
+            }
+          };
+          xhr.onerror = () => reject(new Error("Network error during upload"));
+          xhr.onabort = () => reject(new Error("Upload aborted"));
+          xhr.send(fd);
+        });
+      } else {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: "POST",
+          body: fd,
+        });
+        result = await res.json();
+      }
+
       if (result.error) throw new Error(result.error.message);
       // Save public_id to DB
       await fetch(`/api/tours/${tourId}/upload-image`, {
@@ -117,6 +143,7 @@ export default function AssetsPage() {
       toast.error("Upload failed.");
     } finally {
       setUploading(null);
+      setVideoProgress(prev => { const next = { ...prev }; delete next[formatId]; return next; });
     }
   }
 
@@ -181,7 +208,22 @@ export default function AssetsPage() {
                 </div>
               </>
             ) : isUploading ? (
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>UPLOADING...</div>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", pointerEvents: "none" }}>
+                {(fmt.id === "tiktok" || fmt.id === "yt_shorts") ? (() => {
+                  const percent = videoProgress[fmt.id] ?? 0;
+                  return (
+                    <>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "1.5px", textTransform: "uppercase" }}>UPLOADING</div>
+                      <div style={{ width: "70%", height: 24, border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", position: "relative", overflow: "hidden" }}>
+                        <div style={{ position: "absolute", inset: 0, width: `${percent}%`, background: "var(--hw-crimson)", transition: "width 0.15s linear" }} />
+                      </div>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 8 }}>{percent}%</div>
+                    </>
+                  );
+                })() : (
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>UPLOADING...</div>
+                )}
+              </div>
             ) : (
               <div style={{ textAlign: "center", pointerEvents: "none" }}>
                 <div style={{ fontSize: 22, color: "var(--hw-text-muted)", marginBottom: 8, opacity: 0.4 }}>&#8593;</div>
