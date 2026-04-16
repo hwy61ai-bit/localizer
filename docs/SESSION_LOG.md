@@ -1514,3 +1514,107 @@ Verified end-to-end in Safari (anonymous, no session): tour hub loads ✓, per-e
 - Once list is in hand, triage: mechanical fixes batched today-style, anything that needs copy/design input parked for Tim
 - Optional: check lib/tourrouter/billingGate.ts to confirm whether it has the same RLS-bound Supabase client as the Localizer one we fixed today, and refactor to supabaseAdmin if so — single-file mechanical change
 - Vercel log spot-check on the three "[geocoding] write-back..." strings — should still be zero hits; any appearance is real signal
+
+
+## 2026-04-16 (final update — late evening)
+
+**Total commits today: 25.** This supersedes the earlier "evening update" entry (4613851).
+
+Evening kept going after the 8-file public-share refactor, through the sponsor tinting epic, into UX polish, Tim's list closers, and ended with a recurrence of the auth "session expired" bug that must be diagnosed before beta launch.
+
+### Commits (chronological)
+
+- 4e745f2 — fix: harden Mapbox geocoding write-back with .select().maybeSingle() to catch silent RLS rejections
+- 1f9d529 — docs: session log 2026-04-16 (morning)
+- d30ac70 — feat: add lib/supabaseAdmin for public token-based service-role access
+- 1894bd9 — fix: /v/e viewer uses supabaseAdmin to allow anonymous access
+- cc0c35b — fix: /v/m viewer uses supabaseAdmin to allow anonymous access
+- 355d050 — fix: /v/tour hub uses supabaseAdmin to allow anonymous access
+- 571165e — fix: /api/download uses supabaseAdmin for public token-based access
+- 90a3ec6 — fix: /api/download-all uses supabaseAdmin for public token-based access
+- 0e7fe4f — fix: /api/download/marketing uses supabaseAdmin for public token-based access
+- 62ba419 — fix: /api/download-all/marketing uses supabaseAdmin for public token-based access
+- 337b2b1 — fix: billingGate uses supabaseAdmin so anon download routes resolve plan correctly
+- 4613851 — docs: session log 2026-04-16 evening update (superseded by this entry)
+- f74b3ea — feat: show grid overlay in template editor during element drag
+- ef7c9af — feat: sticky preview column in template editor keeps image visible while scrolling controls
+- c7ae35d — feat: tint sponsor logos to text color in template editor preview
+- 54c9a9f — feat: tint sponsor logos to text color in client canvas renderer
+- 5fef684 — chore: add sharp for server-side PNG tinting in print PDF
+- 0ffc607 — feat: tint band and sponsor logos to text color in print PDF via sharp  [later reverted — see de349c2]
+- c4c1cfa — chore: extend print-pdf maxDuration 60s -> 300s for sharp cold start
+- d095b6f — fix: request weight 700 for Google Fonts in PDF rendering to match preview bold
+- de349c2 — Revert "feat: tint band and sponsor logos to text color in print PDF via sharp"
+- b87971b — feat: add elapsed-time counter and animated progress bar to PDF download button
+- 46fc800 — copy: note that band logo renders in original color on print PDF
+- e0ac96a — copy: update sponsor logo helper text to reflect web tint vs print PDF native color
+- ea950ee — copy: roster drag-drop hint + footer 'HWY61 LABS' branding parity
+
+### What shipped
+
+**Morning warm-up.** Mapbox geocoding write-back in lib/tourrouter/geocoding.ts hardened with `.select().maybeSingle()` and three distinct error log strings for greppable prod monitoring. Zero hits on those strings post-deploy as expected — write-back has been healthy, we now have visibility.
+
+**Midday public-share auth refactor (8 files).** Full detail in earlier part of this log. In short: the entire /v/* viewer pipeline + all four /api/download* routes + billingGate helper were using supabaseServer() (cookie-aware, RLS-bound). Anonymous users — anyone without an org_member session — hit RLS walls and got silent 404s. Had been broken for anon users since day one; only worked for Drew and Tim because we tested logged-in with cookies leaking across tabs. Refactored all 8 to new lib/supabaseAdmin (service role, token validation remains in app code). Verified end-to-end anonymous in Safari.
+
+**Afternoon Tim-test-pass UX polish.**
+- Video upload progress bar on Localizer assets page — XHR progress events, 2 video slots (TikTok + yt_shorts). Image uploads unchanged.
+- Drag-only grid overlay in template editor — 10x10 crimson grid, only visible during an element drag.
+- Sticky preview column in template editor — image preview stays pinned while controls scroll.
+
+**Evening sponsor logo tinting epic.**
+- Sponsor logos now tint to text color in preview (CSS mask + hidden img for aspect sizing).
+- Sponsor logos now tint in downloaded JPEGs (offscreen-canvas source-in composite, mirroring band logo pattern).
+- Installed sharp, shipped print-pdf tinting, reverted after discovering ~100+ seconds of sharp cost per request on Vercel (even warm).
+- Also fixed pre-existing Google Fonts weight bug in lib/fetchFont.ts — URL now includes `:wght@700` to match preview. PDF text now renders correctly bold. Tradeoff: took print-pdf from 5-8s pre-today to 24s post-today. Known regression, worth investigating.
+- PrintDownloadButton got an elapsed-time counter + animated crimson striped bar + "up to 30 seconds, don't refresh" subtitle for graceful 24s wait.
+- Added copy at both upload points explaining original-color-on-print-PDF behavior.
+
+**Tim's list closers (session final).**
+- Roster drag-drop hint under "+ ADD CREW MEMBER" button in RosterSection.
+- Venue share page footer now reads "HWY61 LABS" (crimson + dark) and "POWERED BY HWY61 LABS" to match header branding.
+
+### Final print PDF state
+
+| Surface | Band Logo | Sponsor Logos | Text Weight |
+|---|---|---|---|
+| Preview | tinted | tinted (new) | correct |
+| Downloaded JPEGs | tinted | tinted (new) | N/A |
+| Print PDF | native color (documented in UI) | native color (documented in UI) | bold (fixed today) |
+
+### ⚠️ CRITICAL — auth bug recurrence, MUST fix before beta launch
+
+"Session expired" + "can't log in without clearing cache" hit on prod late evening. 4th day in a row. The April 14 PKCE fix (5255a82) addressed the HTTP-localhost magic-link vector but not this production symptom.
+
+**Investigated tonight:**
+- middleware.ts uses `getSession()` correctly in both gates. Not the known anti-pattern.
+- The only `getUser()` call is in /auth/callback/route.ts — appropriate for server-verifying the magic-link token, not a bug.
+- Vercel logs during the affected window: no auth errors visible.
+- Symptom clears with browser cache clear (standard workaround, not acceptable for users).
+
+**Did NOT patch tonight.** No clear architectural root cause to point at, fatigue + 22 auth-adjacent commits shipped earlier made midnight middleware edits too risky. Shipping a guess would have been worse than not shipping.
+
+**This is a beta-launch blocker.** Localizer-only beta is starting very soon. A beta user seeing "session expired" with only "clear your cache" as a workaround will churn immediately.
+
+**Tomorrow's diagnostic plan:**
+- Supabase dashboard audit — JWT expiry, refresh TTL, site URL, redirect URLs, any rate-limit or cookie-related settings
+- Live reproduction with browser DevTools open — inspect the actual Supabase cookies during "session expired" state; note which are present, expired, or missing
+- Cookie domain scoping check — subdomain migration left `.hwy61labs.com` leading-dot cookies; verify they're set correctly across all subdomains and the root domain
+- Test Google OAuth linked-provider path — flagged April 14 as untested
+- Audit whether any April 16 supabaseAdmin commit indirectly affected session cookie handling (shouldn't have, but verify)
+- Single-tab test — if bug vanishes with only one prod tab open, refresh-token race between tabs is the cause
+
+### Backlog carried from today
+
+1. **Print PDF logo tinting done right.** Pre-tint at upload time with sharp (already installed), save tinted variant to Supabase, render PDF fetches pre-tinted bytes. Zero sharp cost at render time. Needs design thinking on how to handle text-color variance.
+2. **Print PDF generation speed (5-8s → 24s).** Caused by `:wght@700` Google Fonts fetch. Cache TTF server-side, pre-bundle common weights, or find a lighter pattern.
+3. **Cloudinary video overlay sponsor logo tinting.** One-line `e_colorize` addition in buildSponsorLogoLayer in app/api/renders/generate/route.ts.
+4. **ESLint rule:** flag `supabaseServer()` imports in app/v/**, app/advance/**, app/report/** paths.
+5. **lib/tourrouter/billingGate.ts** likely has the same RLS issue as the Localizer one we fixed today. Check before TourRouter launch.
+
+### Tomorrow's session starts with
+
+- `git pull`, `git status`, confirm clean
+- **FIRST PRIORITY:** auth bug diagnostic (detailed plan above). Beta-blocker. Do not start anything else until this is resolved or has a clear fix path.
+- Then check Tim's email for April 15 status doc reply (sponsor tint, billing gate caveat, bulk send proposal)
+- Get written list of remaining Tim test-pass items — avoid diagnosing from memory
+- Optional: `npm i -g @anthropic-ai/claude-code` or `claude doctor` — auto-update has been failing all day
