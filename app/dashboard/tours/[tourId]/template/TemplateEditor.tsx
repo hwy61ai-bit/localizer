@@ -1084,166 +1084,172 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </div>
             </div>
 
-            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: logoUrl ? "pointer" : "not-allowed", opacity: logoUrl ? 1 : 0.4, marginBottom: cfg.showLogo ? 12 : 0 }}>
-                <span onClick={() => logoUrl && updateCfg("showLogo", !cfg.showLogo)} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: cfg.showLogo ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: logoUrl ? "pointer" : "not-allowed" }}>
-                  {cfg.showLogo && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
-                </span>
-                <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Logo</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{logoUrl ? "Tinted to text color" : "Upload on artist page"}</div>
-                </div>
-              </label>
-              {cfg.showLogo && logoUrl && (
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <input
-                        type="number"
-                        min={20}
-                        max={isPrintFormat ? 1800 : 600}
-                        value={cfg.logo?.size ?? 80}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value);
-                          if (!isNaN(val) && val >= 1 && val <= 999) setConfigs(prev => ({
-                            ...prev,
-                            [activeFormat]: {
-                              ...prev[activeFormat],
-                              logo: { ...(prev[activeFormat].logo ?? { x: 0.5, y: 0.15, size: 80, align: "center" }), size: val },
-                            },
-                          }));
-                        }}
-                        style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+            {!isPrintFormat && (
+              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: logoUrl ? "pointer" : "not-allowed", opacity: logoUrl ? 1 : 0.4, marginBottom: cfg.showLogo ? 12 : 0 }}>
+                  <span onClick={() => logoUrl && updateCfg("showLogo", !cfg.showLogo)} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: cfg.showLogo ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: logoUrl ? "pointer" : "not-allowed" }}>
+                    {cfg.showLogo && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                  </span>
+                  <div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Logo</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{logoUrl ? "Tinted to text color" : "Upload on artist page"}</div>
+                  </div>
+                </label>
+                {cfg.showLogo && logoUrl && (
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <input
+                          type="number"
+                          min={20}
+                          max={isPrintFormat ? 1800 : 600}
+                          value={cfg.logo?.size ?? 80}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val) && val >= 1 && val <= 999) setConfigs(prev => ({
+                              ...prev,
+                              [activeFormat]: {
+                                ...prev[activeFormat],
+                                logo: { ...(prev[activeFormat].logo ?? { x: 0.5, y: 0.15, size: 80, align: "center" }), size: val },
+                              },
+                            }));
+                          }}
+                          style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                        />
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                      </div>
+                    </div>
+                    <input type="range" min={20} max={isPrintFormat ? 1800 : 600} step={2} value={cfg.logo?.size ?? 80}
+                      onChange={(e) => setConfigs(prev => ({
+                        ...prev,
+                        [activeFormat]: {
+                          ...prev[activeFormat],
+                          logo: { ...(prev[activeFormat].logo ?? { x: 0.5, y: 0.15, size: 80, align: "center" }), size: parseInt(e.target.value) },
+                        },
+                      }))}
+                      style={{ width: "100%", cursor: "pointer" }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!isPrintFormat && (
+              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+                <input ref={sponsor1FileRef} type="file" accept=".png" style={{ display: "none" }} onChange={(e) => handleSponsorLogoUpload(1, e)} />
+                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url ? 12 : 0 }}>
+                  <span onClick={() => {
+                    if (!sponsorLogo1Url) { sponsor1FileRef.current?.click(); return; }
+                    updateCfg("showSponsorLogo1", !(cfg.showSponsorLogo1 ?? false));
+                  }} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showSponsorLogo1 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                    {(cfg.showSponsorLogo1 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                  </span>
+                  <div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 1</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
+                  </div>
+                </label>
+                {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                      <img src={sponsorLogo1Url} alt="Sponsor 1" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
+                      <button onClick={() => sponsor1FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
+                      <button onClick={() => handleSponsorLogoDelete(1)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
+                    </div>
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                        <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo1?.size ?? 60}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              if (!isNaN(val) && val >= 1 && val <= 9999) setConfigs(prev => ({
+                                ...prev,
+                                [activeFormat]: {
+                                  ...prev[activeFormat],
+                                  sponsorLogo1: { ...(prev[activeFormat].sponsorLogo1 ?? SPONSOR_1_DEFAULT), size: val },
+                                },
+                              }));
+                            }}
+                            style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                          />
+                          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                        </div>
+                      </div>
+                      <input type="range" min={20} max={isPrintFormat ? 1800 : 400} step={2} value={cfg.sponsorLogo1?.size ?? 60}
+                        onChange={(e) => setConfigs(prev => ({
+                          ...prev,
+                          [activeFormat]: {
+                            ...prev[activeFormat],
+                            sponsorLogo1: { ...(prev[activeFormat].sponsorLogo1 ?? SPONSOR_1_DEFAULT), size: parseInt(e.target.value) },
+                          },
+                        }))}
+                        style={{ width: "100%", cursor: "pointer" }}
                       />
-                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
                     </div>
-                  </div>
-                  <input type="range" min={20} max={isPrintFormat ? 1800 : 600} step={2} value={cfg.logo?.size ?? 80}
-                    onChange={(e) => setConfigs(prev => ({
-                      ...prev,
-                      [activeFormat]: {
-                        ...prev[activeFormat],
-                        logo: { ...(prev[activeFormat].logo ?? { x: 0.5, y: 0.15, size: 80, align: "center" }), size: parseInt(e.target.value) },
-                      },
-                    }))}
-                    style={{ width: "100%", cursor: "pointer" }}
-                  />
-                </div>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
+            )}
 
-            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-              <input ref={sponsor1FileRef} type="file" accept=".png" style={{ display: "none" }} onChange={(e) => handleSponsorLogoUpload(1, e)} />
-              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url ? 12 : 0 }}>
-                <span onClick={() => {
-                  if (!sponsorLogo1Url) { sponsor1FileRef.current?.click(); return; }
-                  updateCfg("showSponsorLogo1", !(cfg.showSponsorLogo1 ?? false));
-                }} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showSponsorLogo1 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
-                  {(cfg.showSponsorLogo1 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
-                </span>
-                <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 1</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
-                </div>
-              </label>
-              {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (
-                <>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <img src={sponsorLogo1Url} alt="Sponsor 1" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
-                    <button onClick={() => sponsor1FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
-                    <button onClick={() => handleSponsorLogoDelete(1)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
-                  </div>
+            {!isPrintFormat && (
+              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+                <input ref={sponsor2FileRef} type="file" accept=".png" style={{ display: "none" }} onChange={(e) => handleSponsorLogoUpload(2, e)} />
+                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url ? 12 : 0 }}>
+                  <span onClick={() => {
+                    if (!sponsorLogo2Url) { sponsor2FileRef.current?.click(); return; }
+                    updateCfg("showSponsorLogo2", !(cfg.showSponsorLogo2 ?? false));
+                  }} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showSponsorLogo2 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                    {(cfg.showSponsorLogo2 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                  </span>
                   <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo1?.size ?? 60}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val) && val >= 1 && val <= 9999) setConfigs(prev => ({
-                              ...prev,
-                              [activeFormat]: {
-                                ...prev[activeFormat],
-                                sponsorLogo1: { ...(prev[activeFormat].sponsorLogo1 ?? SPONSOR_1_DEFAULT), size: val },
-                              },
-                            }));
-                          }}
-                          style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
-                        />
-                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
-                      </div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 2</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
+                  </div>
+                </label>
+                {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (
+                  <>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                      <img src={sponsorLogo2Url} alt="Sponsor 2" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
+                      <button onClick={() => sponsor2FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
+                      <button onClick={() => handleSponsorLogoDelete(2)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
                     </div>
-                    <input type="range" min={20} max={isPrintFormat ? 1800 : 400} step={2} value={cfg.sponsorLogo1?.size ?? 60}
-                      onChange={(e) => setConfigs(prev => ({
-                        ...prev,
-                        [activeFormat]: {
-                          ...prev[activeFormat],
-                          sponsorLogo1: { ...(prev[activeFormat].sponsorLogo1 ?? SPONSOR_1_DEFAULT), size: parseInt(e.target.value) },
-                        },
-                      }))}
-                      style={{ width: "100%", cursor: "pointer" }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-              <input ref={sponsor2FileRef} type="file" accept=".png" style={{ display: "none" }} onChange={(e) => handleSponsorLogoUpload(2, e)} />
-              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url ? 12 : 0 }}>
-                <span onClick={() => {
-                  if (!sponsorLogo2Url) { sponsor2FileRef.current?.click(); return; }
-                  updateCfg("showSponsorLogo2", !(cfg.showSponsorLogo2 ?? false));
-                }} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showSponsorLogo2 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
-                  {(cfg.showSponsorLogo2 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
-                </span>
-                <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 2</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
-                </div>
-              </label>
-              {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (
-                <>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <img src={sponsorLogo2Url} alt="Sponsor 2" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
-                    <button onClick={() => sponsor2FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
-                    <button onClick={() => handleSponsorLogoDelete(2)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
-                  </div>
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo2?.size ?? 60}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val) && val >= 1 && val <= 9999) setConfigs(prev => ({
-                              ...prev,
-                              [activeFormat]: {
-                                ...prev[activeFormat],
-                                sponsorLogo2: { ...(prev[activeFormat].sponsorLogo2 ?? SPONSOR_2_DEFAULT), size: val },
-                              },
-                            }));
-                          }}
-                          style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
-                        />
-                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                        <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo2?.size ?? 60}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              if (!isNaN(val) && val >= 1 && val <= 9999) setConfigs(prev => ({
+                                ...prev,
+                                [activeFormat]: {
+                                  ...prev[activeFormat],
+                                  sponsorLogo2: { ...(prev[activeFormat].sponsorLogo2 ?? SPONSOR_2_DEFAULT), size: val },
+                                },
+                              }));
+                            }}
+                            style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                          />
+                          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                        </div>
                       </div>
+                      <input type="range" min={20} max={isPrintFormat ? 1800 : 400} step={2} value={cfg.sponsorLogo2?.size ?? 60}
+                        onChange={(e) => setConfigs(prev => ({
+                          ...prev,
+                          [activeFormat]: {
+                            ...prev[activeFormat],
+                            sponsorLogo2: { ...(prev[activeFormat].sponsorLogo2 ?? SPONSOR_2_DEFAULT), size: parseInt(e.target.value) },
+                          },
+                        }))}
+                        style={{ width: "100%", cursor: "pointer" }}
+                      />
                     </div>
-                    <input type="range" min={20} max={isPrintFormat ? 1800 : 400} step={2} value={cfg.sponsorLogo2?.size ?? 60}
-                      onChange={(e) => setConfigs(prev => ({
-                        ...prev,
-                        [activeFormat]: {
-                          ...prev[activeFormat],
-                          sponsorLogo2: { ...(prev[activeFormat].sponsorLogo2 ?? SPONSOR_2_DEFAULT), size: parseInt(e.target.value) },
-                        },
-                      }))}
-                      style={{ width: "100%", cursor: "pointer" }}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
+                  </>
+                )}
+              </div>
+            )}
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
