@@ -242,3 +242,58 @@ Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three su
 - Force re-send checkbox in the modal? (Off by default if added.)
 - Handling for rows missing a promoter email — silent skip or surface in confirmation?
 - Button label preference?
+
+---
+
+### /api/venue-link — missing auth check
+
+*Surfaced April 17, 2026 during ESLint rule design for supabaseServer forbidden zones.*
+
+app/api/venue-link/route.ts (the POST handler that creates or fetches a venue share token for an event) is called only from the dashboard by logged-in tour managers — as of April 17 the only caller is app/dashboard/tours/[tourId]/components/EventsTable.tsx line 524. But the route itself doesn't verify the caller is logged in. It trusts whatever orgId and eventId arrive in the request body and happily creates a venue_links row under that org.
+
+In practice this hasn't been exploited because only dashboard code calls it and no malicious traffic is hitting the endpoint. But the route would gladly create tokens for any orgId an unauthenticated attacker posts, and the RLS policies on venue_links may or may not catch it depending on how they're written (not yet audited).
+
+**Fix:**
+- Add a `supabase.auth.getUser()` check at the top. Return 401 if null.
+- Verify the authenticated user is a member of the requested orgId before creating the row. Return 403 on mismatch.
+- Pattern to follow: app/api/marketing-tokens/create/route.ts already does this correctly — model after it.
+
+**Priority:** Low-medium. Hygiene, not a user-facing bug. Belongs in a pre-launch security hygiene pass rather than a standalone urgent fix.
+
+---
+
+### /api/venue-links — possibly dead code
+
+*Surfaced April 17, 2026 during ESLint rule design.*
+
+app/api/venue-links/route.ts (the GET handler that takes tourId + orgId and returns render URLs for all events in that tour) has **zero call sites** in the codebase as of April 17. Grepped the full repo, including tsx and ts files, and nothing references the endpoint.
+
+Possibilities:
+1. Genuinely dead — was built for a feature that shipped with different plumbing, never cleaned up. Delete the file.
+2. Called by something outside the grep's reach (external tool, manual curl, third-party integration, Vercel cron). Unlikely given the route shape but possible.
+3. Reserved for a future feature and left as a placeholder. If so, worth a comment explaining that.
+
+**Next step:** Before deleting, check Vercel's function invocation logs for the last 30 days. If the route has zero invocations, safe to delete. If non-zero, figure out who's calling it.
+
+Like the venue-link audit above, no user impact either way. Just code hygiene / reducing the attack surface of unused endpoints.
+
+---
+
+### Lint cleanup pass on public viewer pages
+
+*Surfaced April 17, 2026 when running eslint against app/v, app/advance, app/report, app/api/download, app/api/download-all for the first time.*
+
+These folders carry ~20 pre-existing lint errors and warnings. None are user-facing bugs — all are code quality signals — but they're worth cleaning up in a single pass so future lint runs in these zones stay clean (and the new no-restricted-imports rule's signal doesn't get lost in noise).
+
+The inventory:
+- **13 @typescript-eslint/no-explicit-any errors** in app/v/e/[token]/page.tsx, app/v/m/[token]/page.tsx, and app/v/tour/[token]/page.tsx. Developer wrote `any` when the real data shape wasn't obvious. Fix requires understanding what each piece of data actually is — not mechanical.
+- **1 react/no-unescaped-entities error** in app/v/e/[token]/PrintDownloadButton.tsx line 78 (a literal apostrophe in JSX). Trivial one-character fix.
+- **2 @next/next/no-img-element warnings** on two `<img>` tags in the public viewer pages. Swap to Next.js `<Image>` for auto-optimization; requires knowing the image dimensions.
+- **2 @typescript-eslint/no-unused-vars warnings** for `cleanVenue` in app/api/download-all/route.ts and app/api/download-all/marketing/route.ts. Dead variable from a refactor. Delete the assignments.
+
+**Estimated effort:** 30-45 minutes if done in one pass. Can be done cold — no Tim input needed, no product decisions. Good "fill an hour" task.
+
+Reproduce with:
+```bash
+cd ~/localizer && npx eslint app/v app/advance app/report app/api/download app/api/download-all --max-warnings=0
+```
