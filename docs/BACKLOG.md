@@ -297,3 +297,44 @@ Reproduce with:
 ```bash
 cd ~/localizer && npx eslint app/v app/advance app/report app/api/download app/api/download-all --max-warnings=0
 ```
+
+---
+
+### Custom text lines — two user-editable text fields per tour
+
+*Surfaced April 17, 2026 end of session. Tim has confirmed as must-have for Localizer. Drew plans to start first thing next session.*
+
+**STATUS:** Tim sign-off confirmed. Ready to build. Not speculative.
+
+**What it is.** Two additional text fields, editable in the template editor, that render on all non-print formats (square, story, landscape, TikTok, YT Shorts). Use cases the user has in mind: band website URL, supporting act name, tour sponsor tagline, or any secondary text a tour manager wants on all their social posts without editing each base image.
+
+**Why it matters.** Today a tour manager who wants "w/ The Supporting Band Name" on their square posters has to either build it into the base image in Photoshop or go without. Both are bad. This is a frequent-enough use case that Tim called it must-have.
+
+**Design decisions (locked in with Tim on 4/17):**
+
+1. **Global text, per-format position.** The text itself is stored once at the tour level (in `tours.custom_text_1` and `tours.custom_text_2` — new columns). Position, size, and align are stored per-format inside each format's overlay config, matching how venue/date/city already work. A user types "www.bandname.com" once and it appears on square, story, landscape, TikTok, and YT Shorts — each in its own position that the user has set independently.
+2. **Font and color inherited.** No separate font picker or color swatch for custom text. Whatever font and color the rest of the overlay text uses (same source as venue/date/city) is what custom text uses. Keeps the controls column tight.
+3. **Empty-state placeholder shows in editor only.** If a user enables a custom text line but hasn't typed anything yet, the live preview in the template editor shows the draggable element with "Your text here" as visual placeholder. Final rendered outputs (JPEGs, video overlays) skip the draw entirely if the text is empty — no "Your text here" leaking into a published poster.
+4. **Works on video formats too.** This means touching two render paths: `lib/clientRender.ts` for the image formats, and `app/api/renders/generate/route.ts` (Cloudinary URL overlays) for TikTok / YT Shorts.
+5. **Hidden on Local Poster for Print tab.** Matches the `isPrintFormat` / `formatKey !== "print"` pattern established today in commits a1b1ce6 and db983db. Custom text controls, preview, canvas renderer, and video overlay builder all skip when format is print. Full tour posters are designed externally — we don't layer our own text on them.
+6. **35-character max per line.** Soft enough for most use cases ("w/ The Opening Band", "www.longbandname.com/tour"), tight enough to prevent visual overflow surprises. Auto-shrink already handles any residual sizing issues.
+7. **Controls live at the bottom of the sidebar**, below the existing sections (Band Name, Venue, Date, City, and on non-print tabs, Band Logo and the two Sponsor Logos). Two text inputs plus two sets of position controls.
+
+**What the build actually touches:**
+
+- **Supabase migration:** add `custom_text_1 text` and `custom_text_2 text` columns to `tours`. Both nullable, no default.
+- **Config type:** extend the format overlay config type to include `customText1` and `customText2` field configs (position/size/align — matching the FieldConfig shape used by venue/date/city).
+- **TemplateEditor.tsx:** two new text inputs (global, at the bottom of the sidebar), two new control sections for position/size/align, two new preview elements in the live preview with drag handlers, all gated with `!isPrintFormat`. Character-limit enforcement via `maxLength={35}` on the inputs.
+- **lib/clientRender.ts:** two new `drawText` calls inside `renderPoster`, gated with `formatKey !== "print"`, skipped when text is empty.
+- **app/api/renders/generate/route.ts:** two new Cloudinary text overlay layers for TikTok and YT Shorts, skipped when text is empty or format is print (though print shouldn't hit this path anyway).
+- **Defaults:** decide starting position for each custom line on each format. Reasonable first pass: `customText1` near top-center, `customText2` near bottom-center, both at the same font size as the date field. Easy to revise after building.
+
+**Estimated effort:** 5-7 hours focused work for a single person, spread across 4-5 files plus one migration. Build cold from these specs — no Tim input needed mid-build.
+
+**Things to verify before starting:**
+- That the existing overlay config graceful-defaults handles the two new undefined fields on pre-existing tours (it almost certainly does, since this file pattern has been extended several times, but worth a quick check of how unknown FieldConfigs get handled on load)
+- Where the Cloudinary text overlay syntax lives in `generate/route.ts` — the TikTok/YT Shorts video path hasn't been touched in recent sessions so the code shape may have drifted from the image path
+
+**Open questions deferred to build time (not blocking):**
+- Exact pixel position of the two defaults on each of the five non-print formats
+- Whether the text input should live in a separate "Text Content" section at the bottom, or be inline with each custom text's position controls
