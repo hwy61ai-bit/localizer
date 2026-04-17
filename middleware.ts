@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getCookieDomain } from "@/lib/cookieDomain";
 
 // Hostname routing table
 function getRewriteForHost(hostname: string): string | null {
@@ -67,6 +68,7 @@ const COMING_SOON_PASSTHROUGH_PREFIXES = [
 
 export async function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") || "";
+  const cookieDomain = getCookieDomain(hostname);
   const url = req.nextUrl.clone();
 
   // Shared response — every return path must use or copy cookies from this object.
@@ -83,8 +85,11 @@ export async function middleware(req: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
+            const mergedOptions = cookieDomain
+              ? { ...options, domain: cookieDomain }
+              : options;
             req.cookies.set(name, value);
-            res.cookies.set(name, value, options);
+            res.cookies.set(name, value, mergedOptions);
           });
         },
       },

@@ -3,6 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { EmailOtpType, SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
+import { getCookieDomain } from "@/lib/cookieDomain";
 
 async function ensureOrgExists(supabase: SupabaseClient) {
   const { data: { user } } = await supabase.auth.getUser();
@@ -58,7 +59,8 @@ async function ensureOrgExists(supabase: SupabaseClient) {
 }
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams, origin, hostname } = new URL(request.url);
+  const cookieDomain = getCookieDomain(hostname);
   const token_hash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");
@@ -73,9 +75,12 @@ export async function GET(request: Request) {
       cookies: {
         getAll() { return cookieStore.getAll(); },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const mergedOptions = cookieDomain
+              ? { ...options, domain: cookieDomain }
+              : options;
+            cookieStore.set(name, value, mergedOptions);
+          });
         },
       },
     }
