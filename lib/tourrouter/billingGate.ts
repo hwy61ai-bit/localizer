@@ -1,4 +1,4 @@
-import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 export type TourRouterAccessLevel = "none" | "free" | "paid";
@@ -27,7 +27,7 @@ export async function getTourRouterAccessLevel(
     return "paid";
   }
 
-  const supabase = await supabaseServer();
+  const supabase = supabaseAdmin();
   const { data: org } = await supabase
     .from("orgs")
     .select("tourrouter_plan_status, bundle_plan_status")
