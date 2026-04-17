@@ -1144,7 +1144,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 </span>
                 <div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 1</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color — except on print PDF" : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
                 </div>
               </label>
               {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (
@@ -1200,7 +1200,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 </span>
                 <div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 2</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color — except on print PDF" : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
                 </div>
               </label>
               {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (
