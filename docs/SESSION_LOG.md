@@ -1630,6 +1630,8 @@ Evening kept going after the 8-file public-share refactor, through the sponsor t
 - befd344 — fix(tourrouter): use supabaseAdmin in billingGate for RLS-free plan lookup
 - a98b34c — build(eslint): ban supabaseServer imports in public-facing routes
 - 66d7575 — docs: add three backlog entries from 4/17 ESLint rule work
+- a1b1ce6 — feat(print poster): remove band logo and sponsor logos from Local Poster for Print
+- db983db — feat(print poster): hide logos from preview and canvas renderer on print format
 
 ### Auth bug — diagnosed, fixed, verified
 
@@ -1679,3 +1681,19 @@ Added three new entries to docs/BACKLOG.md (commit 66d7575):
 - **Verify auth fix held overnight:** run the auth_logs SQL query, confirm `refresh_token_already_used` count dropped. If clean, mark the bug closed. If it reappeared, we're back in diagnostic mode with a different subcause — the current fix addresses the duplicate-cookie-scope path but there could be a secondary path we haven't seen yet.
 - Check email for Tim's reply to the April 15 status doc + his written list of remaining test-pass items
 - If both above are resolved, pick next backlog item. Candidates in priority order: (a) print PDF speed regression from 4/16 `:wght@700` fetch, (b) print PDF logo tinting done right via pre-tint-at-upload, (c) any of the three new backlog entries if a quick win is wanted
+
+### Late afternoon addition — Local Poster for Print logo removal
+
+After the session log was first written, Drew and Tim had a conversation about the unresolved band-logo-on-print-PDF tint problem (documented in the backlog as the choice between client-side tint + byte upload vs. pre-tint-at-upload vs. pdf-lib blend mode). The product decision made the whole problem moot: **no logos on the Local Poster for Print tab at all.**
+
+Reasoning: a full tour poster printed at 11x17 will already be designed with band name and tour-wide sponsors baked into the artwork. Separate logo controls on this tab invited users to double up branding on top of an already-branded base image.
+
+Implementation shipped in two commits:
+
+**a1b1ce6** — First pass. Hid the Band Logo, Sponsor Logo 1, and Sponsor Logo 2 control sidebars on the print tab (wrapped each section in `{!isPrintFormat && (...)}`). Removed the three logo fetch blocks and three logo draw blocks from the print-pdf/route.ts renderer entirely, along with the now-unused columns in the tours select. Deleted rather than gated — dead code doesn't rot, and if we ever reverse this decision we'd want to redesign the approach (the client-tint-and-upload path) rather than flip a flag. Net minus 111 lines.
+
+**db983db** — Second pass. The first commit covered the control sidebar and the PDF output, but the live preview in the template editor and the renderPoster canvas renderer were still drawing logos on the print tab. Drew spotted this during a smoke test: uploaded a fresh base image with no logos baked in, and the old logos still appeared in the preview. Six one-line guards added — three in TemplateEditor.tsx (prefix preview conditions with `!isPrintFormat`), three in clientRender.ts (prefix draw conditions with `formatKey !== "print"`). All four surfaces — control sidebar, live preview, canvas renderer, PDF renderer — now consistently treat the print format as logo-free.
+
+**Backlog implication:** the three pre-tint-related backlog entries around print-PDF logo tinting can be marked as no-longer-relevant next session. Not updating them now — the backlog is a parking lot, not a real-time tracker, and the print-poster commits linked above make the context clear if anyone revisits.
+
+**Browser test not yet done on db983db** — Vercel deploy should complete within a few minutes of this log being written. Quick smoke test to run: on the print tab, preview shows no logos and Preview Render output has no logos; switch to square/story/landscape and confirm logos still work normally. If any surface misbehaves, the diagnostic is clean — six single-line guards, easy to bisect.
