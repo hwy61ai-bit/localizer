@@ -147,7 +147,7 @@ export async function renderPoster(
   await document.fonts.ready;
 
   // Draw band logo if enabled
-  if (cfg.showLogo && logoUrl) {
+  if (formatKey !== "print" && cfg.showLogo && logoUrl) {
     try {
       const logoImg = await loadImage(logoUrl);
       const logoCfg = cfg.logo ?? { x: 0.5, y: 0.15, size: 80 };
@@ -175,7 +175,7 @@ export async function renderPoster(
   }
 
   // Draw sponsor logo 1 if enabled (tinted to text color)
-  if (cfg.showSponsorLogo1 && sponsorLogo1Url) {
+  if (formatKey !== "print" && cfg.showSponsorLogo1 && sponsorLogo1Url) {
     try {
       const sponsorImg = await loadImage(sponsorLogo1Url);
       const sponsorCfg = cfg.sponsorLogo1 ?? { x: 0.35, y: 0.88, size: 60 };
@@ -202,7 +202,7 @@ export async function renderPoster(
   }
 
   // Draw sponsor logo 2 if enabled (tinted to text color)
-  if (cfg.showSponsorLogo2 && sponsorLogo2Url) {
+  if (formatKey !== "print" && cfg.showSponsorLogo2 && sponsorLogo2Url) {
     try {
       const sponsorImg = await loadImage(sponsorLogo2Url);
       const sponsorCfg = cfg.sponsorLogo2 ?? { x: 0.65, y: 0.88, size: 60 };

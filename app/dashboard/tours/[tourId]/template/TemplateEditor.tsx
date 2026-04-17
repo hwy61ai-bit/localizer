@@ -771,7 +771,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     );
                   })()}
 
-                  {cfg.showLogo && logoUrl && (() => {
+                  {!isPrintFormat && cfg.showLogo && logoUrl && (() => {
                     const lc = cfg.logo ?? { x: 0.5, y: 0.15, size: 80, align: "center" as Align };
                     return (
                       <div key="logo" onMouseDown={(e) => {
@@ -788,7 +788,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     );
                   })()}
 
-                  {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (() => {
+                  {!isPrintFormat && (cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (() => {
                     const sc = cfg.sponsorLogo1 ?? SPONSOR_1_DEFAULT;
                     return (
                       <div key="sponsorLogo1"
@@ -807,7 +807,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     );
                   })()}
 
-                  {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (() => {
+                  {!isPrintFormat && (cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (() => {
                     const sc = cfg.sponsorLogo2 ?? SPONSOR_2_DEFAULT;
                     return (
                       <div key="sponsorLogo2"
