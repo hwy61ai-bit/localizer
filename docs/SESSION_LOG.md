@@ -1618,3 +1618,64 @@ Evening kept going after the 8-file public-share refactor, through the sponsor t
 - Then check Tim's email for April 15 status doc reply (sponsor tint, billing gate caveat, bulk send proposal)
 - Get written list of remaining Tim test-pass items — avoid diagnosing from memory
 - Optional: `npm i -g @anthropic-ai/claude-code` or `claude doctor` — auto-update has been failing all day
+
+
+## 2026-04-17 (Friday)
+
+### Commits
+
+- 0ea670c — fix(auth): scope server-side auth cookies to .hwy61labs.com
+- fc78536 — fix(artist profile): correct band logo caption
+- 5840581 — fix(template editor): clarify sponsor logo render-color caption
+- befd344 — fix(tourrouter): use supabaseAdmin in billingGate for RLS-free plan lookup
+- a98b34c — build(eslint): ban supabaseServer imports in public-facing routes
+- 66d7575 — docs: add three backlog entries from 4/17 ESLint rule work
+
+### Auth bug — diagnosed, fixed, verified
+
+The "session expired, cache clear required" bug that was yesterday's BETA BLOCKER has a root cause and a shipped fix.
+
+**Root cause.** Cookie domain scope mismatch between browser and server-side Supabase clients. The browser client (lib/supabaseClient.ts) was correctly scoping auth cookies to `.hwy61labs.com` (leading dot, subdomain-wide). But three server-side cookie writers — middleware.ts, lib/supabaseServer.ts, and app/auth/callback/route.ts — were not passing any `domain` attribute in their cookie options, defaulting to host-only scope (e.g. `www.hwy61labs.com`, no dot). Result: every browser accumulated two cookie sets with the same name but different scopes, each holding a different refresh token. When access tokens expired (~1hr), whichever code path read one cookie would rotate that token against Supabase; the other cookie held the now-stale refresh token. Next code path that read the stale cookie presented it to Supabase, got `400 refresh_token_already_used`, and — because "Detect and revoke compromised refresh tokens" is ON in Supabase (correct default) — the entire token family was revoked. Session dead. User bounced to /login. Cache clear "fixed" it because it deleted both duplicate cookies, and next login created a single fresh cookie set — which would itself eventually drift apart within a few refresh cycles.
+
+This was invisible in Vercel logs because the 400s were happening at Supabase's /auth/v1/token endpoint, not in our code. Visible in Supabase → Logs → auth_logs as `refresh_token_already_used` events. We pulled 200 of them in a 24h window before the fix.
+
+**Diagnostic path.** Supabase dashboard audit ruled out JWT expiry, inactivity timeout, rate limits, stale redirect URLs — all clean. Auth logs confirmed `refresh_token_already_used` as the exact failure mode. Browser DevTools cookie inspection confirmed the duplicate cookie sets (`.hwy61labs.com` AND `www.hwy61labs.com` both holding `sb-*-auth-token.0` and `.1`), each with different refresh tokens and expiry times 59 seconds apart — unambiguous evidence of two separate refresh operations writing to different scopes.
+
+**Fix.** Added lib/cookieDomain.ts helper that returns `.hwy61labs.com` when the host ends with hwy61labs.com, undefined otherwise (so localhost still gets host-only cookies — browsers reject `Domain=.localhost`). Threaded it through all three server-side cookie writers. Single atomic commit 0ea670c. After deploy, manually revoked all refresh tokens (`delete from auth.refresh_tokens` in Supabase SQL editor) so existing broken sessions would die and re-login under the new code.
+
+**Verification.** Fresh login showed exactly one cookie set scoped to `.hwy61labs.com`. No duplicates. Now soak-testing in a single open tab through the rest of today; full 24h confirmation via `auth_logs` query tomorrow morning.
+
+### Other work
+
+**Copy fixes on Tim's list** (fc78536, 5840581). Two small corrections to captions that went in wrong yesterday: band logo caption on the artist profile page (was showing sponsor-logo-style helper text under the band logo block — swapped for "Band Logo (upload transparent png)"), and sponsor logo render-color caption on the template editor (clearer two-sentence explanation of the all-assets-vs-Local-Poster-PDF behavior). Tim's broader list from the verbal test pass still pending a written reply — deferred.
+
+**TourRouter billingGate RLS fix** (befd344). Same class of bug as yesterday's Localizer refactor. lib/tourrouter/billingGate.ts was using supabaseServer() to read orgs plan-status rows — session-bound, RLS-enforced. In paths where session context was stale or missing, RLS silently returned zero rows and the gate returned `'none'`, denying access to legitimately paid users. lib/tourrouter/requireAccess.ts had a defensive warn-and-fall-back-to-free workaround that was papering over this. Swapped billingGate to supabaseAdmin (mirrors lib/localizer/billingGate.ts, the Localizer twin fixed 4/16), upgraded the now-defensive fallback from console.warn to console.error with a "data integrity" message so if it ever fires post-fix, we notice. Two-file change, typecheck clean, shipped together.
+
+**ESLint safety net** (a98b34c). Added a `no-restricted-imports` rule to eslint.config.mjs that bans `@/lib/supabaseServer` imports in five forbidden zones: app/v/**, app/advance/**, app/report/**, app/api/download/**, app/api/download-all/**. These are the paths that serve anonymous/token-authenticated public users, where supabaseServer() causes the silent-RLS-fail bug we've now fixed twice this week. Verified zero violations at commit time — yesterday's 8-file refactor left all five zones clean. Rule is pure future-regression prevention.
+
+### Auth bug soak test — not yet complete
+
+Fresh-login cookie state verified clean. But the failure mode needs multiple hours and multiple refresh cycles to manifest. Leaving a prod tab open overnight; tomorrow morning confirm via:
+
+```sql
+select timestamp, event_message, metadata
+from auth_logs
+order by timestamp desc
+limit 200
+```
+
+in Supabase Log Explorer — count of `refresh_token_already_used` occurrences in the post-fix 24h window should be near-zero.
+
+### Deferred to backlog
+
+Added three new entries to docs/BACKLOG.md (commit 66d7575):
+1. /api/venue-link missing auth.getUser() check — security hygiene, not urgent
+2. /api/venue-links has zero call sites — likely dead code, verify via Vercel invocation logs before deletion
+3. ~20 pre-existing lint errors/warnings in the public-viewer zones — mechanical cleanup, ~30-45min, no Tim input needed
+
+### Tomorrow's session starts with
+
+- `git pull`, `git status`, confirm clean
+- **Verify auth fix held overnight:** run the auth_logs SQL query, confirm `refresh_token_already_used` count dropped. If clean, mark the bug closed. If it reappeared, we're back in diagnostic mode with a different subcause — the current fix addresses the duplicate-cookie-scope path but there could be a secondary path we haven't seen yet.
+- Check email for Tim's reply to the April 15 status doc + his written list of remaining test-pass items
+- If both above are resolved, pick next backlog item. Candidates in priority order: (a) print PDF speed regression from 4/16 `:wght@700` fetch, (b) print PDF logo tinting done right via pre-tint-at-upload, (c) any of the three new backlog entries if a quick win is wanted
