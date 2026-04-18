@@ -1697,3 +1697,74 @@ Implementation shipped in two commits:
 **Backlog implication:** the three pre-tint-related backlog entries around print-PDF logo tinting can be marked as no-longer-relevant next session. Not updating them now — the backlog is a parking lot, not a real-time tracker, and the print-poster commits linked above make the context clear if anyone revisits.
 
 **Browser test not yet done on db983db** — Vercel deploy should complete within a few minutes of this log being written. Quick smoke test to run: on the print tab, preview shows no logos and Preview Render output has no logos; switch to square/story/landscape and confirm logos still work normally. If any surface misbehaves, the diagnostic is clean — six single-line guards, easy to bisect.
+
+## 2026-04-18 (Saturday)
+
+### Commits
+
+- da36377 — docs: update HWY61_VISION.md
+- 77d41ad — feat(template): add customText1/2 types and defaults
+- 9684b61 — feat(template): load and save custom_text_1/2 text content
+- c87d529 — feat(template): custom text UI, state, debounced save, drag + sidebar blocks
+- 725fa6f — feat(template): add showCustomText1/2 visibility toggles with collapse pattern
+
+### Morning warm-up — auth soak test + yesterday's loose ends closed
+
+Auth fix from 4/17 (0ea670c, cookie domain scope) soak-tested clean. Supabase auth log query for `refresh_token_already_used` events in the 24h post-fix window returned zero results. **Auth bug closed.** The cookie domain mismatch between browser client and three server-side writers (middleware, supabaseServer, auth callback) was the full root cause; nothing lurking behind it.
+
+Print-poster logo removal (a1b1ce6 + db983db from 4/17) browser-smoke-tested on prod. Print tab preview clean (no band/sponsor logos). Square/Story/Landscape tabs still render logos normally. All four surfaces — control sidebar, live preview, canvas renderer, PDF renderer — behave consistently.
+
+### Custom text lines — UI layer complete, render layer pending
+
+Started the backlog-top feature from Tim's 4/17 sign-off: two tour-level user-editable text fields that appear on all non-print formats.
+
+**What shipped (UI + data layer only; render paths not yet touched):**
+
+- Supabase migration: `custom_text_1 text` and `custom_text_2 text` columns added to `tours` table. Both nullable, no default. Idempotent via `add column if not exists`. Verified via `information_schema.columns` query.
+- TypeScript types extended in `TemplateEditor.tsx`. Added `customText1` / `customText2` to `FieldKey` union, added `customText1?: FieldConfig` / `customText2?: FieldConfig` and `showCustomText1?: boolean` / `showCustomText2?: boolean` to `FormatConfig`, added `CUSTOM_TEXT_1_DEFAULT` / `CUSTOM_TEXT_2_DEFAULT` constants matching the BAND_DEFAULT pattern, extended `FIELD_LABELS` and `SAMPLE_TEXT` to cover the new keys.
+- `BaseFieldKey` type alias introduced (`"date" | "venue" | "city"`) to narrow the three iteration loops (overlap warnings, preview elements, size controls) that were breaking under the widened `FieldKey` — avoided non-null assertions. `AlignButtons` param similarly widened to `BaseFieldKey | "band" | "customText1" | "customText2"` with fallback-spread pattern mirroring the "band" branch.
+- `template/page.tsx` SELECT extended to include `custom_text_1, custom_text_2`.
+- `/api/tours/[tourId]/overlay-config` PATCH handler extended to accept any subset of `{ overlay_config, custom_text_1, custom_text_2 }` in the request body. Uses `"key" in body` check to preserve null-vs-absent semantics (explicit null clears the column, omitted key leaves it untouched). Returns 400 on empty update rather than firing a no-op write. Service-role fallback path uses the same update object. Deliberately did NOT use `.update(body)` spread — that's the generic advance-route pattern and is unsafe for a scoped endpoint.
+- `TemplateEditor.tsx` UI: two new `useState` fields for tour-scoped text content, two debounced-save `useEffect`s (500ms, mount-ref to skip initial render, effect cleanup clears pending timer). Custom text content PATCHes only `{ custom_text_1 }` or `{ custom_text_2 }` — explicitly NOT including `overlay_config`. Text content saves autosave-style; position/size/align saves continue to go through the existing SAVE TEMPLATE button via `setDirtyFormats`.
+- Toast stability concern surfaced during review: the `toast` object from `useToast()` is unstable across renders (inline literal at provider level), but individual `toast.error` / `toast.success` functions are stable (useCallback-wrapped). Destructured `const { error: toastError } = toast` at render level and used `toastError` in the effect dep arrays. Minimal, no eslint-disable needed, no ref dance, doesn't touch the other 17 `toast.*` call sites in the file.
+- Two dedicated sidebar blocks (CUSTOM TEXT 1 / CUSTOM TEXT 2) following the Sponsor Logo 1/2 pattern: checkbox header that collapses the controls when off, text input (`maxLength={35}`, placeholder "Your text here..."), size number + range, `<AlignButtons>`. Gated with `{!isPrintFormat && (...)}`. Preview elements added as two explicit IIFEs (not extending the venue/date/city iteration — that block's branching is already dense). Drag handler extended with named `else if (dragging === "customText1")` / `else if (dragging === "customText2")` branches mirroring the "band" / "logo" / "sponsor" pattern.
+
+**Smoke-tested on prod after each of the four commits.** UI works end-to-end: debounced save fires correct PATCH, text persists across reloads, per-format independent visibility toggles, checkbox collapse behavior matches Sponsor Logos, `null` writes on clear-to-empty.
+
+**Design decisions locked during build:**
+
+- Storage: text content in dedicated `tours` columns (global per tour); position/size/align in per-format `overlay_config` JSON. Separate save paths match the different scopes.
+- Visibility: per-format `showCustomText1` / `showCustomText2` flags defaulting to `false` via `?? false` fallback. Matches band-name-toggle mental model. Existing tours load with custom text OFF on every format.
+- Align buttons kept on custom text (not removed) — rationale: future "user edits their typed text to a longer string, wants the anchor point preserved" scenario. Center/left/right matters even for fixed content if the user re-edits.
+- Empty-state: preview shows "Your text here" placeholder when text is empty AND the show-flag is on; final rendered outputs will skip the draw entirely when text is empty (render paths not built yet).
+
+### Render layer — what's left
+
+Still to build before the feature is shippable end-to-end:
+
+1. `lib/clientRender.ts` — add two `drawText` calls inside `renderPoster` for custom text, gated on `formatKey !== "print"` AND on text non-empty AND on `cfg.showCustomText1 ?? false` / `cfg.showCustomText2 ?? false`. Makes custom text appear on downloaded JPEGs (square, story, landscape).
+2. `app/api/renders/generate/route.ts` — add two Cloudinary text overlay layers in `buildCloudinaryVideoUrl`, same three-part gate (format, flag, non-empty text). Makes custom text appear on generated TikTok + YT Shorts video renders. Must plumb `tour.custom_text_1` / `tour.custom_text_2` into the function's callers.
+3. Manual smoke test: generate assets on a test tour, confirm custom text appears in JPEGs and videos when enabled, is absent when disabled, and is absent on print tab regardless.
+
+Estimated remaining effort: ~2 hours.
+
+### Recon discipline worked
+
+Two rounds of read-only recon prompts before writing any code. Round 1 mapped config/type/data flow; round 2 mapped editor wiring, render paths, Cloudinary overlay patterns. Surfaced several non-obvious things that would have caused rework if we'd built from assumption:
+
+- `FIELD_LABELS` is typed `Record<FieldKey, string>`, not `Partial<>` — widening `FieldKey` forced label entries to be added.
+- The overlay-config PATCH route had no field whitelist; could've been tempted to spread the body but built the update object explicitly from known keys instead (safety).
+- `lib/clientRender.ts` has its own `FieldConfig` type declaration distinct from the one in TemplateEditor (`align?: string` vs `align?: Align`). Flagged — not fixing now, will just match the local type in Step 5.
+- Empty-text handling is a genuine gap in Cloudinary overlay builder today (venue/date/city always have values from event data). Custom text forces us to plug it.
+
+### Backlog items surfaced
+
+None new today. All known follow-ups still parked in `docs/BACKLOG.md`.
+
+### Next session should start with
+
+- `git pull`, `git status`, confirm clean
+- Step 5: `lib/clientRender.ts` — draw custom text on image formats. Read-only recon first (confirm the `FieldConfig` type shape in that file, confirm the `drawText` signature, confirm how the custom text flags/strings will be threaded in as parameters or accessed from tour context). Then propose diff, typecheck, commit.
+- Step 6: `app/api/renders/generate/route.ts` — add Cloudinary text overlay layers for custom text on TikTok + YT Shorts video formats. Same three-part gate pattern.
+- Step 7: live functional smoke test — generate assets on a real tour with custom text enabled, verify JPEG + video output match preview.
+- If Tim has replied to prior open questions (sponsor logo tint, billing gate caveat, bulk send), handle after render layer is complete.
