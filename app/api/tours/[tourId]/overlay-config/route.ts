@@ -15,13 +15,24 @@ export async function PATCH(
   { params }: { params: { tourId: string } }
 ) {
   const { tourId } = params;
-  const { overlay_config } = await req.json();
+  const body = await req.json();
+
+  const update: Record<string, any> = {};
+  if (body && typeof body === "object") {
+    if ("overlay_config" in body) update.overlay_config = body.overlay_config;
+    if ("custom_text_1" in body) update.custom_text_1 = body.custom_text_1;
+    if ("custom_text_2" in body) update.custom_text_2 = body.custom_text_2;
+  }
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: "No updatable fields in request body" }, { status: 400 });
+  }
 
   // Try authenticated client first
   const supabase = await supabaseServer();
   const { data, error } = await supabase
     .from("tours")
-    .update({ overlay_config })
+    .update(update)
     .eq("id", tourId)
     .select("id")
     .maybeSingle();
@@ -34,7 +45,7 @@ export async function PATCH(
   if (!data) {
     const { data: svcData, error: svcError } = await serviceClient
       .from("tours")
-      .update({ overlay_config })
+      .update(update)
       .eq("id", tourId)
       .select("id")
       .maybeSingle();

@@ -8,7 +8,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ tourI
 
   const { data: tour, error } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_url, image_print_id, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config")
+    .select("id, org_id, name, band_name, band_tour_label, image_url, image_print_id, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, custom_text_1, custom_text_2")
     .eq("id", tourId)
     .single();
 
