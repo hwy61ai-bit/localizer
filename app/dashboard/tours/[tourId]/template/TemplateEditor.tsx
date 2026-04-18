@@ -116,6 +116,8 @@ type Tour = {
   video_tiktok_id: string | null;
   video_yt_shorts_id: string | null;
   overlay_config: Record<FormatKey, FormatConfig> | null;
+  custom_text_1?: string | null;
+  custom_text_2?: string | null;
 };
 
 function getTransform(align: Align): string {
@@ -241,8 +243,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const imgRef = useRef<HTMLImageElement>(null);
   const SNAP = 0.04;  // ~4% snap zone for center alignment
 
+  const [customText1, setCustomText1] = useState<string>(tour.custom_text_1 ?? "");
+  const [customText2, setCustomText2] = useState<string>(tour.custom_text_2 ?? "");
+  const customText1MountRef = useRef(true);
+  const customText2MountRef = useRef(true);
+
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const toast = useToast();
+  const { error: toastError } = toast;
   const [sponsorLogo1Url, setSponsorLogo1Url] = useState<string | null>(null);
   const [sponsorLogo2Url, setSponsorLogo2Url] = useState<string | null>(null);
   const [uploadingSponsor1, setUploadingSponsor1] = useState(false);
@@ -298,6 +306,41 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }
     loadCustomFonts();
   }, [orgId]);
+
+  useEffect(() => {
+    if (customText1MountRef.current) {
+      customText1MountRef.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`/api/tours/${tourId}/overlay-config`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ custom_text_1: customText1 || null }),
+      })
+        .then(res => { if (!res.ok) toastError("Custom text 1 save failed."); })
+        .catch(() => toastError("Custom text 1 save failed — network error."));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [customText1, tourId, toastError]);
+
+  useEffect(() => {
+    if (customText2MountRef.current) {
+      customText2MountRef.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`/api/tours/${tourId}/overlay-config`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ custom_text_2: customText2 || null }),
+      })
+        .then(res => { if (!res.ok) toastError("Custom text 2 save failed."); })
+        .catch(() => toastError("Custom text 2 save failed — network error."));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [customText2, tourId, toastError]);
+
   const bandName = tour.band_name ?? tour.name ?? "Artist";
 
   const formatImageIds: Record<FormatKey, string | null> = {
@@ -391,6 +434,24 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             band: { ...(prev[activeFormat].band ?? BAND_DEFAULT), x, y },
           },
         }));
+      } else if (dragging === "customText1") {
+        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), x, y },
+          },
+        }));
+      } else if (dragging === "customText2") {
+        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), x, y },
+          },
+        }));
       } else {
         setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
@@ -458,8 +519,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }
   }
 
-  function AlignButtons({ field }: { field: BaseFieldKey | "band" }) {
-    const fc = field === "band" ? (cfg.band ?? BAND_DEFAULT) : cfg[field];
+  function AlignButtons({ field }: { field: BaseFieldKey | "band" | "customText1" | "customText2" }) {
+    const fc = field === "band"
+      ? (cfg.band ?? BAND_DEFAULT)
+      : field === "customText1"
+        ? (cfg.customText1 ?? CUSTOM_TEXT_1_DEFAULT)
+        : field === "customText2"
+          ? (cfg.customText2 ?? CUSTOM_TEXT_2_DEFAULT)
+          : cfg[field];
     const current = fc.align ?? "center";
     const handleClick = (a: Align) => {
       if (field === "band") {
@@ -470,7 +537,24 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             band: { ...(prev[activeFormat].band ?? BAND_DEFAULT), align: a },
           },
         }));
-  
+      } else if (field === "customText1") {
+        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), align: a },
+          },
+        }));
+      } else if (field === "customText2") {
+        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), align: a },
+          },
+        }));
       } else {
         updateField(field, "align", a);
       }
@@ -884,6 +968,42 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       </div>
                     );
                   })}
+                  {!isPrintFormat && (() => {
+                    const fc = cfg.customText1 ?? CUSTOM_TEXT_1_DEFAULT;
+                    const align = fc.align ?? "center";
+                    const isActive = dragging === "customText1";
+                    return (
+                      <div key="customText1" onMouseDown={(e) => {
+                        e.preventDefault();
+                        const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
+                        const mouseX = (e.clientX - rect.left) / rect.width;
+                        const mouseY = (e.clientY - rect.top) / rect.height;
+                        setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
+                        setDragging("customText1");
+                      }}
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
+                        {customText1 || SAMPLE_TEXT.customText1}
+                      </div>
+                    );
+                  })()}
+                  {!isPrintFormat && (() => {
+                    const fc = cfg.customText2 ?? CUSTOM_TEXT_2_DEFAULT;
+                    const align = fc.align ?? "center";
+                    const isActive = dragging === "customText2";
+                    return (
+                      <div key="customText2" onMouseDown={(e) => {
+                        e.preventDefault();
+                        const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
+                        const mouseX = (e.clientX - rect.left) / rect.width;
+                        const mouseY = (e.clientY - rect.top) / rect.height;
+                        setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
+                        setDragging("customText2");
+                      }}
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
+                        {customText2 || SAMPLE_TEXT.customText2}
+                      </div>
+                    );
+                  })()}
                 </div>
               ) : (
                 <div style={{ padding: 48, textAlign: "center" }}>
@@ -1257,6 +1377,116 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     </div>
                   </>
                 )}
+              </div>
+            )}
+
+            {!isPrintFormat && (
+              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>CUSTOM TEXT 1</div>
+                <input
+                  type="text"
+                  maxLength={35}
+                  placeholder="Your text here..."
+                  value={customText1}
+                  onChange={(e) => setCustomText1(e.target.value)}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                  <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <input
+                      type="number"
+                      min={16}
+                      max={isPrintFormat ? 400 : 120}
+                      value={cfg.customText1?.size ?? CUSTOM_TEXT_1_DEFAULT.size}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val) && val >= 1 && val <= 999) {
+                          setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                          setConfigs(prev => ({
+                            ...prev,
+                            [activeFormat]: {
+                              ...prev[activeFormat],
+                              customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), size: val },
+                            },
+                          }));
+                        }
+                      }}
+                      style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                    />
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                  </div>
+                </div>
+                <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
+                  value={cfg.customText1?.size ?? CUSTOM_TEXT_1_DEFAULT.size}
+                  onChange={(e) => {
+                    setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                    setConfigs(prev => ({
+                      ...prev,
+                      [activeFormat]: {
+                        ...prev[activeFormat],
+                        customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), size: parseInt(e.target.value) },
+                      },
+                    }));
+                  }}
+                  style={{ width: "100%", cursor: "pointer" }}
+                />
+                <AlignButtons field="customText1" />
+              </div>
+            )}
+
+            {!isPrintFormat && (
+              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>CUSTOM TEXT 2</div>
+                <input
+                  type="text"
+                  maxLength={35}
+                  placeholder="Your text here..."
+                  value={customText2}
+                  onChange={(e) => setCustomText2(e.target.value)}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
+                />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                  <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <input
+                      type="number"
+                      min={16}
+                      max={isPrintFormat ? 400 : 120}
+                      value={cfg.customText2?.size ?? CUSTOM_TEXT_2_DEFAULT.size}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val) && val >= 1 && val <= 999) {
+                          setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                          setConfigs(prev => ({
+                            ...prev,
+                            [activeFormat]: {
+                              ...prev[activeFormat],
+                              customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), size: val },
+                            },
+                          }));
+                        }
+                      }}
+                      style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                    />
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                  </div>
+                </div>
+                <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
+                  value={cfg.customText2?.size ?? CUSTOM_TEXT_2_DEFAULT.size}
+                  onChange={(e) => {
+                    setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                    setConfigs(prev => ({
+                      ...prev,
+                      [activeFormat]: {
+                        ...prev[activeFormat],
+                        customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), size: parseInt(e.target.value) },
+                      },
+                    }));
+                  }}
+                  style={{ width: "100%", cursor: "pointer" }}
+                />
+                <AlignButtons field="customText2" />
               </div>
             )}
 
