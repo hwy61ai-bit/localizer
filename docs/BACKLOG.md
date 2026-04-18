@@ -338,3 +338,56 @@ cd ~/localizer && npx eslint app/v app/advance app/report app/api/download app/a
 **Open questions deferred to build time (not blocking):**
 - Exact pixel position of the two defaults on each of the five non-print formats
 - Whether the text input should live in a separate "Text Content" section at the bottom, or be inline with each custom text's position controls
+
+### Router cache stale UI on template editor — needs different fix
+
+*Surfaced April 18, 2026. Two attempted fixes (`export const dynamic = "force-dynamic"` and `export const revalidate = 0`) worked in `npm run dev` but triggered an unrelated production failure on Vercel that broke Re-Generate All (count: 0 with no Cloudinary calls) and venue link page asset rendering. Both cache-fix commits reverted (f3eae0d + 2c7ff86).*
+
+**The bug:** On the template editor page (`/dashboard/tours/[tourId]/template`), after a user saves changes and navigates away via Next.js client-side navigation, returning to the editor shows stale UI state. The server sends fresh data in the response HTML (confirmed via response body inspection), but React client-side state from the earlier visit is preserved and displayed instead. Workaround: hard refresh or incognito session.
+
+**Only affects returning users within the same browser session.** First-visit users (including new sessions, incognito, hard refresh) always see fresh data.
+
+**Candidate fixes to try:**
+- `revalidatePath("/dashboard/tours/[tourId]/template")` called from the mutation routes (`/api/tours/[tourId]/overlay-config` and any others that update tour state)
+- Move the editor's data loading to a client-side SWR-style fetch pattern so stale state naturally gets invalidated on mutation
+- Investigate whether the prod-only failure from `revalidate = 0` is specifically related to authentication or edge caching, in which case a more targeted directive might work
+
+**Not blocking beta launch.** User just needs to know "hard refresh if something looks stale." But should be fixed before Tim's full rollout to paying customers.
+
+---
+
+### Parallel FormatConfig / FieldConfig type declarations in TemplateEditor.tsx and lib/clientRender.ts
+
+*Surfaced during custom text build on April 18, 2026.*
+
+Both `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx` (lines ~30-58) and `lib/clientRender.ts` (lines 4-26) declare their own local `FieldConfig` and `FormatConfig` types. Not imported from a shared file — fully parallel declarations.
+
+Existing minor drift: `FieldConfig.align` is typed `Align` (a strict union) in TemplateEditor vs `string` (wide) in clientRender.ts. Works today because `Align` values are string literals that satisfy the wide string type. But any future field extension requires updating both files independently — as happened multiple times today for custom text.
+
+**Fix (when ready):** Extract to `lib/types/overlayConfig.ts` or similar. Import in both places. Estimated 30-45 min mechanical refactor. No Tim input needed.
+
+**Not urgent.** Both files compile and function correctly. Filed here so future devs understand the parallel-declaration pattern is a known debt, not an accident.
+
+---
+
+### Custom text lines — Step 6: Cloudinary video overlays (TikTok + YT Shorts)
+
+*Image formats shipped April 18, 2026. Video formats deferred to next session.*
+
+**STATUS:** Ready to build. Image render path is live and working end-to-end in prod. Video overlays are the remaining work to make the feature fully shippable.
+
+**What it is.** Extend `buildCloudinaryVideoUrl` in `app/api/renders/generate/route.ts` to append two additional `buildTextLayer` overlays for `customText1` and `customText2` on video formats (TikTok, YT Shorts). Text content is already threaded into the route via `tour.custom_text_1` / `tour.custom_text_2` (part of the April 18 work) — just needs to flow into the video layer construction.
+
+**Gate logic:** Same three-part gate as image path:
+- Format must not be "print" (implicit — print isn't in `VIDEO_FORMATS`)
+- `cfg.showCustomText1 ?? false` / `cfg.showCustomText2 ?? false` — same per-format flag used by image path
+- Text must be non-empty (`(text ?? "").length > 0`) — IMPORTANT because the existing Cloudinary layer builder has no empty-text guard (venue/date/city always have values from event data). Must add explicit check before calling `buildTextLayer` for custom text.
+
+**Defaults to match image path:** `CUSTOM_TEXT_1_DEFAULT` and `CUSTOM_TEXT_2_DEFAULT` with `{ x: 0.5, y: 0.08, size: 48, align: "center" }` and `{ x: 0.5, y: 0.92, size: 48, align: "center" }` respectively.
+
+**File touches:**
+- `app/api/renders/generate/route.ts`: extend `buildCloudinaryVideoUrl` to read customText1/customText2 from overlayConfig and eventData, add two new layer entries with appropriate gate
+
+**Estimated effort:** 60-90 min including live smoke test on a tour with TikTok + YT Shorts assets.
+
+**Dependencies:** None — all data plumbing already in place from April 18 work. Tour-data route already returns `custom_text_1` / `custom_text_2`. EventsTable already passes them through. Just need the video layer construction.

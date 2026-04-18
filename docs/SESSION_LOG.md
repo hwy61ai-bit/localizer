@@ -1768,3 +1768,91 @@ None new today. All known follow-ups still parked in `docs/BACKLOG.md`.
 - Step 6: `app/api/renders/generate/route.ts` — add Cloudinary text overlay layers for custom text on TikTok + YT Shorts video formats. Same three-part gate pattern.
 - Step 7: live functional smoke test — generate assets on a real tour with custom text enabled, verify JPEG + video output match preview.
 - If Tim has replied to prior open questions (sponsor logo tint, billing gate caveat, bulk send), handle after render layer is complete.
+
+
+## 2026-04-18 (Saturday)
+
+### Commits (chronological)
+
+- da36377 — docs: update HWY61_VISION.md
+- 77d41ad — feat(template): add customText1/2 types and defaults
+- 9684b61 — feat(template): load and save custom_text_1/2 text content
+- c87d529 — feat(template): custom text UI, state, debounced save, drag + sidebar blocks
+- 725fa6f — feat(template): add showCustomText1/2 visibility toggles with collapse pattern
+- fba5b68 — docs: session log entry for 2026-04-18 (superseded by this entry)
+- a6783ad — feat(render): draw custom text on image formats (square/story/landscape)
+- e627ed0 — fix(template): force dynamic rendering to prevent stale cache on navigation
+- e019f96 — fix(template): add revalidate=0 to opt out of router cache
+- f3eae0d — Revert "fix(template): add revalidate=0 to opt out of router cache"
+- 2c7ff86 — Revert "fix(template): force dynamic rendering to prevent stale cache on navigation"
+
+**11 commits. 2 are reverts.**
+
+### Morning warm-up — auth soak test + yesterday's loose ends closed
+
+Auth fix from 4/17 (0ea670c, cookie domain scope) soak-tested clean. Supabase auth log query for `refresh_token_already_used` events in the 24h post-fix window returned zero results. **Auth bug closed.** The cookie domain mismatch between browser client and three server-side writers (middleware, supabaseServer, auth callback) was the full root cause.
+
+Print-poster logo removal (a1b1ce6 + db983db from 4/17) browser-smoke-tested on prod. All four surfaces — control sidebar, live preview, canvas renderer, PDF renderer — behave consistently.
+
+### Custom text lines — IMAGE FORMATS WORKING END-TO-END IN PROD
+
+Shipped the Tim-signed-off custom text feature for image formats (square, story, landscape). Feature is working on prod for unsent venue links as of end of session. Verified by Drew: typed "CACHE TEST 2026" into Custom Text 1 on Fellow Traveller square tab → Re-Gen All → custom text appears in editor preview, on venue link page viewer, and on downloaded JPEG. All three surfaces aligned.
+
+**Architecture delivered:**
+
+- **Supabase migration:** `custom_text_1 text` and `custom_text_2 text` columns added to `tours` table. Both nullable, no default.
+- **Storage split:** Text content (strings) stored in dedicated `tours` columns (global per tour). Position/size/align stored per-format in `overlay_config` JSON. Per-format visibility flags (`showCustomText1`, `showCustomText2`) also in `overlay_config`. Separate save paths match the separate scopes.
+- **Save paths:** Text content autosaves via debounced (500ms) PATCH to `/api/tours/[tourId]/overlay-config` with only `{ custom_text_1 }` or `{ custom_text_2 }` in the body. Position/size/align saves go through the existing SAVE TEMPLATE button's `setDirtyFormats` flow.
+- **Overlay-config PATCH route extended:** Accepts any subset of `{ overlay_config, custom_text_1, custom_text_2 }`. Uses `"key" in body` check to preserve null-vs-absent semantics. Returns 400 on empty body. Service-role fallback uses the same update object.
+- **UI (TemplateEditor.tsx):** Two dedicated sidebar blocks (CUSTOM TEXT 1 / CUSTOM TEXT 2) matching the Sponsor Logo 1/2 pattern — checkbox header that collapses the block when off. Text input (maxLength={35}), size number + range, AlignButtons. Two draggable preview elements in the canvas, always visible when flag is on (empty state shows "Your text here" placeholder in preview, but render paths skip the draw entirely when text is empty).
+- **Drag handler:** Named `else if (dragging === "customText1")` / `customText2` branches mirroring the "band" / "logo" / "sponsor" pattern. Generic else reserved for BaseFieldKey only — `BaseFieldKey` type alias introduced to narrow the three venue/city/date iteration loops.
+- **AlignButtons:** Param widened to `BaseFieldKey | "band" | "customText1" | "customText2"` with fallback-spread pattern mirroring the "band" branch. Custom-text branches set `setDirtyFormats` (unlike the pre-existing "band" branch which doesn't — deliberate, not fixing existing inconsistency).
+- **Visibility toggles:** Added after first version shipped with custom text always visible. Tim-equivalent product feedback — "should have checkboxes like sponsor logos." Added `showCustomText1` / `showCustomText2` optional booleans defaulting to `?? false`. Sidebar blocks collapse to just header+checkbox when off, same DOM pattern as sponsor logos (outer card always rendered, controls gated). Per-format independence — match band-name mental model.
+- **Toast stability fix:** `toast` object from `useToast()` is unstable across renders (inline literal at provider level) but individual `toast.error` / `toast.success` functions are stable (useCallback-wrapped at source). Destructured `const { error: toastError } = toast` at render level; used `toastError` in debounce effect dep arrays. Minimal, no eslint-disable, no ref dance, doesn't touch the other 17 toast.* call sites in the file.
+- **Render path (lib/clientRender.ts):** Extended local FormatConfig + EventData types (this file has its own type declarations parallel to TemplateEditor.tsx — worth noting, two sources of truth that must stay in sync). Added `CUSTOM_TEXT_1_DEFAULT` / `CUSTOM_TEXT_2_DEFAULT` constants matching TemplateEditor values. Two new `drawText` calls after the city draw with three-part gate: `formatKey !== "print"` + `(cfg.showCustomTextN ?? false)` + `(eventData.customTextN ?? "").length > 0`. No allCaps (user-authored literal). No isVenue flag. No formatKey arg passed to drawText.
+- **Data plumbing:** `app/api/renders/tour-data/route.ts` SELECT extended with `custom_text_1, custom_text_2`, response payload extended with same. `EventsTable.tsx` eventData construction extended with `customText1/customText2` from tour. `TemplateEditor.tsx` single-format download handler's `ed` object extended on both the firstEvent and sample-data branches.
+
+### Two cache bugs surfaced during smoke test — both eventually reverted
+
+After shipping the image render path, hit a stale-data bug: typed new text, saved, navigated away, came back → editor showed old text. DB had the new value; server was sending fresh HTML (confirmed via response inspection). The stale state was client-side React state persisted across client-side navigation.
+
+Attempted fix 1 (`e627ed0`): added `export const dynamic = "force-dynamic"` to `template/page.tsx`. Addresses Next.js 14 fetch cache but not router cache.
+
+Attempted fix 2 (`e019f96`): added `export const revalidate = 0` on top of force-dynamic. Appeared to fix the issue in local testing.
+
+Both fixes worked correctly in `npm run dev`. On Vercel's production build, they appear to have triggered an unrelated failure — Re-Generate All returned `count: 0` without calling Cloudinary, venue link page asset rendering broke, and downloads returned empty `download.json` files. Root cause not definitively identified. Candidate theories (not proven):
+- Route segment config interacting badly with Vercel's production build output in a way that doesn't reproduce in dev mode
+- Production edge/CDN cache interacting with the new cache directives in an edge case
+- Session-bound Vercel behavior differing between authenticated and anonymous requests when `revalidate = 0` is set
+
+Tested each commit locally in isolation — all 7 of today's commits work correctly in `npm run dev`. Repro was prod-only. Reverted both cache-fix commits (f3eae0d + 2c7ff86) as the fastest path back to stable prod. Custom text render path itself (a6783ad) remains live and working.
+
+### Noise that consumed ~2 hours of diagnosis — "sent links don't regenerate"
+
+Extended debugging session in the afternoon chasing what looked like a prod regression. Symptoms on Fellow Traveller tour: Re-Gen All completing without custom text appearing on venue link page, downloads returning empty JSON files. After reverts restored basic download functionality, discovered the actual cause: **the two shows we were testing had already been sent as venue links, and sent venue links don't get updated assets when Re-Gen All runs.** This is (presumably) intentional product behavior — promoters shouldn't have the assets they received change out from under them. But it's not obvious from the UI, and in mid-feature-verification it was indistinguishable from a broken render pipeline.
+
+Confirmed working on unsent shows. The prod downloads we observed failing were downloads of pre-existing sent-link assets that were generated before custom text existed.
+
+**This noise significantly degraded session efficiency** — we revved through diagnostic steps (SQL checks, log inspection, commit reverts, localhost vs prod tests) against a failure mode that was product behavior, not a bug.
+
+### What's left for next session
+
+- **Step 6: Cloudinary video overlays** for TikTok and YT Shorts. Adds custom text to video renders in `app/api/renders/generate/route.ts` via `buildCloudinaryVideoUrl` / `buildTextLayer` extensions. Same three-part gate: format + flag + non-empty text. Must thread tour.custom_text_1/2 into the function's callers (recon from earlier today noted this is in scope). Estimated 60-90 min + smoke test.
+- **Step 7: End-to-end smoke test** on a tour with fresh unsent venue links, once Step 6 ships.
+- **Router cache bug** (stale editor UI on client-side navigation after save) — still present. The `revalidate=0 + force-dynamic` approach doesn't work on Vercel prod. Need a different approach; candidates include `revalidatePath()` calls in mutation routes, or moving the editor's data-loading to a client-side fetch pattern. Not blocking tomorrow's Tim demo — only affects returning users within the same session. Fresh navigation (incognito, new tab, hard refresh) still loads correct data.
+- **Tim demo preparation:** Drew has a meeting with Tim tomorrow. Plan: demo custom text on image formats with fresh unsent venue links. Note videos as Phase 2. Note the router cache behavior only if Tim encounters it.
+
+### Backlog items added
+
+See `docs/BACKLOG.md` for:
+- Router cache stale UI on template editor (open, needs different fix)
+- Two parallel FormatConfig / FieldConfig type declarations (TemplateEditor.tsx and lib/clientRender.ts) — not urgent, file for future refactor awareness
+- Cloudinary video overlays for custom text (Step 6 spec)
+
+### Next session should start with
+
+- `git pull`, `git status`, confirm clean
+- Read this session log entry in full before touching anything
+- Step 6: Cloudinary video overlays. Read-only recon against current `app/api/renders/generate/route.ts` (structure may have drifted since earlier recon). Then propose diff. Same three-part gate as image path.
+- After Step 6: end-to-end smoke test on a tour with fresh unsent venue links.
+- After demo feedback from Tim: triage router cache fix approach.
