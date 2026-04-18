@@ -2,8 +2,6 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { notFound } from "next/navigation";
 import TemplateEditor from "./TemplateEditor";
 
-export const dynamic = "force-dynamic";
-
 export default async function TemplatePage({ params }: { params: Promise<{ tourId: string }> }) {
   const { tourId } = await params;
   const supabase = await supabaseServer();
