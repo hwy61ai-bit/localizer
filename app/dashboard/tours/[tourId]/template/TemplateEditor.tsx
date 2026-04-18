@@ -53,7 +53,9 @@ type FormatConfig = {
   date: FieldConfig;
   venue: FieldConfig;
   city: FieldConfig;
+  showCustomText1?: boolean;
   customText1?: FieldConfig;
+  showCustomText2?: boolean;
   customText2?: FieldConfig;
 };
 
@@ -968,7 +970,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       </div>
                     );
                   })}
-                  {!isPrintFormat && (() => {
+                  {!isPrintFormat && (cfg.showCustomText1 ?? false) && (() => {
                     const fc = cfg.customText1 ?? CUSTOM_TEXT_1_DEFAULT;
                     const align = fc.align ?? "center";
                     const isActive = dragging === "customText1";
@@ -986,7 +988,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       </div>
                     );
                   })()}
-                  {!isPrintFormat && (() => {
+                  {!isPrintFormat && (cfg.showCustomText2 ?? false) && (() => {
                     const fc = cfg.customText2 ?? CUSTOM_TEXT_2_DEFAULT;
                     const align = fc.align ?? "center";
                     const isActive = dragging === "customText2";
@@ -1382,111 +1384,129 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
             {!isPrintFormat && (
               <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>CUSTOM TEXT 1</div>
-                <input
-                  type="text"
-                  maxLength={35}
-                  placeholder="Your text here..."
-                  value={customText1}
-                  onChange={(e) => setCustomText1(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
-                />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                  <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showCustomText1 ?? false) ? 12 : 0 }}>
+                  <span onClick={() => updateCfg("showCustomText1", !(cfg.showCustomText1 ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCustomText1 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                    {(cfg.showCustomText1 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                  </span>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Text 1</div>
+                </label>
+                {(cfg.showCustomText1 ?? false) && (
+                  <>
                     <input
-                      type="number"
-                      min={16}
-                      max={isPrintFormat ? 400 : 120}
+                      type="text"
+                      maxLength={35}
+                      placeholder="Your text here..."
+                      value={customText1}
+                      onChange={(e) => setCustomText1(e.target.value)}
+                      style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
+                    />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <input
+                          type="number"
+                          min={16}
+                          max={isPrintFormat ? 400 : 120}
+                          value={cfg.customText1?.size ?? CUSTOM_TEXT_1_DEFAULT.size}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val) && val >= 1 && val <= 999) {
+                              setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                              setConfigs(prev => ({
+                                ...prev,
+                                [activeFormat]: {
+                                  ...prev[activeFormat],
+                                  customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), size: val },
+                                },
+                              }));
+                            }
+                          }}
+                          style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                        />
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                      </div>
+                    </div>
+                    <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
                       value={cfg.customText1?.size ?? CUSTOM_TEXT_1_DEFAULT.size}
                       onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        if (!isNaN(val) && val >= 1 && val <= 999) {
-                          setDirtyFormats(prev => new Set([...prev, activeFormat]));
-                          setConfigs(prev => ({
-                            ...prev,
-                            [activeFormat]: {
-                              ...prev[activeFormat],
-                              customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), size: val },
-                            },
-                          }));
-                        }
+                        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                        setConfigs(prev => ({
+                          ...prev,
+                          [activeFormat]: {
+                            ...prev[activeFormat],
+                            customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), size: parseInt(e.target.value) },
+                          },
+                        }));
                       }}
-                      style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                      style={{ width: "100%", cursor: "pointer" }}
                     />
-                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
-                  </div>
-                </div>
-                <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
-                  value={cfg.customText1?.size ?? CUSTOM_TEXT_1_DEFAULT.size}
-                  onChange={(e) => {
-                    setDirtyFormats(prev => new Set([...prev, activeFormat]));
-                    setConfigs(prev => ({
-                      ...prev,
-                      [activeFormat]: {
-                        ...prev[activeFormat],
-                        customText1: { ...(prev[activeFormat].customText1 ?? CUSTOM_TEXT_1_DEFAULT), size: parseInt(e.target.value) },
-                      },
-                    }));
-                  }}
-                  style={{ width: "100%", cursor: "pointer" }}
-                />
-                <AlignButtons field="customText1" />
+                    <AlignButtons field="customText1" />
+                  </>
+                )}
               </div>
             )}
 
             {!isPrintFormat && (
               <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>CUSTOM TEXT 2</div>
-                <input
-                  type="text"
-                  maxLength={35}
-                  placeholder="Your text here..."
-                  value={customText2}
-                  onChange={(e) => setCustomText2(e.target.value)}
-                  style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
-                />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                  <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showCustomText2 ?? false) ? 12 : 0 }}>
+                  <span onClick={() => updateCfg("showCustomText2", !(cfg.showCustomText2 ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCustomText2 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                    {(cfg.showCustomText2 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                  </span>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Text 2</div>
+                </label>
+                {(cfg.showCustomText2 ?? false) && (
+                  <>
                     <input
-                      type="number"
-                      min={16}
-                      max={isPrintFormat ? 400 : 120}
+                      type="text"
+                      maxLength={35}
+                      placeholder="Your text here..."
+                      value={customText2}
+                      onChange={(e) => setCustomText2(e.target.value)}
+                      style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
+                    />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <input
+                          type="number"
+                          min={16}
+                          max={isPrintFormat ? 400 : 120}
+                          value={cfg.customText2?.size ?? CUSTOM_TEXT_2_DEFAULT.size}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val) && val >= 1 && val <= 999) {
+                              setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                              setConfigs(prev => ({
+                                ...prev,
+                                [activeFormat]: {
+                                  ...prev[activeFormat],
+                                  customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), size: val },
+                                },
+                              }));
+                            }
+                          }}
+                          style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                        />
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
+                      </div>
+                    </div>
+                    <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
                       value={cfg.customText2?.size ?? CUSTOM_TEXT_2_DEFAULT.size}
                       onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        if (!isNaN(val) && val >= 1 && val <= 999) {
-                          setDirtyFormats(prev => new Set([...prev, activeFormat]));
-                          setConfigs(prev => ({
-                            ...prev,
-                            [activeFormat]: {
-                              ...prev[activeFormat],
-                              customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), size: val },
-                            },
-                          }));
-                        }
+                        setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                        setConfigs(prev => ({
+                          ...prev,
+                          [activeFormat]: {
+                            ...prev[activeFormat],
+                            customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), size: parseInt(e.target.value) },
+                          },
+                        }));
                       }}
-                      style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                      style={{ width: "100%", cursor: "pointer" }}
                     />
-                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>px</span>
-                  </div>
-                </div>
-                <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
-                  value={cfg.customText2?.size ?? CUSTOM_TEXT_2_DEFAULT.size}
-                  onChange={(e) => {
-                    setDirtyFormats(prev => new Set([...prev, activeFormat]));
-                    setConfigs(prev => ({
-                      ...prev,
-                      [activeFormat]: {
-                        ...prev[activeFormat],
-                        customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), size: parseInt(e.target.value) },
-                      },
-                    }));
-                  }}
-                  style={{ width: "100%", cursor: "pointer" }}
-                />
-                <AlignButtons field="customText2" />
+                    <AlignButtons field="customText2" />
+                  </>
+                )}
               </div>
             )}
 
