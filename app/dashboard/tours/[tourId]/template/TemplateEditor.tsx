@@ -758,11 +758,15 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     dateFormatted: formatDateForRender(firstEvent.date_iso, shortDate),
                     venueName: firstEvent.venue,
                     cityState: [firstEvent.city, firstEvent.state].filter(Boolean).join(', '),
+                    customText1: customText1 || null,
+                    customText2: customText2 || null,
                   } : {
                     bandName: bandName,
                     dateFormatted: shortDate ? 'SAT. APR 26TH' : 'April 25 2026',
                     venueName: 'Stubbs Waller Creek Amphitheater',
                     cityState: 'Little Rock, AR',
+                    customText1: customText1 || null,
+                    customText2: customText2 || null,
                   };
                   try {
                     const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url);

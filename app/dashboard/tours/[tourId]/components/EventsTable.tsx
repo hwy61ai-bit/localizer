@@ -317,6 +317,8 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             dateFormatted: formatDateForRender(event.date_iso, shortDate),
             venueName,
             cityState: [city, state].filter(Boolean).join(", "),
+            customText1: tour.custom_text_1 ?? null,
+            customText2: tour.custom_text_2 ?? null,
           };
 
           try {
