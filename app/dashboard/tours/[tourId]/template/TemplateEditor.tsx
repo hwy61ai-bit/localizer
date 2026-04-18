@@ -26,7 +26,8 @@ const FONTS = [
   { label: "Permanent Marker", value: "Permanent Marker" },
 ];
 
-type FieldKey = "date" | "venue" | "city";
+type FieldKey = "date" | "venue" | "city" | "customText1" | "customText2";
+type BaseFieldKey = "date" | "venue" | "city";
 type FormatKey = "square" | "story" | "landscape" | "print" | "tiktok" | "yt_shorts";
 type Align = "left" | "center" | "right";
 
@@ -52,6 +53,8 @@ type FormatConfig = {
   date: FieldConfig;
   venue: FieldConfig;
   city: FieldConfig;
+  customText1?: FieldConfig;
+  customText2?: FieldConfig;
 };
 
 const DEFAULT_FORMAT: FormatConfig = {
@@ -82,17 +85,23 @@ const FIELD_LABELS: Record<FieldKey, string> = {
   venue: "Venue",
   date:  "Date",
   city:  "City",
+  customText1: "Custom Text 1",
+  customText2: "Custom Text 2",
 };
 
 const SAMPLE_TEXT: Record<FieldKey, string> = {
   venue: "Stubbs Waller Creek Amphitheater",
   date:  "April 25 2026",
   city:  "Little Rock, AR",
+  customText1: "Your text here",
+  customText2: "Your text here",
 };
 
 const BAND_DEFAULT: FieldConfig = { x: 0.5, y: 0.65, size: 80, align: "center" };
 const SPONSOR_1_DEFAULT: FieldConfig = { x: 0.35, y: 0.88, size: 60, align: "center" };
 const SPONSOR_2_DEFAULT: FieldConfig = { x: 0.65, y: 0.88, size: 60, align: "center" };
+const CUSTOM_TEXT_1_DEFAULT: FieldConfig = { x: 0.5, y: 0.08, size: 48, align: "center" };
+const CUSTOM_TEXT_2_DEFAULT: FieldConfig = { x: 0.5, y: 0.92, size: 48, align: "center" };
 
 type Tour = {
   id: string;
@@ -449,7 +458,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }
   }
 
-  function AlignButtons({ field }: { field: FieldKey | "band" }) {
+  function AlignButtons({ field }: { field: BaseFieldKey | "band" }) {
     const fc = field === "band" ? (cfg.band ?? BAND_DEFAULT) : cfg[field];
     const current = fc.align ?? "center";
     const handleClick = (a: Align) => {
@@ -737,8 +746,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   {dragging && (
                     <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 0, borderLeft: "1px dashed rgba(255,255,255,0.9)", pointerEvents: "none", zIndex: 20 }} />
                   )}
-                  {(["venue", "city", "date"] as FieldKey[]).flatMap(a =>
-                    (["venue", "city", "date"] as FieldKey[]).filter(b => b !== a && Math.abs(cfg[a].y - cfg[b].y) < 0.025).map(b => (
+                  {(["venue", "city", "date"] as BaseFieldKey[]).flatMap(a =>
+                    (["venue", "city", "date"] as BaseFieldKey[]).filter(b => b !== a && Math.abs(cfg[a].y - cfg[b].y) < 0.025).map(b => (
                       <div key={a + b} style={{ position: "absolute", top: `${cfg[a].y * 100}%`, left: 0, right: 0, height: 0, borderTop: "1px dashed rgba(255,220,0,0.8)", pointerEvents: "none", zIndex: 19 }} />
                     ))
                   )}
@@ -826,7 +835,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     );
                   })()}
 
-                  {(["venue", "city", "date"] as FieldKey[]).map(field => {
+                  {(["venue", "city", "date"] as BaseFieldKey[]).map(field => {
                     const fc = cfg[field];
                     const align = fc.align ?? "center";
                     const isActive = dragging === field;
@@ -977,7 +986,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
-              {(["venue", "city", "date"] as FieldKey[]).map(field => {
+              {(["venue", "city", "date"] as BaseFieldKey[]).map(field => {
                 const textMax = isPrintFormat ? 400 : 120;
                 return (
                 <div key={field} style={{ marginBottom: 16 }}>
