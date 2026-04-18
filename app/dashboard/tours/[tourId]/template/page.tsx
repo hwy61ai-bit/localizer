@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import TemplateEditor from "./TemplateEditor";
 
 export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 export default async function TemplatePage({ params }: { params: Promise<{ tourId: string }> }) {
   const { tourId } = await params;
