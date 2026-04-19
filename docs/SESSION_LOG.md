@@ -1923,3 +1923,57 @@ Three items flagged for Tim (public link refactor date error in addendum §2, Be
 - Router cache bug (template editor stale UI on back-nav) — workaround: hard refresh / incognito.
 - Preview deploy middleware redirect — blocks using Vercel previews for future testing.
 - `buildTextLayer` has no empty-text guard — currently only caller-side gating prevents empty URL fragments.
+
+## 2026-04-19 (Sunday)
+
+### Commits
+
+- e4b9fcf — docs: capture stale-URL bug evidence before Tim demo
+- f09db21 — fix(viewer): force-dynamic on public viewer pages to prevent stale render URLs [REVERTED]
+- 9a1286a — Revert "fix(viewer): force-dynamic on public viewer pages to prevent stale render URLs"
+- 5258f1d — fix(supabaseAdmin): bypass Next.js fetch cache with cache: no-store to prevent stale DB reads in public viewer pages
+- beda6e1 — docs: mark stale-URL bug as resolved
+
+(Plus earlier commits from today's Step 6 video custom-text work — add those hashes if they landed before this session started.)
+
+### Shipped
+
+**Step 6 — custom text overlays on video formats.** Extended `buildCloudinaryVideoUrl` in `app/api/renders/generate/route.ts` to render `custom_text_1` and `custom_text_2` on the vertical video format (TikTok / IG Reels / FB Stories / YouTube Shorts labels) and the square video format. Three-part gate: format check + per-format visibility flag + non-empty text. Matches the image-format pattern shipped April 18. (Note: the second video format is now Square, not a second vertical format as earlier session docs described.)
+
+**Stale-URL bug — root-caused and fixed.** `/api/download` was returning 403 `url_not_allowed` because the client-side venue page was rendering stale `render_*_url` values that no longer matched the DB. Byte-equal allow-list on the download route rightfully rejected them.
+
+Root cause: Next.js 14 caches every server-side `fetch()` call by default. The `@supabase/supabase-js` client used by `supabaseAdmin()` uses global fetch for every HTTP call, so every read from public viewer pages was being cached at Next.js's fetch-cache layer. `x-vercel-cache: MISS` headers were misleading — the HTML render was fresh, but the data inside the render was stale from the cached fetch.
+
+Fix: added a 3-line `global.fetch` wrapper in `lib/supabaseAdmin.ts` that passes `cache: "no-store"` to every underlying HTTP call. Affects every caller of `supabaseAdmin` across the app (three viewer pages, four download routes, advance form route).
+
+### What didn't work
+
+**Attempt #1 was `export const dynamic = "force-dynamic"` at the page level** on all three public viewer pages. Worked on localhost `npm run build && npm run start`, did not hold on Vercel prod. Reverted. This is the exact "local prod build behaves differently than Vercel prod" failure mode the session kickoff doc warned about — but the warning didn't prevent us from hitting it, it just made the revert fast.
+
+Key learning for future: **route-segment configs don't escape Next.js's fetch cache.** That cache lives below route-level opt-outs. For data-layer staleness, fix at the data layer (`cache: "no-store"` on fetch, or `unstable_noStore()` call, or client builder override). `unstable_noStore` and `revalidatePath` were zero-precedent in this codebase before today — worth being careful when we need them again.
+
+### Evidence preserved
+
+- `docs/STALE_URL_EVIDENCE.md` — full diagnostic trail captured across the debug session. Includes DB state, reproduction steps, attempt #1 failure analysis, hypothesis ranking, resolution notes.
+- KILLING ME tour (THE COMMISSARY original evidence tour was deleted from `venue_links` mid-session — unknown which code path; added to backlog).
+
+### Bugs discovered in testing, deferred
+
+1. **Video sponsor logo preview-vs-output tint mismatch** — template editor preview tints sponsor logos to text color on videos, but rendered video output correctly shows native PNG color. Preview is wrong; output is right. Backlog as a preview-layer fix.
+2. **Template editor stale-state issue** — on at least one occasion, template edits appeared to revert to defaults after save, then spontaneously updated several minutes later. Might be same root cause as stale-URL bug (now fixed) or might need same `cache: "no-store"` treatment on `supabaseServer`. Watch for recurrence next session. `supabaseServer` reads cookies/headers and is thus dynamic at the route level, so this may be a different bug class entirely.
+3. **IG image prefills other format slots in template editor preview** — the April 9 fix removed the `?? tour.image_square_id` fallback in `EventsTable.tsx` `generateAll()` but the same pattern likely exists in `TemplateEditor.tsx` preview rendering. Not yet verified.
+4. **Print asset upload requires hard refresh to appear** — known router cache issue from April 18 backlog, attempted fixes reverted, `revalidatePath` approach still outstanding.
+5. **Stale helper text** under sponsor logo upload mentions "Local Poster PDF renders in sponsor's uploaded color" — print PDF has had no sponsor logos since April 17. Trivial copy fix.
+6. **COMMISSARY venue_links row deletion** — the token `fbef4c39...` had a row in `venue_links` this morning, didn't by afternoon. Unknown which code path deleted it. Worth understanding before trusting deletion semantics.
+7. **Silent-RLS risk on writes** — recon surfaced that `.update()` calls in `app/api/renders/save-urls/route.ts:22-25` and `app/api/renders/generate/route.ts:476` both lack `.select().maybeSingle()` verification, violating CLAUDE.md rule #6. If RLS ever silently rejects, code returns `ok: true` with zero rows modified. Audit all `.update()` across the codebase for this pattern.
+
+### Next session should start with
+
+- `git pull`, `git status`, confirm clean
+- Read this log entry and `docs/STALE_URL_EVIDENCE.md`
+- Decide priority order for the seven deferred items above — some are trivial (copy fix, IG-prefill fallback), some are architectural (silent-RLS audit, supabaseServer cache treatment)
+- If the template editor stale-state symptom recurs, apply the same `cache: "no-store"` treatment to `supabaseServer` via createServerClient's options object
+
+### What to tell Tim
+
+Image-format custom text (shipped April 18) works end-to-end. Video-format custom text shipped today. Sponsor logos render correctly on images (tinted) and videos (native color). The stale-URL bug that was causing intermittent download failures has been root-caused and fixed. Print PDF is unchanged — still no sponsor logos on it (April 17 decision holds).
