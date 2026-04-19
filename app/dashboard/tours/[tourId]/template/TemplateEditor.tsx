@@ -347,8 +347,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
   const formatImageIds: Record<FormatKey, string | null> = {
     square:    tour.image_square_id,
-    story:     tour.image_story_id ?? tour.image_square_id,
-    landscape: tour.image_landscape_id ?? tour.image_square_id,
+    story:     tour.image_story_id,
+    landscape: tour.image_landscape_id,
     print:     tour.image_print_id,
     tiktok:    tour.video_tiktok_id ?? null,
     yt_shorts: tour.video_yt_shorts_id ?? null,
