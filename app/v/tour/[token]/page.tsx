@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+export const dynamic = "force-dynamic";
+
 export default async function TourMarketingHubPage({
   params,
 }: {

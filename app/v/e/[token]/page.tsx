@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import PrintDownloadButton from "./PrintDownloadButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const supabase = supabaseAdmin();
