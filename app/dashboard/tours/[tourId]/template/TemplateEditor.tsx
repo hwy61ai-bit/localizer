@@ -900,8 +900,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           setDragging("sponsorLogo1");
                         }}
                         style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }}>
-                        <img src={sponsorLogo1Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
-                        <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo1Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo1Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
+                        {isVideoFormat ? (
+                          <img src={sponsorLogo1Url} style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none" }} alt="" />
+                        ) : (
+                          <>
+                            <img src={sponsorLogo1Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
+                            <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo1Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo1Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
+                          </>
+                        )}
                       </div>
                     );
                   })()}
@@ -919,8 +925,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           setDragging("sponsorLogo2");
                         }}
                         style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }}>
-                        <img src={sponsorLogo2Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
-                        <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo2Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo2Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
+                        {isVideoFormat ? (
+                          <img src={sponsorLogo2Url} style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none" }} alt="" />
+                        ) : (
+                          <>
+                            <img src={sponsorLogo2Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
+                            <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo2Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo2Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
+                          </>
+                        )}
                       </div>
                     );
                   })()}
