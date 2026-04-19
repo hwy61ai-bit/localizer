@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/app/components/Toast";
 import { renderPoster, formatDateForRender } from "@/lib/clientRender";
@@ -219,6 +220,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }
     return 12;
   }
+
+  const router = useRouter();
 
   const [activeFormat, setActiveFormat] = useState<FormatKey>("square");
   const [configs, setConfigs] = useState<Record<FormatKey, FormatConfig>>({
@@ -512,6 +515,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         setDirtyFormats(prev => { const next = new Set(prev); next.delete(activeFormat); return next; });
         setJustSaved(true);
         setTimeout(() => setJustSaved(false), 700);
+        router.refresh();
       }
     } catch {
       toast.error("Save failed — network error.");
