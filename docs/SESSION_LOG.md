@@ -1997,3 +1997,16 @@ Append this to the bottom of docs/SESSION_LOG.md — do not modify existing cont
 - COMMISSARY venue_links row deletion — understand which code path did it
 
 Paste the commit hashes for Bug 3 and Bug 1 from `git log` output, then commit with "docs: session log addendum — bug 3 and bug 1 fixes".
+
+### Post-Tim-meeting addendum (evening)
+
+**Template editor revert-on-back-navigation bug — FIXED.** Root cause: Next.js 14 Router Cache serves stale RSC payloads on client-side back-navigation. `supabaseServer`'s cookies/headers reads make the route server-side dynamic, but that doesn't bypass the Router Cache. Fix: imported `useRouter`, added `router.refresh()` inside the save() success branch after the "SAVED ✓" pulse. One-line invalidation after explicit saves only (not on drag-tick or keystroke autosave). Commit `a580240`. Verified on localhost + prod.
+
+**Promoter email text colors — FIXED.** Four hex codes changed to #ffffff in `app/api/renders/approve/route.ts` (lines 92, 95, 96, 100). Commit `020bfeb`. Verified by sending test email to Drew's inbox.
+
+**Email sender display name — FIXED.** Six Resend send call sites across five files now use `HWY61 Labs <address>` format instead of bare email address. Gmail sender column now shows "HWY61 Labs" instead of "noreply" or "advances". Commit `cba407e`. Verified on test send.
+
+### Deferred to next session
+
+- **Tim-facing auth/beta briefing doc.** Drew wants a comprehensive md file for Tim's Claude covering the full auth architecture, beta-tester provisioning landmines, and known architectural footguns. Scoped and structured in chat this evening but not written. Outline saved in conversation — start there next session.
+- All the items already flagged earlier today (see prior entries in this session log) plus the auth-adjacent audit findings from tonight's recon: 11 raw `createClient` call sites bypassing helpers, 30+ `.update()` without `.select().maybeSingle()`, 79 `.single()` usages, manual plan-status provisioning step for beta testers.
