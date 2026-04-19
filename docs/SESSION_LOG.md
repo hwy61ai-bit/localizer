@@ -1856,3 +1856,70 @@ See `docs/BACKLOG.md` for:
 - Step 6: Cloudinary video overlays. Read-only recon against current `app/api/renders/generate/route.ts` (structure may have drifted since earlier recon). Then propose diff. Same three-part gate as image path.
 - After Step 6: end-to-end smoke test on a tour with fresh unsent venue links.
 - After demo feedback from Tim: triage router cache fix approach.
+
+
+## 2026-04-18 (Saturday evening addendum — Step 6 shipped, stale-URL bug surfaced)
+
+### Commits
+
+- aa4cf3d — feat(render): custom text overlays on video formats (TikTok, YT Shorts)
+- d9a4308 — docs: backlog entry — venue link serves stale render URL (HIGH pre-beta)
+
+### What shipped
+
+Step 6 from the April 19 kickoff doc, shipped Saturday evening. Cloudinary video overlays for `customText1` / `customText2` on TikTok and YT Shorts, mirroring the image-format pattern shipped earlier today. Three surgical changes to `app/api/renders/generate/route.ts`:
+
+- Tour SELECT extended to pull `custom_text_1`, `custom_text_2`
+- `buildCloudinaryVideoUrl` extended with two new params + per-format config reads (position/size/align defaults at y=0.97/0.99, center align) + three-part gate (`showCustomText{N} && hasCustomText{N}Content`) that prevents empty strings from reaching `buildTextLayer` (which has no empty-text guard)
+- Single call site updated with `tour.custom_text_1 ?? null, tour.custom_text_2 ?? null`
+
+Typecheck clean. Custom text inherits font, color, and allCaps from the format's cfg, matching venue/date/city behavior.
+
+### Verified on prod (Cloudinary side)
+
+- TikTok: custom text renders on direct Cloudinary URL ✅
+- YT Shorts (1080×1080): custom text renders ✅
+- Empty-text negative test (toggle on, text blank): render is clean, gate confirmed working ✅
+
+### Process notes
+
+- Followed kickoff's recon-first discipline. Recon caught one kickoff inaccuracy: "data is already plumbed" was wrong — the generate route did NOT receive custom_text_1/2 in the request body or tour SELECT. Scope one step bigger than the kickoff implied. Still ~1hr end-to-end.
+- Attempted Path A (preview deploy first) per kickoff's prod-change discipline. Preview built green but middleware redirected preview domain → www.hwy61labs.com (likely NEXT_PUBLIC_APP_URL or hostname enforcement). Rather than debug middleware-on-preview-deploys at night, fell back to Path B (direct to main) with revert command pre-staged. Change was genuinely low-risk (three param additions + one SELECT column, no middleware, no route configs, no caching directives). Prod deploy clean on first try.
+
+### Critical backlog surfaced: venue link serves stale render URL
+
+After confirming custom text worked via direct Cloudinary URL, a separate test of sponsor logo positioning on TikTok revealed that the venue link page at `/v/e/[token]` and the `/api/download?token=...` endpoint are serving a **stale Cloudinary URL that predates even the April 14 sponsor-logo-on-video feature**. DB row for the test venue link contains the correct current URL (with sponsor logo layer and custom text layer); served page contains an older URL (no sponsor logo block, no custom text block, different band logo size).
+
+Ruled out during diagnosis:
+- Browser cache (hard refresh + fresh incognito both stale)
+- Supabase fetch cache (page uses `supabaseAdmin` service-role client, no Next.js `cache` directive)
+- Duplicate URL generator (grep confirmed `buildCloudinaryVideoUrl` is the only video URL builder)
+- Multiple `venue_links` rows (SQL confirmed one)
+- Stale `overlay_config` (DB has current config)
+
+Working hypothesis: Vercel CDN edge cache on the tokenized `/v/e/[token]` route. Full diagnostic detail + repro data in `docs/BACKLOG.md`.
+
+**Implication:** Custom text on videos shipped today DOES work at Cloudinary, but will NOT appear on venue link pages until this stale-URL bug is fixed. Same is true for sponsor logos on videos (shipped April 14) — they've never been making it to the venue page either.
+
+**HIGH pre-beta priority.** Affects every venue link for every tour.
+
+### Other process notes
+
+- Spent ~90 minutes chasing the stale-URL symptom through multiple theories. Initially misdiagnosed as a logo-off-frame bug based on y=0.922 position — incorrect theory, user dragged logo to center, logo still missing. Pulled more data, found the real issue is a DB-vs-page mismatch. Lesson reinforced: when fresh data contradicts a hypothesis, drop the hypothesis fully rather than incrementally refine it.
+- Stopped diagnostic work at ~10pm per yesterday's kickoff discipline ("if user has a deadline, revert-first-diagnose-after"). Demo is tomorrow, demo is images-only, bug is pre-existing — not tonight's problem.
+
+### Tomorrow's session MUST start with
+
+1. **Verify whether image formats have the same stale-URL bug BEFORE the Tim demo.** Query any recent `venue_links.render_square_url` / `render_story_url` / `render_landscape_url` and compare against what the venue page serves. If images are also stale, the demo story needs adjusting.
+2. If images are affected too, decide: demo narrative adjustment OR attempt a fix with preview-deploy verification first (do NOT repeat yesterday's force-dynamic pattern on the venue page without preview testing).
+3. If images are NOT affected, demo proceeds as planned and stale-URL fix is a post-demo task.
+
+### Tim context addendum audit results
+
+Three items flagged for Tim (public link refactor date error in addendum §2, Beta Test Band show count discrepancy in §3.3, TourCommand clarification for v8 §5). Parked in chat history — not critical for tomorrow's demo. Revisit when regenerating v8 Master Context.
+
+### Still open from earlier today
+
+- Router cache bug (template editor stale UI on back-nav) — workaround: hard refresh / incognito.
+- Preview deploy middleware redirect — blocks using Vercel previews for future testing.
+- `buildTextLayer` has no empty-text guard — currently only caller-side gating prevents empty URL fragments.
