@@ -1977,3 +1977,23 @@ Key learning for future: **route-segment configs don't escape Next.js's fetch ca
 ### What to tell Tim
 
 Image-format custom text (shipped April 18) works end-to-end. Video-format custom text shipped today. Sponsor logos render correctly on images (tinted) and videos (native color). The stale-URL bug that was causing intermittent download failures has been root-caused and fixed. Print PDF is unchanged — still no sponsor logos on it (April 17 decision holds).
+
+
+Append this to the bottom of docs/SESSION_LOG.md — do not modify existing content, just add at the end:
+
+### Late addendum — two UI fixes after the stale-URL resolution
+
+**Bug 3 fixed.** Template editor's live preview was falling back to the square image for story and landscape formats when those formats had no dedicated base image uploaded (same pattern that was fixed in EventsTable.tsx on April 9, but lingering in TemplateEditor.tsx). Removed the `?? tour.image_square_id` tails from the `formatImageIds` map on lines 350–351. Now surfaces the existing "No image uploaded for this format yet. → IMPORT ASSETS" placeholder at lines 1024–1025 — infrastructure was already built, just never triggered. Commit [hash].
+
+**Bug 1 fixed.** Sponsor logo preview was tinting to text color on video formats, but the Cloudinary video output correctly renders sponsor logos in native PNG color (`buildSponsorLogoLayer` has no `e_colorize`). Preview now branches on `isVideoFormat`: on videos, renders a plain visible `<img>` in native colors; on images, keeps the existing CSS-mask tint. Matches the WYSIWYG principle of "preview should reflect output." Commit [hash].
+
+**Both fixes** were template-editor-only changes (no render pipeline touched) with their own local dev smoke tests and prod verification.
+
+**Remaining from today's deferred list (for next session):**
+- Bug 4: print asset upload requires hard refresh (router cache — `revalidatePath` candidate)
+- Bug 5: stale helper text mentioning "Local Poster PDF" for sponsor logos (trivial copy fix; also the same copy is inaccurate about video tinting now that Bug 1 is fixed — check lines 1285 and 1343)
+- Silent-RLS audit on `.update()` calls across the codebase (per CLAUDE.md rule #6)
+- Template editor stale state — monitor; may have been masked by the stale-URL fix. Re-verify next session.
+- COMMISSARY venue_links row deletion — understand which code path did it
+
+Paste the commit hashes for Bug 3 and Bug 1 from `git log` output, then commit with "docs: session log addendum — bug 3 and bug 1 fixes".
