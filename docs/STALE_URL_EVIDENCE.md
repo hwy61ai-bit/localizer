@@ -43,3 +43,27 @@ The client page that renders the download button is not reading fresh data after
 ## Do NOT delete anything
 
 Do NOT mass-delete test data, do NOT regenerate this tour's assets, do NOT touch venue_links or events rows related to this tour until Drew explicitly decides to discard the evidence. This captured state is the reproduction.
+
+---
+
+## Resolution — April 19, late afternoon
+
+**Status: FIXED** via lib/supabaseAdmin.ts global.fetch override, commit [fill in hash].
+
+### Root cause
+
+Next.js 14 caches all server-side fetch() calls by default. The @supabase/supabase-js client uses the global fetch for every HTTP call, so every supabaseAdmin() read was being cached at Next.js's fetch-cache layer. No route-segment config (`force-dynamic`, `revalidate = 0`) escapes this — the cache lives below route-level opt-outs.
+
+### The fix
+
+Added a global.fetch wrapper to supabaseAdmin's createClient options that passes cache: "no-store" to every underlying HTTP call. Three lines added. Affects every caller of supabaseAdmin across the app (three viewer pages, four download routes, others).
+
+### Why attempt #1 failed
+
+`export const dynamic = "force-dynamic"` at the page level worked on localhost `npm run start` but did not hold on Vercel prod. The `x-vercel-cache: MISS` + fresh rendering + stale data combo is a known Vercel prod divergence from local prod builds.
+
+### Verified
+
+- KILLING ME tour, The Black Diamond event, token 32007679... — loaded on prod, preview reflected latest template change, download URL contained current DB value, JPEG downloaded cleanly
+- Same flow on localhost before deploy — passed
+- Pre-existing COMMISSARY evidence tour (token fbef4c39...) — row was deleted from venue_links between morning and evening, 404s. Unrelated to this fix.
