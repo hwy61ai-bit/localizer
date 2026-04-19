@@ -89,15 +89,15 @@ export async function POST(req: NextRequest) {
       subject: `Show assets ready — ${bandName} @ ${venueName}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0a; padding: 40px 32px; border-radius: 12px;">
-          <p style="font-family: sans-serif; font-size: 11px; font-weight: 700; color: #555; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 16px 0;">Show Assets Ready</p>
+          <p style="font-family: sans-serif; font-size: 11px; font-weight: 700; color: #ffffff; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 16px 0;">Show Assets Ready</p>
           <h1 style="font-family: 'Bebas Neue', Impact, sans-serif; font-size: 64px; font-weight: 400; color: #ffffff; margin: 0 0 8px 0; line-height: 1; letter-spacing: 2px;">${bandName.toUpperCase()} / ASSETS</h1>
           <div style="border-top: 1px solid #222; margin: 20px 0;"></div>
-          <p style="font-family: sans-serif; color: #888; font-size: 14px; margin: 0 0 4px 0;">${dateFormatted}</p>
-          <p style="font-family: sans-serif; color: #888; font-size: 14px; margin: 0 0 32px 0;">${venueName}${cityState ? ", " + cityState : ""}</p>
+          <p style="font-family: sans-serif; color: #ffffff; font-size: 14px; margin: 0 0 4px 0;">${dateFormatted}</p>
+          <p style="font-family: sans-serif; color: #ffffff; font-size: 14px; margin: 0 0 32px 0;">${venueName}${cityState ? ", " + cityState : ""}</p>
           <a href="${venueLink}" style="display: inline-block; padding: 14px 28px; background: #ffffff; color: #000000; text-decoration: none; border-radius: 8px; font-weight: 900; font-size: 14px; letter-spacing: 0.05em;">
             VIEW & DOWNLOAD ASSETS →
           </a>
-          <p style="margin-top: 40px; font-size: 11px; color: #444; font-family: sans-serif;">
+          <p style="margin-top: 40px; font-size: 11px; color: #ffffff; font-family: sans-serif;">
             Powered by Localizer — Tour dates in. Tour Assets out.
           </p>
         </div>
