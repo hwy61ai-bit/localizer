@@ -242,7 +242,9 @@ function buildCloudinaryVideoUrl(
   customFontsMap: Map<string, string>,
   logoUrl: string | null,
   sponsorLogo1Url: string | null,
-  sponsorLogo2Url: string | null
+  sponsorLogo2Url: string | null,
+  customText1: string | null,
+  customText2: string | null
 ): string {
   const { w, h } = VIDEO_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
@@ -292,6 +294,30 @@ function buildCloudinaryVideoUrl(
   const showSponsorLogo2 = cfg.showSponsorLogo2 ?? false;
   const sponsorLogo2Cfg = cfg.sponsorLogo2 ?? null;
 
+  const showCustomText1 = cfg.showCustomText1 ?? false;
+  const customText1Cfg = cfg.customText1 ?? null;
+  const customText1Size = customText1Cfg?.size ?? 28;
+  const customText1XF = customText1Cfg?.x ?? 0.5;
+  const customText1YF = customText1Cfg?.y ?? 0.97;
+  const customText1Align = customText1Cfg?.align ?? "center";
+  const hasCustomText1Content = !!(customText1 && customText1.trim().length > 0);
+  const drawCustomText1 = showCustomText1 && hasCustomText1Content;
+  const customText1Final = drawCustomText1
+    ? sanitize(caps ? customText1!.toUpperCase() : customText1!)
+    : "";
+
+  const showCustomText2 = cfg.showCustomText2 ?? false;
+  const customText2Cfg = cfg.customText2 ?? null;
+  const customText2Size = customText2Cfg?.size ?? 28;
+  const customText2XF = customText2Cfg?.x ?? 0.5;
+  const customText2YF = customText2Cfg?.y ?? 0.99;
+  const customText2Align = customText2Cfg?.align ?? "center";
+  const hasCustomText2Content = !!(customText2 && customText2.trim().length > 0);
+  const drawCustomText2 = showCustomText2 && hasCustomText2Content;
+  const customText2Final = drawCustomText2
+    ? sanitize(caps ? customText2!.toUpperCase() : customText2!)
+    : "";
+
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
     ...(showLogo && logoUrl && logoCfg ? [buildLogoLayer(logoUrl, logoCfg, color, w, h)] : []),
@@ -301,6 +327,12 @@ function buildCloudinaryVideoUrl(
     ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
     ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
     ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign)]  : []),
+    ...(drawCustomText1
+      ? [buildTextLayer(font, customText1Size, customText1Final, color, customText1XF, customText1YF, w, h, customText1Align)]
+      : []),
+    ...(drawCustomText2
+      ? [buildTextLayer(font, customText2Size, customText2Final, color, customText2XF, customText2YF, w, h, customText2Align)]
+      : []),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/video/upload/${layers.join("/")}/${publicId}`;
@@ -343,7 +375,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, artist_id, sponsor_logo_1_url, sponsor_logo_2_url")
+    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, artist_id, sponsor_logo_1_url, sponsor_logo_2_url, custom_text_1, custom_text_2")
     .eq("id", tourId_resolved)
     .eq("org_id", orgId)
     .single();
@@ -429,7 +461,7 @@ export async function POST(req: NextRequest) {
         }
         const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
-        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url);
+        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.custom_text_1 ?? null, tour.custom_text_2 ?? null);
       }
 
       // Upsert venue_link
