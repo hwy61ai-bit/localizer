@@ -162,3 +162,11 @@ After reading this file, open a fresh Claude conversation and paste this as the 
 Yesterday you worked a long day on a hard feature, hit a prod scare, recovered cleanly, and shipped a real user-facing capability. That's real progress, even though it was messy. Today is video overlays — a smaller, more contained piece. Start with recon, trust the pattern from yesterday, and keep commits small.
 
 Good luck with Tim.
+## Pre-demo FIRST TASK (do before any mass-delete with Tim)
+
+Capture stale-URL bug evidence before wiping data:
+1. Pick ONE existing problem tour (the Memphis one from tonight works) and ONE fresh-tonight tour
+2. For each: query DB render_tiktok_url from venue_links, and grab served URL from venue page source in incognito
+3. Save the 4 URLs in docs/STALE_URL_EVIDENCE.md before deleting anything
+4. If fresh matches DB and old doesn't, that's the confirmation — bug is data-side, not code-side
+
