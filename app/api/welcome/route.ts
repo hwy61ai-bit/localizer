@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   if (!email) return NextResponse.json({ error: "Missing email" }, { status: 400 });
 
   await resend.emails.send({
-    from: "noreply@hwy61labs.com",
+    from: "HWY61 Labs <noreply@hwy61labs.com>",
     to: email,
     subject: "Welcome to Localizer",
     html: `
