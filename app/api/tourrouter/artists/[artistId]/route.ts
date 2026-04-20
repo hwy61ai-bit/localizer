@@ -40,7 +40,6 @@ export async function PUT(
     "manager_name", "manager_email", "manager_phone",
     "booking_agent_name", "booking_agent_email", "booking_agent_phone",
     "publicist_name", "publicist_email", "publicist_phone",
-    "agent_name", "agent_email", "agent_phone",
     "tour_manager_name", "tour_manager_email", "tour_manager_phone",
     "spotify_url",
     "business_entity", "key_contacts", "tax_compliance", "insurance",
