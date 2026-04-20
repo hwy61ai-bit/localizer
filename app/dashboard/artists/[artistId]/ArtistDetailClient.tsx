@@ -46,11 +46,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
     if (!window.confirm("Delete this tour and all its events? This cannot be undone.")) return;
     setDeletingTourId(tourId);
     try {
-      const { data: events } = await supabase.from("events").select("id").eq("tour_id", tourId);
-      if (events?.length) {
-        await supabase.from("venue_links").delete().in("event_id", events.map(e => e.id));
-        await supabase.from("events").delete().eq("tour_id", tourId);
-      }
+      await supabase.from("events").delete().eq("tour_id", tourId);
       await supabase.from("tours").delete().eq("id", tourId);
       setTours(prev => prev.filter(t => t.id !== tourId));
     } catch (err) {

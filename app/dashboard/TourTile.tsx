@@ -75,12 +75,6 @@ export default function TourTile({
         const { data: tours } = await supabase.from("tours").select("id").eq("artist_id", tourId);
         const tourIds = (tours ?? []).map(t => t.id);
         if (tourIds.length > 0) {
-          const { data: events } = await supabase.from("events").select("id").in("tour_id", tourIds);
-          const eventIds = (events ?? []).map(ev => ev.id);
-          if (eventIds.length > 0) {
-            const { error: vlErr } = await supabase.from("venue_links").delete().in("event_id", eventIds);
-            if (vlErr) throw vlErr;
-          }
           const { error: evErr } = await supabase.from("events").delete().in("tour_id", tourIds);
           if (evErr) throw evErr;
           const { error: trErr } = await supabase.from("tours").delete().in("id", tourIds);
@@ -91,12 +85,6 @@ export default function TourTile({
         const { error } = await supabase.from("artists").delete().eq("id", tourId);
         if (error) throw error;
       } else {
-        const { data: evts } = await supabase.from("events").select("id").eq("tour_id", tourId);
-        const eventIds = (evts ?? []).map(ev => ev.id);
-        if (eventIds.length > 0) {
-          const { error: vlErr } = await supabase.from("venue_links").delete().in("event_id", eventIds);
-          if (vlErr) throw vlErr;
-        }
         const { error: evErr } = await supabase.from("events").delete().eq("tour_id", tourId);
         if (evErr) throw evErr;
         const { error } = await supabase.from("tours").delete().eq("id", tourId);
