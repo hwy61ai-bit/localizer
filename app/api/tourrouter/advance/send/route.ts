@@ -30,10 +30,17 @@ export async function POST(req: NextRequest) {
   let token = show.advance_form_token;
   if (!token) {
     token = generatePublicToken();
-    await supabase
+    const { data: tokenUpdate, error: tokenErr } = await supabase
       .from("tour_shows")
       .update({ advance_form_token: token })
-      .eq("id", showId);
+      .eq("id", showId)
+      .select()
+      .maybeSingle();
+    if (tokenErr) return NextResponse.json({ error: tokenErr.message }, { status: 500 });
+    if (!tokenUpdate) {
+      console.error("[advance/send] tour_shows update returned no row BEFORE email send — advance_form_token not persisted, aborting to prevent broken promoter link. Check RLS policy on tour_shows.advance_form_token.", { showId, orgId: result.orgId });
+      return NextResponse.json({ error: "advance_form_token_update_failed" }, { status: 500 });
+    }
   }
 
   const tourData = show.tours_routing as Record<string, unknown> | null;
@@ -100,7 +107,17 @@ export async function POST(req: NextRequest) {
       advance_recipient_email: recipientEmail,
       advance_recipient_name: recipientName || null,
     };
-    await supabase.from("tour_shows").update(updates).eq("id", showId);
+    const { data: statusUpdate, error: statusErr } = await supabase
+      .from("tour_shows")
+      .update(updates)
+      .eq("id", showId)
+      .select()
+      .maybeSingle();
+    if (statusErr) return NextResponse.json({ error: statusErr.message }, { status: 500 });
+    if (!statusUpdate) {
+      console.error("[advance/send] tour_shows update returned no row AFTER email sent — promoter email delivered but DB state not updated, cron at 0 10 * * * will re-fire duplicate. Check RLS policy on tour_shows.advance_status/advance_sent_at.", { showId, orgId: result.orgId, emailType });
+      return NextResponse.json({ error: "advance_status_update_failed" }, { status: 500 });
+    }
 
     return NextResponse.json({ ok: true, token, advanceLink });
   } catch (e) {
