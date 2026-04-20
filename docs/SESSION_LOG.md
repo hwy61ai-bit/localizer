@@ -2056,3 +2056,31 @@ Both were symptoms of the same cached-fetch root cause as the stale-URL bug, jus
 ### What to tell Tim
 
 Closed a pre-beta security gap on event deletion — the DELETE endpoint now requires auth and org membership. Yesterday's COMMISSARY disappearance mystery is resolved and was benign. Two UI bugs from yesterday's deferred list (print asset upload refresh, video preview replacement refresh) turned out to be already-fixed by the stale-URL work.
+
+### Afternoon addendum — venue-link auth fix + dead-code cleanup
+
+**Commits:**
+- 1134401 — fix(venue-link): add auth + org check to POST /api/venue-link
+- 09d076e — cleanup(dashboard): remove dead venue_links.delete() from three delete handlers
+
+**Shipped (1134401).** Closed the last known auth gap from docs/VENUE_LINKS_DELETION_AUDIT.md. POST /api/venue-link previously trusted orgId + eventId from the request body with zero app-level auth. Added the same pattern as today's fb768de events-DELETE fix, plus one route-specific defense: a cross-check that `tour.org_id` (resolved from the event → tour lookup) matches the orgId in the request body. This closes the token-spraying vector where a caller could otherwise create venue_links rows under a forged orgId. Also added `.select().maybeSingle()` on the INSERT with a server-side console.error → 500 write_failed for the silent-RLS case. Happy-path response shape preserved for the existing caller at EventsTable.tsx:526.
+
+Verified on prod: 401 from logged-out incognito, 403 from logged-in request with forged orgId, 200 happy path from the dashboard share-link button.
+
+**Shipped (09d076e).** Removed dead venue_links.delete() calls from three client-side delete handlers (TourTile.tsx artist-delete branch, TourTile.tsx tour-delete branch, ArtistDetailClient.tsx handleDeleteTour). These calls have been silent no-ops for as long as they've existed — venue_links has no DELETE RLS policy (default-deny for all roles), so every call returned zero-rows-affected. Actual cleanup has always been driven by ON DELETE CASCADE on venue_links.event_id firing when the subsequent events.delete() runs. Also removed the scaffolding SELECTs that existed solely to feed the venue_links delete (and in ArtistDetailClient, the if(events?.length) guard — zero-row events.delete on empty tours is semantically identical to the previous guard-and-skip).
+
+Smoke-tested on localhost via ArtistDetailClient's handleDeleteTour: tour delete wiped tour + event + venue_links row via cascade, artist preserved. Net -17 lines, +1 line.
+
+**Three-commit day.** fb768de + 1134401 + 09d076e. All three deployed to Vercel. Two pre-beta auth gaps closed, one architectural cleanup, three-part session-log trail.
+
+**Still deferred (unchanged from this morning's list):**
+- Tim-facing auth/beta briefing doc (blocked on Tim's beta info)
+- Silent-RLS audit on .update() calls (30+ sites missing .select().maybeSingle())
+- 11 raw createClient call sites bypassing supabase helpers
+- 79 .single() usages to triage against PGRST116 traps
+- ADMIN_EMAILS centralization (5 duplicated sites)
+- BUG-B: stale `allowed` whitelist in tourrouter artists PUT route
+- Lint cleanup pass on app/v, app/advance, app/report, app/api/download*
+- Parallel FormatConfig/FieldConfig types in TemplateEditor.tsx + clientRender.ts
+
+**zsh bracket quoting bit me once today** on the commit-stage step for ArtistDetailClient.tsx's [artistId] path — rejected silently by zsh glob, nothing staged. Re-ran with quotes. CLAUDE.md rule 17 held exactly as documented; flagging here so future me doesn't forget the footgun.
