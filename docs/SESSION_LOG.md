@@ -2010,3 +2010,49 @@ Paste the commit hashes for Bug 3 and Bug 1 from `git log` output, then commit w
 
 - **Tim-facing auth/beta briefing doc.** Drew wants a comprehensive md file for Tim's Claude covering the full auth architecture, beta-tester provisioning landmines, and known architectural footguns. Scoped and structured in chat this evening but not written. Outline saved in conversation — start there next session.
 - All the items already flagged earlier today (see prior entries in this session log) plus the auth-adjacent audit findings from tonight's recon: 11 raw `createClient` call sites bypassing helpers, 30+ `.update()` without `.select().maybeSingle()`, 79 `.single()` usages, manual plan-status provisioning step for beta testers.
+
+---
+
+## 2026-04-20 (Monday)
+
+### Commits
+
+- fb768de — fix(events): add auth + org check to DELETE /api/events/[eventId]
+
+### Shipped
+
+**Pre-beta auth fix on DELETE /api/events/[eventId].** Previously the route trusted the UUID in the URL with zero app-level auth, leaning entirely on RLS. Added `supabase.auth.getUser()` → 401 if unauthenticated, org membership check via event → tour → org_members → 403 if not a member, and `.select()` chained on the delete to catch silent RLS rejects → 403 on zero rows affected. Pattern mirrored from `app/api/marketing-tokens/create/route.ts`.
+
+Verified on prod: 401 from logged-out incognito, 404 from logged-in request against nonexistent UUID, happy-path delete from dashboard UI works and cascades to venue_links children as expected.
+
+### Forensic recon: venue_links deletion audit
+
+Surfaced this fix via `docs/VENUE_LINKS_DELETION_AUDIT.md` — a read-only forensic pass on every code path that can delete a `venue_links` row. Triggered by yesterday's COMMISSARY mystery (token `fbef4c39...` disappeared between morning and afternoon on April 19).
+
+**Resolved the mystery:** COMMISSARY disappearance was almost certainly benign — an event delete during the KILLING ME debug session cascaded to the venue_links child via `ON DELETE CASCADE`. Confirmed via `information_schema` query: `venue_links.event_id` → `events.id` is `ON DELETE CASCADE`, `venue_links.org_id` → `orgs.id` is also `ON DELETE CASCADE`.
+
+**Surfaced three architectural findings worth documenting:**
+
+1. `venue_links` has no DELETE RLS policy. Default-deny for everyone. The three client-side `handleDelete` sites in `TourTile.tsx` and `ArtistDetailClient.tsx` have been calling `.from("venue_links").delete()` as a silent no-op — the actual cleanup has always been driven by the FK cascade when the subsequent `events.delete()` fires. These explicit venue_links deletes are dead code.
+
+2. The FK's ON DELETE action was not auditable from the repo because migrations in this project are applied by hand in the Supabase SQL Editor per CLAUDE.md rule 4. `supabase/migrations/` contains zero references to `venue_links`. Future audits of this kind will need to hit `information_schema` against the live DB — worth knowing.
+
+3. Auth floor confirmed higher than feared — `events`, `tours`, and `artists` all have DELETE policies scoped to `authenticated` role with org-member checks. No `anon` deletion anywhere in the cascade chain. The auth fix on `/api/events/[eventId]` was defense-in-depth plus closing a shared-org gap, not a cross-tenant security hole.
+
+### Bugs smoke-tested and confirmed fixed (incidentally)
+
+1. **Bug 4 from April 19 deferred list** — print asset upload requires hard refresh. Verified on prod: works without refresh. Almost certainly resolved by yesterday's `supabaseAdmin` fetch-cache fix.
+2. **Template editor stale video preview on asset replacement** — verified on prod: works without refresh. Same collateral benefit from yesterday's fetch-cache fix.
+
+Both were symptoms of the same cached-fetch root cause as the stale-URL bug, just on different routes.
+
+### Next session should start with
+
+- `/api/venue-link` (singular, POST) missing auth check — same shape of fix as today's events DELETE. Last known auth gap from the audit. BACKLOG.md:248.
+- Optional cleanup: remove dead `venue_links.delete()` calls from the three client handleDelete sites (TourTile x2, ArtistDetailClient). Let the cascade do its job.
+- Still deferred: Tim-facing auth/beta briefing doc (blocked on Tim's beta info).
+- Still deferred: silent-RLS audit on `.update()` calls, 11 raw `createClient` sites bypassing helpers, 79 `.single()` usages.
+
+### What to tell Tim
+
+Closed a pre-beta security gap on event deletion — the DELETE endpoint now requires auth and org membership. Yesterday's COMMISSARY disappearance mystery is resolved and was benign. Two UI bugs from yesterday's deferred list (print asset upload refresh, video preview replacement refresh) turned out to be already-fixed by the stale-URL work.
