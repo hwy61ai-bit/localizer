@@ -72,8 +72,9 @@ export async function POST(req: NextRequest) {
             update.offer_display = formatOfferDisplay(fields.offer_amount, fields.offer_currency);
           }
           if (Object.keys(update).length > 0) {
-            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);
+            const { data, error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId).select().maybeSingle();
             if (error) throw error;
+            if (!data) throw new Error(`[intake/confirm] tour_shows update returned no row at deal_memo — possible silent RLS rejection. Check RLS policy on tour_shows core fields for org_id=${access.orgId}, showId=${showId}`);
             saved.push(`Updated show ${showId}`);
           }
         }
@@ -82,12 +83,15 @@ export async function POST(req: NextRequest) {
 
       case "settlement": {
         if (showId) {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from("tour_shows")
             .update({ settlement: fields })
             .eq("id", showId)
-            .eq("org_id", access.orgId);
+            .eq("org_id", access.orgId)
+            .select()
+            .maybeSingle();
           if (error) throw error;
+          if (!data) throw new Error(`[intake/confirm] tour_shows update returned no row at settlement — possible silent RLS rejection. Check RLS policy on tour_shows.settlement for org_id=${access.orgId}, showId=${showId}`);
           saved.push(`Saved settlement to show ${showId}`);
         }
         break;
@@ -95,12 +99,15 @@ export async function POST(req: NextRequest) {
 
       case "box_office": {
         if (showId) {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from("tour_shows")
             .update({ settlement: fields })
             .eq("id", showId)
-            .eq("org_id", access.orgId);
+            .eq("org_id", access.orgId)
+            .select()
+            .maybeSingle();
           if (error) throw error;
+          if (!data) throw new Error(`[intake/confirm] tour_shows update returned no row at box_office — possible silent RLS rejection. Check RLS policy on tour_shows.settlement for org_id=${access.orgId}, showId=${showId}`);
           saved.push(`Saved box office data to show ${showId}`);
         }
         break;
@@ -121,8 +128,9 @@ export async function POST(req: NextRequest) {
             }
           }
           if (Object.keys(update).length > 0) {
-            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);
+            const { data, error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId).select().maybeSingle();
             if (error) throw error;
+            if (!data) throw new Error(`[intake/confirm] tour_shows update returned no row at hotel_confirmation — possible silent RLS rejection. Check RLS policy on tour_shows hotel fields for org_id=${access.orgId}, showId=${showId}`);
             saved.push(`Updated hotel info on show ${showId}`);
           }
         }
@@ -157,12 +165,15 @@ export async function POST(req: NextRequest) {
             .maybeSingle();
           const existing = (currentShow?.hotel_cost_actual as number) || 0;
           const newTotal = existing + (fields.amount as number);
-          const { error: hotelErr } = await supabase
+          const { data: hotelData, error: hotelErr } = await supabase
             .from("tour_shows")
             .update({ hotel_cost_actual: newTotal })
             .eq("id", showId)
-            .eq("org_id", access.orgId);
+            .eq("org_id", access.orgId)
+            .select()
+            .maybeSingle();
           if (hotelErr) console.error("[Intake confirm] hotel_cost_actual update failed:", hotelErr.message);
+          else if (!hotelData) console.error("[intake/confirm] hotel_cost_actual stacking update returned no row — secondary write, skipping. Check RLS if this repeats.", { showId, orgId: access.orgId, attemptedCost: newTotal });
           else saved.push(`Updated hotel_cost_actual to ${newTotal} on show ${showId}`);
         }
         saved.push("Created expense");
@@ -270,8 +281,9 @@ export async function POST(req: NextRequest) {
           }
 
           if (Object.keys(update).length > 0) {
-            const { error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId);
+            const { data, error } = await supabase.from("tour_shows").update(update).eq("id", showId).eq("org_id", access.orgId).select().maybeSingle();
             if (error) throw error;
+            if (!data) throw new Error(`[intake/confirm] tour_shows update returned no row at advance_response — possible silent RLS rejection. Check RLS policy on tour_shows advance fields for org_id=${access.orgId}, showId=${showId}`);
             saved.push(`Updated advance info on show ${showId}`);
           }
         }
@@ -280,12 +292,15 @@ export async function POST(req: NextRequest) {
 
       case "co_headliner": {
         if (showId) {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from("tour_shows")
             .update({ co_headliner: fields })
             .eq("id", showId)
-            .eq("org_id", access.orgId);
+            .eq("org_id", access.orgId)
+            .select()
+            .maybeSingle();
           if (error) throw error;
+          if (!data) throw new Error(`[intake/confirm] tour_shows update returned no row at co_headliner — possible silent RLS rejection. Check RLS policy on tour_shows.co_headliner for org_id=${access.orgId}, showId=${showId}`);
           saved.push(`Saved co-headliner data to show ${showId}`);
         }
         break;
