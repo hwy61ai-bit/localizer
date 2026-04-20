@@ -19,11 +19,17 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (existing?.id) {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("venue_links")
       .update({ ...renderUrls })
-      .eq("id", existing.id);
+      .eq("id", existing.id)
+      .select()
+      .maybeSingle();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!data) {
+      console.error("[renders/save-urls] venue_links update returned no row — possible silent RLS rejection", { eventId, orgId, venue_link_id: existing.id });
+      return NextResponse.json({ error: "venue_links_update_failed" }, { status: 500 });
+    }
   } else {
     const token = generatePublicToken();
     const { error } = await supabase.from("venue_links").insert({

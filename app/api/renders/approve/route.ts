@@ -74,10 +74,19 @@ export async function POST(req: NextRequest) {
   }
 
   const now = new Date().toISOString();
-  await supabase
+  const { data: updatedEvent, error: updateErr } = await supabase
     .from("events")
     .update({ render_status: "ready", sent_at: now })
-    .eq("id", eventId);
+    .eq("id", eventId)
+    .select()
+    .maybeSingle();
+
+  if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+
+  if (!updatedEvent) {
+    console.error("[renders/approve] events update returned no row BEFORE email send — aborting to prevent orphaned email, check RLS policy on events.render_status/sent_at", { eventId, orgId });
+    return NextResponse.json({ error: "event_update_failed" }, { status: 500 });
+  }
 
   const venueLink = `${process.env.NEXT_PUBLIC_APP_URL}/v/e/${token}`;
 
