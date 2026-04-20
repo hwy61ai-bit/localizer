@@ -75,7 +75,7 @@ export default function PrintDownloadButton({ eventId, venueName }: { eventId: s
             <div style={{ width: "100%", height: "100%", background: "repeating-linear-gradient(45deg, var(--hw-crimson) 0px, var(--hw-crimson) 10px, transparent 10px, transparent 20px)", animation: "hwStripeMove 1s linear infinite" }} />
           </div>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "1px", textAlign: "center" }}>
-            This can take up to 30 seconds. Please don't refresh.
+            This can take up to 30 seconds. Please don&apos;t refresh.
           </div>
         </>
       ) : (

@@ -67,7 +67,6 @@ export async function GET(req: NextRequest) {
     .single();
 
   const bandName = (tour?.band_name ?? tour?.name ?? "Artist").replace(/[^a-zA-Z0-9_-]/g, "_");
-  const cleanVenue = event.venue?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "Venue";
   const cleanDate = event.date_iso?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "";
   const cleanCity = event.city?.replace(/[^a-zA-Z0-9_-]/g, "_") ?? "";
   const slug = [bandName, cleanDate, cleanCity].filter(Boolean).join("_");
