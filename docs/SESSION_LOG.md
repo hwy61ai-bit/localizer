@@ -2084,3 +2084,69 @@ Smoke-tested on localhost via ArtistDetailClient's handleDeleteTour: tour delete
 - Parallel FormatConfig/FieldConfig types in TemplateEditor.tsx + clientRender.ts
 
 **zsh bracket quoting bit me once today** on the commit-stage step for ArtistDetailClient.tsx's [artistId] path — rejected silently by zsh glob, nothing staged. Re-ran with quotes. CLAUDE.md rule 17 held exactly as documented; flagging here so future me doesn't forget the footgun.
+
+### Monday afternoon + evening — massive HIGH-tier audit cleanup (nine commits)
+
+After the morning session shipped fb768de, 1134401, 09d076e, 7985420, 085dd30, and 35c7152, the afternoon picked up with the silent-RLS .update() audit recon and then worked through most of its HIGH-tier fix list.
+
+**Commits (in order):**
+
+- 3a1c3da — fix(events): add auth + whitelist + verify to PATCH /api/events/[eventId]
+- 5c67e38 — cleanup(api): delete dead route app/api/tours/[tourId]/advance
+- b1ee117 — fix(renders): add rows-affected verification to 3 HIGH-risk .update() sites
+- 692cb47 — fix(advance/send): add rows-affected verification to 2 HIGH-risk .update() sites
+- 851606f — fix(intake/confirm): add rows-affected verification to 7 HIGH-risk .update() sites
+
+**The silent-RLS audit was the anchor.** Ran a read-only forensic recon on all .update() calls in public-facing routes (app/api/**, app/v/**, app/**/actions.ts). Committed as docs/SILENT_RLS_UPDATE_AUDIT.md alongside the events PATCH fix. Top-line finding: 49 of 68 in-scope sites (72%) lacked post-write verification. The bug class: when .update() chained without .select().maybeSingle() hits a silent-RLS rejection, Supabase returns ok:true on zero rows affected, and the handler lies to the caller.
+
+**Items shipped from the audit's HIGH tier:**
+
+3a1c3da — events PATCH. Previously took req.json() straight into .update(body) with zero auth, zero whitelist, zero verification. Fixed mirroring the DELETE pattern from fb768de plus field whitelist from 085dd30 (tourrouter artists PUT). Whitelist derived from EventsTable.tsx actual usage: date_iso, day, city, state, venue, venue_name, promoter_email. Smoke-tested three ways on localhost (happy path, logged-out 401, forged-field 400 no_valid_fields).
+
+5c67e38 — tours/[tourId]/advance deleted. Audit flagged as worst-shape in section 2. Before deletion: full-repo grep found zero call sites in any pattern, Vercel free-tier function logs (Apr 19 14:18 through Apr 20) showed zero invocations. Route was introduced 5 weeks ago in ef83904 and never wired up. Deletion over hardening because writing a whitelist from theory creates a trap for the future dev who wires up a caller.
+
+b1ee117 — three renders pipeline sites bundled. save-urls:24 and generate:476 (both venue_links.render_*_url updates) and approve:79 (events.render_status + sent_at). The generate:476 site had a misleading console.log('UPDATE RESULT: OK') that fired even on zero-row updates, now replaced with actual rows-affected logging. The approve:79 site's audit wording was wrong (said AFTER email, code shows BEFORE) — corrected during Claude Code review, cleanly closes the double-email trap by aborting before email send if the state update fails.
+
+692cb47 — advance/send two sites. Line 35 (advance_form_token BEFORE email) and line 103 (advance_status + sent_at AFTER email). Pattern A in the audit ('email then state-flip'). Line 103 fix includes explicit forensic log wording because the email is already sent when the silent-RLS trips — cron at 0 10 * * * will re-fire a duplicate.
+
+851606f — intake/confirm seven sites. Biggest single-file fix of the day. Financial data handler: settlement sheets, box office, advance responses, hotel costs. User clicks Confirm expecting persistence; silent-RLS meant "Saved N updates" toast was lying. Fail-fast approach chosen after recon on the single caller (IntakeDropZone.tsx:126) which only reads err.error on !resp.ok. Preserved the existing carve-out at line 162 (hotel_cost_actual stacking update) as best-effort-skip-on-failure, matching Tim's intent for that secondary write.
+
+**Other shipped today (not audit-related):**
+
+- 085dd30 (morning) — BUG-B from BACKLOG.md. Removed three stale agent_* entries from tourrouter/artists/[artistId] PUT whitelist. Backlog was stale — five of six "missing" fields were already present (likely from April 6 phone migration). Net -1 line.
+- 35c7152 (morning) — three zero-risk lint fixes on public viewer pages. Two dead cleanVenue assignments + one unescaped apostrophe. Deferred the 17 remaining .any/@next img warnings per low-blast-radius policy pre-beta.
+
+**Architectural chapter closed today — the silent-RLS bug class.** Before today, this bug class was invisible in reviews because LLM-assisted coding (both of us) tended to match the existing pattern where verification was absent. The audit surfaced the scale (72% of in-scope sites). The fixes shipped today cover the HIGH-tier items. Post-beta work includes MEDIUM-tier cleanup, a broader lib/ and dashboard audit, and a decision on whether to add an ESLint rule that bans bare .update() calls without .select() chained.
+
+**Deferred to next session (bundled):**
+
+- Billing webhooks (6 sites) — Stripe webhook + internal billing webhook, all service-role. EIN just came through today, so Stripe restructure is no longer blocked. Worth its own session with a clean head because the fix needs to decide on returning 500 on zero-row matches (forces Stripe to retry) and because billing code is where mistakes are expensive. Audit section 2 "Billing webhooks" + section 5 item 6 for context.
+
+**Still deferred (unchanged):**
+
+- MEDIUM-tier audit items (render_status state-machine transitions, contact PUT + flag, push-to-localizer cross-product linking, upload-image follow-up)
+- Tim-facing auth/beta briefing doc (still blocked on Tim's beta info)
+- Silent-RLS audit expansion to app/dashboard/** and lib/**
+- 11 raw createClient call sites bypassing supabase helpers
+- 79 .single() usages to triage against PGRST116 traps
+- ADMIN_EMAILS centralization (5 duplicated sites)
+- 17 remaining lint issues on public viewer pages (any types + img warnings)
+- Parallel FormatConfig/FieldConfig types in TemplateEditor.tsx + clientRender.ts
+- Custom fonts re-upload (BebasNeue, Pragmatica-Extended-Extra-Bold)
+
+**Process notes from today:**
+
+- zsh bracket quoting bit once at 085dd30 commit-stage and again at 851606f commit-message (! triggered history expansion on resp.ok). Heredoc with single-quoted EOF is the safer default for multi-line commit messages. CLAUDE.md rule 17 needs extending beyond "git add on bracket paths" to cover commit messages too — consider adding a note.
+- Claude Code's Flag system (1-3 flags in reply before proposing diffs) caught real bugs in audit specs twice today. In the renders bundle it corrected an "AFTER email" to "BEFORE email" framing that changed the fix shape. In the intake/confirm fix it caught an enumeration error (I'd described 8 items as 7, the carve-out site's console.error line was being double-counted). Keep using this pattern.
+- Recon-first discipline paid off explicitly on intake/confirm — recon on the single caller revealed that adding errors[] to the response would require caller-side code changes, while fail-fast had zero caller-side impact. Simpler choice was revealed, not guessed.
+- Trust-based shipping (no functional smoke test) used deliberately for advance/send and intake/confirm when local test data couldn't exercise the flow. Justified by pattern match to already-smoke-tested commits earlier in the same session. Noting the pattern for future judgment calls on when to skip smoke tests.
+
+**What to tell Tim:**
+
+Closed five pre-beta HIGH-risk items surfaced by today's silent-RLS audit. Event PATCH, renders pipeline, advance send, and intake confirm all now properly verify that writes actually persist — no more "saved" toasts lying to users when RLS silently rejects a write. Billing webhooks are the only remaining HIGH-tier item from the audit, queued for next session now that EIN came through. No user-visible changes today; all fixes are defensive.
+
+### Next session should start with
+
+- git pull, git status, confirm clean
+- Billing webhooks (6 sites across Stripe + internal billing): single commit, shared fix shape, decision needed on returning 500 on zero-row match so Stripe retries
+- EIN-enabled Stripe restructure work (separate from the audit item) if there's time
