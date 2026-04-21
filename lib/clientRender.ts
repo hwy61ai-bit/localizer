@@ -106,10 +106,9 @@ export function formatDateForRender(iso: string, short = false): string {
   try {
     const d = new Date(iso + "T12:00:00");
     if (short) {
-      const day = d.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
       const month = shortMonth(d).toUpperCase();
       const date = d.getDate();
-      return `${day}. ${month} ${date}${ordinal(date)}`;
+      return `${month} ${date}${ordinal(date)}`;
     }
     const month = d.toLocaleDateString("en-US", { month: "long" });
     const day = d.getDate();

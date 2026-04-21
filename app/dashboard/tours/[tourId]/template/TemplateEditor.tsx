@@ -170,7 +170,7 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
     ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(caps ? (bandNameStr ?? "Band Name").toUpperCase() : (bandNameStr ?? "Band Name"))},co_rgb:${color}/fl_layer_apply,g_${bp.gravity},x_${bp.xPx},y_${bp.yPx}`] : []),
     ...((cfg.showVenue ?? true) ? [`l_text:${font}_${cfg.venue.size}_bold:${san(caps ? (fe?.venue ?? "Stubbs Waller Creek Amphitheater").toUpperCase() : (fe?.venue ?? "Stubbs Waller Creek Amphitheater"))},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`] : []),
-    ...((cfg.showDate ?? true) ? [`l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "SAT. APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`] : []),
+    ...((cfg.showDate ?? true) ? [`l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`] : []),
     ...((cfg.showCity ?? true) ? [`l_text:${font}_${cfg.city.size}_bold:${san(caps ? (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR").toUpperCase() : (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR"))},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`] : []),
   ];
 
@@ -766,7 +766,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     customText2: customText2 || null,
                   } : {
                     bandName: bandName,
-                    dateFormatted: shortDate ? 'SAT. APR 26TH' : 'April 25 2026',
+                    dateFormatted: shortDate ? 'APR 26TH' : 'April 25 2026',
                     venueName: 'Stubbs Waller Creek Amphitheater',
                     cityState: 'Little Rock, AR',
                     customText1: customText1 || null,
@@ -980,7 +980,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                             }
                             return text;
                           })() :
-                          field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : [,"ST","ND","RD"][n%10] || "TH"; return `${d.toLocaleDateString("en-US",{weekday:"short"}).toUpperCase()}. ${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
+                          field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : [,"ST","ND","RD"][n%10] || "TH"; return `${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
                           cfg.allCaps ? (previewLongest ? longestCity : [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")).toUpperCase() : (previewLongest ? longestCity : [firstEvent.city, firstEvent.state].filter(Boolean).join(", "))
                         ) : SAMPLE_TEXT[field]}
 
@@ -1555,7 +1555,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 </span>
                 <div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Short Date Format</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>e.g. SAT. JUN 26TH</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>e.g. JUN 26TH</div>
                 </div>
               </label>
             </div>
