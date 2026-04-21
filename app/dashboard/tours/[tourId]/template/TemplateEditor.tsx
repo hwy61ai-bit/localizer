@@ -802,6 +802,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             </div>
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
               {imageUrl ? (
+                <>
                 <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default", width: `${Math.round(fmtDims.w * previewScale)}px`, margin: "0 auto" }}>
                   <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
 
@@ -844,6 +845,17 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     (["venue", "city", "date"] as BaseFieldKey[]).filter(b => b !== a && Math.abs(cfg[a].y - cfg[b].y) < 0.025).map(b => (
                       <div key={a + b} style={{ position: "absolute", top: `${cfg[a].y * 100}%`, left: 0, right: 0, height: 0, borderTop: "1px dashed rgba(255,220,0,0.8)", pointerEvents: "none", zIndex: 19 }} />
                     ))
+                  )}
+
+                  {activeFormat === "tiktok" && (
+                    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 2 }}>
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "15%", background: "repeating-linear-gradient(45deg, var(--hw-amber-ghost) 0px, var(--hw-amber-ghost) 8px, transparent 8px, transparent 16px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "var(--hw-amber)", fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase" }}>Social UI overlay zone</span>
+                      </div>
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "25%", background: "repeating-linear-gradient(45deg, var(--hw-amber-ghost) 0px, var(--hw-amber-ghost) 8px, transparent 8px, transparent 16px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "var(--hw-amber)", fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase" }}>Social UI overlay zone</span>
+                      </div>
+                    </div>
                   )}
 
                   {cfg.showBandName && (() => {
@@ -1027,6 +1039,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     );
                   })()}
                 </div>
+                {activeFormat === "tiktok" && (
+                  <div style={{ marginTop: 12, padding: "10px 14px", background: "var(--hw-amber-ghost)", border: "1px solid var(--hw-amber)", borderRadius: 0, fontSize: 12, lineHeight: 1.4, color: "var(--hw-text)" }}>
+                    Social apps often overlay their UI in these zones. Keep important content in the center 60% for best results.
+                  </div>
+                )}
+                </>
               ) : (
                 <div style={{ padding: 48, textAlign: "center" }}>
                   {isVideoFormat ? (
