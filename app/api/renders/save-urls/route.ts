@@ -43,7 +43,17 @@ export async function POST(req: NextRequest) {
   }
 
   // Mark event as ready
-  await supabase.from("events").update({ render_status: "ready" }).eq("id", eventId);
+  const { data: eventUpdate, error: eventUpdateErr } = await supabase
+    .from("events")
+    .update({ render_status: "ready" })
+    .eq("id", eventId)
+    .select()
+    .maybeSingle();
+  if (eventUpdateErr) {
+    console.error("[renders/save-urls] events update errored", { eventId, orgId, error: eventUpdateErr.message });
+  } else if (!eventUpdate) {
+    console.error("[renders/save-urls] events render_status update returned no row — possible silent RLS rejection (non-fatal, venue_links already saved)", { eventId, orgId });
+  }
 
   return NextResponse.json({ ok: true });
 }
