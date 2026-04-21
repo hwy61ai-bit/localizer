@@ -107,16 +107,19 @@ export async function POST(req: NextRequest) {
 
     const storageUrl = urlData.publicUrl;
 
-    // Save to database
+    // Save to database. Upsert on (org_id, font_name) — matches the storage
+    // layer's upsert-on-path behavior above. Re-uploading a font under the same
+    // name replaces the existing row rather than conflicting with the UNIQUE
+    // constraint on (org_id, font_name).
     const { error: dbError } = await supabase
       .from("custom_fonts")
-      .insert({
+      .upsert({
         org_id: orgId,
         font_name: fontName,
         cloudinary_public_id: storagePath,
         file_extension: fileExt,
         storage_url: storageUrl,
-      });
+      }, { onConflict: "org_id,font_name" });
 
     if (dbError) {
       // Cleanup both uploads
