@@ -2150,3 +2150,23 @@ Closed five pre-beta HIGH-risk items surfaced by today's silent-RLS audit. Event
 - git pull, git status, confirm clean
 - Billing webhooks (6 sites across Stripe + internal billing): single commit, shared fix shape, decision needed on returning 500 on zero-row match so Stripe retries
 - EIN-enabled Stripe restructure work (separate from the audit item) if there's time
+
+Today's session summary
+Four commits shipped today on top of the email migration:
+
+869a83b — Social UI overlay zone on tiktok tab
+9eceafd — Soft-fail verification on events render_status update
+ba31e66 — Custom fonts upsert + DB unique constraint + stale row cleanup
+29d5d05 — Remove weekday from short date format across all renderers (Tim's ask)
+
+Plus:
+
+DB migration: UNIQUE constraint on custom_fonts (org_id, font_name)
+DB cleanup: removed stale duplicate BullandRegular row
+Full audit freshness pass: items §5 #1-5 and #7 all verified closed by yesterday's work
+Full Google Workspace email infrastructure live
+
+Still open, deferred to tomorrow or later:
+
+Silent-RLS audit §5 #6 (billing webhooks) — tomorrow, bundled with Stripe restructure work
+Phase 8 code + platform updates above
