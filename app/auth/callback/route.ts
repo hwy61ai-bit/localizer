@@ -4,12 +4,14 @@ import { cookies } from "next/headers";
 import type { EmailOtpType, SupabaseClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 import { getCookieDomain } from "@/lib/cookieDomain";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 async function ensureOrgExists(supabase: SupabaseClient) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
+  const admin = supabaseAdmin();
 
-  const { data: existing } = await supabase
+  const { data: existing } = await admin
     .from("org_members")
     .select("org_id")
     .eq("user_id", user.id)
@@ -18,7 +20,7 @@ async function ensureOrgExists(supabase: SupabaseClient) {
   if (existing) return;
 
   const newOrgId = randomUUID();
-  const { data: orgRow, error: orgError } = await supabase
+  const { data: orgRow, error: orgError } = await admin
     .from("orgs")
     .insert({
       id: newOrgId,
@@ -35,7 +37,7 @@ async function ensureOrgExists(supabase: SupabaseClient) {
     throw new Error(orgError?.message ?? "org insert returned no row (RLS?)");
   }
 
-  const { data: memberRow, error: memberError } = await supabase
+  const { data: memberRow, error: memberError } = await admin
     .from("org_members")
     .insert({ org_id: newOrgId, user_id: user.id, role: "owner" })
     .select()
