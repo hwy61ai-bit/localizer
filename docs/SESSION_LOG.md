@@ -2170,3 +2170,28 @@ Still open, deferred to tomorrow or later:
 
 Silent-RLS audit §5 #6 (billing webhooks) — tomorrow, bundled with Stripe restructure work
 Phase 8 code + platform updates above
+
+## April 22, 2026
+
+### Shipped
+- `cb7b734` — feat(admin): add hwy61labs.com emails to admin list
+- `c8b51bb` — cleanup(api): delete dead /api/venue-links endpoint
+- `5c725d3` — cleanup(lint): remove unused variables across API routes and components (+ ENABLE_TEXT_WRAP orphan)
+
+### Key findings
+- `/api/venue-link` (singular) was already fully secured — yesterday's kickoff doc was stale. Another win for grep-verify-before-status-docs.
+- `/api/venue-links` (plural) confirmed dead via zero in-repo callers + zero Vercel invocations (last 24h). Deleted — was unauthenticated enumeration risk.
+- Lint `_` prefix convention is not honored by current eslint config. Renaming `req` → `_req` is net-zero for warning count. Config fix deferred.
+
+### Deferred / parked
+- Stripe business setup bundle (EIN, bank account, billing contact email) — parked pending bank account decision, do all three in one Stripe session.
+- Tim's pricing adjustments — deferred; webhook rewrite waits on locked prices.
+- Lint pass 2 — ~20 remaining warnings (mostly `any` errors + auth/confirm effect + tourrouter/intake require()). Not mechanical; needs scoped attention per file.
+
+### Memory updates
+- Tim's gmail corrected to `tentenpm@gmail.com` (hwy61regan@ no longer in use).
+- Admin email list documented with 2-week soak / ~May 6 gmail removal date.
+
+### Next session
+- Tim-pricing check-in; if locked, proceed with Stripe webhook restructure per April 22 kickoff doc Phases 1-9.
+- If Tim's not ready: lint pass 2 (scoped, file-by-file for the `any` errors) OR Pragmatica Extended Extra Bold font migration OR `/api/renders/generate` `any` cleanup as a standalone.
