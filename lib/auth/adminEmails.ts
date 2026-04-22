@@ -2,6 +2,8 @@
 const ADMIN_EMAILS: readonly string[] = [
   "hwy61ai@gmail.com",
   "tentenpm@gmail.com",
+  "drew@hwy61labs.com",
+  "tim@hwy61labs.com",
 ] as const;
 
 /**
