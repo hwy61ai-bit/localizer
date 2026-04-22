@@ -7,7 +7,7 @@ import { isAdminEmail } from "@/lib/auth/adminEmails";
 import TourTile from "./TourTile";
 import NotificationBell from "@/app/components/NotificationBell";
 import OnboardingGate from "@/app/components/OnboardingGate";
-import { HwButton, HwPageHeader, HwEmptyState } from "@/app/components/hw";
+import { HwButton, HwPageHeader } from "@/app/components/hw";
 import "./dashboard.css";
 
 type TourStat = {
@@ -123,15 +123,49 @@ export default async function DashboardPage() {
         </div>
 
         {artists.length === 0 ? (
-          <HwEmptyState
-            title="NO ARTISTS YET"
-            description="Add your first artist to start managing tours, shows, and settlements."
-            actionLabel="ADD ARTIST"
-            onAction={() => {
-              const form = document.querySelector<HTMLFormElement>('#create-artist-form');
-              form?.requestSubmit();
-            }}
-          />
+          <form action={createArtist} style={{
+            maxWidth: 520,
+            margin: "60px auto",
+            padding: 40,
+            border: "3px solid var(--hw-border-strong)",
+            background: "var(--hw-bg-surface)",
+            textAlign: "center",
+            boxShadow: "var(--hw-shadow-lg)",
+          }}>
+            <div style={{
+              fontFamily: "var(--hw-font-display)",
+              fontSize: 24,
+              letterSpacing: "3px",
+              textTransform: "uppercase",
+              color: "var(--hw-text)",
+              marginBottom: 12,
+            }}>
+              NO ARTISTS YET
+            </div>
+            <div style={{
+              fontFamily: "var(--hw-font-body)",
+              fontSize: 14,
+              fontWeight: 300,
+              color: "var(--hw-text-secondary)",
+              lineHeight: 1.5,
+              marginBottom: 24,
+            }}>
+              Add your first artist to start managing tours, shows, and settlements.
+            </div>
+            <button type="submit" style={{
+              padding: "14px 28px",
+              border: "3px solid var(--hw-crimson)",
+              background: "var(--hw-crimson)",
+              color: "var(--hw-text-invert)",
+              fontFamily: "var(--hw-font-display)",
+              fontSize: 14,
+              letterSpacing: "3px",
+              textTransform: "uppercase",
+              cursor: "pointer",
+            }}>
+              ADD ARTIST
+            </button>
+          </form>
         ) : (
           <div className="dash-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
             {artists.map((artist) => {
