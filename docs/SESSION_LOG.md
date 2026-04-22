@@ -2195,3 +2195,50 @@ Phase 8 code + platform updates above
 ### Next session
 - Tim-pricing check-in; if locked, proceed with Stripe webhook restructure per April 22 kickoff doc Phases 1-9.
 - If Tim's not ready: lint pass 2 (scoped, file-by-file for the `any` errors) OR Pragmatica Extended Extra Bold font migration OR `/api/renders/generate` `any` cleanup as a standalone.
+
+
+## April 22, 2026 (afternoon / evening session)
+
+### Shipped
+- `cb7b734` — feat(admin): add hwy61labs.com emails to admin list
+- `c8b51bb` — cleanup(api): delete dead /api/venue-links endpoint
+- `5c725d3` — cleanup(lint): remove unused variables (pass 1)
+- `ff91292` — docs: session log morning
+- `4711b5a` — feat(access): add per-product access gates (localizer_enabled + tourrouter_enabled on orgs)
+- `1508a86` — fix(auth): use service role for ensureOrgExists to bypass RLS race
+- `0406685` — fix(dashboard): use service role for org bootstrap reads
+- `8235ff9` — debug(dashboard): temporary minimal render to bisect new-user failure
+- `103bbb1` — fix(dashboard): use service role for artists and tours reads
+- `4c63d2f` — fix(dashboard): replace client-boundary-violating HwEmptyState with plain form
+
+### Beta system — fully live
+- 10 invite codes in beta_invites, all unclaimed and ready: HWY61-BETA-001 through HWY61-BETA-010
+- TourRouter hidden for beta users (tourrouter_enabled=false default on new orgs)
+- Localizer access granted for beta users (localizer_enabled=true set in ensureOrgExists)
+- Admin bypass works via isAdminEmail() for both legacy gmails and new hwy61labs.com addresses
+- End-to-end test: claimed code → signed up → onboarding wizard → dashboard → artist hub showed Localizer only. ✅
+
+### Bugs surfaced and fixed (all latent, not caused by today's work)
+- Supabase project-level signup toggle was OFF — flipped ON
+- ensureOrgExists RLS failure for new users (latent since 9f88d03) — service role fix
+- Dashboard org/membership read RLS failure (same root cause) — service role fix
+- Dashboard artists/tours read RLS failure (same root cause) — service role fix
+- HwEmptyState server/client boundary violation on empty dashboard — plain form replacement
+- Hardcoded admin gmails in dashboard page — now uses isAdminEmail() helper
+- .single() on dashboard org read — changed to .maybeSingle() with null-guard redirect
+
+### Known bugs still open (non-blocking for beta)
+- Beta code claim fires on PostHogProvider mount (before auth completes). Users whose magic link fails burn their code anyway. Should move claim into /auth/callback post-ensureOrgExists. Workaround: manually reset via SQL if a beta user hits this.
+- Dashboard page still imports unused HwButton — minor lint noise.
+- Root cause of the RLS cookie-propagation issue is still present; we patched symptoms with service role in 4 places today. Long-term fix is middleware session refresh or a broader client architecture pass.
+
+### Parked (blocked on bank account decision)
+- Stripe business setup bundle (EIN entry, business setup, billing contact email update) — all three in one session once bank account is picked.
+
+### Next session starts with
+Handing beta codes to Tim when he's ready with the 10 users. No code work blocking beta launch now. If energy permits in the meantime: lint pass 2 (remaining `any` errors), Pragmatica Extended Extra Bold font migration, beta-claim timing bug fix, or Unit D rate limiting.
+
+### Memory updates
+- Tim's gmail corrected to tentenpm@gmail.com (hwy61regan@ retired)
+- Admin email list now includes hwy61labs.com addresses, 2-week soak → ~May 6 gmail removal
+- SSR cookie-propagation pattern: user-scoped supabaseServer() client cannot reliably read RLS-protected tables immediately after signup / in some server component contexts. Pattern: use supabaseAdmin() for bootstrap reads in server components and auth callbacks.
