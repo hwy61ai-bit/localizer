@@ -99,7 +99,7 @@ export async function POST(request: Request) {
     let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(cleaned);
-    } catch (e) {
+    } catch {
       console.error("[parse-w9] JSON parse failed. Raw:", rawText);
       return NextResponse.json({ ok: false, error: "Could not parse W-9 response" }, { status: 500 });
     }

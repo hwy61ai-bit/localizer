@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
   const imageBytes = new Uint8Array(await imageRes.arrayBuffer());
 
   // Fetch custom fonts for this org (using service role to bypass RLS)
-  const { data: customFonts, error: fontsError } = await supabase
+  const { data: customFonts } = await supabase
     .from("custom_fonts")
     .select("font_name, storage_url")
     .eq("org_id", tour.org_id);

@@ -73,7 +73,7 @@ function generateTourSchedule(width: number, height: number): string {
 export default function AnimatedWordmark() {
   const text = "HWY61 LABS";
   const [stopped, setStopped] = useState<Set<number>>(new Set());
-  const [allStopped, setAllStopped] = useState(false);
+  const [, setAllStopped] = useState(false);
   const [mapFaded, setMapFaded] = useState(false);
   const [bgUrl, setBgUrl] = useState<string | null>(null);
   const scrollRef = useRef(0);

@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
 
-// Set to false to disable auto line-wrapping for long venue/city names
-const ENABLE_TEXT_WRAP = false;
-
 type RenderFormat = "square" | "story" | "landscape";
 
 const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
@@ -60,28 +57,6 @@ function sanitize(t: string): string {
   // Cloudinary needs manual encoding: spaces -> %20, commas -> %252C
   const clean = t.replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim();
   return clean.replace(/ /g, "%20").replace(/,/g, "%252C");
-}
-
-function wrapText(text: string, fontSize: number, canvasW: number): string {
-  if (!ENABLE_TEXT_WRAP) return text;
-  const maxW = canvasW * 0.85;
-  const charsPerLine = Math.floor(maxW / (fontSize * 0.6));
-  if (text.length <= charsPerLine) return text;
-  // Split at word boundaries
-  const words = text.split("%20");
-  const lines: string[] = [];
-  let current = "";
-  for (const word of words) {
-    const test = current ? current + " " + word : word;
-    if (test.length > charsPerLine && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = test;
-    }
-  }
-  if (current) lines.push(current);
-  return lines.join("%0A");
 }
 
 function fitFontSize(text: string, maxSize: number, availableW: number): number {
@@ -142,7 +117,6 @@ function buildCloudinaryUrl(
     ? customFontsMap.get(fontFamily)! 
     : fontFamily.replace(/ /g, "_");
   const color = cfg.textColor ?? "ffffff";
-  const maxW = Math.round(w * 0.85);
 
   // Scale font sizes for landscape (820x312 vs 1920x1080 reference)
   const scaleFactor = format === "landscape" ? 0.427 : 1.0;
