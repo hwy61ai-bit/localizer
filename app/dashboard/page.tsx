@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 import TourTile from "./TourTile";
 import NotificationBell from "@/app/components/NotificationBell";
 import OnboardingGate from "@/app/components/OnboardingGate";
@@ -21,8 +23,9 @@ export default async function DashboardPage() {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const admin = supabaseAdmin();
 
-  const { data: membership } = await supabase
+  const { data: membership } = await admin
     .from("org_members")
     .select("org_id, role")
     .eq("user_id", user.id)
@@ -35,15 +38,17 @@ export default async function DashboardPage() {
   if (!orgId) redirect("/login?error=no_org");
 
   // Fetch org plan + trial status
-  const { data: org } = await supabase
+  const { data: org } = await admin
     .from("orgs")
     .select("plan, plan_status, trial_ends_at, stripe_customer_id")
     .eq("id", orgId)
-    .single();
+    .maybeSingle();
+
+  if (!org) redirect("/login?error=no_org");
 
   const isPaid = !!org?.stripe_customer_id && org?.plan_status === "active";
   const trialActive = org?.trial_ends_at ? new Date(org.trial_ends_at) > new Date() : false;
-  const isAdmin = user.email === "hwy61ai@gmail.com" || user.email === "tentenpm@gmail.com";
+  const isAdmin = isAdminEmail(user.email);
   const hasAccess = isPaid || trialActive || isAdmin;
 
   if (!hasAccess) redirect("/pricing?reason=trial_expired");
