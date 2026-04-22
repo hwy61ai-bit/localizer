@@ -16,7 +16,7 @@ export async function GET(
   const { tourId } = await params;
   const result = await getExportData(tourId);
   if (!result.ok) {
-    const statusMap = { unauthorized: 401, no_org: 403, export_requires_paid: 402, not_found: 404 } as const;
+    const statusMap = { unauthorized: 401, no_org: 403, no_tourrouter_access: 403, export_requires_paid: 402, not_found: 404 } as const;
     return NextResponse.json({ error: result.reason, detail: result.detail }, { status: statusMap[result.reason] });
   }
   const data = result.data;

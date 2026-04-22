@@ -14,7 +14,8 @@ export type BillingAccess = {
  *  - 'paid': admin email, OR tourrouter_plan_status ∈ {active, past_due},
  *            OR bundle_plan_status ∈ {active, past_due}
  *  - 'free': signed-in user whose org exists but has no active subscription
- *  - 'none': defensive — missing orgId or org row not readable (RLS silent read)
+ *  - 'none': missing orgId, org row not readable (RLS silent read), OR
+ *            org.tourrouter_enabled !== true (per-product access gate)
  */
 export async function getTourRouterAccessLevel(
   orgId: string,
@@ -30,12 +31,14 @@ export async function getTourRouterAccessLevel(
   const supabase = supabaseAdmin();
   const { data: org } = await supabase
     .from("orgs")
-    .select("tourrouter_plan_status, bundle_plan_status")
+    .select("tourrouter_plan_status, bundle_plan_status, tourrouter_enabled")
     .eq("id", orgId)
     .maybeSingle();
 
   // Null return = row not found OR RLS silent read. Treat as 'none' defensively.
   if (!org) return "none";
+
+  if (org.tourrouter_enabled !== true) return "none";
 
   const paidStatuses = new Set(["active", "past_due"]);
   if (

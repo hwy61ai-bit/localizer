@@ -31,15 +31,15 @@ export type ExportData = {
   driveData: DriveDataMap;
 };
 
-type ExportFailure = { ok: false; reason: "unauthorized" | "no_org" | "export_requires_paid" | "not_found"; detail?: string };
+type ExportFailure = { ok: false; reason: "unauthorized" | "no_org" | "no_tourrouter_access" | "export_requires_paid" | "not_found"; detail?: string };
 type ExportSuccess = { ok: true; data: ExportData };
 export type ExportResult = ExportFailure | ExportSuccess;
 
 export async function getExportData(tourId: string): Promise<ExportResult> {
   const access = await requirePaidTourRouterAccess();
   if (!access.ok) {
-    // access.reason is "unauthorized" | "no_org" | "export_requires_paid" —
-    // all three are valid ExportFailure reasons.
+    // access.reason is "unauthorized" | "no_org" | "no_tourrouter_access" |
+    // "export_requires_paid" — all four are valid ExportFailure reasons.
     return { ok: false, reason: access.reason };
   }
 
