@@ -878,9 +878,9 @@ export default function ArtistProfilePage() {
 
             {/* Static "autosaves / drag & drop" illustration card */}
             <div style={{
-              width: 340,
+              width: 250,
               flexShrink: 0,
-              padding: "20px 24px",
+              padding: "18px 18px",
               background: "var(--hw-bg-surface)",
               border: "3px solid var(--hw-border-strong)",
               display: "flex",
@@ -892,8 +892,8 @@ export default function ArtistProfilePage() {
               <div>
                 <div style={{
                   fontFamily: "var(--hw-font-display)",
-                  fontSize: 22,
-                  letterSpacing: "2px",
+                  fontSize: 18,
+                  letterSpacing: "1.5px",
                   textTransform: "uppercase",
                   color: "var(--hw-text)",
                   lineHeight: 1.15,
@@ -902,8 +902,8 @@ export default function ArtistProfilePage() {
                 </div>
                 <div style={{
                   fontFamily: "var(--hw-font-display)",
-                  fontSize: 22,
-                  letterSpacing: "2px",
+                  fontSize: 18,
+                  letterSpacing: "1.5px",
                   textTransform: "uppercase",
                   color: "var(--hw-text)",
                   lineHeight: 1.15,
@@ -930,8 +930,8 @@ export default function ArtistProfilePage() {
                   alignItems: "center",
                   justifyContent: "center",
                   fontFamily: "var(--hw-font-mono)",
-                  fontSize: 9,
-                  letterSpacing: "1.5px",
+                  fontSize: 8,
+                  letterSpacing: "1px",
                   color: "var(--hw-crimson)",
                   textTransform: "uppercase",
                 }}>
@@ -947,8 +947,8 @@ export default function ArtistProfilePage() {
                   background: "var(--hw-bg-surface)",
                   border: "3px solid var(--hw-border-strong)",
                   boxShadow: "6px 6px 0 rgba(0,0,0,0.15)",
-                  padding: "8px 12px",
-                  minWidth: 180,
+                  padding: "7px 10px",
+                  minWidth: 150,
                 }}>
                   <div style={{
                     fontFamily: "var(--hw-font-mono)",
@@ -997,8 +997,8 @@ export default function ArtistProfilePage() {
                 </svg>
                 <span style={{
                   fontFamily: "var(--hw-font-mono)",
-                  fontSize: 10,
-                  letterSpacing: "1px",
+                  fontSize: 9,
+                  letterSpacing: "0.5px",
                   color: "var(--hw-green)",
                   textTransform: "uppercase",
                 }}>
