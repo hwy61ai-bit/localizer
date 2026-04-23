@@ -2242,3 +2242,74 @@ Handing beta codes to Tim when he's ready with the 10 users. No code work blocki
 - Tim's gmail corrected to tentenpm@gmail.com (hwy61regan@ retired)
 - Admin email list now includes hwy61labs.com addresses, 2-week soak → ~May 6 gmail removal
 - SSR cookie-propagation pattern: user-scoped supabaseServer() client cannot reliably read RLS-protected tables immediately after signup / in some server component contexts. Pattern: use supabaseAdmin() for bootstrap reads in server components and auth callbacks.
+
+## April 22, 2026 (afternoon / evening session continued)
+
+### Shipped (beyond the morning session)
+- `cb7b734` — feat(admin): add hwy61labs.com emails to admin list
+- `c8b51bb` — cleanup(api): delete dead /api/venue-links endpoint
+- `5c725d3` — cleanup(lint): remove unused variables (pass 1)
+- `ff91292` — docs: session log (morning)
+- `4711b5a` — feat(access): add per-product access gates (localizer_enabled + tourrouter_enabled on orgs)
+- `1508a86` — fix(auth): use service role for ensureOrgExists to bypass RLS race
+- `0406685` — fix(dashboard): use service role for org bootstrap reads
+- `8235ff9` — debug(dashboard): temporary minimal render to bisect new-user failure
+- `103bbb1` — fix(dashboard): use service role for artists and tours reads
+- `4c63d2f` — fix(dashboard): replace client-boundary-violating HwEmptyState with plain form
+- `2aa2317` — docs: session log afternoon (pre-wrap)
+- `3aa7606` — docs: auth architecture reference (docs/AUTH_ARCHITECTURE.md)
+- `69f6868` — feat(login): clarify returning-user sign-in path (SIGN IN link)
+- `955928d` — feat(onboarding): Localizer-branded welcome screen for non-TR users (Option A)
+- `b3115cd` — style(onboarding): larger split-color HWY61 LABS wordmark on welcome screen
+
+### Beta system — fully live and tested end-to-end
+- 10 invite codes in beta_invites, all unclaimed and ready: HWY61-BETA-001 through HWY61-BETA-010
+- New signups via /auth/callback create orgs with localizer_enabled=true, tourrouter_enabled=false
+- Dashboard renders correctly for new users
+- TourRouter tab hidden in Artist Hub for beta users; API routes return 403
+- Admin bypass via isAdminEmail() works for both legacy gmails and new hwy61labs.com addresses
+- Returning beta users can sign in via "Already have an account? SIGN IN" link on /login
+- New beta users see a dedicated Localizer welcome screen with single CTA, not the three-card TourRouter-flavored wizard
+
+### Bugs surfaced and fixed (all latent, not caused by today's work)
+- Supabase project-level signup toggle was OFF — flipped ON
+- ensureOrgExists RLS failure for new users (latent since 9f88d03) — service role fix
+- Dashboard org/membership read RLS failure (same root cause) — service role fix
+- Dashboard artists/tours read RLS failure (same root cause) — service role fix
+- HwEmptyState server/client boundary violation on empty dashboard — plain form replacement
+- Hardcoded admin gmails in dashboard page — now uses isAdminEmail() helper
+- .single() on dashboard org read — changed to .maybeSingle() with null-guard redirect
+- Three-card onboarding wizard trapped Localizer-only users in TourRouter paths — Option A shipped
+
+### Critical follow-up — Option B (DO NOT DROP)
+**Build a Localizer-specific onboarding wizard for users with tourrouter_enabled=false.**
+Today shipped Option A (hide TourRouter-flavored options and show a single-card welcome screen). This is a quick fix, not the proper experience. Option B is a dedicated Localizer onboarding narrative: "Add your first artist → Add your first show → Generate your first asset."
+
+Needs Tim's input on the narrative before building. Critical for Localizer public launch UX. Also documented in:
+- userMemories (memory #14)
+- docs/AUTH_ARCHITECTURE.md (known issues section)
+
+### Known bugs still open (non-blocking for beta)
+- Beta code claim fires on PostHogProvider mount (before auth completes). Users whose magic link fails burn their code. Should move claim into /auth/callback post-ensureOrgExists.
+- Dashboard page still imports unused HwButton — minor lint noise.
+- TEAM LOGIN / "Already have an account? SIGN IN" button is a soft bypass — anyone who finds it skips the invite gate. Fine for private beta, not acceptable for public launch.
+- ArtistHubClient.tsx Localizer access check uses plan_status logic, not localizer_enabled — harmless today but intended for future gating.
+- Root cause of RLS cookie-propagation issue is still present; patched with service role in 4 places today. Long-term fix is middleware session refresh or broader architecture pass.
+
+### Parked (blocked on bank account decision)
+- Stripe business setup bundle (EIN entry, business setup completion, billing contact email update) — all three done in one Stripe session once the bank account is picked.
+
+### Next session starts with
+- Hand beta codes to Tim when he's ready with the 10 users. No code work blocking launch now.
+- If energy permits before Tim: Option B onboarding wizard (after Tim provides narrative input), beta-claim timing bug fix, Unit D rate limiting, Pragmatica Extended Extra Bold font migration, or lint pass 2.
+
+### Test state left clean
+- beta_invites HWY61-BETA-001 reset to unclaimed
+- Test user drew+beta001@hwy61labs.com deleted, associated org and artist deleted
+- A newer test user (from the final end-to-end walkthrough) may still exist — clean up if you want a perfect slate, but harmless if left in place since they have a valid beta flow with localizer_enabled=true
+
+### Memory updates
+- Tim's gmail corrected to tentenpm@gmail.com (hwy61regan@ retired)
+- Admin email list includes hwy61labs.com addresses, 2-week soak → ~May 6 gmail removal
+- SSR cookie-propagation pattern: user-scoped supabaseServer() client cannot reliably read RLS-protected tables immediately after signup. Use supabaseAdmin() for bootstrap reads in server components and auth callbacks.
+- Option B onboarding wizard tracked in memory #14
