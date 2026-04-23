@@ -2313,3 +2313,65 @@ Needs Tim's input on the narrative before building. Critical for Localizer publi
 - Admin email list includes hwy61labs.com addresses, 2-week soak → ~May 6 gmail removal
 - SSR cookie-propagation pattern: user-scoped supabaseServer() client cannot reliably read RLS-protected tables immediately after signup. Use supabaseAdmin() for bootstrap reads in server components and auth callbacks.
 - Option B onboarding wizard tracked in memory #14
+
+---
+
+## April 22-23, 2026 — late evening session (post-wrap continued)
+
+Session kept going well past the earlier wrap. This section captures everything that landed after commit da58c00.
+
+### Shipped
+
+- `dcb7d54` — style(artist-profile): scale PHOTO/SPOTIFY/BAND LOGO squares 1.5× (94 → 141px) for better photo visibility
+- `4ecd864` — docs: beta user guide (docs/BETA_USER_GUIDE.md) — paste-ready copy for Tim to forward with invite codes
+- `22b78c2` — feat(artist-profile): static autosave/drag-drop illustration card added as fourth flex child next to the three photo squares
+- `1e35d57` — style(artist-profile): tighten illustration card (380 → 340px), update copy (Settlement → Hospitality, hospitality_rider_SF.jpg, "14 fields extracted")
+- (one overflow-fix attempt at 340px width; superseded by next commit)
+- Fixed at 250px fixed-width version after screenshot showed card still overflowing parent right border
+- `1a759d6` — style(welcome-email): centered poster layout with real Pragmatica Extended wordmark PNG (third iteration)
+- `c121f76` — fix(cron): disable TourRouter advance cron — was sending duplicates
+
+### Welcome email redesign (3 iterations in one night)
+
+1. **First attempt** — cream background + halftone dots + split-color wordmark + offset shadows. Halftone stripped by Gmail's image proxy, wordmark spacing weird, shadows missing, overall felt flat.
+2. **Second attempt (Path A)** — crimson hero block + punk flyer approach. Dropped halftone, dropped shadows, centered. Better but still not polished.
+3. **Third attempt (final, shipped)** — centered poster layout with REAL Pragmatica Extended wordmark PNG. Claude Code converted `public/fonts/Pragmatica_Extended-Extra-Bold.woff2` → `.ttf` using fonttools+brotli, rendered with PIL at auto-scaled 86px (to fit 720px width with 40px margins), saved to `public/email/hwy61-wordmark.png`. Copy is product-agnostic — works for Localizer-only, TourRouter-only, or bundle. Three-line flyer stack (ROUTING / MARKETING crimson / ADVANCING) as the visual moment.
+
+### TourRouter advance cron — critical bug discovered
+
+Drew noticed daily "TourRouter Advance Digest" emails arriving at 6 AM. Investigation revealed:
+
+- `app/api/tourrouter/advance/cron/route.ts` line 214 was firing `resend.emails.send()` to promoter recipients **unconditionally** — no gate, no feature flag, no dev-mode check
+- Silent RLS failure on `tour_shows.advance_status` UPDATE (no `.select().maybeSingle()` verification) caused cron to re-evaluate the same shows daily and re-fire emails
+- Duplicate entries in digest ("Golden Ratio" and "South Congress Hall" each appearing 3×) were the symptom
+
+**Blast radius check — zero actual emails delivered to real promoters.** SQL query on `advance_emails` showed every `recipient_email` value was a person's NAME ("Aaron Blackwood", "Jenny Walsh") not an email address. All were seed data. Resend rejected every send attempt because "Aaron Blackwood" isn't a valid email format. The cron was broken, not dangerous.
+
+**Action taken:** `vercel.json` updated to `{}` — cron removed entirely. No more 6 AM digests. Manual "Send Advance" button in tour page UI still works but won't auto-fire.
+
+**Added to backlog** in docs/BACKLOG.md under new "TourRouter" section — four bugs documented with re-enabling checklist before advance feature ever ships.
+
+### Documentation additions
+
+- `docs/BETA_USER_GUIDE.md` — paste-ready onboarding copy for beta users
+- `docs/BACKLOG.md` — new TourRouter advance feature section with four bugs and re-enabling checklist
+
+### Test state left clean
+
+- `HWY61-BETA-001` reset to unclaimed (ready for Tim's test)
+- Test user `info@alex-drew.com` + org `7bf26fd5-d5bc-40f9-80e1-5c365791387e` deleted
+- Any later test users from welcome-email iteration — cleanup not strictly required since beta flow is Localizer-only with `localizer_enabled=true`
+
+### Known items still open (not blocking beta)
+
+- TourRouter advance cron disabled — will stay disabled until Tim's ready and the four backlog bugs are fixed
+- Beta-claim timing bug (claim fires on PostHogProvider mount before auth completes) — still open
+- TEAM LOGIN bypass — anyone who clicks SIGN IN skips invite gate. Fine for private beta, unacceptable for public launch
+- Root-cause fix for SSR RLS cookie-propagation issue — today's service-role patches are workarounds; long-term fix is middleware session refresh or broader auth architecture pass
+
+### Next session starts with
+
+- Hand beta codes to Tim when he's ready. No code work blocking launch.
+- Option B onboarding wizard (Localizer-specific narrative) — still highest-priority post-beta item. Needs Tim's input on narrative before building. Tracked in memory, in AUTH_ARCHITECTURE.md, in two places in SESSION_LOG.md now.
+- Beta-claim timing bug fix
+- Unit D rate limiting build
