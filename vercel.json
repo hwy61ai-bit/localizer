@@ -1,8 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/tourrouter/advance/cron",
-      "schedule": "0 10 * * *"
-    }
-  ]
-}
+{}
