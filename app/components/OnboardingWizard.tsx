@@ -106,13 +106,13 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip, ha
           <div style={{ maxWidth: 620, width: '100%', textAlign: 'center' }}>
             <div style={{
               fontFamily: 'var(--hw-font-display)',
-              fontSize: 14,
+              fontSize: 28,
               letterSpacing: '4px',
               textTransform: 'uppercase',
-              color: 'var(--hw-crimson)',
+              color: 'var(--hw-text)',
               marginBottom: 40,
             }}>
-              HWY61 LABS
+              HWY<span style={{ color: 'var(--hw-crimson)' }}>61</span> LABS
             </div>
 
             <h1 style={{
