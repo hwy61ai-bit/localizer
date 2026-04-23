@@ -879,8 +879,8 @@ export default function ArtistProfilePage() {
             {/* Static "autosaves / drag & drop" illustration card */}
             <div style={{
               flex: 1,
-              minWidth: 320,
-              maxWidth: 420,
+              minWidth: 300,
+              maxWidth: 380,
               padding: "20px 24px",
               background: "var(--hw-bg-surface)",
               border: "3px solid var(--hw-border-strong)",
@@ -893,7 +893,7 @@ export default function ArtistProfilePage() {
               <div>
                 <div style={{
                   fontFamily: "var(--hw-font-display)",
-                  fontSize: 20,
+                  fontSize: 22,
                   letterSpacing: "2px",
                   textTransform: "uppercase",
                   color: "var(--hw-text)",
@@ -903,7 +903,7 @@ export default function ArtistProfilePage() {
                 </div>
                 <div style={{
                   fontFamily: "var(--hw-font-display)",
-                  fontSize: 20,
+                  fontSize: 22,
                   letterSpacing: "2px",
                   textTransform: "uppercase",
                   color: "var(--hw-text)",
@@ -916,7 +916,7 @@ export default function ArtistProfilePage() {
               {/* Miniature drop-zone tableau */}
               <div style={{
                 position: "relative",
-                height: 90,
+                height: 150,
                 display: "flex",
                 alignItems: "flex-end",
                 justifyContent: "center",
@@ -924,7 +924,7 @@ export default function ArtistProfilePage() {
                 {/* Dashed crimson drop target */}
                 <div style={{
                   width: "100%",
-                  height: 70,
+                  height: 105,
                   border: "2px dashed var(--hw-crimson)",
                   background: "var(--hw-crimson-ghost)",
                   display: "flex",
@@ -959,7 +959,7 @@ export default function ArtistProfilePage() {
                     color: "var(--hw-crimson)",
                     marginBottom: 3,
                   }}>
-                    Settlement
+                    Hospitality
                   </div>
                   <div style={{
                     fontFamily: "var(--hw-font-body)",
@@ -971,7 +971,7 @@ export default function ArtistProfilePage() {
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}>
-                    settlement_fillmore_sf.jpg
+                    hospitality_rider_SF.jpg
                   </div>
                   <div style={{
                     fontFamily: "var(--hw-font-mono)",
@@ -1003,7 +1003,7 @@ export default function ArtistProfilePage() {
                   color: "var(--hw-green)",
                   textTransform: "uppercase",
                 }}>
-                  Parsed &middot; Matched to Mar 15 &mdash; The Fillmore, SF
+                  Parsed &middot; 14 fields extracted
                 </span>
               </div>
             </div>
