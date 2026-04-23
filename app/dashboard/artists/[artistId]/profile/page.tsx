@@ -875,6 +875,138 @@ export default function ArtistProfilePage() {
                 Band Logo (upload transparent png)
               </div>
             </div>
+
+            {/* Static "autosaves / drag & drop" illustration card */}
+            <div style={{
+              flex: 1,
+              minWidth: 320,
+              maxWidth: 420,
+              padding: "20px 24px",
+              background: "var(--hw-bg-surface)",
+              border: "3px solid var(--hw-border-strong)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              gap: 20,
+            }}>
+              {/* Headline */}
+              <div>
+                <div style={{
+                  fontFamily: "var(--hw-font-display)",
+                  fontSize: 20,
+                  letterSpacing: "2px",
+                  textTransform: "uppercase",
+                  color: "var(--hw-text)",
+                  lineHeight: 1.15,
+                }}>
+                  Everything Autosaves.
+                </div>
+                <div style={{
+                  fontFamily: "var(--hw-font-display)",
+                  fontSize: 20,
+                  letterSpacing: "2px",
+                  textTransform: "uppercase",
+                  color: "var(--hw-text)",
+                  lineHeight: 1.15,
+                }}>
+                  Everything Drag &amp; Drop.
+                </div>
+              </div>
+
+              {/* Miniature drop-zone tableau */}
+              <div style={{
+                position: "relative",
+                height: 90,
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "center",
+              }}>
+                {/* Dashed crimson drop target */}
+                <div style={{
+                  width: "100%",
+                  height: 70,
+                  border: "2px dashed var(--hw-crimson)",
+                  background: "var(--hw-crimson-ghost)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontFamily: "var(--hw-font-mono)",
+                  fontSize: 9,
+                  letterSpacing: "1.5px",
+                  color: "var(--hw-crimson)",
+                  textTransform: "uppercase",
+                }}>
+                  Drop any touring document
+                </div>
+
+                {/* Floating document card, mid-drop (tilted, offset shadow) */}
+                <div style={{
+                  position: "absolute",
+                  top: 0,
+                  left: "50%",
+                  transform: "translateX(-50%) rotate(-3deg)",
+                  background: "var(--hw-bg-surface)",
+                  border: "3px solid var(--hw-border-strong)",
+                  boxShadow: "6px 6px 0 rgba(0,0,0,0.15)",
+                  padding: "8px 12px",
+                  minWidth: 180,
+                }}>
+                  <div style={{
+                    fontFamily: "var(--hw-font-mono)",
+                    fontSize: 8,
+                    letterSpacing: "2px",
+                    textTransform: "uppercase",
+                    color: "var(--hw-crimson)",
+                    marginBottom: 3,
+                  }}>
+                    Settlement
+                  </div>
+                  <div style={{
+                    fontFamily: "var(--hw-font-body)",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--hw-text)",
+                    marginBottom: 2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}>
+                    settlement_fillmore_sf.jpg
+                  </div>
+                  <div style={{
+                    fontFamily: "var(--hw-font-mono)",
+                    fontSize: 9,
+                    color: "var(--hw-text-secondary)",
+                  }}>
+                    JPEG &middot; 2.4 MB
+                  </div>
+                </div>
+              </div>
+
+              {/* Parsed pill */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                alignSelf: "flex-start",
+                padding: "4px 10px",
+                background: "var(--hw-green-ghost)",
+                border: "2px solid var(--hw-green-border)",
+              }}>
+                <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 7L5.5 10.5L12 3.5" stroke="var(--hw-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span style={{
+                  fontFamily: "var(--hw-font-mono)",
+                  fontSize: 10,
+                  letterSpacing: "1px",
+                  color: "var(--hw-green)",
+                  textTransform: "uppercase",
+                }}>
+                  Parsed &middot; Matched to Mar 15 &mdash; The Fillmore, SF
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Spotify URL input */}
