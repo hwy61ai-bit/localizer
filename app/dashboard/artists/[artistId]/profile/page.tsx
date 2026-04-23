@@ -878,9 +878,8 @@ export default function ArtistProfilePage() {
 
             {/* Static "autosaves / drag & drop" illustration card */}
             <div style={{
-              flex: 1,
-              minWidth: 300,
-              maxWidth: 380,
+              width: 340,
+              flexShrink: 0,
               padding: "20px 24px",
               background: "var(--hw-bg-surface)",
               border: "3px solid var(--hw-border-strong)",
