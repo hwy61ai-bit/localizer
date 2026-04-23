@@ -215,6 +215,16 @@ function LoginContent() {
           )}
           {!inviteVerified ? (
             <>
+              <div style={{
+                fontFamily: "var(--hw-font-body)",
+                fontSize: 13,
+                fontWeight: 300,
+                color: "var(--hw-text-secondary)",
+                marginBottom: 14,
+                lineHeight: 1.4,
+              }}>
+                New users — enter your beta invite code to get started.
+              </div>
               <label style={labelStyle}>INVITE CODE</label>
               <input
                 style={{
@@ -246,22 +256,38 @@ function LoginContent() {
                   {inviteError}
                 </p>
               )}
-              <div style={{ marginTop: 20, textAlign: "center" }}>
+              <div style={{
+                marginTop: 28,
+                paddingTop: 20,
+                borderTop: "3px solid var(--hw-border-strong)",
+                textAlign: "center",
+              }}>
+                <div style={{
+                  fontFamily: "var(--hw-font-body)",
+                  fontSize: 13,
+                  fontWeight: 300,
+                  color: "var(--hw-text-secondary)",
+                  marginBottom: 10,
+                }}>
+                  Already have an account?
+                </div>
                 <button
                   onClick={skipToLogin}
                   style={{
                     background: "none",
                     border: "none",
-                    fontFamily: "var(--hw-font-mono)",
-                    fontSize: 11,
-                    letterSpacing: "1.5px",
+                    fontFamily: "var(--hw-font-display)",
+                    fontSize: 14,
+                    fontWeight: 400,
+                    letterSpacing: "3px",
                     textTransform: "uppercase",
-                    color: "var(--hw-text-muted)",
+                    color: "var(--hw-crimson)",
                     cursor: "pointer",
                     textDecoration: "underline",
+                    textUnderlineOffset: "3px",
                   }}
                 >
-                  TEAM LOGIN
+                  SIGN IN
                 </button>
               </div>
             </>
