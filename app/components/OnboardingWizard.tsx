@@ -8,9 +8,10 @@ interface OnboardingWizardProps {
   onStartWizard: () => void;
   onDemoTour: () => void;
   onSkip: () => void;
+  hasTourRouter?: boolean;
 }
 
-export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: OnboardingWizardProps) {
+export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip, hasTourRouter = true }: OnboardingWizardProps) {
   const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -85,6 +86,91 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip }: 
       ),
     },
   ];
+
+  if (!hasTourRouter) {
+    return (
+      <>
+        <style>{`
+          @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '32px 24px',
+          animation: 'fadeSlideUp 0.5s ease-out both',
+        }}>
+          <div style={{ maxWidth: 620, width: '100%', textAlign: 'center' }}>
+            <div style={{
+              fontFamily: 'var(--hw-font-display)',
+              fontSize: 14,
+              letterSpacing: '4px',
+              textTransform: 'uppercase',
+              color: 'var(--hw-crimson)',
+              marginBottom: 40,
+            }}>
+              HWY61 LABS
+            </div>
+
+            <h1 style={{
+              fontFamily: 'var(--hw-font-display)',
+              fontSize: 48,
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              color: 'var(--hw-text)',
+              margin: '0 0 24px 0',
+              lineHeight: 1.1,
+            }}>
+              WELCOMES YOU TO THE LOCALIZER BETA
+            </h1>
+
+            <p style={{
+              fontFamily: 'var(--hw-font-body)',
+              fontSize: 17,
+              fontWeight: 300,
+              color: 'var(--hw-text-secondary)',
+              margin: '0 auto 48px auto',
+              lineHeight: 1.5,
+              maxWidth: 520,
+            }}>
+              You&rsquo;re one of a small group helping us shape what Localizer becomes. Thanks for being here.
+            </p>
+
+            <div style={{ maxWidth: 420, margin: '0 auto' }}>
+              <HwCard variant="accent" onClick={handleSkip}>
+                <div style={{ marginBottom: 16, opacity: 0.6, color: 'var(--hw-crimson)' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </div>
+                <HwCardTitle>Let&rsquo;s Get Started</HwCardTitle>
+                <HwCardDesc>Jump into your dashboard and add your first artist to begin generating assets.</HwCardDesc>
+                <div style={{ marginTop: 20 }}>
+                  <HwButton size="small" fullWidth>GET STARTED</HwButton>
+                </div>
+              </HwCard>
+            </div>
+
+            <p style={{
+              marginTop: 40,
+              fontFamily: 'var(--hw-font-mono)',
+              fontSize: 11,
+              fontWeight: 400,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              color: 'var(--hw-text-muted)',
+            }}>
+              Questions? Reply to your welcome email.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

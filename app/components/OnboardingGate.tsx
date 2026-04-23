@@ -7,9 +7,10 @@ import OnboardingWizard from './OnboardingWizard';
 interface OnboardingGateProps {
   artistCount: number;
   children: React.ReactNode;
+  hasTourRouter?: boolean;
 }
 
-export default function OnboardingGate({ artistCount, children }: OnboardingGateProps) {
+export default function OnboardingGate({ artistCount, hasTourRouter = true, children }: OnboardingGateProps) {
   const searchParams = useSearchParams();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -32,6 +33,7 @@ export default function OnboardingGate({ artistCount, children }: OnboardingGate
         onStartWizard={() => setShowOnboarding(false)}
         onDemoTour={() => {}}
         onSkip={() => setShowOnboarding(false)}
+        hasTourRouter={hasTourRouter}
       />
     );
   }

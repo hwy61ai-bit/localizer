@@ -40,7 +40,7 @@ export default async function DashboardPage() {
   // Fetch org plan + trial status
   const { data: org } = await admin
     .from("orgs")
-    .select("plan, plan_status, trial_ends_at, stripe_customer_id")
+    .select("plan, plan_status, trial_ends_at, stripe_customer_id, tourrouter_enabled")
     .eq("id", orgId)
     .maybeSingle();
 
@@ -50,6 +50,7 @@ export default async function DashboardPage() {
   const trialActive = org?.trial_ends_at ? new Date(org.trial_ends_at) > new Date() : false;
   const isAdmin = isAdminEmail(user.email);
   const hasAccess = isPaid || trialActive || isAdmin;
+  const hasTourRouter = isAdmin || org.tourrouter_enabled === true;
 
   if (!hasAccess) redirect("/pricing?reason=trial_expired");
 
@@ -103,7 +104,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <OnboardingGate artistCount={artists.length}>
+    <OnboardingGate artistCount={artists.length} hasTourRouter={hasTourRouter}>
     <div className="dash-page" style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
