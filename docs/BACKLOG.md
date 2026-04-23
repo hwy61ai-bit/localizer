@@ -429,3 +429,53 @@ Debug data captured:
 2. Query Vercel deployment logs for the `/v/e/[token]` route: is it being hit on each request or served from cache?
 3. Check if `export const dynamic = 'force-dynamic'` or `export const revalidate = 0` resolves — BUT note yesterday's prod scare with these exact directives on the template editor route; if used on the venue page, preview-deploy first this time.
 4. If image formats also show the stale-URL issue, the fix is the same mechanism and covers images too. If only video formats, look for a video-specific render path.
+
+---
+
+## TourRouter — Blocked items discovered during Localizer beta
+
+Items discovered during Localizer beta development that need addressing before TourRouter is production-ready. Not urgent while the beta is Localizer-only, but critical before TourRouter ever ships to real users.
+
+### Advance feature — full audit needed before re-enabling
+
+**Context:** Discovered on April 22, 2026 that the TourRouter advance cron was firing daily but the underlying implementation had multiple issues. The cron was disabled (commit `c121f76`) before any real damage occurred — all apparent "sends" were to seed data with names instead of email addresses in the recipient field, so Resend rejected every attempt. No real promoter received anything. But the bugs are real and must be fixed before the feature ever goes live.
+
+**Bugs to fix:**
+
+1. **Schema / flow confusion — `advance_recipient_email` populated with names, not emails.**
+   Whatever path is writing to `tour_shows.advance_recipient_email` is storing promoter display names ("Aaron Blackwood") instead of email addresses. Likely candidates: the demo seed data (`app/api/tourrouter/demo-seed/`), the advance-assignment UI on the tour detail page, or the promoter contact import flow. Audit all three.
+
+2. **No email-format validation in the cron.**
+   The cron at `app/api/tourrouter/advance/cron/route.ts` line 214 calls `resend.emails.send()` unconditionally. Add a guard before the send:
+```typescript
+   if (!recipientEmail || !recipientEmail.includes("@")) {
+     console.warn("[advance/cron] skipping show with invalid recipient", { showId, recipientEmail });
+     continue;
+   }
+```
+   Prevents future silent failures from polluting `advance_emails` and the digest.
+
+3. **Silent RLS failure on `tour_shows` status update.**
+   The `supabase.from("tour_shows").update(updates).eq("id", showId)` call at ~line 232 has no `.select().maybeSingle()` verification. If RLS rejects the update, the cron re-evaluates the same show the next day and fires another email. Same pattern that bit us on auth earlier tonight — needs the same fix pattern (verify with `.select().maybeSingle()` and throw on unexpected zero-row response, or use service-role client for this write).
+
+4. **Feature has no gate.**
+   There's no feature flag, no env-var kill switch, no `tourrouter_advance_enabled` column. The cron either runs or doesn't, based on `vercel.json`. Before re-enabling, gate the whole feature behind `orgs.tourrouter_enabled` at minimum, and ideally behind a per-tour or per-org `advance_enabled` flag so it's opt-in.
+
+**Related code paths:**
+
+- `app/api/tourrouter/advance/cron/route.ts` — the scheduled send loop
+- `app/api/tourrouter/advance/send/route.ts` — the manual "Send Advance" button handler (already has a console.error flagging the same RLS issue at line 118)
+- `app/dashboard/routing/[tourId]/page.tsx` line 656 — the `sendAdvance` button UI
+- `advance_emails` table — audit log
+- `tour_shows.advance_status`, `tour_shows.advance_sent_at`, `tour_shows.advance_recipient_email` — state columns
+
+**Re-enabling checklist:**
+
+Before adding the cron back to `vercel.json`:
+
+- [ ] All four bugs above fixed and tested
+- [ ] Tim has reviewed the email templates and confirmed copy
+- [ ] Feature flag / gate in place, defaulted OFF
+- [ ] End-to-end test with a real (test) promoter email address, not a name string
+- [ ] Verify `advance_emails` log matches Resend delivery confirmations
+- [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
