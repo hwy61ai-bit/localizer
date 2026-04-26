@@ -2375,3 +2375,106 @@ Drew noticed daily "TourRouter Advance Digest" emails arriving at 6 AM. Investig
 - Option B onboarding wizard (Localizer-specific narrative) — still highest-priority post-beta item. Needs Tim's input on narrative before building. Tracked in memory, in AUTH_ARCHITECTURE.md, in two places in SESSION_LOG.md now.
 - Beta-claim timing bug fix
 - Unit D rate limiting build
+
+## 2026-04-26 — Pre-beta security audit + two route fixes shipped
+
+**Commits shipped today (2):**
+
+1. `5341b74` — fix(security): require auth + org membership on overlay-config PATCH
+2. `01a0a5b` — fix(security): require token validation on print-pdf route
+
+**Context:** Goal was to prepare for first beta invites going out in next 2 days.
+Tim's invite email flagged two pre-existing unauth API routes for risk read.
+Investigation showed both were exploitable from outside the app entirely (no
+session needed). Both fixed and smoke-tested in production.
+
+**Auth flow verification (no code changes, knowledge gained):**
+
+- Tested HWY61-BETA-002 claim end-to-end with `+betatest1` Gmail plus-address
+- Confirmed beta-claim timing bug from kickoff doc is STALE: failed magic
+  links do NOT burn codes. Claim is correctly gated on successful auth
+  completion. No fix needed.
+- Discovered same-browser gotcha: magic links must be opened in the same
+  browser that requested them, otherwise "session expired" on click. Worth
+  flagging in BETA_USER_GUIDE or Tim's invite email.
+- Verified Tim's six load-bearing email claims; 5 of 5 tested passed
+  (skipped magic-link verification since it was already soaked).
+
+**Fix 1 — overlay-config (commit 5341b74):**
+
+`app/api/tours/[tourId]/overlay-config/route.ts` had an inverted security
+model: when the authed UPDATE returned zero rows (the RLS rejection signal
+that the caller is unauthorized), the route reacted by retrying with a
+service-role client that bypasses RLS. Net effect: any HTTP client with a
+valid tour ID could rewrite any tour's overlay config, including
+custom_text_1/2. No login required.
+
+Verified `tours_update_if_org_member` RLS policy is correct (allows any
+org member to UPDATE their tours), so removing the service-role fallback
+doesn't break legitimate users.
+
+Fix added `auth.getUser()` check + `org_members` lookup before the UPDATE,
+removed the service-role fallback entirely.
+
+Smoke tests passed: legitimate dashboard autosave still works (Test A),
+cross-org PATCH from logged-in attacker returns 404 tour_not_found (Test B,
+RLS blocks the lookup), unauthenticated curl returns 401 auth_required
+(Test C). Database verification confirmed no test writes landed.
+
+**Fix 2 — print-pdf (commit 01a0a5b):**
+
+`app/api/renders/print-pdf/route.ts` was intentionally anonymous (called
+from public share pages) but accepted a bare eventId with zero validation,
+meaning anyone with any event UUID could generate the print PDF for any
+event in any org.
+
+Fix added token validation: route now requires `?eventId=...&token=...`,
+checks venue_links first (token + event_id match), falls back to
+marketing_tokens (token's tour_id contains the eventId), returns 401
+otherwise. PrintDownloadButton.tsx and both /v/e/[token]/page.tsx and
+/v/m/[token]/page.tsx updated to forward the token from the route segment.
+
+Smoke tests passed: real venue token downloads PDF (Test A), no token
+returns 400 missing_params (Test C), fabricated token returns 401
+invalid_token (Test D), real token + wrong event returns 401 (Test E).
+Test B (marketing token happy path) skipped — no marketing token in
+admin org points to a tour with print-poster events. Logic is structurally
+identical to venue path; high confidence based on Test A + negative tests.
+
+**Data anomalies discovered (cleanup, not urgent):**
+
+- 11 orgs named "My Workspace" with zero members (abandoned signups
+  pre-dating the April 9 ensureOrgExists hardening)
+- 2 orphaned tours in one of those zero-member orgs
+  (org_id: 3e384602-cf13-4ba2-bb45-949f25917e84). After today's fix,
+  these tours are unreachable to any human via the dashboard, which
+  is the correct behavior for orphaned data.
+- Beta accounts (Tim, +betatest1) both have user_role = null. This is
+  the per-user-vs-per-org onboarding mismatch from Tim's email, still
+  open. Not blocking since wizard is skipped for beta.
+
+**Process notes:**
+
+- Multiple times during the session, instinct-driven "wait, are we sure?"
+  questions caught real issues before push (the agent flagging the
+  service-role fallback's existence reason, the RLS policy verification,
+  the orphan-org check). Pattern worth keeping.
+- "Show diff before applying" in Claude Code prevented at least one
+  unnecessary same-commit change (the stale comment on print-pdf line 6
+  was caught and updated separately rather than left wrong).
+- CORS preflight failures during browser-based auth smoke tests are a
+  recurring red herring on the apex-vs-www domain split — fall back to
+  curl for clean status codes.
+
+**Still open before invites go out:**
+
+- Reply to Tim with corrected status (his email has stale asks; the auth
+  flow he describes doesn't match the code system that exists)
+- Confirm `[LINK]` URL for Tim's invite email
+- Optional cleanup of 2 orphaned tours
+
+**Next session starts with:**
+
+Tim's reply if he's responded. If not, pick up Tim email draft.
+Optionally clean up the 2 orphaned tours if Drew wants the hygiene done
+before invites.
