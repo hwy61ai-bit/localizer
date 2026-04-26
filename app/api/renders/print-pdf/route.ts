@@ -3,7 +3,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 import { createClient } from "@supabase/supabase-js";
 import { fetchFontBytes } from "@/lib/fetchFont";
 
-// Public route — no auth required (called from venue link page)
+// Public route — token-gated (validates against venue_links or marketing_tokens)
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -62,8 +62,39 @@ function hexToRgb(hex: string) {
 
 export async function GET(req: NextRequest) {
   const eventId = req.nextUrl.searchParams.get("eventId");
-  if (!eventId) {
-    return NextResponse.json({ error: "Missing eventId" }, { status: 400 });
+  const token = req.nextUrl.searchParams.get("token");
+  if (!eventId || !token) {
+    return NextResponse.json({ error: "missing_params" }, { status: 400 });
+  }
+
+  const { data: venueLink } = await supabase
+    .from("venue_links")
+    .select("id")
+    .eq("token", token)
+    .eq("event_id", eventId)
+    .maybeSingle();
+
+  if (!venueLink) {
+    const { data: marketingToken } = await supabase
+      .from("marketing_tokens")
+      .select("tour_id")
+      .eq("token", token)
+      .maybeSingle();
+
+    if (!marketingToken) {
+      return NextResponse.json({ error: "invalid_token" }, { status: 401 });
+    }
+
+    const { data: scopedEvent } = await supabase
+      .from("events")
+      .select("id")
+      .eq("id", eventId)
+      .eq("tour_id", marketingToken.tour_id)
+      .maybeSingle();
+
+    if (!scopedEvent) {
+      return NextResponse.json({ error: "token_event_mismatch" }, { status: 403 });
+    }
   }
 
   // Fetch event

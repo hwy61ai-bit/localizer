@@ -185,7 +185,7 @@ export default async function MarketingPage({
         {hasPrintPoster && (
           <div style={{ marginBottom: 48 }}>
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
-            <PrintDownloadButton eventId={event.id} venueName={venueName} />
+            <PrintDownloadButton eventId={event.id} venueName={venueName} token={token} />
           </div>
         )}
 

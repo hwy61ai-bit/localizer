@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-export default function PrintDownloadButton({ eventId, venueName }: { eventId: string; venueName: string }) {
+export default function PrintDownloadButton({ eventId, venueName, token }: { eventId: string; venueName: string; token: string }) {
   const [generating, setGenerating] = useState(false);
   const [elapsed, setElapsed] = useState(0);
 
@@ -21,7 +21,7 @@ export default function PrintDownloadButton({ eventId, venueName }: { eventId: s
   const handlePrintDownload = async () => {
     setGenerating(true);
     try {
-      const res = await fetch(`/api/renders/print-pdf?eventId=${eventId}`);
+      const res = await fetch(`/api/renders/print-pdf?eventId=${eventId}&token=${encodeURIComponent(token)}`);
       if (!res.ok) throw new Error("Failed to generate PDF");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
