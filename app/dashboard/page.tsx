@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { isAdminEmail } from "@/lib/auth/adminEmails";
+import { ensureOrgExists } from "@/lib/auth/ensureOrgExists";
 import TourTile from "./TourTile";
 import NotificationBell from "@/app/components/NotificationBell";
 import OnboardingGate from "@/app/components/OnboardingGate";
@@ -24,6 +25,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const admin = supabaseAdmin();
+  await ensureOrgExists(supabase);
 
   const { data: membership } = await admin
     .from("org_members")

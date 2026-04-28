@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useMemo, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { getProductName } from "@/lib/tourrouter/productBranding";
 import posthog from "posthog-js";
@@ -9,6 +9,7 @@ import "./login.css";
 
 function LoginContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const urlError = searchParams.get("error");
   const productName = useMemo(() => getProductName(), []);
   const [email, setEmail] = useState("");
@@ -21,6 +22,20 @@ function LoginContent() {
   const [inviteVerified, setInviteVerified] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
+
+  // Drain implicit-flow OAuth hash: server route can't see #access_token=, browser client picks it up.
+  const [hasOAuthHash, setHasOAuthHash] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.location.hash.includes("access_token=")) return;
+    setHasOAuthHash(true);
+    const t = setTimeout(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) router.push("/dashboard");
+      });
+    }, 100);
+    return () => clearTimeout(t);
+  }, [router]);
 
   async function verifyInvite() {
     if (!inviteCode.trim()) return;
@@ -194,7 +209,7 @@ function LoginContent() {
             padding: 32,
           }}
         >
-          {urlError && (
+          {urlError && !hasOAuthHash && (
             <div style={{
               background: "#c5535b",
               color: "#fff",

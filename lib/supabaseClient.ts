@@ -40,6 +40,7 @@ export const supabase = createBrowserClient(
       secure: IS_HTTPS,
     },
     auth: {
+      flowType: "implicit",
       storage: cookieStorage(),
     },
   }
