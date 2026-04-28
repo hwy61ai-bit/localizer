@@ -17,8 +17,8 @@ function LoginContent() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Beta invite gate
-  const [inviteCode, setInviteCode] = useState("");
+  // Beta access gate
+  const [accessPassword, setAccessPassword] = useState("");
   const [inviteVerified, setInviteVerified] = useState(false);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -38,30 +38,25 @@ function LoginContent() {
   }, [router]);
 
   async function verifyInvite() {
-    if (!inviteCode.trim()) return;
+    if (!accessPassword.trim()) return;
     setInviteLoading(true);
     setInviteError(null);
     try {
       const resp = await fetch("/api/beta/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: inviteCode.trim() }),
+        body: JSON.stringify({ code: accessPassword.trim() }),
       });
       const data = await resp.json();
       if (data.valid) {
-        localStorage.setItem("beta_invite_code", inviteCode.trim());
         setInviteVerified(true);
       } else {
-        setInviteError("Invalid or already claimed invite code.");
+        setInviteError("Invalid password.");
       }
     } catch {
-      setInviteError("Could not verify code. Try again.");
+      setInviteError("Could not verify password. Try again.");
     }
     setInviteLoading(false);
-  }
-
-  function skipToLogin() {
-    setInviteVerified(true);
   }
 
   async function sendMagicLink() {
@@ -194,7 +189,7 @@ function LoginContent() {
             color: "var(--hw-text-secondary)",
           }}>
             {!inviteVerified
-              ? "Enter your beta invite code to get started."
+              ? "Enter your beta access password to continue."
               : "Enter your email and we\u2019ll send you a sign-in link. No password needed."}
           </div>
         </div>
@@ -238,18 +233,19 @@ function LoginContent() {
                 marginBottom: 14,
                 lineHeight: 1.4,
               }}>
-                New users — enter your beta invite code to get started.
+                Enter your beta access password to continue.
               </div>
-              <label style={labelStyle}>INVITE CODE</label>
+              <label style={labelStyle}>BETA ACCESS PASSWORD</label>
               <input
+                type="password"
                 style={{
                   ...inputStyle,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
                 }}
-                placeholder="XXXX-XXXX"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value)}
+                placeholder="Enter access password"
+                value={accessPassword}
+                onChange={(e) => setAccessPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !inviteLoading && verifyInvite()}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "var(--hw-crimson)")}
                 onBlur={(e) => (e.currentTarget.style.borderColor = "var(--hw-border-strong)")}
@@ -258,53 +254,19 @@ function LoginContent() {
               <button
                 style={{
                   ...primaryBtnStyle,
-                  opacity: !inviteCode.trim() || inviteLoading ? 0.4 : 1,
-                  pointerEvents: !inviteCode.trim() || inviteLoading ? "none" : "auto",
+                  opacity: !accessPassword.trim() || inviteLoading ? 0.4 : 1,
+                  pointerEvents: !accessPassword.trim() || inviteLoading ? "none" : "auto",
                 }}
-                disabled={!inviteCode.trim() || inviteLoading}
+                disabled={!accessPassword.trim() || inviteLoading}
                 onClick={verifyInvite}
               >
-                {inviteLoading ? "VERIFYING\u2026" : "VERIFY"}
+                {inviteLoading ? "VERIFYING\u2026" : "CONTINUE"}
               </button>
               {inviteError && (
                 <p style={{ marginTop: 12, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
                   {inviteError}
                 </p>
               )}
-              <div style={{
-                marginTop: 28,
-                paddingTop: 20,
-                borderTop: "3px solid var(--hw-border-strong)",
-                textAlign: "center",
-              }}>
-                <div style={{
-                  fontFamily: "var(--hw-font-body)",
-                  fontSize: 13,
-                  fontWeight: 300,
-                  color: "var(--hw-text-secondary)",
-                  marginBottom: 10,
-                }}>
-                  Already have an account?
-                </div>
-                <button
-                  onClick={skipToLogin}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    fontFamily: "var(--hw-font-display)",
-                    fontSize: 14,
-                    fontWeight: 400,
-                    letterSpacing: "3px",
-                    textTransform: "uppercase",
-                    color: "var(--hw-crimson)",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    textUnderlineOffset: "3px",
-                  }}
-                >
-                  SIGN IN
-                </button>
-              </div>
             </>
           ) : !sent ? (
             <>

@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { timingSafeEqual } from "crypto";
 
 export async function POST(req: NextRequest) {
   const { code } = await req.json();
@@ -12,13 +7,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ valid: false });
   }
 
-  const { data } = await supabase
-    .from("beta_invites")
-    .select("id")
-    .ilike("code", code.trim())
-    .is("claimed_by", null)
-    .limit(1)
-    .maybeSingle();
+  const expected = process.env.BETA_GATE_PASSWORD;
+  if (!expected) {
+    console.error("BETA_GATE_PASSWORD env var is not set");
+    return NextResponse.json({ valid: false }, { status: 500 });
+  }
 
-  return NextResponse.json({ valid: !!data });
+  const provided = code.trim();
+  const providedBuf = Buffer.from(provided);
+  const expectedBuf = Buffer.from(expected);
+
+  if (providedBuf.length !== expectedBuf.length) {
+    return NextResponse.json({ valid: false });
+  }
+
+  return NextResponse.json({ valid: timingSafeEqual(providedBuf, expectedBuf) });
 }
