@@ -2478,3 +2478,106 @@ identical to venue path; high confidence based on Test A + negative tests.
 Tim's reply if he's responded. If not, pick up Tim email draft.
 Optionally clean up the 2 orphaned tours if Drew wants the hygiene done
 before invites.
+
+Every new org from this commit forward provisions with active Localizer status. No more manual SQL per beta tester. TourRouter remains disabled by default (correct — Localizer-only beta). Bundle status remains null (same reason).
+
+#### "Session expired" investigation
+
+Tim's first 402 issue (the "session expired" landing page when clicking the beta invite email) traced to a different architecture: PKCE-flow magic links require the code verifier to be in the same browser's cookies as where `signInWithOtp` was called. Most email clients open links in the user's default browser, not the browser the user used to submit the email form. When the verifier is missing, `exchangeCodeForSession()` fails and the user lands on `/login?error=auth` — which renders as "Your session expired" because the copy on `app/login/page.tsx:212` doesn't distinguish between "session expired" and "magic link auth failed."
+
+#### Architectural fix #2 — commit c6a0bfc (magic-link flow + defensive provisioning)
+
+Three pieces in one commit:
+
+1. **`lib/supabaseClient.ts`** — added `flowType: "implicit"` to the `createBrowserClient` auth options. **NOTE: this turned out to be a no-op for new signups.** `@supabase/ssr` (or Supabase's signup endpoint specifically) generates `pkce_` prefixed tokens for type=signup emails regardless of client flowType. The flowType change might still help for existing-user magic-link emails (type=magiclink) but we didn't verify.
+
+2. **`app/login/page.tsx`** — added a useEffect that detects `#access_token=...` in the URL hash on mount. If present, suppresses the "session expired" banner, waits 100ms for the supabase browser client's `detectSessionInUrl` to parse the hash, and pushes to /dashboard. This handles Google OAuth's implicit-flow callback path that the server route can't see.
+
+3. **`lib/auth/ensureOrgExists.ts`** (new) + **`app/auth/callback/route.ts`** (refactor) + **`app/dashboard/page.tsx`** (defensive call) — extracted `ensureOrgExists` from the inline auth callback into a shared helper. Called from both the callback AND the dashboard. Any code path that reaches /dashboard with a valid session auto-provisions an org if one doesn't already exist. Closes the first-time-Google-OAuth gap (where the callback's ensureOrgExists never runs because access_token is in the URL hash) and defends against any future flow that bypasses the callback.
+
+#### What actually fixed cross-browser sign-in
+
+After commit c6a0bfc deployed to production, Tim's test still showed `token=pkce_...` in the magic link email. The flowType change wasn't enough.
+
+The actual fix was the **Supabase Confirm signup email template change**: replacing `{{ .ConfirmationURL }}` with a hand-built URL using `{{ .TokenHash }}` and `{{ .SiteURL }}`. This bypasses Supabase's `/verify` redirect endpoint entirely — the email link goes straight to `/auth/callback?token_hash=...&type=signup`, and the existing `verifyOtp({ token_hash, type })` path in the callback handles it without needing any client-side verifier.
+
+Cross-browser sign-in confirmed working after the template change. Test: opened the magic link in Safari after submitting the form in Chrome → landed in /dashboard cleanly.
+
+**The flowType: implicit change is therefore essentially dormant** for the signup path. Keeping it in place since it doesn't hurt and may help for the (untested) existing-user magic link path.
+
+#### Discovery: "anyone can get in"
+
+Verified the magic-link signup worked for new emails — but I bypassed the beta code via the "SIGN IN" button on /login. Realized the button (`skipToLogin` function) bypassed the beta gate entirely with no server-side check. Anyone who knew the /login URL could click through and create an account.
+
+#### Architectural fix #3 — commit 4d0b74f (shared password gate)
+
+Drew proposed replacing the beta_invites infrastructure entirely with a single shared password env var. Cleaner than the proper-but-bigger admin-API server-side gating I was drafting. Implementation:
+
+1. **`/api/beta/validate`** — replaced the `beta_invites` table query with `crypto.timingSafeEqual` comparison against `process.env.BETA_GATE_PASSWORD`. Same input/output shape so the login page didn't need API contract changes.
+2. **`app/login/page.tsx`** — removed `skipToLogin` function and the JSX button entirely. Renamed UI text from "Beta Invite Code" to "Beta Access Password." Changed input type to `password`. Removed `localStorage.setItem("beta_invite_code", ...)` so PostHogProvider's claim path never fires.
+3. **`BETA_GATE_PASSWORD`** env var set in Vercel (all three scopes) and `.env.local`.
+
+Tim and Drew use the same password as beta testers. Password rotation = change env var in Vercel + redeploy = all testers re-enter new password. Self-serve onboarding for testers, no admin involvement per signup.
+
+#### Welcome page diagnostic dead-end (not a bug)
+
+Spent ~30 min chasing a "welcome to the beta" page Drew remembered seeing on first signup but wasn't appearing for the new test users. Multiple greps came up empty. Drew did another fresh signup and the page DID appear — confirmed it's the `app/components/OnboardingWizard.tsx` localizer-only view with the actual headline "WELCOMES YOU TO THE LOCALIZER BETA" (different exact wording than what we were grepping for). Working as designed. Earlier test69 user must have had browser state from prior testing.
+
+### What's verified working end-to-end after tonight
+
+- Password gate: random users blocked, beta testers self-serve with shared password
+- Magic link cross-browser: token_hash via template fix lets emails be clicked in any browser
+- Auth callback + dashboard: `ensureOrgExists` provisions defensively from either path
+- Org provisioning: new beta orgs come online with `plan='pro'`, `localizer_plan='agency'`, `localizer_plan_status='active'`. No manual SQL.
+- Welcome page: fires for new users with the right copy
+- Downloads + custom font upload: work without manual SQL on fresh signups
+
+### Lessons reinforced
+
+1. **Don't write to status columns from memory.** "set status='paid'" was the wrong literal — the column wanted `'active'` per Stripe convention. Should have grepped `lib/localizer/billingGate.ts` BEFORE the first UPDATE, not 20 minutes later. Same rule from memory ("never write status docs from memory — grep-verify against actual code first") applies to SQL writes against unfamiliar columns.
+
+2. **Claude Code's "Applied" reports aren't fully reliable in long sessions.** Caught at least once tonight when Claude Code reported the OAuth hash-drain edit as applied earlier in the session, but `grep` showed it wasn't on disk. After every edit from here on: `git status` + `grep` for the specific change to verify it actually landed. Don't trust the "Applied. Diff matches the proposal." message alone.
+
+3. **Beta gating must be server-enforced, not client-side.** The `skipToLogin` button bypassed the gate completely with no server check. Pattern lesson: anywhere we have client-side validation for access control, the server endpoint must independently enforce the same rule.
+
+4. **Magic link template fix > flowType setting.** Spent significant time iterating on `flowType: implicit`, only to discover Supabase's signup path forces PKCE tokens regardless. The actual fix was the email template — much simpler intervention point that works at the URL-construction layer rather than the client request layer. Worth knowing for future Supabase work: when the client-side flow type isn't doing what you expect, look at the email template.
+
+5. **Defensive org provisioning is a good pattern.** Calling `ensureOrgExists` from `/dashboard/page.tsx` (in addition to the auth callback) defends against any current OR future code path that reaches the dashboard with a valid session but no org. Cheap insurance against future regressions in auth flow changes.
+
+### Backlog items added
+
+1. **PostHogProvider + `/api/beta/claim` cleanup.** Dead code paths now that the login page no longer writes to localStorage. Delete the claim block in PostHogProvider, delete the route, drop the `beta_invites` table. ~15 min single session.
+
+2. **Mixed naming in login page.** State variable `accessPassword` was renamed but `inviteVerified`, `inviteLoading`, `inviteError`, and the function name `verifyInvite` were left as-is. Clean find-and-replace pass for consistency, ~5 min.
+
+3. **Rate limiting on `/api/beta/validate`** — Unit D from April 9. Single shared password is brute-forceable without rate limiting. Upstash Redis tier still spec'd in backlog.
+
+4. **Vercel env var hardening — 8 credentials are stored as plain text** and flagged "Needs Attention" in Vercel for not being marked Sensitive. Order to tackle: Cloudinary (2 vars), Mapbox, Resend, Anthropic, Supabase service role, Stripe (2 vars). For each: rotate at source, re-create in Vercel as Sensitive. ~60-90 min focused session. Not a blocker but real security hygiene.
+
+5. **Pre-launch reversal checklist.** Before flipping `COMING_SOON=false`:
+   - Remove the three lines added to `ensureOrgExists` in commit 093026f, OR move them behind a `BETA_AUTO_ACTIVE` env flag
+   - Verify with a fresh test signup that the new org provisions with null status fields and the freemium gates correctly identify it as free tier
+   - Verify Stripe upgrade flow correctly flips `localizer_plan_status` to `'active'` after payment
+   - Remove or revise the BETA_GATE_PASSWORD requirement on /login (or convert it to a marketing landing page sequence)
+   
+   If item 1 is missed, public signups will silently get free Localizer Agency access.
+
+6. **`orgs_plan_check` constraint is stale.** Allows `starter / growth / pro` only — no `'agency'`. The new pricing model uses `basic / pro / agency`. Either drop the legacy `plan` column once nothing reads it, or update the CHECK to match the new tier names.
+
+7. **"Session expired" copy is misleading.** Fires on any failed magic link, including used-once tokens, malformed links, expired tokens, or true verifier failures. A new user clicking a stale link gets told their "session" expired even though they never had one. Better copy: "That sign-in link didn't work. Please request a new one below."
+
+8. **Stale "My Workspace" orgs cleanup.** Now 14+ rows in the `orgs` table named "My Workspace" from various test signups. Audit and delete unused ones before public launch.
+
+9. **`docs/AUTH_ARCHITECTURE.md` needs comprehensive update** to reflect tonight's changes — beta_invites is gone, magic link flow is template-driven OTP rather than PKCE, ensureOrgExists is in lib/auth/, etc.
+
+### Workflow notes
+
+- Drew prefers proper fixes over halfway solutions. "I want this working right. Not halfway." Drove tonight's choice to extract `ensureOrgExists` properly rather than ship a known-broken Google OAuth path.
+- Drew caught my overengineered "build admin-API beta-claim endpoint" recommendation and proposed the simpler shared password. Lesson: when a fix feels like it's growing in scope, pause and check if there's a simpler architectural alternative the human can spot from outside the code.
+- Two-machine workflow held up: all commits from old Mac Pro, no commits from Mac mini.
+
+### Next session starts with
+
+1. `git pull`, `git status`, confirm clean.
+2. **Decide priority** between: (a) AUTH_ARCHITECTURE.md update, (b) PostHogProvider/api/beta/claim cleanup, (c) onboarding wizard work (still blocked on Tim), (d) remaining expense tabs.
+3. Vercel env var hardening (~60-90 min if energy allows).
