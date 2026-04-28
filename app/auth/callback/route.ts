@@ -26,6 +26,9 @@ async function ensureOrgExists(supabase: SupabaseClient) {
       id: newOrgId,
       name: "My Workspace",
       owner_email: user.email ?? null,
+      plan: "pro",
+      localizer_plan: "agency",
+      localizer_plan_status: "active",
       trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       localizer_enabled: true,
     })
