@@ -96,6 +96,15 @@ export async function middleware(req: NextRequest) {
     }
   );
 
+  // TEMPORARY band-aid (2026-04-28): the env-var-gated COMING_SOON block
+  // below this comment is not firing in production for reasons we couldn't
+  // diagnose tonight. This unconditional check forces / to /coming-soon
+  // regardless of env vars or auth state. Use ?dev=1 to bypass.
+  // Remove this block once the env-var gate is fixed.
+  if (url.pathname === "/" && isPublicHost(hostname) && url.searchParams.get("dev") !== "1") {
+    return NextResponse.redirect(new URL("/coming-soon", req.url));
+  }
+
   // --- Coming Soon gate ---
   if (process.env.COMING_SOON === "true") {
     const { pathname } = url;
