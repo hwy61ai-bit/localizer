@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/app/components/Toast";
@@ -19,6 +19,7 @@ const FORMATS = [
 export default function AssetsPage() {
   const params = useParams();
   const tourId = params.tourId as string;
+  const router = useRouter();
   const toast = useToast();
   const [assets, setAssets] = useState<{ formatId: string; url: string }[]>([]);
   const [uploading, setUploading] = useState<string | null>(null);
@@ -77,6 +78,7 @@ export default function AssetsPage() {
       const col = FORMAT_DB_COLS[formatId];
       if (!col) return;
       await supabase.from("tours").update({ [col]: null }).eq("id", tourId);
+      router.refresh();
       setAssets(prev => prev.filter(a => a.formatId !== formatId));
     } catch (err: any) {
       console.error(err);
