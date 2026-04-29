@@ -2598,3 +2598,47 @@ Confirm beta tester onboarding went smoothly (live signup → Localizer welcome 
 Once stable, execute the AUTH_ARCHITECTURE.md rewrite from Parts 2 + 3 of the plan, with the { valid } correction folded in.
 Add BACKLOG.md entry (if not already there) for the pre-launch cleanup of the beta-temp provisioning lines in lib/auth/ensureOrgExists.ts — plan='pro', localizer_plan='agency', localizer_plan_status='active' must be removed (or gated behind a BETA_AUTO_ACTIVE env flag) before flipping COMING_SOON=false, otherwise public signups silently get free Localizer Agency. The file's header comment already flags this; needs a backlog item too.
 Dead-code cleanup of /api/beta/claim route + claim block in PostHogProvider + drop beta_invites table — ~15 min single session, can fold into the rewrite session or do separately.
+
+
+2026-04-29 — Canvas text baseline drift investigation (rolled back)
+Context: Drew flagged a beta-blocking visual issue — text on rendered IG Square, IG Story, and FB Cover formats appeared slightly north of where it sat in the editor preview, by an amount that varied per font (small for Poppins, larger for Bulland Regular and Bungee). The bug existed before this session; it was not introduced by today's auth work. Spent ~6 hours investigating and attempting fixes; ultimately rolled back to clean main without shipping anything. Beta tester onboarding tomorrow proceeds on the original codebase with the original small drift.
+Branch: fix/canvas-text-baseline retained with diagnostic work. One commit on it: 92548c0 (lib/clientRender.ts baseline correction). The branch should be considered a starting point for the next attempt, not a working fix — see "Why the fix didn't work" below.
+What we tried:
+
+Diagnosis: canvas textBaseline = "middle" doesn't match CSS visual centering. Switched renderer to textBaseline = "alphabetic" with a (actualBoundingBoxAscent - actualBoundingBoxDescent) / 2 offset. Mathematically draws the visual glyph center at the requested y. Committed to branch as 92548c0.
+Diagnosis follow-up: editor preview also needed correction. The editor's HTML overlay divs use transform: translate(-50%, -50%) which centers the line-box, not the visual glyph. Added a computeCenterCorrection helper to TemplateEditor.tsx and applied as a translateY offset to the venue/city/date/customText/band overlay divs. Used a hidden canvas for measurement. Did not commit — visual verification failed.
+
+Why the fix didn't work:
+Visual evidence after both changes was applied: editor preview and rendered PNG still disagreed visibly, by what appeared to be ~25px. Console measurement of the editor overlay showed divCenter at source-pixel ~565 (post-correction). Render measurement also showed visual center at source-pixel ~566. The numerical measurements said they agreed; the eyeball comparison said they didn't. I could not reconcile this within the session.
+Possible explanations not investigated due to time:
+
+The Cloudinary preview URL (buildPreviewUrl at line 145, lines 167-173 specifically) bakes its own version of the venue text into the image via l_text: overlay, separately from the HTML draggable overlay. The Cloudinary text uses a different gravity/y-offset system (g_${gravity}, x_, y_ from toLayerParams) that does not correspond to either the HTML overlay's CSS positioning or the canvas renderer's drawText positioning. Three different positioning systems may all be slightly disagreeing.
+The screenshots compared earlier in the session may not have been from identical states (browser caching, hot-reload timing, stash/pop sequence). At one point a fresh screenshot pair after hard-reload showed less visible disagreement than earlier pairs.
+Something else not yet identified.
+
+Diagnostic data captured (use this for the next attempt — DO NOT regenerate):
+
+For Poppins, all-caps "TEST VENUE" at 70px in browser canvas: actualBoundingBoxAscent = 51.85, actualBoundingBoxDescent = 1.30. Implied correction (ascent - descent) / 2 = 25.28 pixels at 70px font (~36% of font size, much larger than my mental model of 5–10%).
+Editor <img> and parent container at IG Square preview are both 600×600px. top: 50% of overlay div lands at display pixel 300, which scales to source pixel 540 of a 1080×1080 source image. No container stretching.
+Editor preview Cloudinary URL pattern (line 384-385): c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h}/${publicId} — same as renderer's baseUrl (line 775). Underlying images are confirmed identical between editor and render.
+Cloudinary text overlay uses gravity-based positioning via toLayerParams (line 145, in buildPreviewUrl), which produces a y_${px} offset from center. This is a third positioning system distinct from HTML CSS and canvas drawText, and I never confirmed how it relates to the other two.
+FORMAT_DIMS in lib/clientRender.ts (line 45-50): square 1080×1080, story 1080×1350, landscape 820×312.
+fd in TemplateEditor.tsx (line 770-772): square 1080×1080, story 1080×1350, landscape 820×312, tiktok 1080×1920, yt_shorts 1080×1080. Renderer dimensions match for square and story; editor's buildPreviewUrl uses different dimensions for landscape (1920×1080) — bug to investigate separately.
+Editor venue <img> URL is built without text overlays (just c_fill, g_center, w/h, publicId). The Cloudinary-rendered text-overlay URL is built separately by buildPreviewUrl but I never verified where in the JSX it's used or whether the user actually sees a Cloudinary-baked-text image alongside the HTML overlays.
+
+What didn't get done:
+
+Editor↔render visual agreement remains broken at the original (pre-tonight) magnitude.
+All Phase 2 visual verification tests aborted after editor↔render disagreement persisted.
+/api/beta/claim and beta_invites table cleanup deferred from earlier in the day, still pending.
+
+Next session should start with:
+
+Read this log entry first. Especially the "Diagnostic data captured" list. Don't reinvent what's already known.
+Investigate the buildPreviewUrl function and how Cloudinary-baked text overlays interact with the HTML draggable overlays. This is the thread I never pulled. The user may be seeing two layers of text (Cloudinary-baked + HTML overlay) at slightly different positions, and the visible "drift" might be the gap between them — not between editor and renderer at all.
+Verify by inspecting the editor DOM whether there's only one source of visible venue text or two. Look for the Cloudinary URL with l_text: parameters — if it's used as a <img src> somewhere in the editor JSX, the user is seeing both Cloudinary text and HTML overlay text simultaneously. If the Cloudinary text URL is only used for downloads/exports and not displayed in the editor, then the editor↔render path is just two systems (HTML overlay vs canvas), and the bug is somewhere I haven't found yet.
+Once the right comparison pair is identified, calibrate against it directly. Don't trust pattern-matched theories from this session — measure the actual visible-pixel positions of both systems, derive the correction empirically, apply once.
+The branch fix/canvas-text-baseline and commit 92548c0 are available as a starting point if the renderer-side baseline fix turns out to be correct after all. Diff is preserved.
+
+Honest assessment of why this session failed:
+I produced four wrong diagnoses in succession over 6 hours: (a) multi-line lh math, (b) canvas-vs-CSS line-box baseline, (c) Cloudinary URL or image-dimension mismatch, (d) container stretching. Each was confidently asserted, then disproven by measurement or by the next layer of investigation. The pattern was: I found a real disagreement somewhere in the rendering pipeline, assumed it was the bug, fixed it, then discovered the bug persisted because there were multiple disagreements stacked. The right move on a session with this pattern is to stop, restore clean state, and resume with a stricter measurement-first protocol. Drew correctly pushed back when I tried to defer; I correctly recommended rollback when the fix overshot. Net: no production risk, no time saved, but a strong diagnostic foundation for the next attempt.
