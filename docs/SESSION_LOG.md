@@ -2581,3 +2581,20 @@ Spent ~30 min chasing a "welcome to the beta" page Drew remembered seeing on fir
 1. `git pull`, `git status`, confirm clean.
 2. **Decide priority** between: (a) AUTH_ARCHITECTURE.md update, (b) PostHogProvider/api/beta/claim cleanup, (c) onboarding wizard work (still blocked on Tim), (d) remaining expense tabs.
 3. Vercel env var hardening (~60-90 min if energy allows).
+
+
+2026-04-29 — Pre-beta auth verification pass
+Context: Beta tester onboarding scheduled for 2026-04-30. Wanted a low-impact session that protected the launch rather than introducing new code.
+What got done:
+Walked Part 5 (verification checklist) of AUTH_ARCHITECTURE_REWRITE_PLAN.md against the actual repo and production. All seven items verified green — yesterday's auth refactor (093026f, c6a0bfc, 4d0b74f) is genuinely on disk and deployed the way the commits claim.
+One real catch: the Supabase Magic Link email template was still using {{ .ConfirmationURL }}, which routes through Supabase's /verify redirect and triggers PKCE — meaning returning testers clicking the email in a different browser/device than they submitted from would have hit "session expired." Fixed by replacing the template body with the same {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=magiclink shape used by Confirm signup. Verified live with cross-browser test (submit on laptop, click on phone) — landed on /dashboard cleanly.
+Minor drift discovered for the eventual doc rewrite: app/api/beta/validate/route.ts returns { valid: true/false }, not { ok: true/false } as the plan's pre-drafted prose claims. Code is internally consistent (login page reads data.valid); only the rewrite plan's prose needs updating when it gets pasted.
+Cosmetic naming overlap in app/login/page.tsx (mixes accessPassword with legacy inviteVerified/verifyInvite) confirmed cosmetic only — no behavioral effect, ~5 min cleanup whenever it happens.
+What didn't:
+Parts 2 and 3 of the rewrite plan — the actual prose substitution in docs/AUTH_ARCHITECTURE.md — deferred until after the beta tester is in and stable. Pre-drafted replacement prose is preserved in AUTH_ARCHITECTURE_REWRITE_PLAN.md; rewrite session is 60–75 min when picked up.
+Next session should start with:
+
+Confirm beta tester onboarding went smoothly (live signup → Localizer welcome → first artist created without auth-side issues).
+Once stable, execute the AUTH_ARCHITECTURE.md rewrite from Parts 2 + 3 of the plan, with the { valid } correction folded in.
+Add BACKLOG.md entry (if not already there) for the pre-launch cleanup of the beta-temp provisioning lines in lib/auth/ensureOrgExists.ts — plan='pro', localizer_plan='agency', localizer_plan_status='active' must be removed (or gated behind a BETA_AUTO_ACTIVE env flag) before flipping COMING_SOON=false, otherwise public signups silently get free Localizer Agency. The file's header comment already flags this; needs a backlog item too.
+Dead-code cleanup of /api/beta/claim route + claim block in PostHogProvider + drop beta_invites table — ~15 min single session, can fold into the rewrite session or do separately.
