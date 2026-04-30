@@ -349,14 +349,43 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
   const bandName = tour.band_name ?? tour.name ?? "Artist";
 
-  const formatImageIds: Record<FormatKey, string | null> = {
+  const [formatImageIds, setFormatImageIds] = useState<Record<FormatKey, string | null>>({
     square:    tour.image_square_id,
     story:     tour.image_story_id,
     landscape: tour.image_landscape_id,
     print:     tour.image_print_id,
     tiktok:    tour.video_tiktok_id ?? null,
     yt_shorts: tour.video_yt_shorts_id ?? null,
-  };
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function refetchImageIds() {
+      const { data } = await supabase
+        .from("tours")
+        .select("image_square_id, image_story_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id")
+        .eq("id", tourId)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      setFormatImageIds({
+        square:    data.image_square_id,
+        story:     data.image_story_id,
+        landscape: data.image_landscape_id,
+        print:     data.image_print_id,
+        tiktok:    data.video_tiktok_id ?? null,
+        yt_shorts: data.video_yt_shorts_id ?? null,
+      });
+    }
+    refetchImageIds();
+    function onVisible() {
+      if (document.visibilityState === "visible") refetchImageIds();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [tourId]);
 
   const cfg = configs[activeFormat];
   const publicId = formatImageIds[activeFormat];
