@@ -251,7 +251,7 @@ export async function renderPoster(
     ctx.save();
     ctx.fillStyle = color;
     ctx.textAlign = align;
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "alphabetic";
 
     // Venue with explicit | line break
     if (isVenue && text.includes("|") && formatKey !== "landscape") {
@@ -269,8 +269,10 @@ export async function renderPoster(
       ctx.font = "bold " + fitSize + "px '" + fontFamily + "', sans-serif";
       const lh = fitSize * 0.85;
       const blockTop = y - ((lines.length - 1) * lh) / 2;
+      const lbm = ctx.measureText(lines[0] || "M");
+      const lineBoxOffset = (lbm.fontBoundingBoxAscent - lbm.fontBoundingBoxDescent) / 2;
       for (let i = 0; i < lines.length; i++) {
-        ctx.fillText(lines[i], x, blockTop + i * lh);
+        ctx.fillText(lines[i], x, blockTop + i * lh + lineBoxOffset);
       }
       ctx.restore();
       return;
@@ -279,8 +281,10 @@ export async function renderPoster(
     // Single line — shrink to fit if needed
     for (let sz = size; sz >= 12; sz -= 2) {
       ctx.font = "bold " + sz + "px '" + fontFamily + "', sans-serif";
-      if (ctx.measureText(text).width <= avail) {
-        ctx.fillText(text, x, y);
+      const m = ctx.measureText(text);
+      if (m.width <= avail) {
+        const lineBoxOffset = (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+        ctx.fillText(text, x, y + lineBoxOffset);
         ctx.restore();
         return;
       }
@@ -288,7 +292,9 @@ export async function renderPoster(
 
     // Last resort
     ctx.font = "bold 12px '" + fontFamily + "', sans-serif";
-    ctx.fillText(text, x, y);
+    const lrm = ctx.measureText(text);
+    const lrLineBoxOffset = (lrm.fontBoundingBoxAscent - lrm.fontBoundingBoxDescent) / 2;
+    ctx.fillText(text, x, y + lrLineBoxOffset);
     ctx.restore();
   }
 
