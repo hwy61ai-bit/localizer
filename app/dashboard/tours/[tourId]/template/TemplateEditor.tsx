@@ -844,10 +844,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, alignItems: "start" }}>
 
           <div style={{ position: "sticky", top: 16, alignSelf: "start", maxHeight: "calc(100vh - 32px)", overflowY: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
               <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>DRAG TEXT TO POSITION — SNAPS TO CENTER</div>
               <button onClick={() => setPreviewLongest(!previewLongest)}
-                style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", padding: "6px 14px", border: previewLongest ? "2px solid var(--hw-crimson)" : "2px solid var(--hw-border-strong)", background: previewLongest ? "var(--hw-red-ghost)" : "var(--hw-bg-invert)", color: previewLongest ? "var(--hw-crimson)" : "#fff", cursor: "pointer", transition: "var(--hw-ease)" }}>
+                style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", padding: "8px 16px", border: previewLongest ? "2px solid var(--hw-crimson)" : "2px solid var(--hw-border-strong)", background: previewLongest ? "var(--hw-red-ghost)" : "var(--hw-bg-invert)", color: previewLongest ? "var(--hw-crimson)" : "#fff", cursor: "pointer", transition: "var(--hw-ease)" }}>
                 {previewLongest ? "SHOWING LONGEST NAMES" : "PREVIEW LONGEST NAMES"}
               </button>
             </div>
