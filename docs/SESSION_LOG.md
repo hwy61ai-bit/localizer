@@ -2648,3 +2648,14 @@ Next session: [whatever the next thing is — onboarding wizard if Tim has shipp
 
 
 Custom font upload now supports drag-and-drop. Refactored handleFontUpload to extract a processFontFile helper, added handleFontDrop and isDraggingFont state, button shows crimson border and "Drop font here" label during drag. Click-to-upload still works as before. Shipped commit 9aa40f5.
+
+
+Additional 2026-04-30 work (afternoon):
+
+Template editor grid resolution doubled to 20×20 per Tim's request, applies to all formats. Commit reference in git log.
+Custom font upload now drag-and-drop (in addition to click). Commit 9aa40f5. Refactored handleFontUpload to extract processFontFile helper, added handleFontDrop and isDraggingFont state. License confirm + 5MB limit + .ttf/.otf validation all preserved.
+Stale-data fix in template editor. Asset uploads from the assets page weren't appearing in the template editor without hard-refresh. Root cause: formatImageIds was a derived const computed from a server-component prop that Next's client cache could serve stale. Fix: converted to client state with a useEffect that re-queries Supabase on mount and on visibilitychange. Editor is now self-sufficient about image data regardless of navigation cache state.
+Print poster default behavior changed. Venue/City/Date toggles now default OFF for the print format only (per Tim — these are rarely used on local poster). Required: (1) one-time SQL migration to set overlay_config.print.{showVenue,showCity,showDate} = false across all existing tours; (2) added PRINT_DEFAULTS constant; (3) added defaultShowField(formatKey) helper; (4) replaced 9 ?? true fallbacks with ?? defaultShowField(...). Commit 023c78d.
+Renderer drift fix tester-confirmed on production. Doc status flipped via one-line sed. Commit 50033f6.
+
+Backlog filed: Delete dead buildPreviewUrl from TemplateEditor.tsx. Delete branch fix/canvas-text-baseline.
