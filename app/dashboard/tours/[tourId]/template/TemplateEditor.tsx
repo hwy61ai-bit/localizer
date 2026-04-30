@@ -824,7 +824,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       preserveAspectRatio="none"
                       style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 18 }}
                     >
-                      {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((p) => (
+                      {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95].map((p) => (
                         <line
                           key={`v${p}`}
                           x1={p}
@@ -836,7 +836,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           vectorEffect="non-scaling-stroke"
                         />
                       ))}
-                      {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((p) => (
+                      {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95].map((p) => (
                         <line
                           key={`h${p}`}
                           x1={0}
