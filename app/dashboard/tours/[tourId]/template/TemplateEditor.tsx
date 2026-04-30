@@ -1487,7 +1487,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <>
                     <input
                       type="text"
-                      maxLength={35}
+                      maxLength={60}
                       placeholder="Your text here..."
                       value={customText1}
                       onChange={(e) => setCustomText1(e.target.value)}
@@ -1551,7 +1551,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <>
                     <input
                       type="text"
-                      maxLength={35}
+                      maxLength={60}
                       placeholder="Your text here..."
                       value={customText2}
                       onChange={(e) => setCustomText2(e.target.value)}
