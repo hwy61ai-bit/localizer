@@ -242,6 +242,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [dirtyFormats, setDirtyFormats] = useState<Set<string>>(new Set());
   const [customFonts, setCustomFonts] = useState<{ label: string; value: string }[]>([]);
   const [uploadingFont, setUploadingFont] = useState(false);
+  const [isDraggingFont, setIsDraggingFont] = useState(false);
   const savingRef = useRef(false);
   const fontFileRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -577,10 +578,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     );
   }
 
-  async function handleFontUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
+  async function processFontFile(file: File) {
     if (!file.name.endsWith(".ttf") && !file.name.endsWith(".otf")) {
       toast.error("Only .ttf and .otf font files are supported");
       return;
@@ -600,11 +598,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       "Uploading unlicensed fonts may violate copyright law.\n\n" +
       "Do you want to continue?"
     );
-    
-    if (!confirmed) {
-      if (fontFileRef.current) fontFileRef.current.value = "";
-      return;
-    }
+
+    if (!confirmed) return;
 
     setUploadingFont(true);
     try {
@@ -625,7 +620,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       const data = await res.json();
       const fontName = data.fontName;
       setCustomFonts(prev => [...prev, { label: fontName, value: fontName }]);
-      // Load font into browser immediately
       if (data.storageUrl) {
         const face = new FontFace(fontName, "url(" + data.storageUrl + ")");
         try {
@@ -641,8 +635,26 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       toast.error(`Upload failed: ${err.message}`);
     } finally {
       setUploadingFont(false);
+    }
+  }
+
+  async function handleFontUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await processFontFile(file);
+    } finally {
       if (fontFileRef.current) fontFileRef.current.value = "";
     }
+  }
+
+  async function handleFontDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDraggingFont(false);
+    if (uploadingFont) return;
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    await processFontFile(file);
   }
 
   async function handleSponsorLogoUpload(slot: 1 | 2, e: React.ChangeEvent<HTMLInputElement>) {
@@ -1077,11 +1089,15 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               />
               <button
                 onClick={() => fontFileRef.current?.click()}
+                onDragEnter={(e) => { e.preventDefault(); if (!uploadingFont) setIsDraggingFont(true); }}
+                onDragOver={(e) => { e.preventDefault(); }}
+                onDragLeave={() => setIsDraggingFont(false)}
+                onDrop={handleFontDrop}
                 disabled={uploadingFont}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
-                  border: "2px dashed var(--hw-border-light)",
+                  border: isDraggingFont ? "2px dashed var(--hw-crimson)" : "2px dashed var(--hw-border-light)",
                   background: "var(--hw-bg-surface)",
                   color: "var(--hw-crimson)",
                   fontFamily: "var(--hw-font-mono)",
@@ -1094,7 +1110,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   marginBottom: 8,
                 }}
               >
-                {uploadingFont ? "Uploading..." : "+ Upload Custom Font (.ttf / .otf)"}
+                {uploadingFont ? "Uploading..." : isDraggingFont ? "Drop font here" : "+ Upload Custom Font (.ttf / .otf)"}
               </button>
               <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 240, overflowY: "auto" }}>
                 {customFonts.length > 0 && (
