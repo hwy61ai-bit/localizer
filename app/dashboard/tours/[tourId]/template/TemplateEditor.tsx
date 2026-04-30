@@ -75,6 +75,16 @@ const DEFAULT_FORMAT: FormatConfig = {
   city:  { x: 0.5, y: 0.84, size: 28, align: "center" },
 };
 
+const PRINT_DEFAULTS: Partial<FormatConfig> = {
+  showVenue: false,
+  showCity: false,
+  showDate: false,
+};
+
+function defaultShowField(formatKey: FormatKey): boolean {
+  return formatKey !== "print";
+}
+
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "square",    label: "IG Square",     w: 1080, h: 1080 },
   { key: "story",     label: "IG Story",      w: 1080, h: 1350 },
@@ -169,9 +179,9 @@ function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig,
   const layers = [
     `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
     ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(caps ? (bandNameStr ?? "Band Name").toUpperCase() : (bandNameStr ?? "Band Name"))},co_rgb:${color}/fl_layer_apply,g_${bp.gravity},x_${bp.xPx},y_${bp.yPx}`] : []),
-    ...((cfg.showVenue ?? true) ? [`l_text:${font}_${cfg.venue.size}_bold:${san(caps ? (fe?.venue ?? "Stubbs Waller Creek Amphitheater").toUpperCase() : (fe?.venue ?? "Stubbs Waller Creek Amphitheater"))},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`] : []),
-    ...((cfg.showDate ?? true) ? [`l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`] : []),
-    ...((cfg.showCity ?? true) ? [`l_text:${font}_${cfg.city.size}_bold:${san(caps ? (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR").toUpperCase() : (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR"))},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`] : []),
+    ...((cfg.showVenue ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.venue.size}_bold:${san(caps ? (fe?.venue ?? "Stubbs Waller Creek Amphitheater").toUpperCase() : (fe?.venue ?? "Stubbs Waller Creek Amphitheater"))},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`] : []),
+    ...((cfg.showDate ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`] : []),
+    ...((cfg.showCity ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.city.size}_bold:${san(caps ? (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR").toUpperCase() : (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR"))},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`] : []),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -228,7 +238,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     square:    { ...DEFAULT_FORMAT, ...saved0.square },
     story:     { ...DEFAULT_FORMAT, ...saved0.story },
     landscape: { ...DEFAULT_FORMAT, ...saved0.landscape },
-    print:     { ...DEFAULT_FORMAT, ...saved0.print },
+    print:     { ...DEFAULT_FORMAT, ...PRINT_DEFAULTS, ...saved0.print },
     tiktok:    { ...DEFAULT_FORMAT, ...saved0.tiktok },
     yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts },
   });
@@ -1266,20 +1276,20 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <span onClick={() => updateCfg("showVenue", !(cfg.showVenue ?? true))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showVenue ?? true) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
-                  {(cfg.showVenue ?? true) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                <span onClick={() => updateCfg("showVenue", !(cfg.showVenue ?? defaultShowField(activeFormat)))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showVenue ?? defaultShowField(activeFormat)) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {(cfg.showVenue ?? defaultShowField(activeFormat)) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
                 <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Venue</div>
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <span onClick={() => updateCfg("showCity", !(cfg.showCity ?? true))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCity ?? true) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
-                  {(cfg.showCity ?? true) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                <span onClick={() => updateCfg("showCity", !(cfg.showCity ?? defaultShowField(activeFormat)))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCity ?? defaultShowField(activeFormat)) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {(cfg.showCity ?? defaultShowField(activeFormat)) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
                 <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>City</div>
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <span onClick={() => updateCfg("showDate", !(cfg.showDate ?? true))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showDate ?? true) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
-                  {(cfg.showDate ?? true) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                <span onClick={() => updateCfg("showDate", !(cfg.showDate ?? defaultShowField(activeFormat)))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showDate ?? defaultShowField(activeFormat)) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {(cfg.showDate ?? defaultShowField(activeFormat)) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
                 <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Date</div>
               </label>
