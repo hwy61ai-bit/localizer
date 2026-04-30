@@ -1,141 +1,222 @@
 # Renderer Text Drift Investigation
 
-**Status:** Open. Investigation paused after 2026-04-29 session. Diagnostic data captured below; next attempt should start here, not from scratch.
+**Status:** Resolved 2026-04-30 (pending tester confirmation on production). Fix shipped in commit `7d555b2` on main. Branch `fix/canvas-text-baseline` (commit `92548c0`) is superseded and can be deleted.
 
-**Symptom:** Text rendered on canvas-based formats (IG Square 1080×1080, IG Story 1080×1350, FB Cover/landscape 820×312) appears slightly higher than where it sits in the editor preview, by an amount that varies per font. Small for geometric sans (Poppins ~5px). Larger for display fonts (Bulland Regular and Bungee both visibly more). Permanent Marker shows no visible drift (likely because the font's hand-drawn irregularity is bigger than the bug). Print PDF and video formats (TikTok, YT Shorts) do NOT drift — different code paths.
-
-**Beta-eve note (2026-04-29):** Six hours of investigation. Attempted fix overshot in the opposite direction (~25px south of correct) and was rolled back to clean main. No production changes shipped. Drift remains at original magnitude for the tester. Branch `fix/canvas-text-baseline` (commit `92548c0`) preserved with the renderer-only baseline correction; do not assume it's a working fix — see "Why the 2026-04-29 attempt failed" below.
+**Symptom (now fixed):** Text rendered on canvas-based formats (IG Square 1080×1080, IG Story 1080×1350, FB Cover/landscape 820×312) appeared slightly higher than where it sat in the editor preview, by an amount that varied per font. Small for geometric sans (Poppins ~5px display / ~9px source). Larger for display fonts (Bulland Regular and Bungee both visibly more). Permanent Marker showed no visible drift because the font's hand-drawn irregularity exceeded the bug's magnitude. Print PDF and video formats (TikTok, YT Shorts) did NOT drift — different code paths.
 
 ---
 
-## How the rendering pipeline actually works
+## The fix
 
-There are at least three separate text-positioning systems that all need to agree, and they currently don't:
+In `lib/clientRender.ts`'s `drawText()`, the renderer was using `ctx.textBaseline = "middle"` and calling `ctx.fillText(text, x, y)`. Chrome's `middle` computes its midpoint against font ascender/descender metadata in a way that does NOT match how CSS centers a line box when an absolutely-positioned element uses `top: 50% + transform: translate(-50%, -50%)`.
 
-### System 1: Editor HTML overlay (what the user designs against)
+The corrected pattern is:
+
+```typescript
+ctx.textBaseline = "alphabetic";
+const m = ctx.measureText(text);
+const lineBoxOffset = (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+ctx.fillText(text, x, y + lineBoxOffset);
+```
+
+This places the line-box center at `y` — the same envelope CSS uses for `line-height: normal`. The offset is computed per-text from canvas font metrics, so it adapts automatically to font and size and works uniformly across formats.
+
+Applied at all four `fillText` call sites in `drawText`:
+- The single `textBaseline` declaration at the top of the function
+- The multi-line venue branch (with `|` line break)
+- The single-line shrink-to-fit loop
+- The last-resort 12px fallback
+
+Verified empirically on Poppins and Bulland Regular at IG Square (in-browser overlay test — see "How we found it" below), then end-to-end render verified on IG Square, IG Story, FB Cover/landscape, a wrapped venue (`|`-delimited), and a non-Poppins font. All three canvas formats share `drawText`, so the fix is format-agnostic by construction.
+
+---
+
+## How we found it
+
+The investigation on 2026-04-29 spent six hours reasoning from font-metric theory and produced an overshoot fix using `actualBoundingBox` (visible glyph extent), which was rolled back. On 2026-04-30 we resolved it in ~45 minutes by switching from theory to direct in-browser measurement.
+
+The breakthrough technique: **draw the candidate canvas-rendered text as a colored overlay on top of the live editor preview, at the same y-coordinate the renderer would use, and visually compare to the live HTML overlay text.** Code in the "Diagnostic snippets" section below.
+
+The overlay test made the bug reproducible inside the editor's own browser context — no need to render a PNG and screenshot-compare. We:
+
+1. Drew a red overlay using the buggy `textBaseline = "middle"` at the editor's div-center y. It floated north by the same amount as the production drift, confirming `middle` is the bug and reproducing it without going through the renderer.
+2. Drew a green overlay using the proposed fix (`alphabetic` + `(fontBoundingBoxAscent - fontBoundingBoxDescent)/2`) at the same y. It landed exactly on top of the live editor text.
+3. Repeated both for Bulland (the worst-drifter). Same result — red drifted, green landed.
+
+That collapsed all the theoretical uncertainty into a yes/no test.
+
+---
+
+## Why earlier attempts overshot
+
+The 2026-04-29 fix used `actualBoundingBox` metrics (visible glyph extent — where actual ink is). For Poppins at 70px the implied correction was ~25 source px, but the actual editor↔render gap was only ~5-10 source px. Result: the renderer overshot 25px south of correct.
+
+The mistake was conflating **visible glyph center** with **line-box center**. CSS does not center the visible glyphs at `top: 50%`; it centers the *line box* (the typographic envelope determined by font ascent + descent metadata, which is taller than the visible glyphs because it includes ascender/descender headroom). The right calibration target is the line box, not the glyph extent — `fontBoundingBox` not `actualBoundingBox`.
+
+---
+
+## How the rendering pipeline works (post-fix)
+
+There are two text-positioning systems that need to agree:
+
+### System 1: Editor HTML overlay (the user's design surface)
 - File: `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx`
 - Each text field (venue, city, date, customText1, customText2, band) is rendered as an absolutely-positioned `<div>` on top of the editor's preview image.
 - Positioning: `style={{ position: "absolute", left: \`${fc.x * 100}%\`, top: \`${fc.y * 100}%\`, transform: getTransform(align) }}` where `getTransform` returns `translate(-50%, -50%)` for center-aligned text.
-- This is what the user *visually* designs against — they drag these divs around to position text.
-- The browser's CSS engine centers the *line-box*, not the visual glyph extent. Line-box center sits a few pixels off from visual glyph center for most Latin fonts.
+- This is the user's ground truth — they drag these divs around to position text.
+- The browser's CSS engine centers the *line-box*, not the visual glyph extent.
 
-### System 2: Canvas renderer (what the rendered PNG actually shows)
+### System 2: Canvas renderer (the rendered PNG)
 - File: `lib/clientRender.ts`
 - Function: `renderPoster()`. Inner function `drawText()` handles all text fields.
-- Currently uses `ctx.textBaseline = "middle"` and `ctx.fillText(text, x, y)`.
-- `textBaseline = "middle"` puts the *midpoint of font ascent and descent metrics* on `y`. For most fonts this is NOT the visual center of the glyph — it's typically ~5-25 pixels above visual center, varying by font metrics.
-- This is the actual final render output the user gets when they click "render".
+- Now uses `ctx.textBaseline = "alphabetic"` with per-text `(fontBoundingBoxAscent - fontBoundingBoxDescent) / 2` y-offset.
+- The y-offset places the line-box center at `y`, matching System 1's CSS line-box centering.
 
-### System 3: Cloudinary text overlay (in the editor preview's background image)
-- Built by `buildPreviewUrl()` at line 145 of `TemplateEditor.tsx`.
-- The function `toLayerParams` (line 145) converts y values to Cloudinary-style `g_${gravity}, x_, y_` URL parameters.
-- For center-aligned: `g_center, y_${(field.y - 0.5) * fmtDims.h}`. Cloudinary's gravity-based positioning is a third coordinate system, distinct from CSS line-box and canvas baseline.
-- **CRITICAL UNRESOLVED QUESTION:** Where in the editor JSX is this Cloudinary URL actually displayed? Line 824 shows `<img src={imageUrl}>` where `imageUrl` is built without text overlays (lines 382-385) — just the bare cropped background image. If `buildPreviewUrl` is only used for download/export and NOT shown in the editor, then System 3 is irrelevant to editor↔render comparison. If it IS displayed somewhere in the editor, then the user sees TWO copies of text in the editor (Cloudinary-baked + HTML overlay) and any drift between those two is a separate bug. **Verify this first thing in the next session.**
-
----
-
-## Confirmed facts (don't re-verify these — they're empirically established)
-
-- **Underlying images are identical between editor and render for IG Square.** Both use `c_fill,g_center,w_1080,h_1080/${publicId}`. The baked content (e.g., orange "THE BETA TEST BAND" text in the test template) sits at the same pixel position in both.
-- **Editor container at IG Square is 600×600px** (img and parent both). `top: 50%` of overlay div lands at display pixel 300 = source pixel 540 of a 1080-tall source. Container is not stretched; positioning math from CSS to source pixels is clean.
-- **For Poppins all-caps "TEST VENUE" at 70px in Chrome:** `actualBoundingBoxAscent` = 51.85, `actualBoundingBoxDescent` = 1.30. `(ascent - descent) / 2` = 25.28px (~36% of font size). MUCH larger than the typical "5-10% of font size" mental model.
-- **Editor `divCenter` measured via `getBoundingClientRect`** (after the 2026-04-29 editor-side fix was applied): 314.2 in display space → ~565 source pixels. (That fix is in the branch but not on main.)
-- **Render measured top-of-letters at pixel 540 after fix.** With cap-height ~52, visual center ≈ 566 source pixels.
-- The two measurements (editor 565, render 566) said the systems agreed numerically AFTER the 2026-04-29 fix, but visual screenshot comparison showed they didn't agree visually. **This contradiction was never resolved.** Possible explanations: stale browser state during measurement, an intermediate compile that hadn't finished, or a third positioning system (Cloudinary, see above) that was the actual source of the visible disagreement.
+### System 3: Cloudinary text overlay — confirmed dead code
+- `buildPreviewUrl()` at line 132 of `TemplateEditor.tsx` builds Cloudinary `l_text:` URLs.
+- Grep across the repo (excluding `.next`) returned only the function definition — zero call sites.
+- The editor's `<img>` background (line 824) uses `imageUrl` (lines 382-385), which is `c_fill,g_center,w_X,h_Y/${publicId}` with no text overlays.
+- **`buildPreviewUrl` is unused.** It can be deleted in a future cleanup commit.
 
 ---
 
-## Code locations (file:line — do NOT re-grep these)
+## Confirmed facts (preserved from original investigation)
+
+- **Underlying images are identical between editor and render for IG Square.** Both use `c_fill,g_center,w_1080,h_1080/${publicId}`. Baked content (e.g., the orange "THE BETA TEST BAND" in the test template) sits at the same pixel position in both.
+- **Editor container at IG Square is 600×600 display px** (img and parent both). `top: 50%` of overlay div lands at display pixel 300 = source pixel 540 of a 1080-tall source. Container is not stretched; positioning math from CSS to source pixels is clean.
+- **Display-to-source scale factor for IG Square: 1.8×** (1080 source / 600 display).
+
+---
+
+## Diagnostic snippets (kept for future investigations)
+
+These were the tools that cracked it. Useful any time you have a "two rendering systems should agree but don't" bug.
+
+### Find the venue text leaf in the editor DOM
+
+```javascript
+const overlays = [...document.querySelectorAll('div')].filter(d =>
+  d.style.position === 'absolute' && d.textContent.trim().length > 0 && d.children.length < 3
+);
+overlays.forEach((d, i) => console.log(i, JSON.stringify(d.textContent.slice(0, 40)), d.style.top, d.style.left));
+```
+
+The venue field will have a `top` percentage that varies (default ~62.6% for IG Square). To get the actual text-bearing leaf (font-size lives there, not on the absolute-positioned wrapper):
+
+```javascript
+const leaf = [...document.querySelectorAll('*')].find(el =>
+  el.textContent.replace(/\s+/g, '') === "TIM'SHOUSE" && el.children.length === 0
+);
+```
+
+(Adjust the text constant to whatever your venue actually contains, with whitespace stripped.)
+
+### Overlay test — reproduce the bug AND verify the fix
+
+This is the breakthrough technique. Draws red (current behavior) and green (candidate fix) canvases on top of the live editor preview at the editor's div-center y. Whatever doesn't overlap the live HTML text is wrong.
+
+```javascript
+// Clear previous overlays
+document.querySelectorAll('canvas[data-drift-test], canvas[data-drift-test-fix]').forEach(el => el.remove());
+
+const leaf = [...document.querySelectorAll('*')].find(el =>
+  el.textContent.replace(/\s+/g, '') === "TIM'SHOUSE" && el.children.length === 0
+);
+const cs = getComputedStyle(leaf);
+const r = leaf.getBoundingClientRect();
+const img = document.querySelector('img');
+const ir = img.getBoundingClientRect();
+const divCenter = (r.top + r.bottom) / 2 - ir.top;
+
+function overlay(color, yOffset, label) {
+  const c = document.createElement('canvas');
+  c.setAttribute('data-drift-test-fix', '1');
+  c.width = ir.width;
+  c.height = ir.height;
+  c.style.cssText = `position:absolute;left:${ir.left + window.scrollX}px;top:${ir.top + window.scrollY}px;pointer-events:none;z-index:9999;`;
+  document.body.appendChild(c);
+  const ctx = c.getContext('2d');
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = color;
+  if (yOffset === null) {
+    ctx.textBaseline = 'middle';
+    ctx.fillText("TIM'S HOUSE", ir.width / 2, divCenter);
+  } else {
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText("TIM'S HOUSE", ir.width / 2, divCenter + yOffset);
+  }
+  const data = ctx.getImageData(0, 0, ir.width, ir.height);
+  let minY = ir.height, maxY = 0;
+  for (let y = 0; y < ir.height; y++) {
+    for (let x = 0; x < ir.width; x++) {
+      if (data.data[(y * ir.width + x) * 4 + 3] > 0) {
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  console.log(label, { drift: ((minY + maxY) / 2) - divCenter });
+}
+
+const m = (() => {
+  const ctx = document.createElement('canvas').getContext('2d');
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  return ctx.measureText("TIM'S HOUSE");
+})();
+const lineBoxOffset = (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+
+console.log('Font:', cs.fontFamily, 'lineBoxOffset:', lineBoxOffset);
+overlay('rgba(255,0,0,0.6)', null, 'RED (current bug)');
+overlay('rgba(0,150,0,0.6)', lineBoxOffset, 'GREEN (proposed fix)');
+```
+
+Verified results during the fix session:
+
+| Font | Red drift (display px) | Green drift (display px) |
+|------|------------------------|--------------------------|
+| Poppins 700 @ 44px (IG Sq) | -7 (above) | ~0 |
+| Bulland Regular | (matched bug magnitude) | ~0 |
+
+---
+
+## Theories tried during 2026-04-29 (preserved as a record)
+
+1. **Multi-line `lh = fitSize * 0.85` math.** Wasn't the cause — symptom appeared on single-line text and on landscape (which doesn't enter the multi-line branch).
+2. **Container stretching.** Disproved by `getBoundingClientRect`: container is exactly 600×600 for a 1080×1080 source format.
+3. **Cloudinary URL or dimension mismatch.** Disproved by inspecting `imageUrl` vs `baseUrl` — both use `c_fill,g_center,w_1080,h_1080` for IG Square.
+4. **`textBaseline = "middle"` is the bug, fix with `actualBoundingBox` correction.** Half-right. The baseline was indeed the bug, but `actualBoundingBox` (visible glyph extent) is the wrong calibration target — using it overshot ~25px south. The right target is `fontBoundingBox` (line-box envelope), which is what CSS uses.
+
+---
+
+## Pitfalls that wasted time
+
+- **Hot-reload timing.** Several confusing measurements during the 2026-04-29 session were caused by Next.js dev server not having recompiled yet. Always hard-reload (Cmd+Shift+R) and wait for terminal confirmation after a code change. (Re-confirmed during 2026-04-30 — the first measurement run returned `fontSize: 0px` because we hit the page mid-recompile.)
+- **Stale browser screenshots across `git stash` cycles** are unreliable. Take fresh screenshots from the same code state.
+- **`actualBoundingBoxAscent` is bigger than cap-height.** It includes font ascent metadata that extends above where capital letters visually reach. For Poppins all-caps it's ~52 for a 70px font; cap-height is closer to 50.
+- **The `0.85` line-height multiplier in the multi-line branch was preserved through the fix** and visual checks confirm wrapped venues still look correct. If line-height ever needs re-tuning, do it as a separate change.
+- **zsh bracket gotcha:** paths containing `[tourId]` must be quoted in shell commands.
+
+---
+
+## Code locations (post-fix line numbers approximate)
 
 - Renderer: `lib/clientRender.ts`
   - `renderPoster()` entry: line 131
   - `drawText()` inner function: line 244
-  - Current `textBaseline = "middle"` line: 254
-  - Multi-line venue branch: 257-278 (with `lh = fitSize * 0.85`, `blockTop = y - ((lines.length - 1) * lh) / 2`)
-  - Single-line shrink-to-fit: 280-287
-  - Last-resort 12px fallback: 290-291
-  - `FORMAT_DIMS` table: line 45-50
+  - `textBaseline = "alphabetic"`: line 254
+  - Multi-line venue branch with `lineBoxOffset`: lines 257–278
+  - Single-line shrink-to-fit with `lineBoxOffset`: lines 281–290
+  - Last-resort 12px fallback with `lrLineBoxOffset`: lines 293–297
 - Editor: `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx`
   - `getTransform(align)` helper: line 126
-  - `buildPreviewUrl()` (Cloudinary URL builder): line 132+
-  - `toLayerParams()` inside `buildPreviewUrl`: line 145
-  - HTML `<img>` for editor preview background: line 824 (uses `imageUrl` from lines 382-385, which has NO text overlays)
-  - Venue/city/date overlay divs: line 956-1004
-  - Custom text 1 overlay: line ~1018
-  - Custom text 2 overlay: line ~1036
-  - Band name overlay: line ~873
-  - Render button (renderPoster call): line 793, with `baseUrl` built at line 775
-  - **Note:** `fd` dimensions table at line 770-772 disagrees with `buildPreviewUrl`'s `fmtDims` table at line 132-140 for `landscape` (820×312 vs 1920×1080). For square and story they match. Investigate whether this matters.
-- Editor server page: `app/dashboard/tours/[tourId]/template/page.tsx` (server component, fetches tour from Supabase, passes as prop)
+  - `buildPreviewUrl()` (DEAD CODE — unused): line 132+
+  - HTML `<img>` for editor preview background: line 824 (uses `imageUrl` from lines 382–385, no text overlays)
 
 ---
 
-## Theories already tried and disproven
+## Followups
 
-1. **Multi-line `lh` math (`lh = fitSize * 0.85`).** Looked suspicious. Wasn't the cause — the symptom appears on single-line text too, and on the `landscape` format which doesn't enter the multi-line branch.
-
-2. **Container stretching (editor parent taller than image).** Disproved by `getBoundingClientRect` measurement: container is exactly 600×600 for a 1080×1080 source format.
-
-3. **Cloudinary URL or dimension mismatch.** Disproved by inspecting the URLs built in `imageUrl` (line 384-385) vs `baseUrl` (line 775). Both use identical `c_fill,g_center,w_1080,h_1080` for IG Square. Underlying images confirmed identical.
-
-4. **Canvas `textBaseline = "middle"` is the bug.** Partially right — switching to `textBaseline = "alphabetic"` with `(ascent - descent) / 2` correction is mathematically what canvas needs to put visual glyph center on `y`. But: this overcorrected by ~25 pixels because the editor was never trying to put visual glyph center on `y` either. The editor's CSS line-box-center is closer to canvas's middle-baseline-center than it is to visual-glyph-center. We made the renderer "more correct" by a definition that didn't match what the editor was doing.
-
-5. **CSS line-box-vs-glyph offset is small enough that fixing renderer-only would help.** Disproved when `actualBoundingBoxAscent` came back at ~52 and the implied correction was 25px, but the editor↔render gap was only ~5-10px. The correction is much larger than the gap, meaning fixing the renderer in the visual-center direction makes it overshoot the editor by far more than the original drift.
-
----
-
-## What the right fix probably looks like
-
-**The goal is editor↔render visual agreement, not mathematical correctness in either system alone.**
-
-The editor's HTML overlay is the user's design surface — that's the ground truth they design against. The renderer should produce a PNG where text lands at the same visible position as it did in the editor preview. Mathematical "visual center on y" is irrelevant if it doesn't match what the user designed.
-
-To do this right:
-
-1. **First confirm that the editor preview is actually showing only the HTML overlay text, not also Cloudinary-baked text.** Inspect the editor DOM — look for any `<img>` element whose `src` includes `l_text:` (the Cloudinary text overlay parameter). If yes, there are two text layers in the editor and we need to deal with both.
-
-2. **Empirically measure the CSS line-box-center offset for several fonts.** The browser console snippet from the previous session works:
-```javascript
-   const div = [...document.querySelectorAll('div')].find(d => d.textContent === 'TEST VENUE' && d.style.position === 'absolute');
-   const r = div.getBoundingClientRect();
-   const img = document.querySelector('img[alt="Base"]');
-   const ir = img.getBoundingClientRect();
-   console.log({ divCenter: (r.top + r.bottom)/2 - ir.top, expectedCenter: ir.height / 2 });
-```
-   Run this with the venue overlay at `top: 50%` for: Poppins, Bulland Regular, Bungee, Anton, Oswald, Permanent Marker. The `divCenter - expectedCenter` value (in display pixels) is the per-font CSS line-box offset. Convert to source pixels by multiplying by `imgHeight / displayImgHeight` (e.g., 1080/600 = 1.8 for IG Square).
-
-3. **Modify the renderer to apply the SAME offset, not a different one.** The renderer should compute the same offset for the same font and apply it. This is achievable because both systems can call `measureText` — but the renderer needs to use whatever metric the editor's CSS line-box happens to use. Possibly that's just `actualBoundingBoxDescent` alone, or some specific combination of font metrics. Empirical calibration tells you which.
-
-4. **Cross-check on multiple fonts before declaring victory.** If the calibration produces editor↔render agreement on Poppins but not on Bulland, the formula is wrong — fonts with different metrics need to all converge on the same offset behavior.
-
-5. **Test on all three formats** (square, story, landscape) and at least one wrapped venue (text with `|`) to verify the multi-line branch handles correction the same way.
-
----
-
-## Pitfalls observed in the previous session
-
-- **Hot-reload timing.** Several confusing measurements during the previous session were caused by Next.js dev server not having recompiled the latest source by the time a screenshot was taken. After every code change, hard-reload (Cmd+Shift+R) before taking measurements. Wait for the terminal to confirm compilation finished.
-- **Stale browser screenshots.** Comparing screenshots taken at different times across `git stash` / `git stash pop` cycles is unreliable. Always take fresh screenshots from the same code state.
-- **`actualBoundingBoxAscent` is bigger than cap-height.** It includes font ascent metadata that extends above where capital letters visually reach. For Poppins all-caps it's ~52 for a 70px font; cap-height is closer to 50. Don't assume `actualBoundingBoxAscent` ≈ cap-height.
-- **The `0.85` line-height in the multi-line branch may need re-tuning** if the baseline correction approach changes. Currently `lh = fitSize * 0.85` was tuned against `textBaseline = "middle"`. A different baseline + correction approach probably wants a different `lh` factor.
-- **zsh bracket gotcha:** paths containing `[tourId]` must be quoted in shell commands, or zsh treats them as glob patterns. `git checkout "app/dashboard/tours/[tourId]/template/TemplateEditor.tsx"`.
-
----
-
-## Definitively NOT the bug
-
-- Image dimensions (verified)
-- Cloudinary cropping/scaling of the underlying image (verified identical)
-- Container CSS sizing (verified square 600×600 for IG Square)
-- The `formatImageIds` data flow from server prop to editor (works correctly)
-- React state staleness (the editor reads from a server-rendered prop, not from client fetch)
-- The font-loading race (`document.fonts.ready` already awaits before any measureText call in `clientRender.ts`)
-
----
-
-## Branch state
-
-- `fix/canvas-text-baseline` exists with one commit `92548c0` ("Fix canvas text baseline drift in clientRender.ts").
-- That commit changes `textBaseline = "middle"` → `"alphabetic"` and adds `centerYCorrection` helper applied at three `fillText` call sites in `lib/clientRender.ts`.
-- The corresponding editor-side change in `TemplateEditor.tsx` was applied locally during the session but never committed.
-- **Before re-using `92548c0` as a starting point, decide whether visual-glyph-center is the right target.** Per "Theories already tried" #4 above, it probably isn't — the editor's CSS doesn't put visual glyph center on y, so making the renderer do so produces overshoot. The right calibration target is whatever the editor's CSS *actually* puts on y, not what's mathematically "correct."
+- **Tester confirms production deploy.** Send Vercel URL post-deploy and verify Bulland Regular and Bungee across IG Square, IG Story, FB Cover. Once confirmed, flip status header to "Resolved 2026-04-30 (tester confirmed)".
+- **Delete `buildPreviewUrl` and related dead code in `TemplateEditor.tsx`.** Confirmed unused. Not blocking but worth cleaning so future debuggers don't re-investigate Cloudinary as a third coordinate system.
+- **Delete branch `fix/canvas-text-baseline`** once tester confirms — superseded by main commit `7d555b2`.
