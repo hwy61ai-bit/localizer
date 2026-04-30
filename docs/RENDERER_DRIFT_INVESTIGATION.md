@@ -1,6 +1,6 @@
 # Renderer Text Drift Investigation
 
-**Status:** Resolved 2026-04-30 (pending tester confirmation on production). Fix shipped in commit `7d555b2` on main. Branch `fix/canvas-text-baseline` (commit `92548c0`) is superseded and can be deleted.
+**Status:** Resolved 2026-04-30 (tester confirmed). Fix shipped in commit `7d555b2` on main. Branch `fix/canvas-text-baseline` (commit `92548c0`) is superseded and can be deleted.
 
 **Symptom (now fixed):** Text rendered on canvas-based formats (IG Square 1080×1080, IG Story 1080×1350, FB Cover/landscape 820×312) appeared slightly higher than where it sat in the editor preview, by an amount that varied per font. Small for geometric sans (Poppins ~5px display / ~9px source). Larger for display fonts (Bulland Regular and Bungee both visibly more). Permanent Marker showed no visible drift because the font's hand-drawn irregularity exceeded the bug's magnitude. Print PDF and video formats (TikTok, YT Shorts) did NOT drift — different code paths.
 
