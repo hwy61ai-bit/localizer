@@ -826,7 +826,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     customText2: customText2 || null,
                   };
                   try {
-                    const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url);
+                    const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.band_font_family, tour.band_text_color);
                     const url = URL.createObjectURL(blob);
                     window.open(url, '_blank');
                   } catch (err: any) {
@@ -923,7 +923,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
                         setDragging("band"); 
                       }}
-                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + (tour.band_font_family ?? cfg.fontFamily) + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${tour.band_text_color ?? cfg.textColor}`, whiteSpace: "nowrap", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
                         {(fc.x < 0.4 && align !== "left") && (
                           <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
                             ⚠️ Use left align
