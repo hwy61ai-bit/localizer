@@ -348,7 +348,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, artist_id, sponsor_logo_1_url, sponsor_logo_2_url, custom_text_1, custom_text_2")
+    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, artist_id, sponsor_logo_1_url, sponsor_logo_2_url, custom_text_1, custom_text_2, band_font_family, band_text_color")
     .eq("id", tourId_resolved)
     .eq("org_id", orgId)
     .single();

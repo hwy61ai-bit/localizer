@@ -121,6 +121,8 @@ type Tour = {
   name: string;
   band_name: string | null;
   band_tour_label: string | null;
+  band_font_family: string | null;
+  band_text_color: string | null;
   image_url: string | null;
   image_print_id: string | null;
   image_square_id: string | null;
