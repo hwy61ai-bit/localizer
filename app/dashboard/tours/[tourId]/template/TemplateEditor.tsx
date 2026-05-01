@@ -91,7 +91,7 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "landscape", label: "FB Cover",      w: 820,  h: 312 },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: 3300, h: 5100 },
   { key: "tiktok",    label: "TikTok, IG Reels, FB Stories,\nYouTube Shorts",  w: 1080, h: 1920 },
-  { key: "yt_shorts", label: "Square",     w: 1080, h: 1080 },
+  { key: "yt_shorts", label: "Square Video", w: 1080, h: 1080 },
 ];
 
 const FIELD_LABELS: Record<FieldKey, string> = {

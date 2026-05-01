@@ -196,7 +196,7 @@ export default async function MarketingPage({
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
               {[
                 { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", dims: "1080 × 1920", url: link.render_tiktok_url },
-                { label: "Square", dims: "1080 × 1080", url: link.render_yt_shorts_url },
+                { label: "Square Video", dims: "1080 × 1080", url: link.render_yt_shorts_url },
               ].filter(v => !!v.url).map((video) => (
                 <div key={video.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
                   <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
