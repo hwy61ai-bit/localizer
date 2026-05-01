@@ -700,11 +700,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.name.toLowerCase().endsWith(".png")) {
-      toast.error("Sponsor logo must be a PNG file");
+      toast.error("Custom graphic must be a PNG file");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Sponsor logo must be under 5MB");
+      toast.error("Custom graphic must be under 5MB");
       return;
     }
     const setUploading = slot === 1 ? setUploadingSponsor1 : setUploadingSponsor2;
@@ -725,7 +725,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       const data = await res.json();
       setUrl(data.url);
       updateCfg(slot === 1 ? "showSponsorLogo1" : "showSponsorLogo2", true);
-      toast.success(`Sponsor logo ${slot} uploaded`);
+      toast.success(`Custom graphic ${slot} uploaded`);
     } catch (err: any) {
       console.error("Sponsor logo upload failed:", err);
       toast.error(`Upload failed: ${err.message}`);
@@ -736,7 +736,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   }
 
   async function handleSponsorLogoDelete(slot: 1 | 2) {
-    if (!window.confirm(`Remove sponsor logo ${slot}? It will be deleted from all formats.`)) return;
+    if (!window.confirm(`Remove custom graphic ${slot}? It will be deleted from all formats.`)) return;
     const setUrl = slot === 1 ? setSponsorLogo1Url : setSponsorLogo2Url;
     try {
       const res = await fetch(`/api/tours/${tourId}/sponsor-logo?slot=${slot}`, { method: "DELETE" });
@@ -746,7 +746,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       }
       setUrl(null);
       updateCfg(slot === 1 ? "showSponsorLogo1" : "showSponsorLogo2", false);
-      toast.success(`Sponsor logo ${slot} removed`);
+      toast.success(`Custom graphic ${slot} removed`);
     } catch (err: any) {
       console.error("Sponsor logo delete failed:", err);
       toast.error(`Delete failed: ${err.message}`);
@@ -1370,14 +1370,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     {(cfg.showSponsorLogo1 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                   </span>
                   <div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 1</div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 1</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the graphic's uploaded color." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
                   </div>
                 </label>
                 {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (
                   <>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                      <img src={sponsorLogo1Url} alt="Sponsor 1" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
+                      <img src={sponsorLogo1Url} alt="Custom Graphic 1" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
                       <button onClick={() => sponsor1FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
                       <button onClick={() => handleSponsorLogoDelete(1)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
                     </div>
@@ -1428,14 +1428,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     {(cfg.showSponsorLogo2 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                   </span>
                   <div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Sponsor Logo 2</div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the sponsor's uploaded color." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 2</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the graphic's uploaded color." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
                   </div>
                 </label>
                 {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (
                   <>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                      <img src={sponsorLogo2Url} alt="Sponsor 2" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
+                      <img src={sponsorLogo2Url} alt="Custom Graphic 2" style={{ width: 60, height: 60, objectFit: "contain", background: "repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 12px 12px", border: "2px solid var(--hw-border)" }} />
                       <button onClick={() => sponsor2FileRef.current?.click()} style={{ padding: "6px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>REPLACE</button>
                       <button onClick={() => handleSponsorLogoDelete(2)} style={{ padding: "6px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, cursor: "pointer" }}>DELETE</button>
                     </div>
