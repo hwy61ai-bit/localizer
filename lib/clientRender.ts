@@ -135,7 +135,9 @@ export async function renderPoster(
   eventData: EventData,
   logoUrl?: string | null,
   sponsorLogo1Url?: string | null,
-  sponsorLogo2Url?: string | null
+  sponsorLogo2Url?: string | null,
+  bandFontFamily?: string | null,
+  bandTextColor?: string | null
 ): Promise<Blob> {
   const dims = FORMAT_DIMS[formatKey] ?? FORMAT_DIMS.square;
   const scale = SCALE_FACTORS[formatKey] ?? 1.0;
@@ -298,11 +300,36 @@ export async function renderPoster(
     ctx.restore();
   }
 
-  // Band name (optional)
+  // Band name (optional) — uses optional override font/color
   if (cfg.showBandName) {
     const bandField = cfg.band ?? { x: 0.5, y: 0.65, size: 80, align: "center" };
     const bandText = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
-    drawText(bandText, bandField, cfg.bandSize);
+    const resolvedBandFont = bandFontFamily ?? fontFamily;
+    const resolvedBandColor = bandTextColor ? `#${bandTextColor}` : color;
+    const bandSize = Math.round(cfg.bandSize * scale);
+    const bandAvail = availableWidth(bandField.x, w, bandField.align ?? "center");
+    const bandX = bandField.x * w;
+    const bandY = bandField.y * h;
+    const bandAlign = (bandField.align ?? "center") as CanvasTextAlign;
+    ctx.save();
+    ctx.fillStyle = resolvedBandColor;
+    ctx.textAlign = bandAlign;
+    ctx.textBaseline = "alphabetic";
+    // Shrink-to-fit loop matching drawText's pattern
+    let fitSize = bandSize;
+    for (let sz = bandSize; sz >= 12; sz -= 2) {
+      ctx.font = "bold " + sz + "px '" + resolvedBandFont + "', sans-serif";
+      if (ctx.measureText(bandText).width <= bandAvail) {
+        fitSize = sz;
+        break;
+      }
+      if (sz <= 12) fitSize = 12;
+    }
+    ctx.font = "bold " + fitSize + "px '" + resolvedBandFont + "', sans-serif";
+    const m = ctx.measureText(bandText);
+    const lineBoxOffset = (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2;
+    ctx.fillText(bandText, bandX, bandY + lineBoxOffset);
+    ctx.restore();
   }
 
   // Venue — auto-shrink to fit

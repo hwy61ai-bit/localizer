@@ -121,6 +121,8 @@ type Tour = {
   name: string;
   band_name: string | null;
   band_tour_label: string | null;
+  band_font_family: string | null;
+  band_text_color: string | null;
   image_url: string | null;
   image_print_id: string | null;
   image_square_id: string | null;
@@ -137,54 +139,6 @@ function getTransform(align: Align): string {
   if (align === "left")  return "translate(0, -50%)";
   if (align === "right") return "translate(-100%, -50%)";
   return "translate(-50%, -50%)";
-}
-
-function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig, format: FormatKey, bandNameStr?: string, fe?: { venue: string; date_iso: string; city: string; state: string | null } | null): string {
-  const fmtDims = {
-    square:    { w: 1080, h: 1080 },
-    story:     { w: 1080, h: 1350 },
-    landscape: { w: 1920, h: 1080 },
-    print:     { w: 3300, h: 5100 },
-    tiktok:    { w: 1080, h: 1920 },
-    yt_shorts: { w: 1080, h: 1080 },
-  }[format];
-  const font = cfg.fontFamily.replace(/ /g, "%20");
-  const color = cfg.textColor;
-  const san = (t: string) => { const clean = t.replace(/[/?&#%]/g, "").trim(); return clean.split(",").map(part => encodeURIComponent(part.trim())).join("%252C%20"); };
-
-  function toLayerParams(field: FieldConfig): { gravity: string; xPx: number; yPx: number } {
-    const align = field.align ?? "center";
-    const yPx = Math.round((field.y - 0.5) * fmtDims.h);
-    if (align === "left") {
-      return { gravity: "west", xPx: Math.round(field.x * fmtDims.w), yPx };
-    } else if (align === "right") {
-      return { gravity: "east", xPx: Math.round((1 - field.x) * fmtDims.w), yPx };
-    }
-    return { gravity: "center", xPx: Math.round((field.x - 0.5) * fmtDims.w), yPx };
-  }
-
-  const vp = toLayerParams(cfg.venue);
-  const dp = toLayerParams(cfg.date);
-  const cp = toLayerParams(cfg.city);
-
-  const va = cfg.venue.align ?? "center";
-  const da = cfg.date.align ?? "center";
-  const ca = cfg.city.align ?? "center";
-
-  const bandField = cfg.band ?? { x: 0.5, y: 0.65, size: 80, align: "center" as Align };
-  const bp = toLayerParams(bandField);
-  const ba = bandField.align ?? "center";
-
-  const caps = cfg.allCaps ?? false;
-  const layers = [
-    `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
-    ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(caps ? (bandNameStr ?? "Band Name").toUpperCase() : (bandNameStr ?? "Band Name"))},co_rgb:${color}/fl_layer_apply,g_${bp.gravity},x_${bp.xPx},y_${bp.yPx}`] : []),
-    ...((cfg.showVenue ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.venue.size}_bold:${san(caps ? (fe?.venue ?? "Stubbs Waller Creek Amphitheater").toUpperCase() : (fe?.venue ?? "Stubbs Waller Creek Amphitheater"))},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`] : []),
-    ...((cfg.showDate ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`] : []),
-    ...((cfg.showCity ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.city.size}_bold:${san(caps ? (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR").toUpperCase() : (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR"))},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`] : []),
-  ];
-
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
 }
 
 type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string } | null;
@@ -263,6 +217,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [customText2, setCustomText2] = useState<string>(tour.custom_text_2 ?? "");
   const customText1MountRef = useRef(true);
   const customText2MountRef = useRef(true);
+  const [bandFontFamily, setBandFontFamily] = useState<string | null>(tour.band_font_family);
+  const [bandTextColor, setBandTextColor] = useState<string | null>(tour.band_text_color);
+  const bandFontFamilyMountRef = useRef(true);
+  const bandTextColorMountRef = useRef(true);
 
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const toast = useToast();
@@ -357,6 +315,40 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     return () => clearTimeout(timer);
   }, [customText2, tourId, toastError]);
 
+  useEffect(() => {
+    if (bandFontFamilyMountRef.current) {
+      bandFontFamilyMountRef.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`/api/tours/${tourId}/overlay-config`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ band_font_family: bandFontFamily }),
+      })
+        .then(res => { if (!res.ok) toastError("Band font save failed."); })
+        .catch(() => toastError("Band font save failed — network error."));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [bandFontFamily, tourId, toastError]);
+
+  useEffect(() => {
+    if (bandTextColorMountRef.current) {
+      bandTextColorMountRef.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`/api/tours/${tourId}/overlay-config`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ band_text_color: bandTextColor }),
+      })
+        .then(res => { if (!res.ok) toastError("Band color save failed."); })
+        .catch(() => toastError("Band color save failed — network error."));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [bandTextColor, tourId, toastError]);
+
   const bandName = tour.band_name ?? tour.name ?? "Artist";
 
   const [formatImageIds, setFormatImageIds] = useState<Record<FormatKey, string | null>>({
@@ -423,6 +415,21 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       document.head.appendChild(link);
     }
   }, [cfg.fontFamily]);
+
+  useEffect(() => {
+    if (!bandFontFamily) return;
+    // Don't re-add the link if this font is already a custom font (loaded via document.fonts)
+    if (customFonts.some(f => f.value === bandFontFamily)) return;
+    const fontName = bandFontFamily.replace(/ /g, "+");
+    const id = `gfont-${fontName}`;
+    if (!document.getElementById(id)) {
+      const link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@400;700&display=swap`;
+      document.head.appendChild(link);
+    }
+  }, [bandFontFamily, customFonts]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -795,6 +802,73 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </button>
             ))}
           </div>
+          {activeFormat === "square" && (
+            <button
+              onClick={() => {
+                const confirmed = window.confirm(
+                  "The feature helps you maintain the same fonts and color schemes for your other photo and video assets.\n\n" +
+                  "Apply Square's settings to all other formats?\n\n" +
+                  "This will overwrite each format's current band, venue, city, date, and custom text — sizes, positions, alignments, fonts, and colors — with Square's settings.\n\n" +
+                  "Sizes will scale proportionally to each format's canvas height. Show/hide toggles and image-format-specific settings will not be affected.\n\n" +
+                  "This cannot be undone."
+                );
+                if (!confirmed) return;
+                const sourceCfg = configs.square;
+                const sourceH = 1080; // Square is 1080×1080
+                setConfigs(prev => {
+                  const updated: typeof prev = { ...prev };
+                  const targets: FormatKey[] = ["story", "landscape", "print", "tiktok", "yt_shorts"];
+                  for (const fmt of targets) {
+                    const targetH = FORMATS.find(f => f.key === fmt)!.h;
+                    const scale = targetH / sourceH;
+                    const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
+                    const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
+                    const merged: typeof prev[FormatKey] = {
+                      ...prev[fmt],
+                      // Copy format-wide styling
+                      fontFamily: sourceCfg.fontFamily,
+                      textColor: sourceCfg.textColor,
+                      allCaps: sourceCfg.allCaps,
+                      shortDate: sourceCfg.shortDate,
+                      bandSize: scaleSize(sourceCfg.bandSize),
+                      // Copy positioned text fields with proportional sizing
+                      venue: scaleField(sourceCfg.venue),
+                      city: scaleField(sourceCfg.city),
+                      date: scaleField(sourceCfg.date),
+                    };
+                    if (sourceCfg.band) merged.band = scaleField(sourceCfg.band);
+                    if (sourceCfg.customText1) merged.customText1 = scaleField(sourceCfg.customText1);
+                    if (sourceCfg.customText2) merged.customText2 = scaleField(sourceCfg.customText2);
+                    updated[fmt] = merged;
+                  }
+                  return updated;
+                });
+                setDirtyFormats(prev => new Set([...prev, "story", "landscape", "print", "tiktok", "yt_shorts"]));
+                toast.success("Square layout applied to 5 formats. Click Save Template to persist.");
+              }}
+              style={{
+                padding: "8px 16px",
+                marginRight: 16,
+                border: "3px solid var(--hw-crimson)",
+                background: "var(--hw-bg-surface)",
+                color: "var(--hw-crimson)",
+                fontFamily: "var(--hw-font-mono)",
+                fontWeight: 700,
+                fontSize: 10,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase" as const,
+                cursor: "pointer",
+                transition: "var(--hw-ease)",
+                lineHeight: 1.3,
+                textAlign: "left" as const,
+              }}
+            >
+              SET ALL FORMATS TO MATCH SQUARE
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 9, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "0.5px", textTransform: "none" as const, marginTop: 2 }}>
+                Overwrites layout, fonts, and colors
+              </div>
+            </button>
+          )}
           <div style={{ display: "flex", gap: 8 }}>
             {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "10px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
             {!isVideoFormat && !isPrintFormat && <button
@@ -824,7 +898,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     customText2: customText2 || null,
                   };
                   try {
-                    const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url);
+                    const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily, bandTextColor);
                     const url = URL.createObjectURL(blob);
                     window.open(url, '_blank');
                   } catch (err: any) {
@@ -921,7 +995,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
                         setDragging("band"); 
                       }}
-                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + (bandFontFamily ?? cfg.fontFamily) + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${bandTextColor ?? cfg.textColor}`, whiteSpace: "nowrap", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
                         {(fc.x < 0.4 && align !== "left") && (
                           <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
                             ⚠️ Use left align
@@ -1269,6 +1343,64 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <div style={{ marginTop: 10 }}>
                     <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Alignment</span>
                     <AlignButtons field="band" />
+                  </div>
+
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: "2px solid var(--hw-border-light)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Font</span>
+                      {bandFontFamily && (
+                        <button
+                          onClick={() => setBandFontFamily(null)}
+                          style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+                        >
+                          RESET
+                        </button>
+                      )}
+                    </div>
+                    <select
+                      value={bandFontFamily ?? ""}
+                      onChange={(e) => setBandFontFamily(e.target.value || null)}
+                      style={{ width: "100%", padding: "8px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, cursor: "pointer", outline: "none" }}
+                    >
+                      <option value="">(Use format font: {cfg.fontFamily})</option>
+                      <optgroup label="Standard">
+                        {FONTS.map(f => (
+                          <option key={f.value} value={f.value}>{f.label}</option>
+                        ))}
+                      </optgroup>
+                      {customFonts.length > 0 && (
+                        <optgroup label="Custom">
+                          {customFonts.map(f => (
+                            <option key={f.value} value={f.value}>{f.label}</option>
+                          ))}
+                        </optgroup>
+                      )}
+                    </select>
+                  </div>
+
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Color</span>
+                      {bandTextColor && (
+                        <button
+                          onClick={() => setBandTextColor(null)}
+                          style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+                        >
+                          RESET
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <input
+                        type="color"
+                        value={`#${bandTextColor ?? cfg.textColor}`}
+                        onChange={(e) => setBandTextColor(e.target.value.replace("#", ""))}
+                        style={{ width: 40, height: 32, borderRadius: 0, border: "3px solid var(--hw-border-strong)", cursor: "pointer", padding: 2 }}
+                      />
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>
+                        {bandTextColor ? `#${bandTextColor}` : `(Format color: #${cfg.textColor})`}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}

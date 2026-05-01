@@ -23,6 +23,8 @@ export async function PATCH(
     if ("overlay_config" in body) update.overlay_config = body.overlay_config;
     if ("custom_text_1" in body) update.custom_text_1 = body.custom_text_1;
     if ("custom_text_2" in body) update.custom_text_2 = body.custom_text_2;
+    if ("band_font_family" in body) update.band_font_family = body.band_font_family;
+    if ("band_text_color" in body) update.band_text_color = body.band_text_color;
   }
 
   if (Object.keys(update).length === 0) {
