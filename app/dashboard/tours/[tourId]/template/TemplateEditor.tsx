@@ -141,54 +141,6 @@ function getTransform(align: Align): string {
   return "translate(-50%, -50%)";
 }
 
-function buildPreviewUrl(publicId: string, cloudName: string, cfg: FormatConfig, format: FormatKey, bandNameStr?: string, fe?: { venue: string; date_iso: string; city: string; state: string | null } | null): string {
-  const fmtDims = {
-    square:    { w: 1080, h: 1080 },
-    story:     { w: 1080, h: 1350 },
-    landscape: { w: 1920, h: 1080 },
-    print:     { w: 3300, h: 5100 },
-    tiktok:    { w: 1080, h: 1920 },
-    yt_shorts: { w: 1080, h: 1080 },
-  }[format];
-  const font = cfg.fontFamily.replace(/ /g, "%20");
-  const color = cfg.textColor;
-  const san = (t: string) => { const clean = t.replace(/[/?&#%]/g, "").trim(); return clean.split(",").map(part => encodeURIComponent(part.trim())).join("%252C%20"); };
-
-  function toLayerParams(field: FieldConfig): { gravity: string; xPx: number; yPx: number } {
-    const align = field.align ?? "center";
-    const yPx = Math.round((field.y - 0.5) * fmtDims.h);
-    if (align === "left") {
-      return { gravity: "west", xPx: Math.round(field.x * fmtDims.w), yPx };
-    } else if (align === "right") {
-      return { gravity: "east", xPx: Math.round((1 - field.x) * fmtDims.w), yPx };
-    }
-    return { gravity: "center", xPx: Math.round((field.x - 0.5) * fmtDims.w), yPx };
-  }
-
-  const vp = toLayerParams(cfg.venue);
-  const dp = toLayerParams(cfg.date);
-  const cp = toLayerParams(cfg.city);
-
-  const va = cfg.venue.align ?? "center";
-  const da = cfg.date.align ?? "center";
-  const ca = cfg.city.align ?? "center";
-
-  const bandField = cfg.band ?? { x: 0.5, y: 0.65, size: 80, align: "center" as Align };
-  const bp = toLayerParams(bandField);
-  const ba = bandField.align ?? "center";
-
-  const caps = cfg.allCaps ?? false;
-  const layers = [
-    `c_fill,g_center,h_${fmtDims.h},w_${fmtDims.w}`,
-    ...(cfg.showBandName ? [`l_text:${font}_${cfg.bandSize}_bold:${san(caps ? (bandNameStr ?? "Band Name").toUpperCase() : (bandNameStr ?? "Band Name"))},co_rgb:${color}/fl_layer_apply,g_${bp.gravity},x_${bp.xPx},y_${bp.yPx}`] : []),
-    ...((cfg.showVenue ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.venue.size}_bold:${san(caps ? (fe?.venue ?? "Stubbs Waller Creek Amphitheater").toUpperCase() : (fe?.venue ?? "Stubbs Waller Creek Amphitheater"))},co_rgb:${color}/fl_layer_apply,g_${vp.gravity},x_${vp.xPx},y_${vp.yPx}`] : []),
-    ...((cfg.showDate ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.date.size}_bold:${san(fe ? (() => { try { const d = new Date(fe.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : (["","ST","ND","RD"][n%10] || "TH"); return `${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return fe.date_iso; } })() : (cfg.shortDate ? "APR 26TH" : "April 25 2026"))},co_rgb:${color}/fl_layer_apply,g_${dp.gravity},x_${dp.xPx},y_${dp.yPx}`] : []),
-    ...((cfg.showCity ?? defaultShowField(format)) ? [`l_text:${font}_${cfg.city.size}_bold:${san(caps ? (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR").toUpperCase() : (fe ? [fe.city, fe.state].filter(Boolean).join(", ") : "Little Rock AR"))},co_rgb:${color}/fl_layer_apply,g_${cp.gravity},x_${cp.xPx},y_${cp.yPx}`] : []),
-  ];
-
-  return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
-}
-
 type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string } | null;
 
 export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, orgId }: { tour: Tour; tourId: string; firstEvent: FirstEvent; allEvents: NonNullable<FirstEvent>[]; orgId: string }) {
