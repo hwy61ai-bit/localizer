@@ -802,6 +802,73 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </button>
             ))}
           </div>
+          {activeFormat === "square" && (
+            <button
+              onClick={() => {
+                const confirmed = window.confirm(
+                  "The feature helps you maintain the same fonts and color schemes for your other photo and video assets.\n\n" +
+                  "Apply Square's settings to all other formats?\n\n" +
+                  "This will overwrite each format's current band, venue, city, date, and custom text — sizes, positions, alignments, fonts, and colors — with Square's settings.\n\n" +
+                  "Sizes will scale proportionally to each format's canvas height. Show/hide toggles and image-format-specific settings will not be affected.\n\n" +
+                  "This cannot be undone."
+                );
+                if (!confirmed) return;
+                const sourceCfg = configs.square;
+                const sourceH = 1080; // Square is 1080×1080
+                setConfigs(prev => {
+                  const updated: typeof prev = { ...prev };
+                  const targets: FormatKey[] = ["story", "landscape", "print", "tiktok", "yt_shorts"];
+                  for (const fmt of targets) {
+                    const targetH = FORMATS.find(f => f.key === fmt)!.h;
+                    const scale = targetH / sourceH;
+                    const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
+                    const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
+                    const merged: typeof prev[FormatKey] = {
+                      ...prev[fmt],
+                      // Copy format-wide styling
+                      fontFamily: sourceCfg.fontFamily,
+                      textColor: sourceCfg.textColor,
+                      allCaps: sourceCfg.allCaps,
+                      shortDate: sourceCfg.shortDate,
+                      bandSize: scaleSize(sourceCfg.bandSize),
+                      // Copy positioned text fields with proportional sizing
+                      venue: scaleField(sourceCfg.venue),
+                      city: scaleField(sourceCfg.city),
+                      date: scaleField(sourceCfg.date),
+                    };
+                    if (sourceCfg.band) merged.band = scaleField(sourceCfg.band);
+                    if (sourceCfg.customText1) merged.customText1 = scaleField(sourceCfg.customText1);
+                    if (sourceCfg.customText2) merged.customText2 = scaleField(sourceCfg.customText2);
+                    updated[fmt] = merged;
+                  }
+                  return updated;
+                });
+                setDirtyFormats(prev => new Set([...prev, "story", "landscape", "print", "tiktok", "yt_shorts"]));
+                toast.success("Square layout applied to 5 formats. Click Save Template to persist.");
+              }}
+              style={{
+                padding: "8px 16px",
+                marginRight: 16,
+                border: "3px solid var(--hw-crimson)",
+                background: "var(--hw-bg-surface)",
+                color: "var(--hw-crimson)",
+                fontFamily: "var(--hw-font-mono)",
+                fontWeight: 700,
+                fontSize: 10,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase" as const,
+                cursor: "pointer",
+                transition: "var(--hw-ease)",
+                lineHeight: 1.3,
+                textAlign: "left" as const,
+              }}
+            >
+              SET ALL FORMATS TO MATCH SQUARE
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 9, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "0.5px", textTransform: "none" as const, marginTop: 2 }}>
+                Overwrites layout, fonts, and colors
+              </div>
+            </button>
+          )}
           <div style={{ display: "flex", gap: 8 }}>
             {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "10px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
             {!isVideoFormat && !isPrintFormat && <button
