@@ -155,6 +155,17 @@ export async function GET(req: NextRequest) {
     fontBytes = await fetchFontBytes("Oswald", []);
   }
 
+  // Band override: optionally load a separate font for band-name only
+  const bandFontFamilyOverride = (tour as any).band_font_family ?? null;
+  let bandFontBytes: Uint8Array | null = null;
+  if (bandFontFamilyOverride) {
+    try {
+      bandFontBytes = await fetchFontBytes(bandFontFamilyOverride, customFonts ?? []);
+    } catch {
+      bandFontBytes = null;
+    }
+  }
+
   // Build PDF — dynamic import fontkit to avoid webpack CJS bundling issues
   const fontkit = (await import("@pdf-lib/fontkit")).default;
   const pdfDoc = await PDFDocument.create();
@@ -162,7 +173,10 @@ export async function GET(req: NextRequest) {
 
   const page = pdfDoc.addPage([PAGE_WIDTH_PT, PAGE_HEIGHT_PT]);
   const font = await pdfDoc.embedFont(fontBytes);
+  const bandFont = bandFontBytes ? await pdfDoc.embedFont(bandFontBytes) : font;
   const textColor = hexToRgb(printConfig.textColor || "ffffff");
+  const bandTextColorHex = (tour as any).band_text_color ?? null;
+  const bandTextColor = bandTextColorHex ? hexToRgb(bandTextColorHex) : textColor;
   const allCaps = printConfig.allCaps ?? false;
   const shortDate = printConfig.shortDate ?? false;
 
@@ -194,17 +208,21 @@ export async function GET(req: NextRequest) {
   //   middle_y = baseline_y + ascent - totalHeight/2
   //   baseline_y = middle_y - ascent + totalHeight/2
   // So the offset from middle to baseline = ascent - totalHeight/2
-  function baselineOffset(fontSize: number): number {
-    const totalHeight = font.heightAtSize(fontSize);                      // ascent + |descent|
-    const ascentHeight = font.heightAtSize(fontSize, { descender: false }); // ascent only
+  function baselineOffset(fontSize: number, fontToUse: typeof font = font): number {
+    const totalHeight = fontToUse.heightAtSize(fontSize);                      // ascent + |descent|
+    const ascentHeight = fontToUse.heightAtSize(fontSize, { descender: false }); // ascent only
     return ascentHeight - totalHeight / 2;
   }
 
   function drawTextField(
     text: string,
     fieldConfig: { x: number; y: number; size: number; align?: string },
-    isVenue = false
+    isVenue = false,
+    overrideFont?: typeof font,
+    overrideColor?: typeof textColor
   ) {
+    const drawFont = overrideFont ?? font;
+    const drawColor = overrideColor ?? textColor;
     if (!fieldConfig) return;
     const pdfFontSize = fieldConfig.size * SCALE_FACTOR;
     const xCenter = fieldConfig.x * PAGE_WIDTH_PT;
@@ -227,7 +245,7 @@ export async function GET(req: NextRequest) {
       // Find size that fits all lines
       let fitSize = pdfFontSize;
       for (let sz = pdfFontSize; sz >= 6; sz -= 0.5) {
-        if (lines.every(l => font.widthOfTextAtSize(l, sz) <= availWidth)) {
+        if (lines.every(l => drawFont.widthOfTextAtSize(l, sz) <= availWidth)) {
           fitSize = sz;
           break;
         }
@@ -237,10 +255,10 @@ export async function GET(req: NextRequest) {
       // PDF origin is bottom-left, config origin is top-left
       // Convert y fraction to PDF y, then adjust for "middle" baseline
       const yCenterPdf = PAGE_HEIGHT_PT - fieldConfig.y * PAGE_HEIGHT_PT;
-      const yBaseline = yCenterPdf - baselineOffset(fitSize);
+      const yBaseline = yCenterPdf - baselineOffset(fitSize, drawFont);
       const blockTop = yBaseline + ((lines.length - 1) * lh) / 2;
       for (let i = 0; i < lines.length; i++) {
-        const lineWidth = font.widthOfTextAtSize(lines[i], fitSize);
+        const lineWidth = drawFont.widthOfTextAtSize(lines[i], fitSize);
         let xPos: number;
         if (align === "left") xPos = xCenter;
         else if (align === "right") xPos = xCenter - lineWidth;
@@ -249,8 +267,8 @@ export async function GET(req: NextRequest) {
           x: xPos,
           y: blockTop - i * lh,
           size: fitSize,
-          font,
-          color: textColor,
+          font: drawFont,
+          color: drawColor,
         });
       }
       return;
@@ -259,7 +277,7 @@ export async function GET(req: NextRequest) {
     // Single line — auto-shrink to fit
     let fitSize = pdfFontSize;
     for (let sz = pdfFontSize; sz >= 6; sz -= 0.5) {
-      if (font.widthOfTextAtSize(text, sz) <= availWidth) {
+      if (drawFont.widthOfTextAtSize(text, sz) <= availWidth) {
         fitSize = sz;
         break;
       }
@@ -269,9 +287,9 @@ export async function GET(req: NextRequest) {
     // PDF origin is bottom-left, config origin is top-left
     // Adjust for "middle" baseline using actual font metrics
     const yCenterPdf = PAGE_HEIGHT_PT - fieldConfig.y * PAGE_HEIGHT_PT;
-    const yBaseline = yCenterPdf - baselineOffset(fitSize);
+    const yBaseline = yCenterPdf - baselineOffset(fitSize, drawFont);
 
-    const textWidth = font.widthOfTextAtSize(text, fitSize);
+    const textWidth = drawFont.widthOfTextAtSize(text, fitSize);
     let xPos: number;
     if (align === "left") xPos = xCenter;
     else if (align === "right") xPos = xCenter - textWidth;
@@ -281,8 +299,8 @@ export async function GET(req: NextRequest) {
       x: xPos,
       y: yBaseline,
       size: fitSize,
-      font,
-      color: textColor,
+      font: drawFont,
+      color: drawColor,
     });
   }
 
@@ -290,7 +308,7 @@ export async function GET(req: NextRequest) {
   if (printConfig.showBandName) {
     const bandField = printConfig.band ?? { x: 0.5, y: 0.65, size: 80, align: "center" };
     const bandText = allCaps ? (tour.band_name ?? tour.name ?? "").toUpperCase() : (tour.band_name ?? tour.name ?? "");
-    drawTextField(bandText, { ...bandField, size: printConfig.bandSize ?? 80 });
+    drawTextField(bandText, { ...bandField, size: printConfig.bandSize ?? 80 }, false, bandFont, bandTextColor);
   }
 
   // Draw venue

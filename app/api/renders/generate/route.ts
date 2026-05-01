@@ -107,7 +107,9 @@ function buildCloudinaryUrl(
   format: RenderFormat,
   overlayConfig: any,
   eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string },
-  customFontsMap: Map<string, string>
+  customFontsMap: Map<string, string>,
+  bandFontFamily: string | null,
+  bandTextColor: string | null
 ): string {
   const { w, h } = FORMAT_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
@@ -150,13 +152,18 @@ function buildCloudinaryUrl(
   const cityState = sanitize(rawCity);
 
   const showBand = cfg.showBandName ?? false;
+  const resolvedBandFontFamily = bandFontFamily ?? fontFamily;
+  const bandFont = customFontsMap.has(resolvedBandFontFamily)
+    ? customFontsMap.get(resolvedBandFontFamily)!
+    : resolvedBandFontFamily.replace(/ /g, "_");
+  const bandColor = bandTextColor ?? color;
   const bandSize = format === "landscape" ? bandSizeScaled : (cfg.bandSize ?? 48);
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
+    ...(showBand ? [buildTextLayer(bandFont, bandSize, bandName, bandColor, bandXF, bandYF, w, h, bandAlign)] : []),
     ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
     ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
     ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign)]  : []),
@@ -217,7 +224,9 @@ function buildCloudinaryVideoUrl(
   sponsorLogo1Url: string | null,
   sponsorLogo2Url: string | null,
   customText1: string | null,
-  customText2: string | null
+  customText2: string | null,
+  bandFontFamily: string | null,
+  bandTextColor: string | null
 ): string {
   const { w, h } = VIDEO_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
@@ -256,6 +265,11 @@ function buildCloudinaryVideoUrl(
   const cityState = sanitize(rawCity);
 
   const showBand = cfg.showBandName ?? false;
+  const resolvedBandFontFamily = bandFontFamily ?? fontFamily;
+  const bandFont = customFontsMap.has(resolvedBandFontFamily)
+    ? customFontsMap.get(resolvedBandFontFamily)!
+    : resolvedBandFontFamily.replace(/ /g, "_");
+  const bandColor = bandTextColor ?? color;
   const bandSize = cfg.bandSize ?? 48;
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
@@ -296,7 +310,7 @@ function buildCloudinaryVideoUrl(
     ...(showLogo && logoUrl && logoCfg ? [buildLogoLayer(logoUrl, logoCfg, color, w, h)] : []),
     ...(showSponsorLogo1 && sponsorLogo1Url && sponsorLogo1Cfg ? [buildSponsorLogoLayer(sponsorLogo1Url, sponsorLogo1Cfg, w, h)] : []),
     ...(showSponsorLogo2 && sponsorLogo2Url && sponsorLogo2Cfg ? [buildSponsorLogoLayer(sponsorLogo2Url, sponsorLogo2Cfg, w, h)] : []),
-    ...(showBand ? [buildTextLayer(font, bandSize, bandName, color, bandXF, bandYF, w, h, bandAlign)] : []),
+    ...(showBand ? [buildTextLayer(bandFont, bandSize, bandName, bandColor, bandXF, bandYF, w, h, bandAlign)] : []),
     ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
     ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
     ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign)]  : []),
@@ -416,7 +430,7 @@ export async function POST(req: NextRequest) {
           }
           const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
           const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
-          renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap);
+          renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap, (tour as any).band_font_family ?? null, (tour as any).band_text_color ?? null);
         }
       }
 
@@ -434,7 +448,7 @@ export async function POST(req: NextRequest) {
         }
         const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
-        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.custom_text_1 ?? null, tour.custom_text_2 ?? null);
+        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.custom_text_1 ?? null, tour.custom_text_2 ?? null, (tour as any).band_font_family ?? null, (tour as any).band_text_color ?? null);
       }
 
       // Upsert venue_link
