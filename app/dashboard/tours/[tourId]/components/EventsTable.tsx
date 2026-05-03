@@ -29,6 +29,21 @@ function formatDate(iso: string) {
   return `${m}/${d}/${y}`;
 }
 
+type CropRegion = { x: number; y: number; w: number; h: number };
+
+function isValidCropRegion(r: any): r is CropRegion {
+  if (!r || typeof r !== "object") return false;
+  const { x, y, w, h } = r;
+  if (![x, y, w, h].every((n) => typeof n === "number" && Number.isFinite(n))) return false;
+  if (w <= 0 || h <= 0 || x < 0 || y < 0) return false;
+  if (x + w > 1.0001 || y + h > 1.0001) return false;
+  return true;
+}
+
+function formatFraction(n: number): string {
+  return n.toFixed(4);
+}
+
 type CityStateCellProps = {
   event: EventRow;
   editing: { id: string; field: EditableField } | null;
@@ -306,7 +321,11 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
           const cfg = overlayConfig[fmt] ?? {};
           const shortDate = cfg.shortDate ?? false;
 
-          const baseUrl = "https://res.cloudinary.com/" + cloudName + "/image/upload/c_fill,g_center,w_" + dims.w + ",h_" + dims.h + "/" + pid;
+          const cropRegion = (tour as any).crop_config?.[fmt] ?? null;
+          const baseLayer = isValidCropRegion(cropRegion)
+            ? "c_crop,x_" + formatFraction(cropRegion.x) + ",y_" + formatFraction(cropRegion.y) + ",w_" + formatFraction(cropRegion.w) + ",h_" + formatFraction(cropRegion.h) + "/c_fill,w_" + dims.w + ",h_" + dims.h
+            : "c_fill,g_center,w_" + dims.w + ",h_" + dims.h;
+          const baseUrl = "https://res.cloudinary.com/" + cloudName + "/image/upload/" + baseLayer + "/" + pid;
 
           const venueName = event.venue_name ?? event.venue ?? "";
           const city = event.venue_city ?? event.city ?? "";

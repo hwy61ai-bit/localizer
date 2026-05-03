@@ -64,6 +64,25 @@ type FormatConfig = {
 type CropRegion = { x: number; y: number; w: number; h: number };
 type CropConfig = Record<CropFormatKey, CropRegion>;
 
+function isValidCropRegion(r: any): r is CropRegion {
+  if (!r || typeof r !== "object") return false;
+  const { x, y, w, h } = r;
+  if (![x, y, w, h].every((n) => typeof n === "number" && Number.isFinite(n))) return false;
+  if (w <= 0 || h <= 0 || x < 0 || y < 0) return false;
+  if (x + w > 1.0001 || y + h > 1.0001) return false;
+  return true;
+}
+
+function formatFraction(n: number): string {
+  return n.toFixed(4);
+}
+
+function getFormatCrop(crop: CropConfig | null | undefined, format: FormatKey): CropRegion | null {
+  if (!crop) return null;
+  if (format === "tiktok" || format === "yt_shorts") return null;
+  return crop[format] ?? null;
+}
+
 const DEFAULT_FORMAT: FormatConfig = {
   fontFamily: "Oswald",
   textColor: "ffffff",
@@ -399,10 +418,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const fmtDims = FORMATS.find(f => f.key === activeFormat)!;
   const isVideoFormat = activeFormat === "tiktok" || activeFormat === "yt_shorts";
   const isPrintFormat = activeFormat === "print";
+  const previewCrop = getFormatCrop(tour.crop_config, activeFormat);
+  const previewBaseLayer = isValidCropRegion(previewCrop)
+    ? `c_crop,x_${formatFraction(previewCrop.x)},y_${formatFraction(previewCrop.y)},w_${formatFraction(previewCrop.w)},h_${formatFraction(previewCrop.h)}/c_fill,w_${fmtDims.w},h_${fmtDims.h}`
+    : `c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h}`;
   const imageUrl = publicId
     ? isVideoFormat
       ? `https://res.cloudinary.com/${cloudName}/video/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h},so_0/${publicId}.jpg`
-      : `https://res.cloudinary.com/${cloudName}/image/upload/c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h}/${publicId}`
+      : `https://res.cloudinary.com/${cloudName}/image/upload/${previewBaseLayer}/${publicId}`
     : null;
   const maxPreviewH = 600;
   const scaleByW = containerWidth / fmtDims.w;
@@ -885,7 +908,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     landscape: { w: 820, h: 312 }, tiktok: { w: 1080, h: 1920 }, yt_shorts: { w: 1080, h: 1080 },
                   };
                   const dims = fd[activeFormat] ?? fd.square;
-                  const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/c_fill,g_center,w_' + dims.w + ',h_' + dims.h + '/' + pid;
+                  const renderCrop = getFormatCrop(tour.crop_config, activeFormat);
+                  const renderBaseLayer = isValidCropRegion(renderCrop)
+                    ? 'c_crop,x_' + formatFraction(renderCrop.x) + ',y_' + formatFraction(renderCrop.y) + ',w_' + formatFraction(renderCrop.w) + ',h_' + formatFraction(renderCrop.h) + '/c_fill,w_' + dims.w + ',h_' + dims.h
+                    : 'c_fill,g_center,w_' + dims.w + ',h_' + dims.h;
+                  const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/' + renderBaseLayer + '/' + pid;
                   const shortDate = cfg.shortDate ?? false;
                   const ed = firstEvent ? {
                     bandName: bandName,
