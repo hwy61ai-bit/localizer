@@ -60,6 +60,21 @@ function hexToRgb(hex: string) {
   );
 }
 
+type CropRegion = { x: number; y: number; w: number; h: number };
+
+function isValidCropRegion(r: any): r is CropRegion {
+  if (!r || typeof r !== "object") return false;
+  const { x, y, w, h } = r;
+  if (![x, y, w, h].every((n) => typeof n === "number" && Number.isFinite(n))) return false;
+  if (w <= 0 || h <= 0 || x < 0 || y < 0) return false;
+  if (x + w > 1.0001 || y + h > 1.0001) return false;
+  return true;
+}
+
+function formatFraction(n: number): string {
+  return n.toFixed(4);
+}
+
 export async function GET(req: NextRequest) {
   const eventId = req.nextUrl.searchParams.get("eventId");
   const token = req.nextUrl.searchParams.get("token");
@@ -132,7 +147,11 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch the high-res base image from Cloudinary (resize to exact 3300x5100)
-  const imageUrl = `https://res.cloudinary.com/dlhrc91ne/image/upload/w_3300,h_5100,c_fill/${tour.image_print_id}`;
+  const printCrop = (tour as any).crop_config?.print ?? null;
+  const cropPrefix = isValidCropRegion(printCrop)
+    ? `c_crop,x_${formatFraction(printCrop.x)},y_${formatFraction(printCrop.y)},w_${formatFraction(printCrop.w)},h_${formatFraction(printCrop.h)}/`
+    : "";
+  const imageUrl = `https://res.cloudinary.com/dlhrc91ne/image/upload/${cropPrefix}w_3300,h_5100,c_fill/${tour.image_print_id}`;
   const imageRes = await fetch(imageUrl);
   if (!imageRes.ok) {
     return NextResponse.json({ error: "Failed to fetch base image" }, { status: 500 });

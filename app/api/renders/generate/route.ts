@@ -101,6 +101,21 @@ function availableWidth(xFrac: number, canvasW: number, align: string): number {
   return Math.min(xFrac, 1 - xFrac) * 2 * canvasW * margin;
 }
 
+type CropRegion = { x: number; y: number; w: number; h: number };
+
+function isValidCropRegion(r: any): r is CropRegion {
+  if (!r || typeof r !== "object") return false;
+  const { x, y, w, h } = r;
+  if (![x, y, w, h].every((n) => typeof n === "number" && Number.isFinite(n))) return false;
+  if (w <= 0 || h <= 0 || x < 0 || y < 0) return false;
+  if (x + w > 1.0001 || y + h > 1.0001) return false;
+  return true;
+}
+
+function formatFraction(n: number): string {
+  return n.toFixed(4);
+}
+
 function buildCloudinaryUrl(
   publicId: string,
   cloudName: string,
@@ -109,7 +124,8 @@ function buildCloudinaryUrl(
   eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string },
   customFontsMap: Map<string, string>,
   bandFontFamily: string | null,
-  bandTextColor: string | null
+  bandTextColor: string | null,
+  cropRegion?: CropRegion | null
 ): string {
   const { w, h } = FORMAT_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
@@ -161,8 +177,12 @@ function buildCloudinaryUrl(
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
 
+  const baseLayer = isValidCropRegion(cropRegion)
+    ? `c_crop,x_${formatFraction(cropRegion.x)},y_${formatFraction(cropRegion.y)},w_${formatFraction(cropRegion.w)},h_${formatFraction(cropRegion.h)}/c_fill,h_${h},w_${w}`
+    : `c_fill,g_center,h_${h},w_${w}`;
+
   const layers = [
-    `c_fill,g_center,h_${h},w_${w}`,
+    baseLayer,
     ...(showBand ? [buildTextLayer(bandFont, bandSize, bandName, bandColor, bandXF, bandYF, w, h, bandAlign)] : []),
     ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
     ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
@@ -226,8 +246,10 @@ function buildCloudinaryVideoUrl(
   customText1: string | null,
   customText2: string | null,
   bandFontFamily: string | null,
-  bandTextColor: string | null
+  bandTextColor: string | null,
+  cropRegion?: CropRegion | null
 ): string {
+  // v1: video formats do not support cropping; cropRegion is ignored for symmetry only
   const { w, h } = VIDEO_DIMS[format];
   const cfg = overlayConfig?.[format] ?? {};
   const fontFamily = cfg.fontFamily ?? "Oswald";
@@ -430,7 +452,7 @@ export async function POST(req: NextRequest) {
           }
           const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
           const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
-          renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap, (tour as any).band_font_family ?? null, (tour as any).band_text_color ?? null);
+          renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap, (tour as any).band_font_family ?? null, (tour as any).band_text_color ?? null, (tour as any).crop_config?.[format] ?? null);
         }
       }
 
@@ -448,7 +470,7 @@ export async function POST(req: NextRequest) {
         }
         const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
         const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
-        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.custom_text_1 ?? null, tour.custom_text_2 ?? null, (tour as any).band_font_family ?? null, (tour as any).band_text_color ?? null);
+        renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.custom_text_1 ?? null, tour.custom_text_2 ?? null, (tour as any).band_font_family ?? null, (tour as any).band_text_color ?? null, null);
       }
 
       // Upsert venue_link
