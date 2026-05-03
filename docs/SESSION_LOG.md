@@ -2659,3 +2659,12 @@ Print poster default behavior changed. Venue/City/Date toggles now default OFF f
 Renderer drift fix tester-confirmed on production. Doc status flipped via one-line sed. Commit 50033f6.
 
 Backlog filed: Delete dead buildPreviewUrl from TemplateEditor.tsx. Delete branch fix/canvas-text-baseline.
+
+2026-05-03 (Sunday) — Shipped band name font/color override feature. Six small commits on feature/band-name-override, merged to main as 6b961b4. Adds two nullable columns to tours (band_font_family, band_text_color), threads override resolution through all five render paths (Cloudinary editor preview, Cloudinary server PNG, Cloudinary server video, canvas client renderer, print PDF), exposes UI controls in the band-name expanded section (font dropdown including custom fonts, color picker, reset buttons, Google-Font auto-loader for the band font), and adds a "Set All Formats to Match Square" button visible only on the Square format. Button copies layout (size, x, y, align), font, color, allCaps, shortDate proportionally across all 5 other formats with a confirm dialog. Also deleted dead buildPreviewUrl function (was on backlog from renderer drift investigation).
+Smaller wins from same session:
+
+Relabeled "Square" video format as "Square Video" across template editor, assets page, and venue download pages
+Relabeled "Sponsor Logo" as "Custom Graphic" in template editor UI strings (variable names and DB columns left alone)
+
+Backlog status: buildPreviewUrl deletion done. Branch fix/canvas-text-baseline from 4/29 still superseded; safe to delete. Branch feature/band-name-override merged; safe to delete.
+Next session: Build per-format image crop tool. Plan finalized: react-easy-crop library, new crop_config jsonb column on tours, modal-based UI with aspect-locked drag-and-zoom (Instagram/Canva-style), independent per-format crops, default fallback stays as c_fill,g_center (existing behavior). 4 commits planned (DB plumbing → server URL builders → client URL builders → modal UI) on a new feature/image-crop branch. Library, default behavior, and "no apply-to-all button" all decided.
