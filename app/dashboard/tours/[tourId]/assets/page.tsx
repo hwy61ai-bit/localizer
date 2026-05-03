@@ -72,6 +72,45 @@ export default function AssetsPage() {
     yt_shorts: "video_yt_shorts_id",
   };
 
+  const FORMAT_CROP_KEY: Record<string, "square" | "story" | "landscape" | "print" | null> = {
+    ig_post: "square",
+    ig_story: "story",
+    facebook: "landscape",
+    print: "print",
+    tiktok: null,
+    yt_shorts: null,
+  };
+
+  async function clearCropForFormat(formatId: string) {
+    const cropKey = FORMAT_CROP_KEY[formatId];
+    if (!cropKey) return;
+    try {
+      const { data, error } = await supabase
+        .from("tours")
+        .select("crop_config")
+        .eq("id", tourId)
+        .single();
+      if (error || !data?.crop_config) return;
+      const current = data.crop_config as Record<string, unknown>;
+      if (!(cropKey in current)) return;
+      const next = { ...current };
+      delete next[cropKey];
+      const isEmpty = Object.keys(next).length === 0;
+      const body = isEmpty ? { crop_config: null } : { crop_config: next };
+      const res = await fetch(`/api/tours/${tourId}/overlay-config`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        console.error("Failed to clear crop_config for", cropKey, json?.error);
+      }
+    } catch (err) {
+      console.error("Error clearing crop_config for", cropKey, err);
+    }
+  }
+
   async function handleDeleteAsset(formatId: string) {
     if (!confirm("Delete this asset?")) return;
     try {
@@ -80,6 +119,7 @@ export default function AssetsPage() {
       await supabase.from("tours").update({ [col]: null }).eq("id", tourId);
       router.refresh();
       setAssets(prev => prev.filter(a => a.formatId !== formatId));
+      void clearCropForFormat(formatId);
     } catch (err: any) {
       console.error(err);
       toast.error("Delete failed: " + err.message);
@@ -140,6 +180,7 @@ export default function AssetsPage() {
         body: JSON.stringify({ public_id: result.public_id, formatId }),
       });
       setAssets((prev) => [...prev.filter((a) => a.formatId !== formatId), { formatId, url: result.secure_url }]);
+      void clearCropForFormat(formatId);
     } catch (err) {
       console.error(err);
       toast.error("Upload failed.");
