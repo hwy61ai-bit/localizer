@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/app/components/Toast";
 import { renderPoster, formatDateForRender } from "@/lib/clientRender";
 import "./template-editor.css";
+import CropModal from "./CropModal";
 
 const FONTS = [
   { label: "Oswald", value: "Oswald" },
@@ -220,6 +221,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     tiktok:    { ...DEFAULT_FORMAT, ...saved0.tiktok },
     yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts },
   });
+  const [cropConfig, setCropConfig] = useState<CropConfig | null>(tour.crop_config);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropModalFormat, setCropModalFormat] = useState<CropFormatKey>("square");
   const [previewLongest, setPreviewLongest] = useState(false);
   const [dragging, setDragging] = useState<FieldKey | "band" | "logo" | "sponsorLogo1" | "sponsorLogo2" | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -418,7 +422,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const fmtDims = FORMATS.find(f => f.key === activeFormat)!;
   const isVideoFormat = activeFormat === "tiktok" || activeFormat === "yt_shorts";
   const isPrintFormat = activeFormat === "print";
-  const previewCrop = getFormatCrop(tour.crop_config, activeFormat);
+  const previewCrop = getFormatCrop(cropConfig, activeFormat);
   const previewBaseLayer = isValidCropRegion(previewCrop)
     ? `c_crop,x_${formatFraction(previewCrop.x)},y_${formatFraction(previewCrop.y)},w_${formatFraction(previewCrop.w)},h_${formatFraction(previewCrop.h)}/c_fill,w_${fmtDims.w},h_${fmtDims.h}`
     : `c_fill,g_center,w_${fmtDims.w},h_${fmtDims.h}`;
@@ -598,6 +602,39 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       savingRef.current = false;
       setSaving(false);
     }
+  }
+
+  async function handleCropSave(region: CropRegion) {
+    const next = { ...(cropConfig ?? {}), [cropModalFormat]: region } as CropConfig;
+    const res = await fetch(`/api/tours/${tourId}/overlay-config`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ crop_config: next }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error ?? "Failed to save crop");
+    }
+    setCropConfig(next);
+    router.refresh();
+  }
+
+  async function handleCropReset() {
+    const next = { ...(cropConfig ?? {}) } as Partial<Record<CropFormatKey, CropRegion>>;
+    delete next[cropModalFormat];
+    const isEmpty = Object.keys(next).length === 0;
+    const body = isEmpty ? { crop_config: null } : { crop_config: next };
+    const res = await fetch(`/api/tours/${tourId}/overlay-config`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error ?? "Failed to reset crop");
+    }
+    setCropConfig(isEmpty ? null : (next as CropConfig));
+    router.refresh();
   }
 
   function AlignButtons({ field }: { field: BaseFieldKey | "band" | "customText1" | "customText2" }) {
@@ -827,6 +864,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               <button key={f.key} onClick={() => { setActiveFormat(f.key); }}
                 style={{ padding: "8px 16px", whiteSpace: "pre-line", border: activeFormat === f.key ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)", background: activeFormat === f.key ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: activeFormat === f.key ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: activeFormat === f.key ? 700 : 400, fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
                 {f.label}
+                {getFormatCrop(cropConfig, f.key) ? <span style={{ color: "var(--hw-crimson)", marginLeft: 6 }}>•</span> : null}
               </button>
             ))}
           </div>
@@ -908,7 +946,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     landscape: { w: 820, h: 312 }, tiktok: { w: 1080, h: 1920 }, yt_shorts: { w: 1080, h: 1080 },
                   };
                   const dims = fd[activeFormat] ?? fd.square;
-                  const renderCrop = getFormatCrop(tour.crop_config, activeFormat);
+                  const renderCrop = getFormatCrop(cropConfig, activeFormat);
                   const renderBaseLayer = isValidCropRegion(renderCrop)
                     ? 'c_crop,x_' + formatFraction(renderCrop.x) + ',y_' + formatFraction(renderCrop.y) + ',w_' + formatFraction(renderCrop.w) + ',h_' + formatFraction(renderCrop.h) + '/c_fill,w_' + dims.w + ',h_' + dims.h
                     : 'c_fill,g_center,w_' + dims.w + ',h_' + dims.h;
@@ -946,6 +984,30 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             </button>
           </div>
         </div>
+
+        {activeFormat !== "tiktok" && activeFormat !== "yt_shorts" && (() => {
+          const activeCrop = getFormatCrop(cropConfig, activeFormat);
+          const hasCrop = !!activeCrop;
+          const hasImage = !!formatImageIds[activeFormat];
+          return (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, padding: "12px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)" }}>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: hasCrop ? "var(--hw-crimson)" : "var(--hw-text-muted)", fontWeight: hasCrop ? 700 : 400 }}>
+                {hasCrop ? "✓ Custom crop" : "Default center"}
+              </div>
+              <button
+                onClick={() => {
+                  if (!hasImage) return;
+                  setCropModalFormat(activeFormat as CropFormatKey);
+                  setCropModalOpen(true);
+                }}
+                disabled={!hasImage}
+                style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: hasImage ? "var(--hw-text)" : "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", cursor: hasImage ? "pointer" : "not-allowed", opacity: hasImage ? 1 : 0.5, transition: "var(--hw-ease)" }}
+              >
+                Crop Image
+              </button>
+            </div>
+          );
+        })()}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, alignItems: "start" }}>
 
@@ -1795,6 +1857,23 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         </div>
       </div>
     </div>
+    <CropModal
+      isOpen={cropModalOpen}
+      onClose={() => setCropModalOpen(false)}
+      imageUrl={formatImageIds[cropModalFormat] ? `https://res.cloudinary.com/${cloudName}/image/upload/${formatImageIds[cropModalFormat]}` : ""}
+      format={cropModalFormat}
+      formatLabel={(() => {
+        const f = FORMATS.find(x => x.key === cropModalFormat)!;
+        return `${f.label} (${f.w}×${f.h})`;
+      })()}
+      aspect={(() => {
+        const f = FORMATS.find(x => x.key === cropModalFormat)!;
+        return f.w / f.h;
+      })()}
+      initialCrop={getFormatCrop(cropConfig, cropModalFormat)}
+      onSave={handleCropSave}
+      onReset={handleCropReset}
+    />
     </>
   );
 }

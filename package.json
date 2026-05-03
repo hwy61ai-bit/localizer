@@ -23,6 +23,7 @@
     "posthog-js": "^1.364.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-easy-crop": "^5.5.7",
     "resend": "^6.9.3",
     "sharp": "^0.34.5",
     "stripe": "^20.4.1",
