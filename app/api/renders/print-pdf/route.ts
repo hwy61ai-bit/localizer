@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
   // Fetch tour
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, image_print_id, overlay_config, band_name, name, band_font_family, band_text_color")
+    .select("id, org_id, image_print_id, overlay_config, crop_config, band_name, name, band_font_family, band_text_color")
     .eq("id", event.tour_id)
     .single();
 

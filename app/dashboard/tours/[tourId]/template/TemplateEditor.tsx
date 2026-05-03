@@ -30,6 +30,7 @@ const FONTS = [
 type FieldKey = "date" | "venue" | "city" | "customText1" | "customText2";
 type BaseFieldKey = "date" | "venue" | "city";
 type FormatKey = "square" | "story" | "landscape" | "print" | "tiktok" | "yt_shorts";
+type CropFormatKey = "square" | "story" | "landscape" | "print";
 type Align = "left" | "center" | "right";
 
 type FieldConfig = { x: number; y: number; size: number; align?: Align };
@@ -59,6 +60,9 @@ type FormatConfig = {
   showCustomText2?: boolean;
   customText2?: FieldConfig;
 };
+
+type CropRegion = { x: number; y: number; w: number; h: number };
+type CropConfig = Record<CropFormatKey, CropRegion>;
 
 const DEFAULT_FORMAT: FormatConfig = {
   fontFamily: "Oswald",
@@ -131,6 +135,7 @@ type Tour = {
   video_tiktok_id: string | null;
   video_yt_shorts_id: string | null;
   overlay_config: Record<FormatKey, FormatConfig> | null;
+  crop_config: CropConfig | null;
   custom_text_1?: string | null;
   custom_text_2?: string | null;
 };
