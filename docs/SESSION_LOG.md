@@ -2668,3 +2668,25 @@ Relabeled "Sponsor Logo" as "Custom Graphic" in template editor UI strings (vari
 
 Backlog status: buildPreviewUrl deletion done. Branch fix/canvas-text-baseline from 4/29 still superseded; safe to delete. Branch feature/band-name-override merged; safe to delete.
 Next session: Build per-format image crop tool. Plan finalized: react-easy-crop library, new crop_config jsonb column on tours, modal-based UI with aspect-locked drag-and-zoom (Instagram/Canva-style), independent per-format crops, default fallback stays as c_fill,g_center (existing behavior). 4 commits planned (DB plumbing → server URL builders → client URL builders → modal UI) on a new feature/image-crop branch. Library, default behavior, and "no apply-to-all button" all decided.
+
+
+Session: image crop feature shipped end-to-end on feature/image-crop. Five commits, branch head 467d482, ready to merge.
+Done:
+
+crop_config jsonb column added to tours (nullable, per-format, fractions 0–1).
+Read paths updated across six files (template page, tour-data, print-pdf, generate, TemplateEditor, overlay-config).
+Server-side and client-side Cloudinary URL builders apply per-format crop via c_crop,x,y,w,h/c_fill,h,w chain when crop is set, byte-identical fallback when not.
+CropModal built with react-easy-crop, two-column layout (cropper + framing preview), zoom slider, save/reset/cancel. Custom modal shell (HwModal capped at 640px, too narrow for the layout) but fully matches Warhol design tokens.
+Per-format trigger row beneath format-tab strip (Option B), with status pill ("✓ Custom crop" / "Default center") and disabled state when no source image uploaded. Hidden on video formats.
+Red-dot indicator on format tabs that have a saved crop. Image formats only — video tabs never decorated.
+Image upload and delete on assets page now clear the corresponding format's crop. Fire-and-forget, console.error on failure, three-tier early-return optimization.
+
+Lessons:
+
+Wrapping a single ALTER TABLE in BEGIN/COMMIT is footgun-prone — the verify query inside the transaction returned a phantom result, real column wasn't there until the bare ALTER ran. For one-statement migrations, just run the bare DDL.
+Validate Cloudinary fraction syntax manually before threading new transformation patterns through routes — saves a debugging cycle if the docs are wrong.
+userMemories says Warhol headings use Pragmatica Extended; actual --hw-font-display token is Bebas Neue. Memory is stale.
+
+Backlog item created: DESIGN_SYSTEM.md font reference is wrong. Update to reflect Bebas Neue.
+Next session: merge feature/image-crop to main (or get Tim to review first). After deploy is green, resume the on-the-horizon list — Localizer onboarding wizard Option B (needs Tim input), Unit D rate limiting, the 41-route billing gate, etc.
+
