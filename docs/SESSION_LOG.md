@@ -2690,3 +2690,49 @@ userMemories says Warhol headings use Pragmatica Extended; actual --hw-font-disp
 Backlog item created: DESIGN_SYSTEM.md font reference is wrong. Update to reflect Bebas Neue.
 Next session: merge feature/image-crop to main (or get Tim to review first). After deploy is green, resume the on-the-horizon list — Localizer onboarding wizard Option B (needs Tim input), Unit D rate limiting, the 41-route billing gate, etc.
 
+## 2026-05-04 — Autosave-first template editor + per-format band color
+
+Six commits, all green on prod.
+
+### Shipped
+
+- **Debounced 500ms autosave for per-format overlay_config** (positions, sizes, toggles, alignments, fonts). Fifth in the contiguous block of debounced effects, alongside customText1, customText2, bandFontFamily, bandTextColor (the latter retired later in the session).
+- **Crimson outlined "Everything autosaves." notice** above the action row in the template editor sidebar.
+- **Per-format band text color.** New `bandTextColor?: string | null` field on `FormatConfig` (in both TemplateEditor and lib/clientRender — the two FormatConfig types are separate, lesson learned). Picker writes into `configs[activeFormat]`, persists via the configs autosave. Replaces the tour-level `band_text_color` override.
+- **Render paths rewired** to read `overlay_config[format].bandTextColor` with `cfg.textColor` fallback: clientRender, generate, print-pdf, tour-data, EventsTable. Drops the bandTextColor parameter from three function signatures (renderPoster, buildCloudinaryUrl, buildCloudinaryVideoUrl) — per-format value is already accessible via cfg.
+- **SAVE TEMPLATE button retired.** save() function, saving/savingRef/justSaved/savedFormats/dirtyFormats state, and 19 setDirtyFormats call sites all gone. Autosave is the only save path. Toast string on SET ALL FORMATS handler updated to drop the now-incorrect "Click Save Template to persist" instruction.
+- **Fixed pre-existing SSR crash** in `measureTextWidth` — `document is not defined` on initial server render. One-line `if (typeof document === "undefined") return 0;` guard. Latent since the function shipped in March; surfaced during repeated hard-refreshes today.
+- **Fixed SET ALL FORMATS TO MATCH SQUARE handler** — `bandTextColor` was missing from the unconditional copy list, so Square's band color silently failed to propagate. Added with `?? null` to match the "with Square's settings" contract from the confirm dialog (covers both override propagation and override clearing).
+
+### Commits (chronological)
+
+- ee2e16a — feat(localizer): autosave overlay_config and SSR-guard measureTextWidth
+- 36e30ed — docs: add May 2026 post-image-crop handoff
+- c95e0b6 — feat(localizer): per-format band text color in template editor
+- 314f8e6 — feat(localizer): per-format band text color across all render paths
+- e1ad29b — feat(localizer): remove SAVE TEMPLATE button, autosave is the only save path
+- bc83d57 — fix(localizer): SET ALL FORMATS now propagates bandTextColor
+
+### Dangling (intentionally) for the Phase 2 column-retirement pass
+
+- `tours.band_text_color` column itself (no SQL run today)
+- Tour type field at `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx:150` referencing `band_text_color`
+- SELECT `band_text_color` in `app/dashboard/tours/[tourId]/template/page.tsx:11`
+- `band_text_color` branch in PATCH handler at `app/api/tours/[tourId]/overlay-config/route.ts:28`
+- `save-pulse` CSS keyframe in `template-editor.css` (dead after button removal)
+
+These four (plus the SQL) belong in a single focused cleanup commit when ready.
+
+### Lessons captured
+
+- **Local FormatConfig types are separate.** lib/clientRender.ts has its own FormatConfig declaration that mirrors TemplateEditor.tsx's. Adding a field to one does not add it to the other. Next refactor: search for ALL declarations of any type before extending it.
+- **Edit prompts must be internally consistent.** Telling Claude Code to drop a parameter AND change its argument at a call site in the same diff is a contradiction. tsc caught it but should have been caught at review. Lesson: when an edit involves a function signature change, all call sites need their argument dropped (not rewired) in the same diff.
+- **Reports should explicitly include type-system references.** "Find every X reference" needs to surface other type aliases sharing the name, not just runtime references.
+- **The SAVE TEMPLATE button created perception drift.** Drew couldn't tell if it was redundant; a user definitely won't. When some fields autosave (custom_text, font, color, image uploads) but others don't (positions/sizes/toggles in the per-format config), the button creates exactly this kind of "I don't know which actions persist" confusion. Either autosave everything or autosave nothing — the half-half state is worse than either pole.
+
+### Next session priorities (TBD)
+
+- Phase 2 column-retirement pass for `band_text_color` (the four code references above + `ALTER TABLE tours DROP COLUMN band_text_color`)
+- Or back to the post-image-crop handoff: Path C (Unit D rate limiting), Path B (loose-change cleanup), or Path A (launch readiness — depends on Tim input + bank account decision)
+- Or band font follow-up if it ever feels limiting (today's decision was to keep band font tour-uniform; can be revisited)
+
