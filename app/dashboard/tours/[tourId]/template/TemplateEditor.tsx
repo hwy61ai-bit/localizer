@@ -851,6 +851,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       // Copy format-wide styling
                       fontFamily: sourceCfg.fontFamily,
                       textColor: sourceCfg.textColor,
+                      bandTextColor: sourceCfg.bandTextColor ?? null,
                       allCaps: sourceCfg.allCaps,
                       shortDate: sourceCfg.shortDate,
                       bandSize: scaleSize(sourceCfg.bandSize),
