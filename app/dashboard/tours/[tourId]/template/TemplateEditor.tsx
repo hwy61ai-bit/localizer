@@ -39,6 +39,7 @@ type FieldConfig = { x: number; y: number; size: number; align?: Align };
 type FormatConfig = {
   fontFamily: string;
   textColor: string;
+  bandTextColor?: string | null;
   showBandName: boolean;
   showVenue?: boolean;
   showCity?: boolean;
@@ -247,9 +248,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const customText1MountRef = useRef(true);
   const customText2MountRef = useRef(true);
   const [bandFontFamily, setBandFontFamily] = useState<string | null>(tour.band_font_family);
-  const [bandTextColor, setBandTextColor] = useState<string | null>(tour.band_text_color);
   const bandFontFamilyMountRef = useRef(true);
-  const bandTextColorMountRef = useRef(true);
   const configsMountRef = useRef(true);
 
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -361,23 +360,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }, 500);
     return () => clearTimeout(timer);
   }, [bandFontFamily, tourId, toastError]);
-
-  useEffect(() => {
-    if (bandTextColorMountRef.current) {
-      bandTextColorMountRef.current = false;
-      return;
-    }
-    const timer = setTimeout(() => {
-      fetch(`/api/tours/${tourId}/overlay-config`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ band_text_color: bandTextColor }),
-      })
-        .then(res => { if (!res.ok) toastError("Band color save failed."); })
-        .catch(() => toastError("Band color save failed — network error."));
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [bandTextColor, tourId, toastError]);
 
   useEffect(() => {
     if (configsMountRef.current) {
@@ -991,7 +973,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       customText2: customText2 || null,
                     };
                     try {
-                      const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily, bandTextColor);
+                      const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily, cfg.bandTextColor ?? cfg.textColor);
                       const url = URL.createObjectURL(blob);
                       window.open(url, '_blank');
                     } catch (err: any) {
@@ -1113,7 +1095,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
                         setDragging("band"); 
                       }}
-                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + (bandFontFamily ?? cfg.fontFamily) + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${bandTextColor ?? cfg.textColor}`, whiteSpace: "nowrap", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + (bandFontFamily ?? cfg.fontFamily) + "', sans-serif", fontSize: `${Math.round(cfg.bandSize * previewScale)}px`, fontWeight: 700, color: `#${cfg.bandTextColor ?? cfg.textColor}`, whiteSpace: "nowrap", outline: dragging === "band" ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: dragging === "band" ? 10 : 5 }}>
                         {(fc.x < 0.4 && align !== "left") && (
                           <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 11, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
                             ⚠️ Use left align
@@ -1499,9 +1481,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <div style={{ marginTop: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                       <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Color</span>
-                      {bandTextColor && (
+                      {cfg.bandTextColor && (
                         <button
-                          onClick={() => setBandTextColor(null)}
+                          onClick={() => {
+                            setConfigs(prev => ({ ...prev, [activeFormat]: { ...prev[activeFormat], bandTextColor: null } }));
+                            setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                          }}
                           style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
                         >
                           RESET
@@ -1511,12 +1496,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <input
                         type="color"
-                        value={`#${bandTextColor ?? cfg.textColor}`}
-                        onChange={(e) => setBandTextColor(e.target.value.replace("#", ""))}
+                        value={`#${cfg.bandTextColor ?? cfg.textColor}`}
+                        onChange={(e) => {
+                          const next = e.target.value.replace("#", "");
+                          setConfigs(prev => ({ ...prev, [activeFormat]: { ...prev[activeFormat], bandTextColor: next } }));
+                          setDirtyFormats(prev => new Set([...prev, activeFormat]));
+                        }}
                         style={{ width: 40, height: 32, borderRadius: 0, border: "3px solid var(--hw-border-strong)", cursor: "pointer", padding: 2 }}
                       />
                       <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>
-                        {bandTextColor ? `#${bandTextColor}` : `(Format color: #${cfg.textColor})`}
+                        {cfg.bandTextColor ? `#${cfg.bandTextColor}` : `(Format color: #${cfg.textColor})`}
                       </span>
                     </div>
                   </div>
