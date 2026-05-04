@@ -53,16 +53,6 @@
   transform: scale(0.98);
 }
 
-/* Save pulse */
-@keyframes savePulse {
-  0% { box-shadow: 0 0 0 0 rgba(26,127,75,0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(26,127,75,0); }
-  100% { box-shadow: 0 0 0 0 rgba(26,127,75,0); }
-}
-.save-pulse {
-  animation: savePulse 0.6s ease-out;
-}
-
 /* Slide-in from left for row highlights */
 .row-highlight {
   position: relative;
