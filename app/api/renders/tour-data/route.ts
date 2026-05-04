@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_url, image_print_id, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, crop_config, sponsor_logo_1_url, sponsor_logo_2_url, custom_text_1, custom_text_2, band_font_family, band_text_color")
+    .select("id, org_id, name, band_name, band_tour_label, image_url, image_print_id, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, crop_config, sponsor_logo_1_url, sponsor_logo_2_url, custom_text_1, custom_text_2, band_font_family")
     .eq("id", tourId)
     .eq("org_id", orgId)
     .single();
@@ -57,7 +57,6 @@ export async function POST(req: NextRequest) {
       band_name: tour.band_name,
       band_tour_label: tour.band_tour_label,
       band_font_family: tour.band_font_family,
-      band_text_color: tour.band_text_color,
       name: tour.name,
       image_url: tour.image_url,
       image_print_id: tour.image_print_id,

@@ -973,7 +973,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       customText2: customText2 || null,
                     };
                     try {
-                      const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily, cfg.bandTextColor ?? cfg.textColor);
+                      const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily);
                       const url = URL.createObjectURL(blob);
                       window.open(url, '_blank');
                     } catch (err: any) {

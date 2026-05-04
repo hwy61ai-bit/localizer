@@ -12,6 +12,7 @@ type FormatConfig = {
   sponsorLogo2?: { x: number; y: number; size: number; align?: string };
   fontFamily: string;
   textColor: string;
+  bandTextColor?: string | null;
   showBandName: boolean;
   bandSize: number;
   shortDate?: boolean;
@@ -136,8 +137,7 @@ export async function renderPoster(
   logoUrl?: string | null,
   sponsorLogo1Url?: string | null,
   sponsorLogo2Url?: string | null,
-  bandFontFamily?: string | null,
-  bandTextColor?: string | null
+  bandFontFamily?: string | null
 ): Promise<Blob> {
   const dims = FORMAT_DIMS[formatKey] ?? FORMAT_DIMS.square;
   const scale = SCALE_FACTORS[formatKey] ?? 1.0;
@@ -305,7 +305,7 @@ export async function renderPoster(
     const bandField = cfg.band ?? { x: 0.5, y: 0.65, size: 80, align: "center" };
     const bandText = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
     const resolvedBandFont = bandFontFamily ?? fontFamily;
-    const resolvedBandColor = bandTextColor ? `#${bandTextColor}` : color;
+    const resolvedBandColor = cfg.bandTextColor ? `#${cfg.bandTextColor}` : color;
     const bandSize = Math.round(cfg.bandSize * scale);
     const bandAvail = availableWidth(bandField.x, w, bandField.align ?? "center");
     const bandX = bandField.x * w;

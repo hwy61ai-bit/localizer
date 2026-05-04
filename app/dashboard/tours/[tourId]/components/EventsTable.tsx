@@ -355,7 +355,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               await document.fonts.ready;
             }
 
-            const blob = await renderPoster(baseUrl, cfg, fmt, eventData, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.band_font_family, tour.band_text_color);
+            const blob = await renderPoster(baseUrl, cfg, fmt, eventData, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.band_font_family);
 
             // Upload to Cloudinary
             const fd = new FormData();

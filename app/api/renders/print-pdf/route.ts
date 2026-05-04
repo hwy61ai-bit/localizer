@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
   // Fetch tour
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, image_print_id, overlay_config, crop_config, band_name, name, band_font_family, band_text_color")
+    .select("id, org_id, image_print_id, overlay_config, crop_config, band_name, name, band_font_family")
     .eq("id", event.tour_id)
     .single();
 
@@ -194,7 +194,7 @@ export async function GET(req: NextRequest) {
   const font = await pdfDoc.embedFont(fontBytes);
   const bandFont = bandFontBytes ? await pdfDoc.embedFont(bandFontBytes) : font;
   const textColor = hexToRgb(printConfig.textColor || "ffffff");
-  const bandTextColorHex = (tour as any).band_text_color ?? null;
+  const bandTextColorHex = printConfig.bandTextColor ?? null;
   const bandTextColor = bandTextColorHex ? hexToRgb(bandTextColorHex) : textColor;
   const allCaps = printConfig.allCaps ?? false;
   const shortDate = printConfig.shortDate ?? false;
