@@ -190,6 +190,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   }
 
   function measureTextWidth(text: string, size: number, fontFamily: string): number {
+    if (typeof document === "undefined") return 0;
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d")!;
     ctx.font = "bold " + size + "px '" + fontFamily + "', sans-serif";
@@ -249,6 +250,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [bandTextColor, setBandTextColor] = useState<string | null>(tour.band_text_color);
   const bandFontFamilyMountRef = useRef(true);
   const bandTextColorMountRef = useRef(true);
+  const configsMountRef = useRef(true);
 
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const toast = useToast();
@@ -376,6 +378,23 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }, 500);
     return () => clearTimeout(timer);
   }, [bandTextColor, tourId, toastError]);
+
+  useEffect(() => {
+    if (configsMountRef.current) {
+      configsMountRef.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`/api/tours/${tourId}/overlay-config`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ overlay_config: configs }),
+      })
+        .then(res => { if (!res.ok) toastError("Layout save failed."); })
+        .catch(() => toastError("Layout save failed — network error."));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [configs, tourId, toastError]);
 
   const bandName = tour.band_name ?? tour.name ?? "Artist";
 
@@ -935,53 +954,58 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </div>
             </button>
           )}
-          <div style={{ display: "flex", gap: 8 }}>
-            {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "10px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
-            {!isVideoFormat && !isPrintFormat && <button
-                onClick={async () => {
-                  const pid = formatImageIds[activeFormat];
-                  if (!pid) { toast.error('No image uploaded for this format.'); return; }
-                  const fd: Record<string, { w: number; h: number }> = {
-                    square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 },
-                    landscape: { w: 820, h: 312 }, tiktok: { w: 1080, h: 1920 }, yt_shorts: { w: 1080, h: 1080 },
-                  };
-                  const dims = fd[activeFormat] ?? fd.square;
-                  const renderCrop = getFormatCrop(cropConfig, activeFormat);
-                  const renderBaseLayer = isValidCropRegion(renderCrop)
-                    ? 'c_crop,x_' + formatFraction(renderCrop.x) + ',y_' + formatFraction(renderCrop.y) + ',w_' + formatFraction(renderCrop.w) + ',h_' + formatFraction(renderCrop.h) + '/c_fill,w_' + dims.w + ',h_' + dims.h
-                    : 'c_fill,g_center,w_' + dims.w + ',h_' + dims.h;
-                  const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/' + renderBaseLayer + '/' + pid;
-                  const shortDate = cfg.shortDate ?? false;
-                  const ed = firstEvent ? {
-                    bandName: bandName,
-                    dateFormatted: formatDateForRender(firstEvent.date_iso, shortDate),
-                    venueName: firstEvent.venue,
-                    cityState: [firstEvent.city, firstEvent.state].filter(Boolean).join(', '),
-                    customText1: customText1 || null,
-                    customText2: customText2 || null,
-                  } : {
-                    bandName: bandName,
-                    dateFormatted: shortDate ? 'APR 26TH' : 'April 25 2026',
-                    venueName: 'Stubbs Waller Creek Amphitheater',
-                    cityState: 'Little Rock, AR',
-                    customText1: customText1 || null,
-                    customText2: customText2 || null,
-                  };
-                  try {
-                    const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily, bandTextColor);
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                  } catch (err: any) {
-                    toast.error('Render failed: ' + err.message);
-                    console.error(err);
-                  }
-                }}
-                style={{ padding: "8px 20px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
-              >PREVIEW RENDER</button>}
-              <button onClick={save} disabled={saving}
-              className={justSaved ? "save-pulse" : ""} style={{ padding: "8px 20px", border: `3px solid ${(savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)"}`, background: (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
-              {saving ? "SAVING..." : (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "SAVED ✓" : "SAVE TEMPLATE"}
-            </button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+            <div style={{ fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-display)", border: "3px solid var(--hw-crimson)", padding: "6px 12px" }}>
+              Everything autosaves.
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "10px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
+              {!isVideoFormat && !isPrintFormat && <button
+                  onClick={async () => {
+                    const pid = formatImageIds[activeFormat];
+                    if (!pid) { toast.error('No image uploaded for this format.'); return; }
+                    const fd: Record<string, { w: number; h: number }> = {
+                      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 },
+                      landscape: { w: 820, h: 312 }, tiktok: { w: 1080, h: 1920 }, yt_shorts: { w: 1080, h: 1080 },
+                    };
+                    const dims = fd[activeFormat] ?? fd.square;
+                    const renderCrop = getFormatCrop(cropConfig, activeFormat);
+                    const renderBaseLayer = isValidCropRegion(renderCrop)
+                      ? 'c_crop,x_' + formatFraction(renderCrop.x) + ',y_' + formatFraction(renderCrop.y) + ',w_' + formatFraction(renderCrop.w) + ',h_' + formatFraction(renderCrop.h) + '/c_fill,w_' + dims.w + ',h_' + dims.h
+                      : 'c_fill,g_center,w_' + dims.w + ',h_' + dims.h;
+                    const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/' + renderBaseLayer + '/' + pid;
+                    const shortDate = cfg.shortDate ?? false;
+                    const ed = firstEvent ? {
+                      bandName: bandName,
+                      dateFormatted: formatDateForRender(firstEvent.date_iso, shortDate),
+                      venueName: firstEvent.venue,
+                      cityState: [firstEvent.city, firstEvent.state].filter(Boolean).join(', '),
+                      customText1: customText1 || null,
+                      customText2: customText2 || null,
+                    } : {
+                      bandName: bandName,
+                      dateFormatted: shortDate ? 'APR 26TH' : 'April 25 2026',
+                      venueName: 'Stubbs Waller Creek Amphitheater',
+                      cityState: 'Little Rock, AR',
+                      customText1: customText1 || null,
+                      customText2: customText2 || null,
+                    };
+                    try {
+                      const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily, bandTextColor);
+                      const url = URL.createObjectURL(blob);
+                      window.open(url, '_blank');
+                    } catch (err: any) {
+                      toast.error('Render failed: ' + err.message);
+                      console.error(err);
+                    }
+                  }}
+                  style={{ padding: "8px 20px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+                >PREVIEW RENDER</button>}
+                <button onClick={save} disabled={saving}
+                className={justSaved ? "save-pulse" : ""} style={{ padding: "8px 20px", border: `3px solid ${(savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)"}`, background: (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
+                {saving ? "SAVING..." : (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "SAVED ✓" : "SAVE TEMPLATE"}
+              </button>
+            </div>
           </div>
         </div>
 
