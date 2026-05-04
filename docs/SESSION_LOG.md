@@ -2713,13 +2713,12 @@ Six commits, all green on prod.
 - e1ad29b — feat(localizer): remove SAVE TEMPLATE button, autosave is the only save path
 - bc83d57 — fix(localizer): SET ALL FORMATS now propagates bandTextColor
 
-### Dangling (intentionally) for the Phase 2 column-retirement pass
+### Phase 2 column-retirement — RESOLVED same-day, see below
 
 - `tours.band_text_color` column itself (no SQL run today)
 - Tour type field at `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx:150` referencing `band_text_color`
 - SELECT `band_text_color` in `app/dashboard/tours/[tourId]/template/page.tsx:11`
 - `band_text_color` branch in PATCH handler at `app/api/tours/[tourId]/overlay-config/route.ts:28`
-- `save-pulse` CSS keyframe in `template-editor.css` (dead after button removal)
 
 These four (plus the SQL) belong in a single focused cleanup commit when ready.
 
@@ -2729,6 +2728,17 @@ These four (plus the SQL) belong in a single focused cleanup commit when ready.
 - **Edit prompts must be internally consistent.** Telling Claude Code to drop a parameter AND change its argument at a call site in the same diff is a contradiction. tsc caught it but should have been caught at review. Lesson: when an edit involves a function signature change, all call sites need their argument dropped (not rewired) in the same diff.
 - **Reports should explicitly include type-system references.** "Find every X reference" needs to surface other type aliases sharing the name, not just runtime references.
 - **The SAVE TEMPLATE button created perception drift.** Drew couldn't tell if it was redundant; a user definitely won't. When some fields autosave (custom_text, font, color, image uploads) but others don't (positions/sizes/toggles in the per-format config), the button creates exactly this kind of "I don't know which actions persist" confusion. Either autosave everything or autosave nothing — the half-half state is worse than either pole.
+
+### Phase 2 column retirement — same day
+
+After the initial six commits, ran the column retirement pass for band_text_color:
+
+- 33baeed — chore(localizer): retire band_text_color column references
+- SQL run by hand in Supabase SQL Editor: `ALTER TABLE tours DROP COLUMN band_text_color;`
+
+Cleared four code references (Tour type field, template/page.tsx SELECT, overlay-config PATCH allowlist branch, save-pulse CSS keyframe/class), then dropped the column. Verified prod hard-refresh + autosave drag cycle both before and after the SQL.
+
+Correction: the dangling-list bullet earlier in this entry incorrectly attributed the save-pulse CSS to template-editor.css. It actually lived in app/animations.css (a shared animations file). Caught at the verify-first step before the cleanup commit.
 
 ### Next session priorities (TBD)
 
