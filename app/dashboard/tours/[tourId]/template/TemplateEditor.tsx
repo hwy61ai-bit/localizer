@@ -230,14 +230,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [dragging, setDragging] = useState<FieldKey | "band" | "logo" | "sponsorLogo1" | "sponsorLogo2" | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [containerWidth, setContainerWidth] = useState(700);
-  const [saving, setSaving] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
-  const [savedFormats, setSavedFormats] = useState<Set<string>>(new Set());
-  const [dirtyFormats, setDirtyFormats] = useState<Set<string>>(new Set());
   const [customFonts, setCustomFonts] = useState<{ label: string; value: string }[]>([]);
   const [uploadingFont, setUploadingFont] = useState(false);
   const [isDraggingFont, setIsDraggingFont] = useState(false);
-  const savingRef = useRef(false);
   const fontFileRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -484,7 +479,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       const y = Math.max(0.02, Math.min(0.98, mouseY - dragOffset.y));
       if (Math.abs(x - 0.5) < SNAP) x = 0.5;
       if (dragging === "logo") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -493,7 +487,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else if (dragging === "sponsorLogo1") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -502,7 +495,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else if (dragging === "sponsorLogo2") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -511,7 +503,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else if (dragging === "band") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -520,7 +511,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else if (dragging === "customText1") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -529,7 +519,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else if (dragging === "customText2") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -538,7 +527,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -559,7 +547,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   }, [dragging, activeFormat, dragOffset]);
 
   function updateField(field: FieldKey, key: keyof FieldConfig, value: number | string) {
-    setDirtyFormats(prev => new Set([...prev, activeFormat]));
     setConfigs(prev => ({
       ...prev,
       [activeFormat]: {
@@ -570,39 +557,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   }
 
   function updateCfg(key: keyof FormatConfig, value: any) {
-    setDirtyFormats(prev => new Set([...prev, activeFormat]));
     setConfigs(prev => ({
       ...prev,
       [activeFormat]: { ...prev[activeFormat], [key]: value },
     }));
-  }
-
-  async function save() {
-    if (savingRef.current) return;
-    savingRef.current = true;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/tours/${tourId}/overlay-config`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ overlay_config: configs }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        toast.error("Save failed — please try again before generating.");
-      } else {
-        setSavedFormats(prev => new Set([...prev, activeFormat]));
-        setDirtyFormats(prev => { const next = new Set(prev); next.delete(activeFormat); return next; });
-        setJustSaved(true);
-        setTimeout(() => setJustSaved(false), 700);
-        router.refresh();
-      }
-    } catch {
-      toast.error("Save failed — network error.");
-    } finally {
-      savingRef.current = false;
-      setSaving(false);
-    }
   }
 
   async function handleCropSave(region: CropRegion) {
@@ -657,7 +615,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else if (field === "customText1") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -666,7 +623,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           },
         }));
       } else if (field === "customText2") {
-        setDirtyFormats(prev => new Set([...prev, activeFormat]));
         setConfigs(prev => ({
           ...prev,
           [activeFormat]: {
@@ -910,8 +866,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   }
                   return updated;
                 });
-                setDirtyFormats(prev => new Set([...prev, "story", "landscape", "print", "tiktok", "yt_shorts"]));
-                toast.success("Square layout applied to 5 formats. Click Save Template to persist.");
+                toast.success("Square layout applied to 5 formats.");
               }}
               style={{
                 padding: "8px 16px",
@@ -983,10 +938,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   }}
                   style={{ padding: "8px 20px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
                 >PREVIEW RENDER</button>}
-                <button onClick={save} disabled={saving}
-                className={justSaved ? "save-pulse" : ""} style={{ padding: "8px 20px", border: `3px solid ${(savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)"}`, background: (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "var(--hw-green)" : "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
-                {saving ? "SAVING..." : (savedFormats.has(activeFormat) && !dirtyFormats.has(activeFormat)) ? "SAVED ✓" : "SAVE TEMPLATE"}
-              </button>
             </div>
           </div>
         </div>
@@ -1485,7 +1436,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         <button
                           onClick={() => {
                             setConfigs(prev => ({ ...prev, [activeFormat]: { ...prev[activeFormat], bandTextColor: null } }));
-                            setDirtyFormats(prev => new Set([...prev, activeFormat]));
                           }}
                           style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
                         >
@@ -1500,7 +1450,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         onChange={(e) => {
                           const next = e.target.value.replace("#", "");
                           setConfigs(prev => ({ ...prev, [activeFormat]: { ...prev[activeFormat], bandTextColor: next } }));
-                          setDirtyFormats(prev => new Set([...prev, activeFormat]));
                         }}
                         style={{ width: 40, height: 32, borderRadius: 0, border: "3px solid var(--hw-border-strong)", cursor: "pointer", padding: 2 }}
                       />
@@ -1743,7 +1692,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           onChange={(e) => {
                             const val = parseInt(e.target.value);
                             if (!isNaN(val) && val >= 1 && val <= 999) {
-                              setDirtyFormats(prev => new Set([...prev, activeFormat]));
                               setConfigs(prev => ({
                                 ...prev,
                                 [activeFormat]: {
@@ -1761,7 +1709,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
                       value={cfg.customText1?.size ?? CUSTOM_TEXT_1_DEFAULT.size}
                       onChange={(e) => {
-                        setDirtyFormats(prev => new Set([...prev, activeFormat]));
                         setConfigs(prev => ({
                           ...prev,
                           [activeFormat]: {
@@ -1807,7 +1754,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           onChange={(e) => {
                             const val = parseInt(e.target.value);
                             if (!isNaN(val) && val >= 1 && val <= 999) {
-                              setDirtyFormats(prev => new Set([...prev, activeFormat]));
                               setConfigs(prev => ({
                                 ...prev,
                                 [activeFormat]: {
@@ -1825,7 +1771,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
                       value={cfg.customText2?.size ?? CUSTOM_TEXT_2_DEFAULT.size}
                       onChange={(e) => {
-                        setDirtyFormats(prev => new Set([...prev, activeFormat]));
                         setConfigs(prev => ({
                           ...prev,
                           [activeFormat]: {
