@@ -990,10 +990,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           const hasCrop = !!activeCrop;
           const hasImage = !!formatImageIds[activeFormat];
           return (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, padding: "12px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)" }}>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: hasCrop ? "var(--hw-crimson)" : "var(--hw-text-muted)", fontWeight: hasCrop ? 700 : 400 }}>
-                {hasCrop ? "✓ Custom crop" : "Default center"}
-              </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, marginBottom: 20 }}>
               <button
                 onClick={() => {
                   if (!hasImage) return;
@@ -1005,6 +1002,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               >
                 Crop Image
               </button>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: hasCrop ? "var(--hw-crimson)" : "var(--hw-text-muted)", fontWeight: hasCrop ? 700 : 400 }}>
+                {hasCrop ? "✓ Custom crop" : "Default center"}
+              </div>
             </div>
           );
         })()}
