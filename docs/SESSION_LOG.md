@@ -2746,3 +2746,31 @@ Correction: the dangling-list bullet earlier in this entry incorrectly attribute
 - Or back to the post-image-crop handoff: Path C (Unit D rate limiting), Path B (loose-change cleanup), or Path A (launch readiness — depends on Tim input + bank account decision)
 - Or band font follow-up if it ever feels limiting (today's decision was to keep band font tour-uniform; can be revisited)
 
+## 2026-05-05 — Template editor UX polish + preview scale fix
+
+Three commits, all green on prod.
+
+### Shipped
+
+- **SET ALL FORMATS button spacing.** Bumped marginRight from 16px to 96px to give visual breathing room between the button and the "Everything autosaves." crimson notice. Iterated 16→32→64→96 to find the right value.
+- **CROP IMAGE button relocation.** Moved the per-format crop trigger (button + "DEFAULT CENTER" / "✓ Custom crop" status indicator) from its own block above the 2-column grid into the existing "DRAG TEXT TO POSITION / PREVIEW LONGEST NAMES" header row, right-aligned via marginLeft: auto. Now sits above the top-right corner of the image preview, in line with PREVIEW LONGEST NAMES.
+- **Image preview frame removal.** Dropped the 3px solid border and var(--hw-bg-surface) background from the preview wrapper. Visual frame was confusing — especially when the image was narrower than the wrapper, which left visible gutters of contrasting background on either side.
+- **Preview scale closed-loop bug fix.** Found a pre-existing bug: containerRef was attached to the inner positioned container whose width is `fmtDims.w * previewScale` — i.e., the ResizeObserver was measuring the element whose width is being controlled by the calculation it feeds. Closed feedback loop that locked containerWidth to whatever the first render produced (initial useState(700) default), and never responded to viewport changes or tab switching. Moved containerRef to the parent wrapper so the observer measures actual available space. After the fix, previewScale responds correctly to window resizes and tab switches, and Landscape (which was severely undersized due to the bug) now fills the available cell width.
+
+### Commits
+
+- 6738f48 — ux(localizer): increase margin between SET ALL FORMATS and autosave notice
+- 9bffc1d — ux(localizer): move CROP IMAGE button to header row above preview image
+- cf1bd2c — ux(localizer): fix preview scale closed-loop bug; remove visual frame around preview
+
+### Lessons captured
+
+- **Iterate visual spacing live; don't argue from defaults.** First margin bump (16→32) was indistinguishable. Second (32→64) was visible. Third (64→96) was right. Cheap to iterate, expensive to argue about pixel values without seeing.
+- **Closed-loop measurement bugs are invisible until they aren't.** The containerRef-on-the-measured-element pattern produced "looks reasonable" output for most formats because the height-cap dominated and masked the bug. Landscape (W-dominated) was the canary that surfaced it. Worth grepping the codebase for similar patterns: `useRef` + `ResizeObserver` + the same element having an explicit calculated width.
+- **"Why does it get bigger after refresh" was the right question.** It pulled the architectural bug to the surface where a cosmetic question (Drew's "remove the borders") would have hidden it. Often the user's diagnostic instinct is sharper than the proposed fix.
+
+### Next session priorities (TBD)
+
+- Back to the post-image-crop handoff: Path C (Unit D rate limiting), Path B (loose-change cleanup), or Path A (launch readiness — depends on Tim input + bank account decision)
+- Or follow up on the preview scale fix: the maxPreviewH = 600 height cap is a reasonable starting value, but the editor could benefit from a responsive cap that grows with viewport height on tall monitors. Low priority.
+
