@@ -942,30 +942,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           </div>
         </div>
 
-        {activeFormat !== "tiktok" && activeFormat !== "yt_shorts" && (() => {
-          const activeCrop = getFormatCrop(cropConfig, activeFormat);
-          const hasCrop = !!activeCrop;
-          const hasImage = !!formatImageIds[activeFormat];
-          return (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, marginBottom: 20 }}>
-              <button
-                onClick={() => {
-                  if (!hasImage) return;
-                  setCropModalFormat(activeFormat as CropFormatKey);
-                  setCropModalOpen(true);
-                }}
-                disabled={!hasImage}
-                style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: hasImage ? "var(--hw-text)" : "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", cursor: hasImage ? "pointer" : "not-allowed", opacity: hasImage ? 1 : 0.5, transition: "var(--hw-ease)" }}
-              >
-                Crop Image
-              </button>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: hasCrop ? "var(--hw-crimson)" : "var(--hw-text-muted)", fontWeight: hasCrop ? 700 : 400 }}>
-                {hasCrop ? "✓ Custom crop" : "Default center"}
-              </div>
-            </div>
-          );
-        })()}
-
         <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, alignItems: "start" }}>
 
           <div style={{ position: "sticky", top: 16, alignSelf: "start", maxHeight: "calc(100vh - 32px)", overflowY: "auto" }}>
@@ -975,6 +951,29 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", padding: "8px 16px", border: previewLongest ? "2px solid var(--hw-crimson)" : "2px solid var(--hw-border-strong)", background: previewLongest ? "var(--hw-red-ghost)" : "var(--hw-bg-invert)", color: previewLongest ? "var(--hw-crimson)" : "#fff", cursor: "pointer", transition: "var(--hw-ease)" }}>
                 {previewLongest ? "SHOWING LONGEST NAMES" : "PREVIEW LONGEST NAMES"}
               </button>
+              {activeFormat !== "tiktok" && activeFormat !== "yt_shorts" && (() => {
+                const activeCrop = getFormatCrop(cropConfig, activeFormat);
+                const hasCrop = !!activeCrop;
+                const hasImage = !!formatImageIds[activeFormat];
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, marginLeft: "auto" }}>
+                    <button
+                      onClick={() => {
+                        if (!hasImage) return;
+                        setCropModalFormat(activeFormat as CropFormatKey);
+                        setCropModalOpen(true);
+                      }}
+                      disabled={!hasImage}
+                      style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: hasImage ? "var(--hw-text)" : "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", cursor: hasImage ? "pointer" : "not-allowed", opacity: hasImage ? 1 : 0.5, transition: "var(--hw-ease)" }}
+                    >
+                      Crop Image
+                    </button>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: hasCrop ? "var(--hw-crimson)" : "var(--hw-text-muted)", fontWeight: hasCrop ? 700 : 400 }}>
+                      {hasCrop ? "✓ Custom crop" : "Default center"}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
               {imageUrl ? (
