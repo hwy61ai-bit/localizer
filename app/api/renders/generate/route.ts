@@ -172,6 +172,9 @@ function buildCloudinaryUrl(
     ? customFontsMap.get(resolvedBandFontFamily)!
     : resolvedBandFontFamily.replace(/ /g, "_");
   const bandColor = cfg.bandTextColor ?? color;
+  const venueColor = cfg.venueColor ?? color;
+  const cityColor = cfg.cityColor ?? color;
+  const dateColor = cfg.dateColor ?? color;
   const bandSize = format === "landscape" ? bandSizeScaled : (cfg.bandSize ?? 48);
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
@@ -183,9 +186,9 @@ function buildCloudinaryUrl(
   const layers = [
     baseLayer,
     ...(showBand ? [buildTextLayer(bandFont, bandSize, bandName, bandColor, bandXF, bandYF, w, h, bandAlign)] : []),
-    ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
-    ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
-    ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign)]  : []),
+    ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, venueColor, venueXF, venueYF, w, h, venueAlign)] : []),
+    ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   dateColor, dateXF,  dateYF,  w, h, dateAlign)]  : []),
+    ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, cityColor, cityXF,  cityYF,  w, h, cityAlign)]  : []),
   ];
 
   return `https://res.cloudinary.com/${cloudName}/image/upload/${layers.join("/")}/${publicId}`;
@@ -290,6 +293,9 @@ function buildCloudinaryVideoUrl(
     ? customFontsMap.get(resolvedBandFontFamily)!
     : resolvedBandFontFamily.replace(/ /g, "_");
   const bandColor = cfg.bandTextColor ?? color;
+  const venueColor = cfg.venueColor ?? color;
+  const cityColor = cfg.cityColor ?? color;
+  const dateColor = cfg.dateColor ?? color;
   const bandSize = cfg.bandSize ?? 48;
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
@@ -331,9 +337,9 @@ function buildCloudinaryVideoUrl(
     ...(showSponsorLogo1 && sponsorLogo1Url && sponsorLogo1Cfg ? [buildSponsorLogoLayer(sponsorLogo1Url, sponsorLogo1Cfg, w, h)] : []),
     ...(showSponsorLogo2 && sponsorLogo2Url && sponsorLogo2Cfg ? [buildSponsorLogoLayer(sponsorLogo2Url, sponsorLogo2Cfg, w, h)] : []),
     ...(showBand ? [buildTextLayer(bandFont, bandSize, bandName, bandColor, bandXF, bandYF, w, h, bandAlign)] : []),
-    ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, color, venueXF, venueYF, w, h, venueAlign)] : []),
-    ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   color, dateXF,  dateYF,  w, h, dateAlign)]  : []),
-    ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, color, cityXF,  cityYF,  w, h, cityAlign)]  : []),
+    ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, venueColor, venueXF, venueYF, w, h, venueAlign)] : []),
+    ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   dateColor, dateXF,  dateYF,  w, h, dateAlign)]  : []),
+    ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, cityColor, cityXF,  cityYF,  w, h, cityAlign)]  : []),
     ...(drawCustomText1
       ? [buildTextLayer(font, customText1Size, customText1Final, color, customText1XF, customText1YF, w, h, customText1Align)]
       : []),
