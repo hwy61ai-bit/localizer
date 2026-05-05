@@ -975,10 +975,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 );
               })()}
             </div>
-            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
+            <div ref={containerRef} style={{ overflow: "hidden" }}>
               {imageUrl ? (
                 <>
-                <div ref={containerRef} style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default", width: `${Math.round(fmtDims.w * previewScale)}px`, margin: "0 auto" }}>
+                <div style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default", width: `${Math.round(fmtDims.w * previewScale)}px`, margin: "0 auto" }}>
                   <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
 
                   {dragging && (
