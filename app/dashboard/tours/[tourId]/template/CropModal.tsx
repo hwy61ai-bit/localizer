@@ -176,6 +176,7 @@ export default function CropModal({
         <div
           style={{
             padding: "20px 24px",
+            flexShrink: 0,
             borderBottom: "3px solid var(--hw-border-strong)",
             display: "flex",
             justifyContent: "space-between",
@@ -216,6 +217,8 @@ export default function CropModal({
         <div
           style={{
             padding: 24,
+            flex: 1,
+            minHeight: 0,
             overflowY: "auto",
             display: "grid",
             gridTemplateColumns: "minmax(0, 65%) minmax(0, 35%)",
@@ -299,6 +302,7 @@ export default function CropModal({
         <div
           style={{
             padding: "0 24px 16px",
+            flexShrink: 0,
             fontFamily: "var(--hw-font-body)",
             fontSize: 13,
             color: "var(--hw-text-secondary)",
@@ -314,6 +318,7 @@ export default function CropModal({
             role="alert"
             style={{
               padding: "0 24px 12px",
+              flexShrink: 0,
               fontFamily: "var(--hw-font-body)",
               fontSize: 13,
               color: "var(--hw-crimson)",
@@ -326,6 +331,7 @@ export default function CropModal({
         <div
           style={{
             padding: "16px 24px",
+            flexShrink: 0,
             borderTop: "3px solid var(--hw-border-strong)",
             background: "var(--hw-bg)",
             display: "flex",
