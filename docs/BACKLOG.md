@@ -481,3 +481,15 @@ Before adding the cron back to `vercel.json`:
 - [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
 
 - **Middleware auth error handling** — when a request comes in with stale/invalid Supabase refresh tokens, middleware throws 'Invalid Refresh Token: Refresh Token Not Found' instead of gracefully treating the user as anonymous. Logs are noisy and the recovery path is suboptimal. Reproduced May 5: laptop with stale cookies got refresh-token errors on every request including public routes (/coming-soon). Cleared by clearing cookies. Fix: middleware should catch refresh_token_not_found and proceed as anonymous, only logging at debug/info level.
+
+## Auth follow-ups (after May 5 maxAge fix)
+
+Primary auth bug — cookie max-age=3600 (1 hour) in lib/supabaseClient.ts cookieStorage adapter — was fixed in commit a7e0ef2 (bumped to 30 days = 2592000s). Three follow-ups remain:
+
+1. **Migrate from implicit flow to PKCE.** lib/supabaseClient.ts currently uses flowType: 'implicit' which is deprecated. PKCE is more secure and better-suited to SSR. Touches login flow end-to-end (email magic links, OAuth callbacks, /auth/callback handler). Dedicated session.
+
+2. **Graceful middleware error handling on getSession() failures.** middleware.ts has two getSession() calls (lines 117, 156) that destructure data without checking error. When 'Refresh Token Not Found' fires, the error is logged noisily by Supabase before being swallowed. Wrap in try/catch, treat as anonymous, log at debug level. Captured separately above.
+
+3. **Investigate the April 28 temporary band-aid in middleware.ts.** Comment dated 2026-04-28 explains an unconditional redirect to /coming-soon for / on public hosts because the env-var gate wasn't firing in production. Still in place a week later. Diagnose why the env-var gate failed and remove the band-aid before public launch.
+
+**Verification of May 5 fix:** Log in fresh, check DevTools cookies — sb-* auth cookies should have Expires/Max-Age ~30 days out (around June 4 2026). If shorter than that, fix didn't take or there's another code path setting cookies.
