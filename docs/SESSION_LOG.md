@@ -2850,3 +2850,42 @@ Drew opened the crop modal on his laptop and saw the zoom slider + action button
 - Audit other modals and editor surfaces for viewport-dependent bugs similar to the crop modal cutoff.
 - Optional follow-up on the preview scale fix: maxPreviewH = 600 is a reasonable starting value, but the editor could benefit from a responsive cap that grows with viewport height on tall monitors. Low priority.
 
+## 2026-05-05 (continued — evening session 2)
+
+**Per-field color overrides shipped end-to-end.** Three new optional
+fields (venueColor/cityColor/dateColor) on FormatConfig, each falling
+back to format-default textColor. Mirrors the bandTextColor pattern
+from commit 314f8e6.
+
+Commits:
+- 06dae0f — UI + types + lib/clientRender.ts (image formats)
+- 2d0491f — app/api/renders/print-pdf/route.ts (print PDF)
+- 2de8ad6 — app/api/renders/generate/route.ts (video, both paths)
+
+Bonus: TikTok format tab label appended with " VIDEO" for clarity.
+
+Kept on cfg.textColor by design: logo/sponsor tinting + customText1/2.
+
+UI is three color block pickers in the editor sidebar under TEXT
+SIZES & ALIGNMENT, mirroring the bandTextColor picker exactly.
+Live preview reflects per-field colors in real time. Per-format
+storage — overrides on Square don't bleed to Story.
+
+Process notes:
+- Two staleness checks paid off this session: confirmed both server
+  render files already had bandTextColor scaffolding from 314f8e6,
+  which made phases 4 and 5 mechanically tiny.
+- Phase 1+2+3 bundled as one feature commit (06dae0f); phases 4 and
+  5 as separate render-path commits.
+
+Total today: 15 commits across auth maxAge fix (a7e0ef2 — likely
+closes the April 16 recurrence), Direction A toolbar redesign, crop
+modal viewport fix on laptop, and full per-field color feature.
+
+### Next session candidates
+- Graceful middleware error handling (~30 min, closes auth arc from
+  this morning's work)
+- April 28 middleware band-aid investigation (blocks Coming Soon
+  gate removal)
+- Unit D rate limiting (deferred from April 9)
+- Onboarding wizard Option B (still needs Tim's input)
