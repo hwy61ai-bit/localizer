@@ -2769,8 +2769,84 @@ Three commits, all green on prod.
 - **Closed-loop measurement bugs are invisible until they aren't.** The containerRef-on-the-measured-element pattern produced "looks reasonable" output for most formats because the height-cap dominated and masked the bug. Landscape (W-dominated) was the canary that surfaced it. Worth grepping the codebase for similar patterns: `useRef` + `ResizeObserver` + the same element having an explicit calculated width.
 - **"Why does it get bigger after refresh" was the right question.** It pulled the architectural bug to the surface where a cosmetic question (Drew's "remove the borders") would have hidden it. Often the user's diagnostic instinct is sharper than the proposed fix.
 
+### Late afternoon: Direction A toolbar redesign
+
+Drew flagged the toolbar area (format tabs + SET ALL FORMATS + autosave indicator + PREVIEW RENDER) as "messy and unorganized." Three visualizer mockups sketched as design directions: A (tight horizontal cluster + demoted autosave), B (PREVIEW RENDER as lone primary + SET ALL FORMATS as text link), C (two-tier with horizontal divider). Drew picked Direction A.
+
+**Shipped:**
+
+- **"Everything autosaves." demoted from large display-font box to small mono pill.** Was 22px display font with 3px crimson border and padding 6px 12px — visually dominant. Became 11px mono with 1.5px crimson border and padding 3px 10px — same crimson cue, fraction of the visual weight.
+- **SET ALL FORMATS relocated and simplified.** Was a standalone two-line button positioned right-of-tabs with subtitle ("Overwrites layout, fonts, and colors") and crimson outlined treatment. Now lives inside the action row alongside PREVIEW RENDER, single-line, no subtitle, styled to match inactive format tabs (white bg, light gray 3px border, dark text). Confirm dialog wording preserved verbatim — users still see the full consequences on click.
+- **PREVIEW RENDER promoted to primary action.** Was outlined-only (white bg, 3px black border, dark text, display font 12px). Now filled black primary (var(--hw-bg-invert) bg, white text, 3px var(--hw-border-strong) border, mono 11px). Visually echoes the active format tab treatment.
+- **Net result:** right cluster reads as a hierarchy. Autosave pill (status, lowest priority) on top. Below: button group with SET ALL FORMATS (secondary) + PREVIEW RENDER (primary). The whole right-side echoes the format tab system's visual language — same fonts, same border treatments, just at a different position.
+
+**Iterations:**
+
+Mockup used "✓ AUTOSAVED" pill text. Drew preferred "everything autosaves" wording. First applied as lowercase, but Drew wanted uppercase to match the surrounding buttons. Two commits to land: 1077b51 (Direction A applied) + 968693c (text case fix).
+
+### Late afternoon: Auth investigation surfaced a real bug
+
+Drew tried to log in on his laptop after 1-2 days of inactivity and got "session expired." Vercel logs showed "Invalid Refresh Token: Refresh Token Not Found" errors firing on every request including public routes (/coming-soon).
+
+**Triage:** Cleared cookies + tried login on incognito → worked. Confirmed the issue was local to the laptop's regular browser cookies, not a server-side auth flow bug. Cleared regular browser cookies, fresh login worked. Immediate user pain resolved.
+
+But Drew asked "how do we prevent this from happening to users?" — and that pulled the actual root cause to the surface.
+
+**Investigation:**
+
+- Checked Supabase auth settings: time-box and inactivity timeout both set to 0 (disabled). Refresh tokens effectively long-lived.
+- Audited middleware.ts and lib/supabaseClient.ts.
+
+**The bug — `lib/supabaseClient.ts` cookieStorage adapter was setting cookies with `max-age=3600` (1 hour).** Every refresh from the browser-side wrote a 1-hour-lifetime cookie. After 1 hour of browser inactivity, cookies expired even though the refresh token in Supabase's database was still valid. Returning users would silently lose their session and either land on /login or see "Refresh Token Not Found" errors logged in middleware (the noise we saw).
+
+**Fix:** bumped `max-age` from 3600s (1 hour) to 2592000s (30 days). Verified by logging in fresh on laptop and checking DevTools — cookies now show expiration well beyond 30 days (server-side cookies set even longer; browser-side refreshes will use the new 30-day cap).
+
+**Worth noting:**
+
+- This was almost certainly the cause of the April 16 "auth bug recurrence verification" flagged in the previous handoff doc. Same root cause, never properly identified. Closed now.
+- Affects every user, not just Drew's laptop. Anyone returning to the site after >1 hour of inactivity was getting silently logged out. Real UX win.
+
+**Three follow-ups captured in backlog (commits e553ad4 + 15d0793) but not shipped today:**
+
+1. Migrate from `flowType: "implicit"` (deprecated) to `flowType: "pkce"` — bigger change, dedicated session.
+2. Graceful middleware error handling on getSession() failures — the noisy logs are still firing on stale-cookie requests.
+3. Investigate the April 28 temporary band-aid in middleware.ts — unconditional redirect to /coming-soon for / on public hosts because the env-var gate wasn't firing in production. Still in place a week later.
+
+### Late afternoon: Crop modal viewport fix on laptop
+
+Drew opened the crop modal on his laptop and saw the zoom slider + action buttons (Reset/Cancel/Save) clipped off the bottom. Mac Pro external display (taller viewport) was unaffected.
+
+**Diagnosis:** Modal had `maxHeight: 85vh` and body had `overflowY: "auto"` (correct). But the body was missing `flex: 1, minHeight: 0`, and the header/note/error/footer were missing `flex-shrink: 0`. When the modal was forced to 85vh on shorter viewports, every flex child shrank proportionally instead of the body absorbing the constraint and triggering its overflow.
+
+**Fix:** Pinned header, note, error, and footer with `flex-shrink: 0`; let body be the only flexible item with `flex: 1, minHeight: 0` so it shrinks-and-scrolls when content is too tall. Six lines added across five style objects. Verified on laptop after Vercel deploy — slider and buttons now accessible.
+
+**Lesson:** `min-height: 0` is the magic that lets `overflow: auto` actually trigger inside a flex child. Default `min-height: auto` would force the grid to its full content height and break scrolling. Worth remembering for any future modal layouts.
+
+### Updated commits list (full day, in order)
+
+- 6738f48 — ux(localizer): increase margin between SET ALL FORMATS and autosave notice
+- 9bffc1d — ux(localizer): move CROP IMAGE button to header row above preview image
+- cf1bd2c — ux(localizer): fix preview scale closed-loop bug; remove visual frame around preview
+- 955e33b — session log: 2026-05-05 template editor UX polish + preview scale fix (morning entry)
+- 1077b51 — ux(localizer): redesign template editor toolbar (Direction A)
+- 968693c — ux(localizer): autosave pill text to uppercase
+- e553ad4 — backlog: middleware should gracefully handle stale/invalid refresh tokens
+- a7e0ef2 — fix(auth): extend browser cookie max-age from 1 hour to 30 days
+- 15d0793 — backlog: auth follow-ups after maxAge fix
+- f0d0793 — fix(localizer): crop modal cuts off slider and buttons on short viewports
+
+### Additional lessons captured (afternoon)
+
+- **Show, don't argue.** Three visualizer mockups (Directions A/B/C) gave Drew a clear basis to pick from. Far better than describing alternatives in prose. Mockups took ~1 minute to generate; saved likely an hour of back-and-forth.
+- **Echo the existing system instead of inventing.** New SET ALL FORMATS exactly mirrors inactive format tab styling. New PREVIEW RENDER mirrors active format tab styling. Zero new design tokens introduced; full visual coherence achieved by referencing what was already there.
+- **Drew's diagnostic instincts surfaced a real bug.** "How do we prevent this from happening to users?" pulled the auth investigation out of "user has stale cookies, restart browser" and into "actually every user is being affected by a 1-hour cookie maxAge." The architectural question paid off — same pattern as the morning's preview-scale find.
+- **`min-height: 0` is the magic for scrollable flex children.** Default `min-height: auto` keeps a flex item at its content size, which prevents `overflow: auto` from triggering. Worth remembering for any future modal layouts.
+- **Multi-machine viewport bugs are easy to miss.** The crop modal worked fine on Mac Pro but was broken on laptop. Similar viewport-dependent bugs may exist elsewhere in the editor — worth a pass on shorter viewports before public launch.
+
 ### Next session priorities (TBD)
 
-- Back to the post-image-crop handoff: Path C (Unit D rate limiting), Path B (loose-change cleanup), or Path A (launch readiness — depends on Tim input + bank account decision)
-- Or follow up on the preview scale fix: the maxPreviewH = 600 height cap is a reasonable starting value, but the editor could benefit from a responsive cap that grows with viewport height on tall monitors. Low priority.
+- Back to the post-image-crop handoff: Path C (Unit D rate limiting), Path B (loose-change cleanup), or Path A (launch readiness — depends on Tim input + bank account decision).
+- Auth follow-ups (in priority order): graceful middleware error handling > investigate April 28 band-aid > PKCE migration.
+- Audit other modals and editor surfaces for viewport-dependent bugs similar to the crop modal cutoff.
+- Optional follow-up on the preview scale fix: maxPreviewH = 600 is a reasonable starting value, but the editor could benefit from a responsive cap that grows with viewport height on tall monitors. Low priority.
 
