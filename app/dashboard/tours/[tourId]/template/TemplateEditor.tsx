@@ -870,7 +870,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               }}
               style={{
                 padding: "8px 16px",
-                marginRight: 16,
+                marginRight: 96,
                 border: "3px solid var(--hw-crimson)",
                 background: "var(--hw-bg-surface)",
                 color: "var(--hw-crimson)",
