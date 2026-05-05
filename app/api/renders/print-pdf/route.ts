@@ -196,6 +196,9 @@ export async function GET(req: NextRequest) {
   const textColor = hexToRgb(printConfig.textColor || "ffffff");
   const bandTextColorHex = printConfig.bandTextColor ?? null;
   const bandTextColor = bandTextColorHex ? hexToRgb(bandTextColorHex) : textColor;
+  const venueColor = printConfig.venueColor ? hexToRgb(printConfig.venueColor) : textColor;
+  const cityColor = printConfig.cityColor ? hexToRgb(printConfig.cityColor) : textColor;
+  const dateColor = printConfig.dateColor ? hexToRgb(printConfig.dateColor) : textColor;
   const allCaps = printConfig.allCaps ?? false;
   const shortDate = printConfig.shortDate ?? false;
 
@@ -333,19 +336,19 @@ export async function GET(req: NextRequest) {
   // Draw venue
   if (printConfig.showVenue ?? true) {
     const venueText = allCaps ? venueName.toUpperCase() : venueName;
-    drawTextField(venueText, printConfig.venue, true);
+    drawTextField(venueText, printConfig.venue, true, undefined, venueColor);
   }
 
   // Draw date
   if (printConfig.showDate ?? true) {
     const dateText = allCaps ? dateStr.toUpperCase() : dateStr;
-    drawTextField(dateText, printConfig.date);
+    drawTextField(dateText, printConfig.date, false, undefined, dateColor);
   }
 
   // Draw city
   if (printConfig.showCity ?? true) {
     const cityText = allCaps ? cityState.toUpperCase() : cityState;
-    drawTextField(cityText, printConfig.city);
+    drawTextField(cityText, printConfig.city, false, undefined, cityColor);
   }
 
   // Serialize PDF
