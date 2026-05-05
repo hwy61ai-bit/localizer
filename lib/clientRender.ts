@@ -13,6 +13,9 @@ type FormatConfig = {
   fontFamily: string;
   textColor: string;
   bandTextColor?: string | null;
+  venueColor?: string | null;
+  cityColor?: string | null;
+  dateColor?: string | null;
   showBandName: boolean;
   bandSize: number;
   shortDate?: boolean;
@@ -243,7 +246,7 @@ export async function renderPoster(
   const caps = cfg.allCaps ?? false;
 
   // Shared text drawing function — mirrors buildTextLayer from generate route
-  function drawText(text: string, field: FieldConfig, maxFontSize: number, isVenue = false, formatKey = "") {
+  function drawText(text: string, field: FieldConfig, maxFontSize: number, isVenue = false, formatKey = "", colorOverride?: string) {
     const align = (field.align ?? "center") as CanvasTextAlign;
     const size = Math.round(maxFontSize * scale);
     const avail = availableWidth(field.x, w, field.align ?? "center");
@@ -251,7 +254,7 @@ export async function renderPoster(
     const y = field.y * h;
 
     ctx.save();
-    ctx.fillStyle = color;
+    ctx.fillStyle = colorOverride ?? color;
     ctx.textAlign = align;
     ctx.textBaseline = "alphabetic";
 
@@ -335,18 +338,21 @@ export async function renderPoster(
   // Venue — auto-shrink to fit
   if (cfg.showVenue ?? true) {
     const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
-    drawText(rawVenue, cfg.venue, cfg.venue.size, true, formatKey);
+    const venueColor = cfg.venueColor ? `#${cfg.venueColor}` : undefined;
+    drawText(rawVenue, cfg.venue, cfg.venue.size, true, formatKey, venueColor);
   }
 
   // Date
   if (cfg.showDate ?? true) {
-    drawText(eventData.dateFormatted, cfg.date, cfg.date.size);
+    const dateColor = cfg.dateColor ? `#${cfg.dateColor}` : undefined;
+    drawText(eventData.dateFormatted, cfg.date, cfg.date.size, false, "", dateColor);
   }
 
   // City — auto-shrink to fit
   if (cfg.showCity ?? true) {
     const rawCity = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
-    drawText(rawCity, cfg.city, cfg.city.size);
+    const cityColor = cfg.cityColor ? `#${cfg.cityColor}` : undefined;
+    drawText(rawCity, cfg.city, cfg.city.size, false, "", cityColor);
   }
 
   // Custom text 1 — opt-in, not drawn on print

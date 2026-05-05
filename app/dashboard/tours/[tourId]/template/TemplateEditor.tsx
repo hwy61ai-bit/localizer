@@ -40,6 +40,9 @@ type FormatConfig = {
   fontFamily: string;
   textColor: string;
   bandTextColor?: string | null;
+  venueColor?: string | null;
+  cityColor?: string | null;
+  dateColor?: string | null;
   showBandName: boolean;
   showVenue?: boolean;
   showCity?: boolean;
@@ -115,7 +118,7 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "story",     label: "IG Story",      w: 1080, h: 1350 },
   { key: "landscape", label: "FB Cover",      w: 820,  h: 312 },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: 3300, h: 5100 },
-  { key: "tiktok",    label: "TikTok, IG Reels, FB Stories,\nYouTube Shorts",  w: 1080, h: 1920 },
+  { key: "tiktok",    label: "TikTok, IG Reels, FB Stories,\nYouTube Shorts VIDEO",  w: 1080, h: 1920 },
   { key: "yt_shorts", label: "Square Video", w: 1080, h: 1080 },
 ];
 
@@ -855,6 +858,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           fontFamily: sourceCfg.fontFamily,
                           textColor: sourceCfg.textColor,
                           bandTextColor: sourceCfg.bandTextColor ?? null,
+                          venueColor: sourceCfg.venueColor ?? null,
+                          cityColor: sourceCfg.cityColor ?? null,
+                          dateColor: sourceCfg.dateColor ?? null,
                           allCaps: sourceCfg.allCaps,
                           shortDate: sourceCfg.shortDate,
                           bandSize: scaleSize(sourceCfg.bandSize),
@@ -1109,6 +1115,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     const align = fc.align ?? "center";
                     const isActive = dragging === field;
                     const visKey = `show${field.charAt(0).toUpperCase() + field.slice(1)}` as keyof FormatConfig;
+                    const colorKey: `${BaseFieldKey}Color` = `${field}Color`;
+                    const fieldColor = cfg[colorKey];
                     if ((cfg[visKey] ?? true) === false) return null;
 
                     return (
@@ -1118,9 +1126,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         const mouseX = (e.clientX - rect.left) / rect.width;
                         const mouseY = (e.clientY - rect.top) / rect.height;
                         setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
-                        setDragging(field); 
+                        setDragging(field);
                       }}
-                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${fieldColor ?? cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
                         {firstEvent ? (
                           field === "venue" ? (() => {
                             const raw = previewLongest ? longestVenue : firstEvent.venue;
@@ -1303,6 +1311,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
               {(["venue", "city", "date"] as BaseFieldKey[]).map(field => {
                 const textMax = isPrintFormat ? 400 : 120;
+                const colorKey: `${BaseFieldKey}Color` = `${field}Color`;
+                const fieldColor = cfg[colorKey];
                 return (
                 <div key={field} style={{ marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
@@ -1328,6 +1338,35 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     style={{ width: "100%", cursor: "pointer" }}
                   />
                   <AlignButtons field={field} />
+                  <div style={{ marginTop: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Color</span>
+                      {fieldColor && (
+                        <button
+                          onClick={() => {
+                            setConfigs(prev => ({ ...prev, [activeFormat]: { ...prev[activeFormat], [colorKey]: null } }));
+                          }}
+                          style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}
+                        >
+                          RESET
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <input
+                        type="color"
+                        value={`#${fieldColor ?? cfg.textColor}`}
+                        onChange={(e) => {
+                          const next = e.target.value.replace("#", "");
+                          setConfigs(prev => ({ ...prev, [activeFormat]: { ...prev[activeFormat], [colorKey]: next } }));
+                        }}
+                        style={{ width: 40, height: 32, borderRadius: 0, border: "3px solid var(--hw-border-strong)", cursor: "pointer", padding: 2 }}
+                      />
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>
+                        {fieldColor ? `#${fieldColor}` : `(Format color: #${cfg.textColor})`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 );
               })}
