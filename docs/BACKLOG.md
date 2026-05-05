@@ -479,3 +479,5 @@ Before adding the cron back to `vercel.json`:
 - [ ] End-to-end test with a real (test) promoter email address, not a name string
 - [ ] Verify `advance_emails` log matches Resend delivery confirmations
 - [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
+
+- **Middleware auth error handling** — when a request comes in with stale/invalid Supabase refresh tokens, middleware throws 'Invalid Refresh Token: Refresh Token Not Found' instead of gracefully treating the user as anonymous. Logs are noisy and the recovery path is suboptimal. Reproduced May 5: laptop with stale cookies got refresh-token errors on every request including public routes (/coming-soon). Cleared by clearing cookies. Fix: middleware should catch refresh_token_not_found and proceed as anonymous, only logging at debug/info level.
