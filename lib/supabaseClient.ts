@@ -19,7 +19,7 @@ function cookieStorage() {
       if (typeof document === "undefined") return;
       const domainAttr = COOKIE_DOMAIN ? `domain=${COOKIE_DOMAIN};` : "";
       const secureAttr = IS_HTTPS ? "Secure" : "";
-      document.cookie = `${key}=${encodeURIComponent(value)};${domainAttr}path=/;max-age=3600;SameSite=Lax;${secureAttr}`;
+      document.cookie = `${key}=${encodeURIComponent(value)};${domainAttr}path=/;max-age=2592000;SameSite=Lax;${secureAttr}`;
     },
     removeItem(key: string) {
       if (typeof document === "undefined") return;
