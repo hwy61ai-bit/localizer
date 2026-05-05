@@ -826,7 +826,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
             <div style={{ padding: "3px 10px", border: "1.5px solid var(--hw-crimson)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px" }}>
-              everything autosaves
+              EVERYTHING AUTOSAVES
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "10px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
