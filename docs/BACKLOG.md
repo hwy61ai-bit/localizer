@@ -490,6 +490,26 @@ Primary auth bug — cookie max-age=3600 (1 hour) in lib/supabaseClient.ts cooki
 
 2. **Graceful middleware error handling on getSession() failures.** middleware.ts has two getSession() calls (lines 117, 156) that destructure data without checking error. When 'Refresh Token Not Found' fires, the error is logged noisily by Supabase before being swallowed. Wrap in try/catch, treat as anonymous, log at debug level. Captured separately above.
 
-3. **Investigate the April 28 temporary band-aid in middleware.ts.** Comment dated 2026-04-28 explains an unconditional redirect to /coming-soon for / on public hosts because the env-var gate wasn't firing in production. Still in place a week later. Diagnose why the env-var gate failed and remove the band-aid before public launch.
+### April 28 middleware band-aid removal
+
+**Status:** Diagnosed 2026-05-06. Removal still pending — deferred to post-beta for safety.
+
+**Background:** On April 28 a TEMPORARY unconditional redirect was added to middleware.ts (lines 99-106) sending `/` to `/coming-soon` for public hosts, with `?dev=1` as the bypass. Comment said the env-var-gated COMING_SOON block below it wasn't firing in production.
+
+**Diagnosis (2026-05-06):** The env-var gate at lines 109-127 is working correctly. Confirmed by visiting `hwy61labs.com/?dev=1` in incognito — bypasses the band-aid via the dev query param, exercises the env-var gate directly, redirects to `/coming-soon` as expected.
+
+**Most likely cause of the original misdiagnosis:** the env-var gate has an authenticated-user bypass at line 117 — admins testing the marketing site shouldn't be redirected. Testing while logged into the hwy61ai@gmail.com admin account would have correctly let the request through, looking like the gate "wasn't firing." The band-aid was added without auth bypass, confirming "the marketing site is hidden" but with broader scope than intended (no admin preview, no preview tokens).
+
+Alternative explanation: `COMING_SOON=true` may not have been in Vercel env vars on April 28 and was added later without note. Either way, the gate is functional now.
+
+**Removal plan (execute on a quiet day, post-beta):**
+1. Delete lines 99-106 of middleware.ts (the 4-line comment block + the unconditional redirect)
+2. `git push` to deploy
+3. Verify in incognito: `hwy61labs.com/` → redirects to `/coming-soon` (env-var gate firing)
+4. Verify admin bypass: visit while logged into hwy61ai@gmail.com → marketing landing renders
+5. Verify preview bypass: `hwy61labs.com/?preview=true` in incognito → marketing landing renders
+6. If anything looks off, revert the commit and re-diagnose
+
+Total work: ~10 minutes. Zero new code, pure deletion. Low risk on a calm day with monitoring.
 
 **Verification of May 5 fix:** Log in fresh, check DevTools cookies — sb-* auth cookies should have Expires/Max-Age ~30 days out (around June 4 2026). If shorter than that, fix didn't take or there's another code path setting cookies.
