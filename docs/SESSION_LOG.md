@@ -2889,3 +2889,55 @@ modal viewport fix on laptop, and full per-field color feature.
   gate removal)
 - Unit D rate limiting (deferred from April 9)
 - Onboarding wizard Option B (still needs Tim's input)
+
+## 2026-05-11 — country-aware geocoding for drive-time path
+
+### Shipped (3 commits)
+- d0983f3 — feat(tourrouter/mapbox): country-aware geocoding for geocodeCity + getDriveInfo
+- 786f4ce — feat(tourrouter/geography): thread country through prefetchDriveData and getMapboxDriveInfo
+- f4c2cb3 — feat(tourrouter/drive-info): read country/state from body, forward to geocoding
+
+### The bug
+Drew imported a 10-show US tour into TourRouter. Brooklyn → Washington showed ~43hr drive time, Washington → Atlanta showed 40h 12m / 2523 mi, Cambridge → Brooklyn showed `?` (no route). Other legs (Atlanta → Nashville, Nashville → Chicago, etc.) were correct.
+
+### Root cause — incomplete April 10 migration
+Two parallel geocoding systems in the codebase. The April 10 work converted financials, flights, and export paths to use `getCityCoordinates` from `lib/tourrouter/geocoding.ts` (country-filtered, backed by curated `geo_cities` table). The **drive-time path was never migrated.** It still ran `app/api/tourrouter/drive-info/route.ts` → `geocodeCity` in `mapbox.ts` → `geocode_cache` table → bare Mapbox `places/{city}.json?limit=1` with no country qualifier.
+
+Symptom A: "Washington" + no country → Mapbox returned Washington State (lat 48). Cross-country routing produced ~40 hours. A stale geocode_cache row from April 3 made the bug persistent across page loads.
+
+Symptom B: "Cambridge" + no country → Mapbox returned Cambridge UK by population priority. Mapbox Directions couldn't route across the Atlantic → UI rendered `?`.
+
+Confirmed by code trace: `page.tsx:427` → `prefetchDriveData` → `getMapboxDriveInfo` → POST `/api/tourrouter/drive-info` (body had no country) → `geocodeCity(city)` (city only) → bare Mapbox. Curated `geo_cities` never consulted. Page DID separately call `/api/tourrouter/geocode/prefetch` to populate `coordsMap` for `calcTourFinancials` — that path used the new system correctly. So the financials engine had correct coords while the drive table didn't.
+
+### Fix — minimal additive refactor
+Added optional `country` and `state` params to `geocodeCity`, `getDriveInfo`, `prefetchDriveDataServer`, `getMapboxDriveInfo`, `prefetchDriveData`, and the drive-info route handler. When `country` is provided, `geocodeCity` dynamic-imports `getCityCoordinates` from `./geocoding` and returns its result. On null/error/missing-country, falls through to the legacy path unchanged.
+
+Dynamic import (not static) used to prevent `next/headers` (via `supabaseServer` inside `geocoding.ts`) from leaking into client bundles that import `mapbox.ts` via the `@/lib/tourrouter` barrel. Same class of issue as the April 10 `geocoding-shared.ts` fix.
+
+No deletions, no deprecations, no semantic changes to cache writes or error handling. All new params optional — existing callers without country continue to use the legacy path identically.
+
+### Verification — Cal's Cutoff tour (test org)
+
+| Leg | Before | After |
+|---|---|---|
+| Cambridge → Brooklyn | `?` | 4h 11m / 214 mi ✓ |
+| Brooklyn → Washington | route blank | 4h 35m / 229 mi ✓ |
+| Washington → Atlanta | 40h 12m / 2523 mi | 10h 25m / 640 mi ✓ |
+| Atlanta → Nashville | 4h 9m / 251 mi | 4h 9m / 251 mi ✓ (regression check) |
+| Nashville → Chicago through SF → West Hollywood | various correct | all unchanged ✓ |
+
+Cross-tour spot check on older tours (Midwest Tour 2026, Euro Tour 26, NEW VAN TOUR) — no regressions.
+
+### Backlog items surfaced today (see BACKLOG.md)
+1. `cacheGeocode` and `cacheDriveInfo` fire-and-forget writes bleed in Vercel serverless — neither cache table has new rows after our deploy despite drive times working correctly in UI. Every page load re-queries Mapbox.
+2. Delete `geocodeCity`/`cacheGeocode` from `mapbox.ts` and drop the `geocode_cache` table (Phase 3 cleanup after soak).
+3. `state` column on `tour_shows` + parser update — for state-level ambiguity (Portland OR vs ME, Cambridge MA vs OH, Springfield ×∞). Country was enough for today's tour but not in general.
+4. Dedupe Washington rows in `geo_cities` (`country='US'` and `country='USA'` both point to DC — inconsistent matching).
+5. Consolidate duplicate `buildDriveDataKey` and `DriveDataMap` definitions between `mapbox.ts` and `geography.ts`.
+6. `drive_cache` schema: add `origin_country` / `dest_country` for cross-tour same-name disambiguation.
+7. Pre-existing `/api/notifications` cookies() warning during static build — noticed during this session's builds, separate issue.
+
+### Process notes
+- Three commits in one push, three separate logical units. Verified in prod immediately. Plan-diff-apply discipline held all three rounds.
+- Dynamic import for cross-module-boundary safety paid off — clean `npm run build` with no `next/headers` warnings.
+- Sequential `tsc --noEmit` → `npm run build` (not parallel) after Claude Code hit the `.next/types/` race once. Standard going forward.
