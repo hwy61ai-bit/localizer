@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
 
-  const { originCity, destCity } = await req.json();
+  const { originCity, destCity, originCountry, destCountry, originState, destState } = await req.json();
   if (!originCity || !destCity) {
     return NextResponse.json(
       { error: "originCity and destCity required" },
@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
   try {
     // Geocode both cities (checks CITY_COORDS → cache → Mapbox)
     const [origin, dest] = await Promise.all([
-      geocodeCity(originCity),
-      geocodeCity(destCity),
+      geocodeCity(originCity, originCountry, originState),
+      geocodeCity(destCity, destCountry, destState),
     ]);
 
     // Cache geocode results if we have service role key
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get drive info (checks cache → Mapbox Directions)
-    const info = await getDriveInfo(originCity, destCity);
+    const info = await getDriveInfo(originCity, destCity, originCountry, destCountry, originState, destState);
 
     // Cache drive result if we have service role key
     if (serviceRoleKey) {
