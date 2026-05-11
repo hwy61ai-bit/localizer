@@ -513,3 +513,138 @@ Alternative explanation: `COMING_SOON=true` may not have been in Vercel env vars
 Total work: ~10 minutes. Zero new code, pure deletion. Low risk on a calm day with monitoring.
 
 **Verification of May 5 fix:** Log in fresh, check DevTools cookies — sb-* auth cookies should have Expires/Max-Age ~30 days out (around June 4 2026). If shorter than that, fix didn't take or there's another code path setting cookies.
+
+---
+
+### Drive-info cache writes bleed in Vercel serverless
+
+*Surfaced 2026-05-11 during country-aware geocoding fix verification.*
+
+Both `cacheGeocode` and `cacheDriveInfo` in `lib/tourrouter/mapbox.ts` are called fire-and-forget (no `await`, no `waitUntil`) from `app/api/tourrouter/drive-info/route.ts`. The Vercel function tears down on response return, killing the cache writes before they complete. Confirmed by querying `drive_cache` after the fix deployed — zero rows from the past 30 minutes despite ~9 drive-info calls per Cal's Cutoff page load. Same for `geocode_cache`: `cambridge` and `washington` timestamps unchanged from before deploy.
+
+**Why this got worse after the May 11 fix.** The old path took 2–3 seconds per drive-info call (legacy `geocodeCity` did its own Mapbox geocoding twice, plus the Directions call). Background writes had that whole window to land. The new path drops total request time to ~500–1000ms (in-memory cache hits for the geocoding step), shrinking the fire-and-forget window. Same writer code, less time, fewer landings.
+
+**Functional impact:** none user-facing. Drive times are correct on every page load — they just always come from a fresh Mapbox call instead of `drive_cache`. Wastes API quota: 10-show tour ≈ 9 directions calls per page load, multiplied across every routing-page visit. Currently <1% of Mapbox free tier, but Tim's beta users will multiply traffic.
+
+**Fix:** either `await cacheDriveInfo(...)` (adds ~50–200ms per drive-info response, predictable) or `import { waitUntil } from 'next/server'` and wrap the cache write (non-blocking, Vercel-aware). Same pattern for `cacheGeocode` — though once `geocode_cache` is dropped (separate backlog item below) those writes go away entirely.
+
+Effort: ~30 minutes.
+
+---
+
+### Delete `geocodeCity` / `cacheGeocode` and drop `geocode_cache` table
+
+*Surfaced 2026-05-11 as Phase 3 follow-up to the country-aware geocoding fix.*
+
+After the May 11 fix, the drive-time path delegates to `getCityCoordinates` from `lib/tourrouter/geocoding.ts` whenever country is present. The legacy three-tier `geocodeCity` in `mapbox.ts` (CITY_COORDS → `geocode_cache` → bare Mapbox) is now only reached as a fallback when `country` is missing or the new system returns null. In practice, the page always passes country, so the legacy path is dead.
+
+**Soak first.** Wait at least 1–2 weeks of beta usage before deleting anything. Confirm via Vercel logs that no production calls reach the legacy fall-through — could add a `console.warn("[geocodeCity] legacy fallback hit", { city })` to the existing flow as cheap instrumentation in the meantime.
+
+**Then:**
+1. Delete the `geocodeCity` and `cacheGeocode` exports from `lib/tourrouter/mapbox.ts`.
+2. Simplify `getDriveInfo` to call `getCityCoordinates` directly (return type widens to include resolved coords so `cacheDriveInfo` can use them without re-geocoding).
+3. `DROP TABLE geocode_cache;` after a final grep confirms no other code path reads from it.
+4. Update the obsolete `// Geocoding: CITY_COORDS → geocode_cache → Mapbox API` header comment in `mapbox.ts`.
+
+Stale rows in `geocode_cache` today: `washington` at lat 38.90 (DC, correct after mid-session SQL fix), `cambridge` at lat 52.20 (UK, wrong — never overwritten because new path returns early before the legacy `cacheGeocode` write can land). Plus older fossils from pre-curated-geo_cities era. None matters operationally; just drop the table.
+
+Sequencing: don't do this until the cache-write bleed item above is fixed and verified — otherwise the diagnosis story for any future drive-time bug gets harder.
+
+Effort: ~1 hour.
+
+---
+
+### `state` column on `tour_shows` for state-level disambiguation
+
+*Surfaced 2026-05-11 during country-aware geocoding fix.*
+
+Country was enough to fix the May 11 bug (Washington D.C. vs WA State, Cambridge MA vs UK), but state-level ambiguity within a country is still unresolved:
+
+- Cambridge MA vs Cambridge OH
+- Portland OR vs Portland ME
+- Springfield (12+ US states)
+- Columbus OH vs Columbus GA vs Columbus IN
+
+`tour_shows` has no `state` column today. The AI PDF parser strips state info silently ("Washington, D.C." → `city: "Washington"`, state lost). The existing geocoding code at `lib/tourrouter/geocoding.ts` already accepts an optional `state` param as a tiebreaker — it's just never provided.
+
+**Work involved:**
+1. SQL migration: `ALTER TABLE tour_shows ADD COLUMN state text;` plus `state_norm text` for normalization.
+2. Parser updates: prompts in `lib/tourrouter/prompts/` (deal memo, intake parsers) must extract state when present.
+3. Import pipeline: `lib/tourrouter/columnMapper.ts` `FIELD_ALIASES` already has `state` aliases per April 5 work — verify still wired through `applyMapping` and the POST `/shows` handler.
+4. UI: Add Show modal needs a state field, drawer Show Info section needs state field, city autocomplete should populate state from `geo_cities.state_province`.
+5. Drive-info / prefetch plumbing: `prefetchDriveData`, `getMapboxDriveInfo`, and the drive-info route already accept optional `state` per the May 11 refactor — just thread it through from `tour_shows.state`.
+
+Defer until the country-only fix has soaked and we see whether state-level ambiguity actually surfaces in real beta tours. Probably will — Springfield, Portland, and Columbus are real touring markets.
+
+Effort: 4–6 hours including testing.
+
+---
+
+### `drive_cache` schema: add `origin_country` / `dest_country` columns
+
+*Surfaced 2026-05-11.*
+
+`drive_cache` is keyed by `(origin_city, dest_city)` lowercased text. No country columns, no country in the unique constraint. After the May 11 fix the geocoding step is country-disambiguated, so coords going into Mapbox Directions are correct — but the `drive_cache` row that gets written is still keyed only on city pair. Two tours can collide on same-named cities across countries, and `Prefer: resolution=merge-duplicates` will overwrite blindly.
+
+The five `(chicago, il → chicago, il)` zero-distance fossil rows in `drive_cache` today appear to be from a much earlier era when `origin_city` was being set to the raw `"city, state"` string — not from real legs. Inert. Can be deleted as part of this cleanup.
+
+**Fix:** add `origin_country text` and `dest_country text` columns, update the unique constraint to `(origin_city, origin_country, dest_city, dest_country)`, update `cacheDriveInfo` in `mapbox.ts` to write country, update the `drive_cache` lookup query in `getDriveInfo` to filter on country. Old rows without country can either be backfilled from resolved coords or just left to age out as new lookups write fresh rows.
+
+Effort: ~1 hour including migration, writer update, reader update, and verifying existing rows behave.
+
+---
+
+### Dedupe Washington rows in `geo_cities` + audit country-code consistency
+
+*Surfaced 2026-05-11 during Washington-bug investigation.*
+
+The curated `geo_cities` table has two rows for Washington D.C.:
+- `name='Washington' country='US' iata_code='DCA'` (38.9072, -77.0369)
+- `name='Washington' country='USA' iata_code=null` (38.90253, -77.039386)
+
+Both point to D.C., but the country code mismatch (`US` vs `USA`) means `getCityCoordinates(city, 'USA')` only matches one row, `getCityCoordinates(city, 'US')` only matches the other. The codebase uses `USA` per `tour_shows.country` and per the new system's `country.toUpperCase()` normalization, so the `country='US'` row is effectively unreachable from the app today. Wasted row, plus inconsistency that will cause weird bugs.
+
+Likely a seed inconsistency between the original GeoNames pass and Tim's curated 332-city list. Worth a broader audit:
+
+```sql
+select name_lower, count(distinct country) as country_variants, array_agg(distinct country) as country_codes
+from geo_cities
+group by name_lower
+having count(distinct country) > 1;
+```
+
+**Fix:** standardize to one country-code convention (alpha-3 / `USA` to match `tour_shows.country` and current app behavior), migrate any alpha-2 rows (`US`, `GB`, `DE`, etc.) to alpha-3, dedupe.
+
+Effort: ~1 hour including the audit and SQL migration.
+
+---
+
+### Consolidate duplicate `buildDriveDataKey` / `DriveDataMap` definitions
+
+*Surfaced 2026-05-11.*
+
+`lib/tourrouter/mapbox.ts` and `lib/tourrouter/geography.ts` both define `buildDriveDataKey(city1, city2)` and the `DriveDataMap` type, with identical bodies and shapes. Both are re-exported via the `@/lib/tourrouter` barrel. Either works for callers, but two sources of truth.
+
+**Fix:** move both to a shared module (likely a new `lib/tourrouter/driveTypes.ts`, or merge into the existing `geocoding-shared.ts` if it stays scoped to pure helpers). Update `mapbox.ts` and `geography.ts` to import from the shared module. Keep barrel re-exports working so the call sites in `page.tsx` and elsewhere don't need to change.
+
+Effort: ~30 minutes. Not blocking; pure code hygiene.
+
+---
+
+### `/api/notifications` static-build warning
+
+*Surfaced 2026-05-11 as observation during repeated `npm run build` runs.*
+
+Every `npm run build` prints during static page collection:
+
+```
+[Notifications GET] Unexpected error: n [Error]: Dynamic server usage:
+Route /api/notifications couldn't be rendered statically because it
+used `cookies`. See more info here: nextjs.org/docs/messages/dynamic-server-error
+```
+
+Pre-existing — not introduced by the May 11 country-aware geocoding work. The route correctly ends up marked `ƒ` (Dynamic) in the route table, so it's functionally fine; just noisy in build logs and slightly slows the collection step (Next.js retries the route before giving up on static rendering).
+
+**Fix:** add `export const dynamic = "force-dynamic";` at the top of `app/api/notifications/route.ts` (same pattern as `app/api/tourrouter/drive-info/route.ts` and several other cookie-using routes). Tells Next.js to skip the static-rendering attempt entirely.
+
+Effort: ~5 minutes.
