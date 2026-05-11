@@ -1,25 +1,7 @@
 import { CITY_COORDS } from './constants';
-import { getCityCoords } from './geography';
+import { getCityCoords, buildDriveDataKey, type DriveDataMap } from './geography';
 
 const KM_PER_MILE = 1.60934;
-
-// ============================================================
-// DriveDataMap — pre-fetched lookup for synchronous access
-// ============================================================
-
-export type DriveDataMap = Record<string, {
-  distanceKm: number;
-  distanceMiles: number;
-  driveHours: number;
-  driveSeconds: number;
-  routeSummary: string;
-}>;
-
-export function buildDriveDataKey(city1: string | null | undefined, city2: string | null | undefined): string {
-  const c1 = (city1 ?? "").toLowerCase().trim();
-  const c2 = (city2 ?? "").toLowerCase().trim();
-  return c1 + '|' + c2;
-}
 
 /**
  * Server-side prefetch: calls getDriveInfo() directly (no HTTP round-trip).
