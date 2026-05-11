@@ -2941,3 +2941,35 @@ Cross-tour spot check on older tours (Midwest Tour 2026, Euro Tour 26, NEW VAN T
 - Three commits in one push, three separate logical units. Verified in prod immediately. Plan-diff-apply discipline held all three rounds.
 - Dynamic import for cross-module-boundary safety paid off — clean `npm run build` with no `next/headers` warnings.
 - Sequential `tsc --noEmit` → `npm run build` (not parallel) after Claude Code hit the `.next/types/` race once. Standard going forward.
+
+## 2026-05-11 (continued) — drive-info cache write bleed: full fix
+
+### Shipped (3 commits)
+- d369b71 — fix(tourrouter/drive-info): await cache writes to prevent Vercel fire-and-forget bleed
+- f8381dc — fix(tourrouter/mapbox): check response.ok in cache write helpers to surface silent HTTP errors
+- 9540155 — fix(tourrouter/mapbox): round drive_seconds to integer for drive_cache column type
+
+### What we entered with
+After the earlier country-aware geocoding fix shipped, querying `drive_cache` showed zero new rows despite ~9 drive-info calls per Cal's Cutoff page load. Diagnosed as fire-and-forget cache writes being killed when the Vercel serverless function tore down on response return. Filed in BACKLOG as the top-priority follow-up.
+
+### What we actually found
+Three nested failure modes:
+
+1. **Vercel serverless teardown** — the original diagnosis. `cacheGeocode` and `cacheDriveInfo` were called without `await`, so the function returned before the network writes could complete. Fix: `await Promise.all([cacheGeocode(...), cacheGeocode(...)])` and `await cacheDriveInfo(...)`, wrapped in try/catch so a transient cache failure doesn't surface as a user-facing 500.
+
+2. **Silent HTTP errors** — `fetch()` only throws on network errors, not on HTTP error responses. `cacheGeocode` and `cacheDriveInfo` were awaiting the fetch but never checking `response.ok`, so Supabase 4xx/5xx responses resolved cleanly without throwing. The new try/catch from fix #1 saw nothing to catch. Fix: capture `const response = await fetch(...)`, check `if (!response.ok)`, read body (bounded to 500 chars), throw with status + body so the caller's try/catch surfaces the real error.
+
+3. **Schema mismatch (the actual root cause)** — `drive_cache.drive_seconds` is an `integer` column. Mapbox's Directions API returns `route.duration` as a float (sub-second precision, e.g. `47887.711`). Every production write was failing with Postgres error 22P02 `invalid input syntax for type integer`. Fix: `Math.round(info.driveSeconds)` at the write boundary. In-memory value flowing back to the UI stays as the original float for display; only the persisted column gets rounded. Sub-second precision is meaningless for tour driving estimates anyway.
+
+The `cacheGeocode` writes had been landing all along (Cambridge UK row at 15:32 today proved it) — only `cacheDriveInfo` was failing because `geocode_cache` happens to have no integer columns. The drive_cache table has been silently rejecting writes since day one.
+
+### Why our manual curl test misled us
+We tested cacheDriveInfo's request shape with curl using hardcoded `"drive_seconds": 3600` — already an integer. Got 201 Created. We concluded the request shape worked. It DID work, but only for integer drive_seconds values. We never tested with the float values Mapbox actually returns. Lesson: when reproducing a failing production call manually, use the same values production uses, not handpicked ones.
+
+### Verification
+Cal's Cutoff routing page → hard refresh → 15-second wait → SQL query returned 9 fresh rows in drive_cache, one per leg, all drive_seconds as integers (15083, 16531, 37475, 14920, 26725, 22981, 89376, 47888, 22488), drive_hours as floats. Zero `[drive-info] cacheDriveInfo write failed` warnings in Vercel runtime logs across the refresh window. Test rows from today's manual curl + manual SQL insert cleaned up.
+
+### Process notes
+- The `response.ok` check in cache write helpers is a permanent improvement, not a temporary diagnostic. Both helpers now properly surface Supabase errors. Pattern worth applying to any other raw-fetch Supabase writes in the codebase.
+- Bash heredocs avoided throughout per CLAUDE.md rule. Commit messages all single-line via `-m`.
+- Three commits stacked cleanly. Each verified with `npx tsc --noEmit` + `npm run build` before push. No build regressions.

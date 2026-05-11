@@ -530,6 +530,8 @@ Both `cacheGeocode` and `cacheDriveInfo` in `lib/tourrouter/mapbox.ts` are calle
 
 Effort: ~30 minutes.
 
+**Resolution (2026-05-11):** Fixed via three commits (d369b71, f8381dc, 9540155). Bleed was actually three nested failure modes: (1) fire-and-forget teardown as suspected, (2) silent HTTP error swallowing in cacheGeocode/cacheDriveInfo, (3) `drive_seconds` integer column rejecting Mapbox's float `route.duration`. All three fixed; verified 9 fresh rows in drive_cache on Cal's Cutoff page refresh. See SESSION_LOG.md 2026-05-11 (continued) for the full diagnostic arc. Actual effort: ~75 minutes (vs estimated 30).
+
 ---
 
 ### Delete `geocodeCity` / `cacheGeocode` and drop `geocode_cache` table
