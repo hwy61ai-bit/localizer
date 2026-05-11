@@ -306,7 +306,7 @@ export async function cacheDriveInfo(
         dest_lng: destCoords.lng,
         distance_km: info.distanceKm,
         distance_miles: info.distanceMiles,
-        drive_seconds: info.driveSeconds,
+        drive_seconds: Math.round(info.driveSeconds),
         drive_hours: info.driveHours,
         route_summary: info.routeSummary,
       }),
