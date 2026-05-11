@@ -631,6 +631,8 @@ Effort: ~1 hour including the audit and SQL migration.
 
 Effort: ~30 minutes. Not blocking; pure code hygiene.
 
+**Resolution (2026-05-11):** Fixed in commit af7fb10 — deleted the duplicate `DriveDataMap` type and `buildDriveDataKey` function from `lib/tourrouter/mapbox.ts` and extended its existing `./geography` import to pull them in. `geography.ts` is now the single source of truth; barrel `lib/tourrouter/index.ts` already re-exports from there. No caller changes needed — `mapbox.ts`'s prior exports of these symbols were dead (zero external importers per inventory). Files touched: 1 (`mapbox.ts`); lines removed: 18; lines added: 1. Verified clean with `npx tsc --noEmit` and `npm run build` (72/72 static pages, no warnings).
+
 ---
 
 ### `/api/notifications` static-build warning
@@ -652,3 +654,15 @@ Pre-existing — not introduced by the May 11 country-aware geocoding work. The 
 Effort: ~5 minutes.
 
 **Resolution (2026-05-11):** Fixed in commit 7400480 — added `export const dynamic = "force-dynamic"` to `app/api/notifications/route.ts`. Verified clean build with no `[Notifications GET]` warning; static page count went 73→72 confirming Next.js no longer attempts the static-render pass on this route. Route still marked `ƒ` (Dynamic) in the route table, behavior unchanged.
+
+---
+
+### Unused `CITY_COORDS` import in `lib/tourrouter/mapbox.ts`
+
+*Surfaced 2026-05-11 during the buildDriveDataKey/DriveDataMap consolidation. Out of scope at the time; logged for later.*
+
+`lib/tourrouter/mapbox.ts` line 1 imports `CITY_COORDS` from `./constants` but never references it anywhere in the file. The file uses `getCityCoords` (the function, imported from `./geography`) but not `CITY_COORDS` (the raw constant). Dead import, no behavioral impact, but flags as noise in any future import audit.
+
+**Fix:** delete the unused import line. Verify with `npx tsc --noEmit` and `npm run build`.
+
+Effort: ~2 minutes.
