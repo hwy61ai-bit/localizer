@@ -29,7 +29,7 @@ export async function prefetchDriveDataServer(
   shows: { city: string; country: string; isOff?: boolean }[]
 ): Promise<DriveDataMap> {
   const map: DriveDataMap = {};
-  const pairs: { from: string; to: string }[] = [];
+  const pairs: { from: string; to: string; fromCountry: string; toCountry: string }[] = [];
 
   function isValidCity(s: { city: string; isOff?: boolean }): boolean {
     if (s.isOff) return false;
@@ -39,13 +39,18 @@ export async function prefetchDriveDataServer(
 
   for (let i = 1; i < shows.length; i++) {
     if (!isValidCity(shows[i - 1]) || !isValidCity(shows[i])) continue;
-    pairs.push({ from: shows[i - 1].city, to: shows[i].city });
+    pairs.push({
+      from: shows[i - 1].city,
+      to: shows[i].city,
+      fromCountry: shows[i - 1].country,
+      toCountry: shows[i].country,
+    });
   }
 
   const results = await Promise.all(
-    pairs.map(async ({ from, to }) => {
+    pairs.map(async ({ from, to, fromCountry, toCountry }) => {
       try {
-        const info = await getDriveInfo(from, to);
+        const info = await getDriveInfo(from, to, fromCountry, toCountry);
         return { from, to, info };
       } catch {
         return { from, to, info: null };
@@ -73,8 +78,26 @@ export async function prefetchDriveDataServer(
 // ============================================================
 
 export async function geocodeCity(
-  city: string
+  city: string,
+  country?: string,
+  state?: string
 ): Promise<{ lat: number; lng: number; formattedName: string }> {
+  // When country is provided, prefer the country-aware geocoding system in ./geocoding.
+  // Uses dynamic import to avoid pulling server-only deps (next/headers via supabaseServer)
+  // into client bundles that import this module via the @/lib/tourrouter barrel.
+  // Falls through to the legacy path on null/error or when country is missing.
+  if (country) {
+    try {
+      const { getCityCoordinates } = await import('./geocoding');
+      const result = await getCityCoordinates(city, country, state);
+      if (result) {
+        return { lat: result.lat, lng: result.lng, formattedName: city };
+      }
+    } catch {
+      // fall through to legacy path
+    }
+  }
+
   // 1. Check CITY_COORDS (free, instant)
   const coords = getCityCoords(city);
   if (coords) {
@@ -178,7 +201,11 @@ export interface DriveInfo {
 
 export async function getDriveInfo(
   originCity: string,
-  destCity: string
+  destCity: string,
+  originCountry?: string,
+  destCountry?: string,
+  originState?: string,
+  destState?: string
 ): Promise<DriveInfo> {
   const originKey = originCity.toLowerCase().trim();
   const destKey = destCity.toLowerCase().trim();
@@ -211,8 +238,8 @@ export async function getDriveInfo(
 
   // 2. Geocode both cities
   const [origin, dest] = await Promise.all([
-    geocodeCity(originCity),
-    geocodeCity(destCity),
+    geocodeCity(originCity, originCountry, originState),
+    geocodeCity(destCity, destCountry, destState),
   ]);
 
   // 3. Call Mapbox Directions API
