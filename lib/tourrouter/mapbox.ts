@@ -166,7 +166,7 @@ export async function cacheGeocode(
   formattedName: string,
   serviceRoleKey: string
 ): Promise<void> {
-  await fetch(
+  const response = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/geocode_cache`,
     {
       method: 'POST',
@@ -185,6 +185,10 @@ export async function cacheGeocode(
       cache: 'no-store',
     }
   );
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Supabase ${response.status} ${response.statusText} on geocode_cache: ${body.slice(0, 500)}`);
+  }
 }
 
 // ============================================================
@@ -283,7 +287,7 @@ export async function cacheDriveInfo(
   info: DriveInfo,
   serviceRoleKey: string
 ): Promise<void> {
-  await fetch(
+  const response = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/drive_cache`,
     {
       method: 'POST',
@@ -309,4 +313,8 @@ export async function cacheDriveInfo(
       cache: 'no-store',
     }
   );
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Supabase ${response.status} ${response.statusText} on drive_cache: ${body.slice(0, 500)}`);
+  }
 }
