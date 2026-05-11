@@ -2973,3 +2973,46 @@ Cal's Cutoff routing page → hard refresh → 15-second wait → SQL query retu
 - The `response.ok` check in cache write helpers is a permanent improvement, not a temporary diagnostic. Both helpers now properly surface Supabase errors. Pattern worth applying to any other raw-fetch Supabase writes in the codebase.
 - Bash heredocs avoided throughout per CLAUDE.md rule. Commit messages all single-line via `-m`.
 - Three commits stacked cleanly. Each verified with `npx tsc --noEmit` + `npm run build` before push. No build regressions.
+
+## 2026-05-11 (continued) — country-code normalization across geo_cities and tour_shows
+
+### Shipped
+Single Supabase migration transaction. No code commits.
+Resolved BACKLOG item #5: Dedupe Washington in geo_cities + country code audit.
+
+### What we entered with
+The geocoding bug from earlier today (Cambridge UK / Washington WA / Brooklyn→Atlanta) was technically fixed by threading country through the lookup. But auditing `geo_cities.country` revealed the curated catalog held 25 distinct alpha-2 codes (`US`, `GB`, `CA`, `DE`, `FR`, `IT`, ...) plus 2 uppercase full-name fossils (`CANADA`, `SWEDEN`), against a codebase convention of lowercase-English-uppercased-at-query-time. Result: ~340 curated rows orphaned and unreachable from the app.
+
+### What we learned mid-investigation
+- The codebase's de facto canonical form is **lowercase English words** stored in `tour_shows.country` (`'usa'`, `'uk'`, `'canada'`, `'germany'`, etc.), **uppercased at query time** before hitting geo_cities via `country.toUpperCase().trim()`. The `geo_cities.country` column needs to hold the UPPERCASE-lowercase-English form. NOT ISO 3166 alpha-3, which I had initially assumed.
+- `normalizeCountry()` in `lib/tourrouter/parsers.ts` only handles 7 countries explicitly (usa/uk/canada/germany/france/netherlands/australia). Anything outside falls through as the lowercased input — so an alpha-2 `'IT'` from a parser would store as `'it'` and never match the migrated `'ITALY'` rows. Today's tours don't have this problem (all 5 distinct values are in the explicit list), but future imports could. Future hardening: extend normalizeCountry to handle every country in geo_cities + vehicleDatabase explicitly.
+- `getCityCoordinates` in `lib/tourrouter/geocoding.ts` has a write-back path that adds new rows with country uppercased. New data has been canonicalized correctly since April 10. The migration was fixing the OLD seed data only.
+- Manual curl test earlier today returned 201 Created with `drive_seconds: 3600`. Looked successful but only proved the request shape works for integer values — never validated the FLOAT values production actually sends. **General lesson:** when reproducing a failing production call manually, use the same values production uses, not handpicked sentinels.
+- `drive_cache` upserts via `Prefer: resolution=merge-duplicates` don't update `fetched_at` because that column isn't in the payload — `default: now()` only fires on INSERT. Means `fetched_at` reflects "first written" not "last refreshed" once a row exists. Filed as separate backlog entry.
+
+### Migration
+Pre-flight: confirmed Washington had 2 rows, the US-coded one with `iata_code='DCA'` to keep.
+
+BEGIN/COMMIT transaction:
+1. DELETE the Washington duplicate (id `a1c77ea8-c229-43e4-a3ad-2157bb1a5756`)
+2. UPDATE `geo_cities.country` via CASE statement mapping 24 alpha-2 codes + 2 uppercase full-names to UPPERCASE-lowercase-English (US→USA, GB→UK, CA→CANADA, DE→GERMANY, FR→FRANCE, IT→ITALY, AU→AUSTRALIA, ES→SPAIN, JP→JAPAN, NL→NETHERLANDS, BE→BELGIUM, CH→SWITZERLAND, IE→IRELAND, PL→POLAND, AT→AUSTRIA, NZ→NEW ZEALAND, PT→PORTUGAL, CZ→CZECH REPUBLIC, DK→DENMARK, NO→NORWAY, SE→SWEDEN, FI→FINLAND, HU→HUNGARY, IS→ICELAND, plus already-canonical CANADA and SWEDEN as no-ops)
+3. UPDATE `tour_shows`: 11 uppercase `'USA'` rows → `'usa'` (cosmetic — `.toUpperCase()` at query time meant they already worked, but clean is clean)
+4. UPDATE `tour_shows_crew`: same 11-row case fix
+
+Post-flight verification: 24 distinct uppercase-English values in geo_cities, no remaining 2-letter codes or fossils, 4 legitimate cross-country dupes remaining (birmingham UK+USA, cambridge UK+USA, london CANADA+UK, manchester UK+USA), Washington dedupe confirmed.
+
+### Functional verification
+Cal's Cutoff routing page hard-refreshed: drive times displayed correctly (identical to earlier today — coords didn't change, only country values). drive_cache repopulated with 9 fresh rows from the post-migration refresh (after first deleting the 17:34 rows to prove writes were landing rather than upserts being no-ops). Today's earlier `Math.round(drive_seconds)` fix continues to work — no Postgres 22P02 errors in Vercel runtime logs.
+
+### Result
+- 402 geo_cities rows (was 403 minus 1 deleted Washington dupe), all in UPPERCASE-lowercase-English canonical form
+- USA pool: 63 → 212 reachable rows (3.4x)
+- UK pool: 6 → 34 reachable rows (5.7x)
+- CANADA pool: 1 → 21 reachable rows (21x)
+- 21 entirely new reachable country pools (GERMANY, FRANCE, ITALY, JAPAN, SPAIN, NETHERLANDS, BELGIUM, SWITZERLAND, IRELAND, POLAND, AUSTRIA, NEW ZEALAND, PORTUGAL, CZECH REPUBLIC, DENMARK, NORWAY, SWEDEN, FINLAND, HUNGARY, ICELAND, AUSTRALIA) that the app could not previously reach
+- ~340 curated rows previously orphaned by convention mismatch are now reachable to the existing query path
+
+### Process notes
+- Mid-session, I had to re-read several files I'd been reasoning about from memory (geocoding.ts, parsers.ts, constants.ts, drive-info/route.ts, schema dumps). Reading them surfaced multiple incorrect assumptions including the wrong canonical form target. Treating as a forcing function going forward: **read the actual code before designing migrations that depend on conventions**.
+- BEGIN/COMMIT transactions in Supabase SQL Editor work fine for multi-statement data migrations. CLAUDE.md memory's warning about transaction blocks specifically referred to single-statement ALTER TABLE DDL.
+- All SQL queries clearly labeled, separate code blocks, manual execution. No migration files, no terminal execution. Per discipline.

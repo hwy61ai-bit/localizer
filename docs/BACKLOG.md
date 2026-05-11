@@ -619,6 +619,8 @@ having count(distinct country) > 1;
 
 Effort: ~1 hour including the audit and SQL migration.
 
+**Resolution (2026-05-11):** Scope expanded mid-investigation when audit revealed the inconsistency was widespread (25 alpha-2 codes plus 2 uppercase full-name fossils across 340 rows, not just Washington). Also discovered the codebase canonical was UPPERCASE-lowercase-English (not ISO 3166 alpha-3 as the backlog entry assumed). Migration ran in a single Supabase transaction: dedupe Washington, normalize all 26 distinct country values in geo_cities to UPPERCASE-lowercase-English, normalize 11 uppercase `'USA'` rows in `tour_shows` + `tour_shows_crew` to lowercase. Result: ~340 curated geo_cities rows previously orphaned by convention mismatch are now reachable to the app. Cal's Cutoff verified end-to-end post-migration. See SESSION_LOG.md `## 2026-05-11 (continued) — country-code normalization` for full diagnostic arc. Actual effort: ~2 hours.
+
 ---
 
 ### Consolidate duplicate `buildDriveDataKey` / `DriveDataMap` definitions
@@ -666,3 +668,17 @@ Effort: ~5 minutes.
 **Fix:** delete the unused import line. Verify with `npx tsc --noEmit` and `npm run build`.
 
 Effort: ~2 minutes.
+
+---
+
+### `drive_cache.fetched_at` doesn't update on upsert
+
+*Surfaced 2026-05-11 during country-code migration verification.*
+
+`cacheDriveInfo` in `lib/tourrouter/mapbox.ts` does a POST to `/rest/v1/drive_cache` with `Prefer: resolution=merge-duplicates`. On a fresh INSERT, `fetched_at`'s `default: now()` fires correctly. On a merge (existing row), PostgREST updates only the columns present in the request body — and `fetched_at` is not in the body. Net effect: once a `(origin_city, dest_city)` pair has been written, its `fetched_at` is frozen at the original write time, regardless of how many times subsequent refreshes upsert the row.
+
+**Operational impact:** `fetched_at` reflects "first written" rather than "last refreshed". Any monitoring or staleness logic that uses `fetched_at` ("show me rows updated in the last 5 minutes") gets misleading results once a row has been upserted. Today (2026-05-11), discovering this took a couple cycles of "wait, why isn't drive_cache populating after refresh? — oh, it IS populating, the 5-minute window query is just lying."
+
+**Fix:** add `fetched_at: new Date().toISOString()` to the body of the `cacheDriveInfo` fetch call in `lib/tourrouter/mapbox.ts`. Explicit value overrides the default and gets updated on every upsert.
+
+Effort: ~5 minutes including a clean build and one verification cycle.
