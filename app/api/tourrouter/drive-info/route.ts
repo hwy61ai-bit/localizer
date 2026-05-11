@@ -32,21 +32,26 @@ export async function POST(req: NextRequest) {
 
     // Cache geocode results if we have service role key
     if (serviceRoleKey) {
-      // Fire and forget — don't block the response
-      cacheGeocode(
-        originCity,
-        origin.lat,
-        origin.lng,
-        origin.formattedName,
-        serviceRoleKey
-      );
-      cacheGeocode(
-        destCity,
-        dest.lat,
-        dest.lng,
-        dest.formattedName,
-        serviceRoleKey
-      );
+      try {
+        await Promise.all([
+          cacheGeocode(
+            originCity,
+            origin.lat,
+            origin.lng,
+            origin.formattedName,
+            serviceRoleKey
+          ),
+          cacheGeocode(
+            destCity,
+            dest.lat,
+            dest.lng,
+            dest.formattedName,
+            serviceRoleKey
+          ),
+        ]);
+      } catch (e) {
+        console.warn('[drive-info] cacheGeocode write failed:', e);
+      }
     }
 
     // Get drive info (checks cache → Mapbox Directions)
@@ -54,7 +59,11 @@ export async function POST(req: NextRequest) {
 
     // Cache drive result if we have service role key
     if (serviceRoleKey) {
-      cacheDriveInfo(originCity, destCity, origin, dest, info, serviceRoleKey);
+      try {
+        await cacheDriveInfo(originCity, destCity, origin, dest, info, serviceRoleKey);
+      } catch (e) {
+        console.warn('[drive-info] cacheDriveInfo write failed:', e);
+      }
     }
 
     return NextResponse.json({
