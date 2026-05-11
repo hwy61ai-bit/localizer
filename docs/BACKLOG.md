@@ -650,3 +650,5 @@ Pre-existing — not introduced by the May 11 country-aware geocoding work. The 
 **Fix:** add `export const dynamic = "force-dynamic";` at the top of `app/api/notifications/route.ts` (same pattern as `app/api/tourrouter/drive-info/route.ts` and several other cookie-using routes). Tells Next.js to skip the static-rendering attempt entirely.
 
 Effort: ~5 minutes.
+
+**Resolution (2026-05-11):** Fixed in commit 7400480 — added `export const dynamic = "force-dynamic"` to `app/api/notifications/route.ts`. Verified clean build with no `[Notifications GET]` warning; static page count went 73→72 confirming Next.js no longer attempts the static-render pass on this route. Route still marked `ƒ` (Dynamic) in the route table, behavior unchanged.
