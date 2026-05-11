@@ -97,13 +97,17 @@ export interface MapboxDriveInfo {
  */
 export async function getMapboxDriveInfo(
   originCity: string,
-  destCity: string
+  destCity: string,
+  originCountry?: string,
+  destCountry?: string,
+  originState?: string,
+  destState?: string
 ): Promise<MapboxDriveInfo | null> {
   try {
     const resp = await fetch('/api/tourrouter/drive-info', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ originCity, destCity }),
+      body: JSON.stringify({ originCity, destCity, originCountry, destCountry, originState, destState }),
     });
 
     if (!resp.ok) return null;
@@ -129,7 +133,7 @@ export async function prefetchDriveData(
   shows: { city: string; country: string; isOff?: boolean }[]
 ): Promise<DriveDataMap> {
   const map: DriveDataMap = {};
-  const pairs: { from: string; to: string }[] = [];
+  const pairs: { from: string; to: string; fromCountry: string; toCountry: string }[] = [];
 
   function isValidCity(s: { city: string; isOff?: boolean }): boolean {
     if (s.isOff) return false;
@@ -139,12 +143,17 @@ export async function prefetchDriveData(
 
   for (let i = 1; i < shows.length; i++) {
     if (!isValidCity(shows[i - 1]) || !isValidCity(shows[i])) continue;
-    pairs.push({ from: shows[i - 1].city, to: shows[i].city });
+    pairs.push({
+      from: shows[i - 1].city,
+      to: shows[i].city,
+      fromCountry: shows[i - 1].country,
+      toCountry: shows[i].country,
+    });
   }
 
   const results = await Promise.all(
-    pairs.map(async ({ from, to }) => {
-      const info = await getMapboxDriveInfo(from, to);
+    pairs.map(async ({ from, to, fromCountry, toCountry }) => {
+      const info = await getMapboxDriveInfo(from, to, fromCountry, toCountry);
       return { from, to, info };
     })
   );
