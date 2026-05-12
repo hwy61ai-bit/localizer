@@ -671,6 +671,8 @@ Effort: ~5 minutes.
 
 Effort: ~2 minutes.
 
+**Resolution (2026-05-12):** Fixed in commit b7095a1 — deleted the unused `import { CITY_COORDS } from './constants';` line in `lib/tourrouter/mapbox.ts`. Two remaining string mentions on lines 59 and 83 are inside comments describing the conceptual lookup hierarchy (constants → cache → API), which still describes the architecture correctly after the symbol moved to `getCityCoords` from `./geography`. Comments left intact as separate doc-cleanup concern. Verified clean with `npx tsc --noEmit` and `npm run build` (72/72 static pages).
+
 ---
 
 ### `drive_cache.fetched_at` doesn't update on upsert
@@ -684,3 +686,5 @@ Effort: ~2 minutes.
 **Fix:** add `fetched_at: new Date().toISOString()` to the body of the `cacheDriveInfo` fetch call in `lib/tourrouter/mapbox.ts`. Explicit value overrides the default and gets updated on every upsert.
 
 Effort: ~5 minutes including a clean build and one verification cycle.
+
+**Resolution (2026-05-12):** Fixed in commit e710dd7 — added `fetched_at: new Date().toISOString()` to the `cacheDriveInfo` POST body in `lib/tourrouter/mapbox.ts`. PostgREST `Prefer: resolution=merge-duplicates` now writes the column on both INSERT and UPDATE paths. Verified in production by deleting `(cambridge → brooklyn)` from `drive_cache`, hard-refreshing Cal's Cutoff, and confirming the row repopulated with a current timestamp while the other two Monday-fixed legs retained their original timestamps (correct read-through cache behavior).
