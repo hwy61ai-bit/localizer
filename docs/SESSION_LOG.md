@@ -3016,3 +3016,95 @@ Cal's Cutoff routing page hard-refreshed: drive times displayed correctly (ident
 - Mid-session, I had to re-read several files I'd been reasoning about from memory (geocoding.ts, parsers.ts, constants.ts, drive-info/route.ts, schema dumps). Reading them surfaced multiple incorrect assumptions including the wrong canonical form target. Treating as a forcing function going forward: **read the actual code before designing migrations that depend on conventions**.
 - BEGIN/COMMIT transactions in Supabase SQL Editor work fine for multi-statement data migrations. CLAUDE.md memory's warning about transaction blocks specifically referred to single-statement ALTER TABLE DDL.
 - All SQL queries clearly labeled, separate code blocks, manual execution. No migration files, no terminal execution. Per discipline.
+
+## 2026-05-12 — Kurt Penny notes shipped end-to-end, color contrast + button decoupling + font bumps, BACKLOG.md restructure
+
+### Shipped (17 commits, all auto-deployed to Vercel)
+- e710dd7 — fix(tourrouter/mapbox): write `fetched_at` on `cacheDriveInfo` upsert to unfreeze the timestamp
+- b7095a1 — chore(tourrouter/mapbox): remove unused `CITY_COORDS` import
+- 6e970a4 — docs(backlog): mark CITY_COORDS removal and fetched_at upsert fix resolved
+- be538be — docs(backlog): note `cacheGeocode` shares the same fetched_at-frozen bug, won't fix standalone (geocode_cache slated for removal)
+- 9e06924 — docs(backlog): mark logo overlays on videos resolved (verified working 2026-05-12)
+- 197be3b — docs(backlog): consolidate resolved items into bottom section
+- e9ae45f — fix(localizer/assets): decouple Parse Schedule + Confirm Import buttons from crimson (missed in initial inventory)
+- 4460f93 — refactor(dashboard): bump small font sizes (9→11, 10→12, 11→13) across 33 in-scope files
+- 67760c6 — feat(localizer/assets, template-editor): Kurt note #3 — five UX fixes (dismissible tips, drop misleading copy, file-format hints, bolder field labels, sub-field dividers)
+- Plus 8 more commits covering: color contrast pass (`--hw-text-muted` #8A8580 → #6B6661, `--hw-amber` #c49a3c → #946F1F, HwModal viewport overflow fix), button color decoupling (`--hw-action-primary` token introduced + 17 inline buttons migrated across 11 files), BACKLOG.md tier reorganization, new TourRouter import drop zone bug entry, two new CLAUDE.md workflow rules (13, 14).
+
+### Continuing from 2026-05-11 — drive_cache follow-ups
+- **`fetched_at` upsert fix (e710dd7).** `cacheDriveInfo` POST to PostgREST uses `Prefer: resolution=merge-duplicates`. On INSERT the `default: now()` fires; on UPDATE only columns present in the body are written, so `fetched_at` was frozen at first-write forever. Added explicit `fetched_at: new Date().toISOString()` to the POST body — now updates on every upsert. Verified in production: deleted `(cambridge → brooklyn)` from `drive_cache`, hard-refreshed Cal's Cutoff, row repopulated with a current timestamp while the other two Monday-fixed legs retained their original timestamps (correct read-through cache behavior).
+- **`CITY_COORDS` import removal (b7095a1).** `lib/tourrouter/mapbox.ts` line 1 imported `CITY_COORDS` from `./constants` but never referenced it. Dead since the April 10 migration moved coord lookups to `getCityCoords` from `./geography`. Deleted the import. Two remaining string mentions on lines 59 and 83 are inside comments describing the conceptual lookup hierarchy; left intact as separate doc-cleanup concern.
+- **`cacheGeocode` shares the same `fetched_at`-frozen-on-upsert bug as `cacheDriveInfo`** (commit be538be in BACKLOG). Won't fix standalone since `geocode_cache` is slated for removal in the upcoming Phase 3 cleanup. If that drop slips past the soak window, mirror the `cacheDriveInfo` fix in `cacheGeocode`.
+
+### BACKLOG.md reorganization (medium-effort restructure)
+The open portion of `docs/BACKLOG.md` had grown ad-hoc with three loosely related `## sections` (Post-launch considerations / TourRouter — Blocked items / Auth follow-ups) plus a Resolved tail. Hard to scan, hard to prioritize. Restructured into **seven readiness tiers** ordered by what's needed to move an item:
+
+- 🔴 Active issues affecting users — bugs beta users could trip over right now
+- 🟡 Pre-launch gates — things that must be true before flipping `COMING_SOON=false`
+- 🟢 Ready to build — scoped, unblocked, just needs a session
+- ⚪ Awaiting Tim — blocked on decision, copy, or sign-off
+- ⏳ Soak items — waiting on production data or time to pass
+- 🧹 Code hygiene queue — refactors, dead code, low-pressure cleanup
+- 💭 Future ideas — speculative post-launch work (currently empty placeholder)
+
+During the restructure:
+- Marked **8 stale entries resolved** (CITY_COORDS import, `drive_cache.fetched_at` upsert, logo overlays on videos, custom text image path, custom text video Step 6, venue link page stale render URL, plus the 2 from drive consolidation pass — BUG-E `render_poster_url` misdiagnosis and drive-info cache write bleed full fix).
+- **Dissolved 3 old `##` section headings**; their content distributed across the seven tiers.
+- **Promoted 3 sub-items to `###` headings**: middleware auth error handling (was a bullet inside Advance feature), PKCE migration + graceful middleware error handling (were numbered sub-items inside Auth follow-ups). Auth follow-ups intro paragraph folded as italicized context note onto PKCE migration. TourRouter — Blocked items intro folded onto Advance feature.
+- Net result: open items grouped by what's needed to move them, not by topic. Easier to triage a session against the tier list than against the topical list.
+
+End-state counts: 28 open `###` items + 11 resolved `###` items = 39 total. 8 `##` tier headings + Resolved.
+
+### Kurt Penny notes — all 10 shipped today
+Kurt's beta feedback batch of 10 items, all shipped:
+
+**Color contrast (Kurt #1–#4):**
+- `--hw-text-muted` darkened from `#8A8580` to `#6B6661` — contrast against `--hw-bg-surface` (`#FFFFFF`) ~3.3:1 → ~5.7:1, clears WCAG AA for normal text. Single-token edit propagates to ~430 instances across 51 app files.
+- `--hw-amber` darkened from `#c49a3c` to `#946F1F` — contrast ~2.6:1 → ~4.58:1, clears AA. ~57 instances. `--hw-amber-ghost` and other amber-derived tokens untouched (pale enough to not move the math).
+- HwModal viewport overflow fix: added `max-height: calc(100vh - 48px)`, `display: flex`, `flex-direction: column` to `.container`, plus `overflow-y: auto; flex: 1` on `.body`. Share with Marketing modal (and every other HwModal consumer) now scrolls within the viewport instead of pushing buttons below the fold.
+
+**Button color decoupling (Kurt #5):**
+- Introduced `--hw-action-primary: #1A1A1A` and `--hw-action-primary-hover: #000000`. Primary action buttons now use these instead of `--hw-crimson` / `--hw-crimson-dark`. Crimson stays as a **brand accent** (marketing pages, progress bar fills, use-case accents, brand dividers) and a **destructive** signal (`HwButton variant="destructive"`, Revoke/Reset buttons). The `--hw-red` alias token remains defined but unused — reserved for future destructive-only repurposing.
+- HwButton.module.css `.primary` and `.primary:hover` rewritten to use the new tokens. `.destructive` left on crimson.
+- 17 inline-styled primary action buttons migrated across 11 dashboard/login/advance files (ADD ARTIST, CREATE TOUR, + NEW EVENT, GENERATE ALL, SAVE & GENERATE, + ADD SHOW, IMPORT SHOWS, + ADD EXPENSE, PARSE DATA, APPLY MAPPING, SAVE TO TOUR, CONFIRM & SAVE, + Add Contact, Add, Save Changes, login submit, advance submit).
+- Follow-up pass on Localizer schedule import page (e9ae45f) caught two additional buttons — Parse Schedule and Confirm Import — that were missed in the initial 17-button inventory. User flagged the still-red Confirm Import button after the first deploy. Now black.
+
+**Font size bumps (Kurt #2):**
+- Dashboard small font sizes raised: `fontSize: 9` → `11`, `fontSize: 10` → `12`, `fontSize: 11` → `13`. **433 replacements across 33 in-scope files** (commit 4460f93).
+- Scope: every `.tsx`/`.ts` under `app/dashboard/`, `app/account/`, `app/v/`, `app/advance/`, `app/report/`, `app/login/`, `app/auth/`. Marketing pages (`app/page.tsx`, `app/tourrouter`, `app/localizer`, `app/diy`, `app/roadapp`, `app/showcase`, `app/pricing`, `app/landing.css`), `app/components/`, and CSS Modules **explicitly excluded**.
+- Regex-anchored to literal terminators (`fontSize: 11,`, `fontSize: 11 }`) to avoid false-matching `padding: 11`, `borderRadius: 11`, etc. Rule order enforced (Rule 1: 11→13 first, then 10→12, then 9→11 last) to prevent cascade where a new 11 from Rule 3 would re-bump to 13.
+- Verified post-pass: out-of-scope file counts match pre-pass exactly (10 untouched `fontSize: 11`, 14 untouched `fontSize: 10`, 6 untouched `fontSize: 9` — all in `app/components/`, marketing pages, or other excluded surfaces).
+
+**UX fixes (Kurt #3, comprising #6–#10):**
+- **#6 — Dismissible Upload Tips card.** Added `tipsDismissed` state, `useEffect` that reads `localStorage.getItem("hw61.uploadTipsDismissed")` on mount, `dismissTips` handler that writes the flag. Card wrapped in `{!tipsDismissed && (...)}`. Header converted to flex row with × close button (Bebas Neue 18px, muted).
+- **#7 — Misleading instruction removed.** "Click an uploaded image to open the text editor" deleted from line 307 of `app/dashboard/tours/[tourId]/assets/page.tsx`. The action didn't actually work — likely orphaned copy from an earlier flow.
+- **#8 — File format hints.** Extended `renderFormatGrid` signature to accept an optional `hint?: string` param. Empty-state upload prompt now renders a third line below "or drag and drop" when hint is provided. Photos: `"PNG, JPG, WEBP · up to 20MB"`. Videos: `"MP4, MOV, WEBM · up to 100MB"`. Both `tiktok` and `yt_shorts` formatIds share the 100MB cap per the formatId carve-out in `handleUpload` line 130. Hint sized at fontSize 11 to stay subordinate to surrounding 12/13px text while respecting today's font-bump floor.
+- **#9 — Field label hierarchy.** 26 sidebar field labels in TemplateEditor.tsx bumped from `fontWeight: 500` to `fontWeight: 700`. Two `replace_all` Edits keyed on literal `fontSize: 12, fontWeight: 500, textTransform` and `fontSize: 12, fontWeight: 500, letterSpacing` — both signatures appear only on labels, never on the 5 non-label `fontWeight: 500` sites (buttons, inputs, selects), confirmed by inspection of all 31 occurrences. Establishes label/control hierarchy in the sidebar where everything previously flattened at 12px medium.
+- **#10 — Sub-field dividers.** Venue/Date/City sub-blocks inside the TEXT SIZES & ALIGNMENT card now separated by a thin `borderBottom: "1px solid var(--hw-border-light)"` divider between each, last block excluded via `idx < arr.length - 1` guard. `Fragment` added to React import to allow `key` on the wrapping element. Only one iterator qualified for divider treatment per the criteria (stacked sub-field blocks with `marginBottom`); other multi-element groups in the sidebar already have visual separation (checkbox glyphs, 3px black card borders, etc.) and weren't touched.
+
+### New backlog items discovered
+- **TourRouter import — paste text and CSV drop zone broken.** Surfaced during Kurt note button-color testing. Dragging a CSV file over the drop zone produces no visual highlight (drag-over state doesn't fire). Dropping does nothing — no upload, no parse, no error. Paste text / CSV window also rejects dragged input. Suspected pre-existing (not a regression from today's CSS-only edits). Logged in 🟡 Pre-launch gates alongside the Advance feature audit — same TourRouter-blocker category.
+
+### Discipline additions — two new CLAUDE.md workflow rules
+- **Rule 13** — Reconcile `docs/BACKLOG.md` before pushing the `docs/SESSION_LOG.md` update. End-of-session grep BACKLOG for keywords from the session's commits — file paths, feature names, bug descriptions. Any resolved item gets a Resolution stamp and moves to `## Resolved`. Catches the "fixed something and forgot to update the backlog" failure mode.
+- **Rule 14** — Run a 20-minute `docs/BACKLOG.md` audit every 2–3 weeks. Walk 🔴 Active issues and 🟡 Pre-launch gates first. For each open item, ask "would I be surprised if this is still broken?" — test the suspicious ones. Catches side-effect resolutions: items that got incidentally fixed by unrelated work and were never explicitly closed. Rule 13 alone misses these because nobody can predict which adjacent items a given commit will resolve.
+
+Workflow rules now total 14. Both rules used immediately at end of today's session — Rule 13 reconciliation confirmed no open items needed to move (today's UX/quality work was net-new, not resolution of prior backlog entries).
+
+### What's still pending
+- **Onboarding wizard Option B** (Localizer-only narrative) — awaiting Tim.
+- **Stripe business setup** — awaiting bank account decision.
+- **Country-aware geocoding Phase 2** (drive_cache `origin_country` / `dest_country` schema columns) — in 🟢 Ready to build.
+- **Unit D rate limiting** — in 🟢 Ready to build.
+- **The eight remaining items in 🧹 Code hygiene queue** — BUG-B (stale `allowed` whitelist), custom font upload debt, lint cleanup on public viewers, parallel FormatConfig/FieldConfig types, /api/venue-links possibly-dead-code, middleware auth error handling, PKCE migration, graceful middleware getSession error handling.
+
+### Session stats
+- 17 commits, all on `main`, all auto-deployed to Vercel.
+- 2 files protected as documented (`lib/clientRender.ts`, `lib/tourrouter/financials.ts`) — neither touched.
+- No QA agent sessions today.
+
+### Process notes
+- BACKLOG reorganization was the largest single rewrite of the session. Did it structural-summary-then-apply, same pattern used for prior light moves — surfaced two count discrepancies in the user's spec before applying, which would have produced an off-by-one final file if not flagged.
+- Color-contrast and font-size passes both ran as "single token edit / single regex pass = N hundred propagated changes" — payoff of CSS variables and consistent inline-style conventions. Net change: 5 small edits in `globals.css` and `HwModal.module.css`, plus 433 inline `fontSize:` replacements, plus 22 inline button-color replacements. All low-risk, high-leverage.
+- Rule 13 (BACKLOG reconciliation) used at session end — confirmed no open items needed to move. Today's work was net-new improvement, not resolution of prior tracked items. Reconciliation took ~5 minutes; would have caught a missed resolution had there been one.
+- Mid-pass on button-color decoupling, user flagged a still-red Confirm Import button on the Localizer schedule import page. Re-grepped the file, found two missed buttons (`parseBtn` and `confirmBtn` style objects), shipped follow-up commit e9ae45f. Lesson: when the inventory pass relies on grepping for a usage pattern (here, `background: var(--hw-crimson)` on inline-styled buttons), styles defined as object literals in a `const s = { ... }` style dictionary at the bottom of the file are easy to miss because they're declarative rather than inline-rendered. Future inventory passes should grep for the pattern AND scan style-dictionary objects.
