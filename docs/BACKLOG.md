@@ -2,46 +2,11 @@
 
 Forward-looking list of features, refactors, and design questions to revisit after Phase 7 launch. Not a commitment — a parking lot. Items here require Tim sign-off before moving to the build plan.
 
-## 🔴 Active issues affecting users (1)
+## 🔴 Active issues affecting users (0)
 
 *Bugs your beta users could trip over right now.*
 
-### Venue link page serves stale render URL — bypasses DB updates
-
-*Surfaced April 18, 2026 evening, during Step 6 video custom text verification.*
-
-Re-Gen All correctly writes fresh Cloudinary URLs to `venue_links.render_*_url`. The database row for a Memphis venue link on tour `b7b9da2f-55c3-477b-a92c-7a5bf87c3d24` was confirmed via SQL to contain the current URL with sponsor logo layer (`h_400` with `c_scale`), custom text overlay, and band logo at `h_510`. But the venue page at `/v/e/[token]` and the `/api/download?token=...` endpoint both serve an older URL that has `h_560` on the band logo, no sponsor logo `l_fetch` block, and no custom text `l_text` block. The old URL predates the April 14 sponsor-logo-on-video feature.
-
-Ruled out during diagnosis:
-- Browser cache (hard refresh + fresh incognito both serve the stale URL)
-- Supabase fetch cache (page uses `supabaseAdmin` service-role client, no Next.js `cache` directive)
-- Duplicate URL generator (grep confirmed `buildCloudinaryVideoUrl` is the only Cloudinary video URL builder in the codebase)
-- Multiple `venue_links` rows for the event (SQL confirmed single row)
-- Stale `overlay_config` (DB row has current TikTok config with sponsor logo y=0.565, size 400)
-
-Remaining hypotheses (untested, for tomorrow):
-- Vercel CDN edge cache on the tokenized `/v/e/[token]` route — the page is a Server Component with no caching directive but Vercel may be caching the rendered output
-- ISR / stale-while-revalidate on Server Component render
-- Venue link page somehow reading a cached database snapshot rather than live
-
-Debug data captured:
-- Tour ID: `b7b9da2f-55c3-477b-a92c-7a5bf87c3d24`
-- Event: Memphis, `96a50165-0eeb-4acb-918c-839034831775`
-- Venue link token: `974351a5e0c51b5aae02a76140a9e7dd538315cfd3d6b41ff05d3ed6623c9e5b`
-- `venue_links.created_at`: 2026-03-15
-- DB `render_tiktok_url` tail: `...tour_b7b9da2f-55c3-477b-a92c-7a5bf87c3d24_tiktok_1773703791368` — has sponsor logo layer and custom text layer
-- Served URL at `/v/e/[token]` and `/api/download`: same public_id tail but missing sponsor logo and custom text blocks, band logo h=560 not 510
-- Direct Cloudinary URL from the stored DB value RENDERS correctly — sponsor logo appears. So Cloudinary is fine. The served URL itself is different content than the stored URL.
-
-**Impact assessment:** This is not a Step 6 regression. The old URL predates both Step 6 (today) and sponsor logos on video (April 14). Any Re-Gen All on any tour never made it to the served venue page for the TikTok/YT Shorts formats. Custom text on videos shipped today and DOES appear on the freshly-regenerated URL when accessed directly at Cloudinary — but won't appear on the venue link page until this bug is fixed.
-
-**Severity:** HIGH pre-beta. Any promoter visiting a venue link sees outdated assets. The image formats may or may not have the same issue — not yet verified. Check `render_square_url`, `render_story_url`, `render_landscape_url` DB value vs served value before declaring image-only beta safe.
-
-**First step when picking this up:**
-1. Re-query the DB row vs inspect the rendered page source one more time with fresh eyes — confirm the mismatch reproduces
-2. Query Vercel deployment logs for the `/v/e/[token]` route: is it being hit on each request or served from cache?
-3. Check if `export const dynamic = 'force-dynamic'` or `export const revalidate = 0` resolves — BUT note yesterday's prod scare with these exact directives on the template editor route; if used on the venue page, preview-deploy first this time.
-4. If image formats also show the stale-URL issue, the fix is the same mechanism and covers images too. If only video formats, look for a video-specific render path.
+*No active issues at the moment. Items will appear here when bugs that affect users get logged.*
 
 ---
 
@@ -741,3 +706,44 @@ Discovered tonight while verifying the font fix worked — Tim's video renders w
 **Dependencies:** None — all data plumbing already in place from April 18 work. Tour-data route already returns `custom_text_1` / `custom_text_2`. EventsTable already passes them through. Just need the video layer construction.
 
 **Resolution (2026-05-12):** Verified working in production on this date — Drew generated a video render with custom text filled in and confirmed the text appears correctly on the rendered TikTok/YT Shorts output. The `buildCloudinaryVideoUrl` layer construction for `customText1`/`customText2` was either built and not separately tracked in the backlog, or completed incidentally during related video-overlay work. User-workflow verification is sufficient — no code archaeology required. With Step 6 done, the Custom text lines feature is now fully shipped on both image formats (April 18) and video formats.
+
+---
+
+### Venue link page serves stale render URL — bypasses DB updates
+
+*Surfaced April 18, 2026 evening, during Step 6 video custom text verification.*
+
+Re-Gen All correctly writes fresh Cloudinary URLs to `venue_links.render_*_url`. The database row for a Memphis venue link on tour `b7b9da2f-55c3-477b-a92c-7a5bf87c3d24` was confirmed via SQL to contain the current URL with sponsor logo layer (`h_400` with `c_scale`), custom text overlay, and band logo at `h_510`. But the venue page at `/v/e/[token]` and the `/api/download?token=...` endpoint both serve an older URL that has `h_560` on the band logo, no sponsor logo `l_fetch` block, and no custom text `l_text` block. The old URL predates the April 14 sponsor-logo-on-video feature.
+
+Ruled out during diagnosis:
+- Browser cache (hard refresh + fresh incognito both serve the stale URL)
+- Supabase fetch cache (page uses `supabaseAdmin` service-role client, no Next.js `cache` directive)
+- Duplicate URL generator (grep confirmed `buildCloudinaryVideoUrl` is the only Cloudinary video URL builder in the codebase)
+- Multiple `venue_links` rows for the event (SQL confirmed single row)
+- Stale `overlay_config` (DB row has current TikTok config with sponsor logo y=0.565, size 400)
+
+Remaining hypotheses (untested, for tomorrow):
+- Vercel CDN edge cache on the tokenized `/v/e/[token]` route — the page is a Server Component with no caching directive but Vercel may be caching the rendered output
+- ISR / stale-while-revalidate on Server Component render
+- Venue link page somehow reading a cached database snapshot rather than live
+
+Debug data captured:
+- Tour ID: `b7b9da2f-55c3-477b-a92c-7a5bf87c3d24`
+- Event: Memphis, `96a50165-0eeb-4acb-918c-839034831775`
+- Venue link token: `974351a5e0c51b5aae02a76140a9e7dd538315cfd3d6b41ff05d3ed6623c9e5b`
+- `venue_links.created_at`: 2026-03-15
+- DB `render_tiktok_url` tail: `...tour_b7b9da2f-55c3-477b-a92c-7a5bf87c3d24_tiktok_1773703791368` — has sponsor logo layer and custom text layer
+- Served URL at `/v/e/[token]` and `/api/download`: same public_id tail but missing sponsor logo and custom text blocks, band logo h=560 not 510
+- Direct Cloudinary URL from the stored DB value RENDERS correctly — sponsor logo appears. So Cloudinary is fine. The served URL itself is different content than the stored URL.
+
+**Impact assessment:** This is not a Step 6 regression. The old URL predates both Step 6 (today) and sponsor logos on video (April 14). Any Re-Gen All on any tour never made it to the served venue page for the TikTok/YT Shorts formats. Custom text on videos shipped today and DOES appear on the freshly-regenerated URL when accessed directly at Cloudinary — but won't appear on the venue link page until this bug is fixed.
+
+**Severity:** HIGH pre-beta. Any promoter visiting a venue link sees outdated assets. The image formats may or may not have the same issue — not yet verified. Check `render_square_url`, `render_story_url`, `render_landscape_url` DB value vs served value before declaring image-only beta safe.
+
+**First step when picking this up:**
+1. Re-query the DB row vs inspect the rendered page source one more time with fresh eyes — confirm the mismatch reproduces
+2. Query Vercel deployment logs for the `/v/e/[token]` route: is it being hit on each request or served from cache?
+3. Check if `export const dynamic = 'force-dynamic'` or `export const revalidate = 0` resolves — BUT note yesterday's prod scare with these exact directives on the template editor route; if used on the venue page, preview-deploy first this time.
+4. If image formats also show the stale-URL issue, the fix is the same mechanism and covers images too. If only video formats, look for a video-specific render path.
+
+**Resolution (2026-05-12):** Verified working in production on this date. Pulled the DB row for the original-bug Memphis venue link (token 974351a5e0c51b5aae02a76140a9e7dd538315cfd3d6b41ff05d3ed6623c9e5b), opened the venue link page `/v/e/[token]` in incognito on hwy61labs.com, and grabbed the served TikTok URL from the page source. Compared against the DB value: byte-for-byte identical. All four diagnostic markers from the original bug entry matched — public ID `tour_b7b9da2f-55c3-477b-a92c-7a5bf87c3d24_tiktok_1773703791368`, band logo at `h_510` (not the old `h_560`), sponsor logo `l_fetch` block present, custom text `l_text` block with "SHORTS TEST 20:35" present. The cache-serving-stale-snapshots behavior is no longer reproducing. Exact mechanism of the fix is unknown — could have been an explicit cache directive added to the `/v/e/[token]` route, deployment-level change, or incidental fix from related work. User-workflow verification is sufficient.
