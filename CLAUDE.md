@@ -88,6 +88,10 @@ How to work in this repo. These are process rules, not code rules. They exist to
 
 12. **Avoid parallel agents working on the repo simultaneously.** Single-threaded work is cheaper in tokens and easier to debug. If multiple tasks are queued, do them sequentially.
 
+13. **Reconcile `docs/BACKLOG.md` before pushing the `docs/SESSION_LOG.md` update.** At the end of each session, grep `docs/BACKLOG.md` for keywords from this session's commits — file paths, feature names, bug descriptions. Any backlog item the session's work resolved gets a Resolution stamp and moves to the `## Resolved` section at the bottom. Catches the "fixed something and forgot to update the backlog" failure mode.
+
+14. **Run a 20-minute `docs/BACKLOG.md` audit every 2–3 weeks.** Walk 🔴 Active issues and 🟡 Pre-launch gates first. For each open item, ask "would I be surprised if this is still broken?" — test the suspicious ones. Catches side-effect resolutions: items that got incidentally fixed by unrelated work and were never explicitly closed. Rule 13 alone misses these because nobody can predict which adjacent items a given commit will resolve.
+
 ---
 
 ## Design system
