@@ -27,6 +27,7 @@ export default function AssetsPage() {
   const fileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const initialLoadDone = useRef(false);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [tipsDismissed, setTipsDismissed] = useState(false);
 
   useEffect(() => {
     const prevent = (e: DragEvent) => e.preventDefault();
@@ -37,6 +38,17 @@ export default function AssetsPage() {
       window.removeEventListener("drop", prevent);
     };
   }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem("hw61.uploadTipsDismissed")) {
+      setTipsDismissed(true);
+    }
+  }, []);
+
+  const dismissTips = () => {
+    localStorage.setItem("hw61.uploadTipsDismissed", "true");
+    setTipsDismissed(true);
+  };
 
   useEffect(() => {
     if (initialLoadDone.current) return;
@@ -190,7 +202,7 @@ export default function AssetsPage() {
     }
   }
 
-  function renderFormatGrid(section: string, accept: string) {
+  function renderFormatGrid(section: "photo" | "video", accept: string, hint?: string) {
     return FORMATS.filter((f) => f.section === section).map((fmt) => {
       const asset = assets.find((a) => a.formatId === fmt.id);
       const isUploading = uploading === fmt.id;
@@ -272,6 +284,9 @@ export default function AssetsPage() {
                 <div style={{ fontSize: 22, color: "var(--hw-text-muted)", marginBottom: 8, opacity: 0.4 }}>&#8593;</div>
                 <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1.5px" }}>UPLOAD</div>
                 <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", marginTop: 4, letterSpacing: "1px" }}>or drag and drop</div>
+                {hint && (
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", marginTop: 6, opacity: 0.8 }}>{hint}</div>
+                )}
               </div>
             )}
           </div>
@@ -304,32 +319,37 @@ export default function AssetsPage() {
       </div>
       <div className="assets-page-body" style={{ padding: "36px 28px", maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", marginBottom: 16 }}>
-          Upload one master photo per format. Click an uploaded image to open the text editor.
+          Upload one master photo per format.
         </div>
-        <div style={{ marginBottom: 32, padding: "16px 20px", background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)" }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 10 }}>UPLOAD TIPS</div>
-          <div className="assets-tips-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-            <div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>Match Dimensions</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Upload at the exact size shown below each format for best results.</div>
+        {!tipsDismissed && (
+          <div style={{ marginBottom: 32, padding: "16px 20px", background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase" }}>UPLOAD TIPS</div>
+              <button onClick={dismissTips} style={{ background: "none", border: "none", padding: "4px 8px", color: "var(--hw-text-muted)", cursor: "pointer", fontFamily: "var(--hw-font-display)", fontSize: 18, lineHeight: 1 }} aria-label="Dismiss tips">×</button>
             </div>
-            <div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>Aspect Ratio</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Images are cropped to fit. Matching the aspect ratio avoids unexpected cropping.</div>
-            </div>
-            <div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>High Resolution</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Use files at least 1080px wide for sharp, professional output.</div>
+            <div className="assets-tips-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+              <div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>Match Dimensions</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Upload at the exact size shown below each format for best results.</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>Aspect Ratio</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Images are cropped to fit. Matching the aspect ratio avoids unexpected cropping.</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>High Resolution</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Use files at least 1080px wide for sharp, professional output.</div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
         <div className="assets-section-label" style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 16 }}>PHOTOS</div>
         <div className="assets-format-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 28, marginBottom: 48 }}>
-          {renderFormatGrid("photo", "image/*")}
+          {renderFormatGrid("photo", "image/*", "PNG, JPG, WEBP · up to 20MB")}
         </div>
         <div className="assets-section-label" style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 16 }}>VIDEO</div>
         <div className="assets-format-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 28 }}>
-          {renderFormatGrid("video", "video/*,image/*")}
+          {renderFormatGrid("video", "video/*,image/*", "MP4, MOV, WEBM · up to 100MB")}
         </div>
       </div>
     </div>

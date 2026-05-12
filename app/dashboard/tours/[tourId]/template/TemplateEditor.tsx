@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -1226,7 +1226,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 10 }}>FONT</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 10 }}>FONT</div>
               <input
                 ref={fontFileRef}
                 type="file"
@@ -1263,7 +1263,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 {customFonts.length > 0 && (
                   <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>CUSTOM FONTS</div>
+                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>CUSTOM FONTS</div>
                     </div>
                     {customFonts.map(f => (
                       <div key={f.value} style={{ display: "flex", gap: 4 }}>
@@ -1308,15 +1308,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             </div>
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
-              {(["venue", "city", "date"] as BaseFieldKey[]).map(field => {
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 12 }}>TEXT SIZES & ALIGNMENT</div>
+              {(["venue", "city", "date"] as BaseFieldKey[]).map((field, idx, arr) => {
                 const textMax = isPrintFormat ? 400 : 120;
                 const colorKey: `${BaseFieldKey}Color` = `${field}Color`;
                 const fieldColor = cfg[colorKey];
                 return (
-                <div key={field} style={{ marginBottom: 16 }}>
+                <Fragment key={field}>
+                <div style={{ marginBottom: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>{FIELD_LABELS[field]}</span>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>{FIELD_LABELS[field]}</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <input
                         type="number"
@@ -1340,7 +1341,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <AlignButtons field={field} />
                   <div style={{ marginTop: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Color</span>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Color</span>
                       {fieldColor && (
                         <button
                           onClick={() => {
@@ -1368,6 +1369,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     </div>
                   </div>
                 </div>
+                {idx < arr.length - 1 && (
+                  <div style={{ borderBottom: "1px solid var(--hw-border-light)", marginBottom: 16 }} />
+                )}
+                </Fragment>
                 );
               })}
             </div>
@@ -1378,14 +1383,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   {cfg.showBandName && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
                 <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Name</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Name</div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>If not baked into image</div>
                 </div>
               </label>
               {cfg.showBandName && (
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                       <input
                         type="number"
@@ -1406,13 +1411,13 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     style={{ width: "100%", cursor: "pointer" }}
                   />
                   <div style={{ marginTop: 10 }}>
-                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Alignment</span>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Alignment</span>
                     <AlignButtons field="band" />
                   </div>
 
                   <div style={{ marginTop: 14, paddingTop: 14, borderTop: "2px solid var(--hw-border-light)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Font</span>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Font</span>
                       {bandFontFamily && (
                         <button
                           onClick={() => setBandFontFamily(null)}
@@ -1445,7 +1450,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
                   <div style={{ marginTop: 10 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Color</span>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Color</span>
                       {cfg.bandTextColor && (
                         <button
                           onClick={() => {
@@ -1481,26 +1486,26 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 <span onClick={() => updateCfg("showVenue", !(cfg.showVenue ?? defaultShowField(activeFormat)))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showVenue ?? defaultShowField(activeFormat)) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                   {(cfg.showVenue ?? defaultShowField(activeFormat)) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
-                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Venue</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Venue</div>
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                 <span onClick={() => updateCfg("showCity", !(cfg.showCity ?? defaultShowField(activeFormat)))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCity ?? defaultShowField(activeFormat)) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                   {(cfg.showCity ?? defaultShowField(activeFormat)) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
-                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>City</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>City</div>
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                 <span onClick={() => updateCfg("showDate", !(cfg.showDate ?? defaultShowField(activeFormat)))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showDate ?? defaultShowField(activeFormat)) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                   {(cfg.showDate ?? defaultShowField(activeFormat)) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
-                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Date</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Date</div>
               </label>
             </div>
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>TEXT COLOR</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>TEXT COLOR</div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>Applies to all fields</div>
                 </div>
                 <input type="color" value={`#${cfg.textColor}`}
@@ -1517,14 +1522,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     {cfg.showLogo && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                   </span>
                   <div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Logo</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Band Logo</div>
                     <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>{logoUrl ? "Tinted to text color" : "Upload on artist page"}</div>
                   </div>
                 </label>
                 {cfg.showLogo && logoUrl && (
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                       <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <input
                           type="number"
@@ -1572,7 +1577,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     {(cfg.showSponsorLogo1 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                   </span>
                   <div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 1</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 1</div>
                     <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the graphic's uploaded color." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
                   </div>
                 </label>
@@ -1585,7 +1590,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     </div>
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                        <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                        <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                         <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                           <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo1?.size ?? 60}
                             onChange={(e) => {
@@ -1630,7 +1635,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     {(cfg.showSponsorLogo2 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                   </span>
                   <div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 2</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 2</div>
                     <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the graphic's uploaded color." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
                   </div>
                 </label>
@@ -1643,7 +1648,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     </div>
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                        <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                        <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                         <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                           <input type="number" min={20} max={isPrintFormat ? 1800 : 400} value={cfg.sponsorLogo2?.size ?? 60}
                             onChange={(e) => {
@@ -1683,7 +1688,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <span onClick={() => updateCfg("showCustomText1", !(cfg.showCustomText1 ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCustomText1 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                     {(cfg.showCustomText1 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                   </span>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Text 1</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Text 1</div>
                 </label>
                 {(cfg.showCustomText1 ?? false) && (
                   <>
@@ -1696,7 +1701,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
                     />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                       <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <input
                           type="number"
@@ -1745,7 +1750,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   <span onClick={() => updateCfg("showCustomText2", !(cfg.showCustomText2 ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showCustomText2 ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
                     {(cfg.showCustomText2 ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                   </span>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Text 2</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Text 2</div>
                 </label>
                 {(cfg.showCustomText2 ?? false) && (
                   <>
@@ -1758,7 +1763,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 500, outline: "none", marginBottom: 12 }}
                     />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
                       <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <input
                           type="number"
@@ -1807,7 +1812,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   {cfg.shortDate && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
                 <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Short Date Format</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Short Date Format</div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>e.g. JUN 26TH</div>
                 </div>
               </label>
@@ -1819,7 +1824,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   {cfg.allCaps && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
                 </span>
                 <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>All Caps</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>All Caps</div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>Venue, city &amp; state in uppercase</div>
                 </div>
               </label>
