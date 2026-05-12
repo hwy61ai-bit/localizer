@@ -554,6 +554,8 @@ Sequencing: don't do this until the cache-write bleed item above is fixed and ve
 
 Effort: ~1 hour.
 
+**Related:** `cacheGeocode` in `lib/tourrouter/mapbox.ts` has the same `fetched_at`-frozen-on-upsert bug that was fixed in `cacheDriveInfo` (commit e710dd7). Not fixing standalone since `geocode_cache` is slated for removal in this same backlog item. If the drop gets deferred past the soak window for any reason, mirror the `cacheDriveInfo` fix: add `fetched_at: new Date().toISOString()` to the POST body in cacheGeocode.
+
 ---
 
 ### `state` column on `tour_shows` for state-level disambiguation
