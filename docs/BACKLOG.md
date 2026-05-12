@@ -81,16 +81,6 @@ Until then, both flows coexist: WelcomeWizard runs once per org on first login, 
 
 ---
 
-### Logo overlays on videos
-
-Logos have never rendered on Cloudinary video text overlays. `buildCloudinaryVideoUrl` in `app/api/renders/generate/route.ts` only builds text layers (venue, date, city, optional band name) and has no `l_image` or `l_fetch` layer for the logo. Images render logos via the Canvas renderer in `lib/clientRender.ts`, which is a completely separate code path — that's why "logos work on images" but "logos don't work on videos."
-
-The fix requires: reading `lib/clientRender.ts` to understand how the logo is resolved and positioned on image renders, mirroring that logic into a new Cloudinary transformation layer in `buildCloudinaryVideoUrl`, handling the logo URL resolution (the logo lives on Cloudinary as part of the artist record already), and testing across multiple logo positions and sizes. Estimated 1–2 hours. Out of scope for the April 9 Localizer bug-fix session.
-
-Discovered tonight while verifying the font fix worked — Tim's video renders with correct text and font, but the logo was missing. Not a regression, a latent missing feature.
-
----
-
 ### Remaining custom fonts need to be re-uploaded
 
 Two of the three existing `custom_fonts` rows still point at Cloudinary assets that don't exist: BebasNeue-Regular and Pragmatica-Extended-Extra-Bold. They were uploaded under the old broken pipeline that never wrote to Cloudinary. The render code will silently fail on any tour that uses these two fonts on a video overlay.
@@ -692,4 +682,16 @@ Effort: ~2 minutes.
 Effort: ~5 minutes including a clean build and one verification cycle.
 
 **Resolution (2026-05-12):** Fixed in commit e710dd7 — added `fetched_at: new Date().toISOString()` to the `cacheDriveInfo` POST body in `lib/tourrouter/mapbox.ts`. PostgREST `Prefer: resolution=merge-duplicates` now writes the column on both INSERT and UPDATE paths. Verified in production by deleting `(cambridge → brooklyn)` from `drive_cache`, hard-refreshing Cal's Cutoff, and confirming the row repopulated with a current timestamp while the other two Monday-fixed legs retained their original timestamps (correct read-through cache behavior).
+
+---
+
+### Logo overlays on videos
+
+Logos have never rendered on Cloudinary video text overlays. `buildCloudinaryVideoUrl` in `app/api/renders/generate/route.ts` only builds text layers (venue, date, city, optional band name) and has no `l_image` or `l_fetch` layer for the logo. Images render logos via the Canvas renderer in `lib/clientRender.ts`, which is a completely separate code path — that's why "logos work on images" but "logos don't work on videos."
+
+The fix requires: reading `lib/clientRender.ts` to understand how the logo is resolved and positioned on image renders, mirroring that logic into a new Cloudinary transformation layer in `buildCloudinaryVideoUrl`, handling the logo URL resolution (the logo lives on Cloudinary as part of the artist record already), and testing across multiple logo positions and sizes. Estimated 1–2 hours. Out of scope for the April 9 Localizer bug-fix session.
+
+Discovered tonight while verifying the font fix worked — Tim's video renders with correct text and font, but the logo was missing. Not a regression, a latent missing feature.
+
+**Resolution (2026-05-12):** Verified working in production on this date — Drew added a band logo to a video, rendered it, and the logo appeared correctly in the output. The April 9 entry's technical diagnosis (`buildCloudinaryVideoUrl` having no `l_image`/`l_fetch` block) is stale. Most likely fix was incidental during the April 14 sponsor logo work, which added image overlay construction to the same function — sponsor logos on TikTok video URLs are confirmed live per the open "Venue link page serves stale render URL" entry. The band logo path either reused the same layer-building code or was extended in the same pass. User-workflow verification is sufficient — no code archaeology required.
 
