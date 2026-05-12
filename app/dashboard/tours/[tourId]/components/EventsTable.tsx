@@ -471,7 +471,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             <button
               onClick={generateAll}
               disabled={generating || events.length === 0}
-              style={{ padding: "10px 20px", border: "3px solid var(--hw-crimson)", background: generating ? "var(--hw-text-muted)" : "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: generating || events.length === 0 ? "not-allowed" : "pointer", opacity: events.length === 0 ? 0.4 : 1, transition: "var(--hw-ease)" }}
+              style={{ padding: "10px 20px", border: "3px solid var(--hw-action-primary)", background: generating ? "var(--hw-text-muted)" : "var(--hw-action-primary)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: generating || events.length === 0 ? "not-allowed" : "pointer", opacity: events.length === 0 ? 0.4 : 1, transition: "var(--hw-ease)" }}
             >
               {generating ? "GENERATING..." : allReady ? "RE-GENERATE ALL" : "GENERATE ALL"}
             </button>
@@ -602,7 +602,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                   }
                   generateAll();
                 }}
-                style={{ flex: 1, padding: "12px 20px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}
+                style={{ flex: 1, padding: "12px 20px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}
               >SAVE & GENERATE</button>
               <button
                 onClick={() => setLongVenues(null)}

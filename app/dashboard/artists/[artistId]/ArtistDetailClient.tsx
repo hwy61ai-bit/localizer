@@ -69,7 +69,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
           <div style={{ border: "3px dashed var(--hw-border-light)", padding: 48, textAlign: "center" }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 8 }}>NO TOURS YET</div>
             <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-muted)", marginBottom: 20 }}>Create your first tour to start generating show assets.</div>
-            <button onClick={handleCreateTour} disabled={creatingTour} style={{ padding: "14px 28px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 16, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>
+            <button onClick={handleCreateTour} disabled={creatingTour} style={{ padding: "14px 28px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 16, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>
               {creatingTour ? "CREATING..." : "CREATE TOUR"}
             </button>
           </div>

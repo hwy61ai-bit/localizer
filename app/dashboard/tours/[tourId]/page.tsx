@@ -115,7 +115,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
         <div style={{ border: "3px solid var(--hw-border-strong)", overflow: "hidden", background: "var(--hw-bg-surface)" }}>
           <div style={{ padding: 16, display: "flex", alignItems: "center", gap: 12, borderBottom: "3px solid var(--hw-border-strong)" }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>EVENTS</div>
-            <Link href={`/dashboard/tours/${tourId}/events/new`} style={{ padding: "8px 16px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase" }}>+ NEW EVENT</Link>
+            <Link href={`/dashboard/tours/${tourId}/events/new`} style={{ padding: "8px 16px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase" }}>+ NEW EVENT</Link>
             <ShareWithMarketingButton tourId={tourId} />
           </div>
 

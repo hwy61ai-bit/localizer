@@ -157,8 +157,8 @@ export default async function DashboardPage() {
             </div>
             <button type="submit" style={{
               padding: "14px 28px",
-              border: "3px solid var(--hw-crimson)",
-              background: "var(--hw-crimson)",
+              border: "3px solid var(--hw-action-primary)",
+              background: "var(--hw-action-primary)",
               color: "var(--hw-text-invert)",
               fontFamily: "var(--hw-font-display)",
               fontSize: 14,

@@ -1286,7 +1286,7 @@ export default function RouteTourPage() {
         <div className="td-actions" style={{ display: "flex", gap: 8, marginBottom: 12 }}>
           <button
             onClick={() => setShowAddModal(true)}
-            style={{ padding: "8px 16px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+            style={{ padding: "8px 16px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
           >+ ADD SHOW</button>
           <button
             onClick={() => setShowSettings(!showSettings)}
@@ -1317,7 +1317,7 @@ export default function RouteTourPage() {
         {!loading && shows.length === 0 && (
           <div style={{ background: "var(--hw-bg-surface)", border: "3px dashed var(--hw-border-light)", padding: 48, textAlign: "center" }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 12 }}>NO SHOWS IMPORTED YET</div>
-            <Link href={`/dashboard/routing/${tourId}/import`} style={{ display: "inline-block", padding: "14px 28px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "var(--hw-text-invert)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16, letterSpacing: "3px", textTransform: "uppercase" }}>IMPORT SHOWS</Link>
+            <Link href={`/dashboard/routing/${tourId}/import`} style={{ display: "inline-block", padding: "14px 28px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "var(--hw-text-invert)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16, letterSpacing: "3px", textTransform: "uppercase" }}>IMPORT SHOWS</Link>
           </div>
         )}
 

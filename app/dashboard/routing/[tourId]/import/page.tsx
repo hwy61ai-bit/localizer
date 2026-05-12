@@ -642,7 +642,7 @@ export default function ImportPage() {
               <button
                 onClick={handlePasteSubmit}
                 disabled={!pasteText.trim()}
-                style={{ padding: "10px 24px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: pasteText.trim() ? 1 : 0.4 }}
+                style={{ padding: "10px 24px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: pasteText.trim() ? 1 : 0.4 }}
               >PARSE DATA</button>
             </div>
           </div>
@@ -710,7 +710,7 @@ export default function ImportPage() {
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <button
                 onClick={applyMapping}
-                style={{ padding: "10px 24px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}
+                style={{ padding: "10px 24px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}
               >APPLY MAPPING</button>
             </div>
           </div>
@@ -729,7 +729,7 @@ export default function ImportPage() {
                 <button
                   onClick={saveShows}
                   disabled={saving || shows.length === 0}
-                  style={{ padding: "10px 24px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: saving || shows.length === 0 ? 0.4 : 1 }}
+                  style={{ padding: "10px 24px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: saving || shows.length === 0 ? 0.4 : 1 }}
                 >{saving ? "SAVING..." : "SAVE TO TOUR"}</button>
               </div>
             </div>

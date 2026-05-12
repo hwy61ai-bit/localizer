@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (5)
+## 🟡 Pre-launch gates (6)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -114,6 +114,31 @@ Before adding the cron back to `vercel.json`:
 - [ ] End-to-end test with a real (test) promoter email address, not a name string
 - [ ] Verify `advance_emails` log matches Resend delivery confirmations
 - [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
+
+---
+
+### TourRouter import — paste text and CSV drop zone broken
+
+*Surfaced 2026-05-12 during Kurt-note button color decoupling testing. Suspected pre-existing, not a regression from today's CSS-only edits.*
+
+**Symptoms:**
+- Dragging a CSV file over the TourRouter import drop zone produces no visual highlight (drag-over state doesn't fire).
+- Dropping the file does nothing — no upload, no parse, no error.
+- The paste text / CSV window also rejects dragged input.
+
+**Files likely involved:**
+- `app/dashboard/routing/[tourId]/import/page.tsx` — import page UI
+- `app/dashboard/routing/IntakeDropZone.tsx` — dedicated drop-zone component
+
+**Diagnostic steps:**
+1. Hard refresh, open DevTools console, attempt drag — note any JS errors.
+2. Inspect the drop zone in DevTools — confirm `onDragOver` / `onDrop` handlers are attached.
+3. Check git history on both files for recent changes.
+4. Cross-reference against the Localizer schedule import drop zone at `app/dashboard/tours/[tourId]/import/page.tsx` (similar pattern, may still work — useful for diff).
+
+**Why 🟡 Pre-launch gates:** Same TourRouter-blocker category as Advance feature audit. Blocks TourRouter beta launch. Not blocking Localizer launch (paste/CSV import isn't in Localizer flow).
+
+Effort: 30-60 min once root cause is found.
 
 ---
 

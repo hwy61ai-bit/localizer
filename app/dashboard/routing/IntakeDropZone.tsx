@@ -366,7 +366,7 @@ export default function IntakeDropZone({
               <button
                 onClick={confirmSave}
                 disabled={saving}
-                style={{ padding: "8px 20px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: saving ? 0.4 : 1 }}
+                style={{ padding: "8px 20px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", opacity: saving ? 0.4 : 1 }}
               >{saving ? "SAVING..." : "CONFIRM & SAVE"}</button>
             </div>
           </div>

@@ -25,13 +25,13 @@
 /* ---- Variants ---- */
 
 .primary {
-  background: var(--hw-crimson);
+  background: var(--hw-action-primary);
   color: #fff;
-  border-color: var(--hw-crimson);
+  border-color: var(--hw-action-primary);
 }
 .primary:hover {
-  background: var(--hw-crimson-dark);
-  border-color: var(--hw-crimson-dark);
+  background: var(--hw-action-primary-hover);
+  border-color: var(--hw-action-primary-hover);
   transform: translateY(-2px);
   box-shadow: var(--hw-shadow-md);
 }

@@ -176,7 +176,7 @@ export default function ContactsPage() {
             </div>
             <button
               onClick={() => setAddingContact(!addingContact)}
-              style={{ padding: "10px 20px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-crimson)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 800, fontSize: 13, cursor: "pointer", textTransform: "uppercase", letterSpacing: 3 }}
+              style={{ padding: "10px 20px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-action-primary)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 800, fontSize: 13, cursor: "pointer", textTransform: "uppercase", letterSpacing: 3 }}
             >+ Add Contact</button>
           </div>
         </div>
@@ -209,7 +209,7 @@ export default function ContactsPage() {
                   <label style={{ fontSize: 11, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Phone</label>
                   <input value={newContact.phone} onChange={(e) => setNewContact((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone" style={inputStyle} />
                 </div>
-                <button onClick={addContact} style={{ padding: "8px 14px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-crimson)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 700, fontSize: 12, cursor: "pointer", alignSelf: "end", textTransform: "uppercase", letterSpacing: 3 }}>Add</button>
+                <button onClick={addContact} style={{ padding: "8px 14px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-action-primary)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 700, fontSize: 12, cursor: "pointer", alignSelf: "end", textTransform: "uppercase", letterSpacing: 3 }}>Add</button>
                 <button onClick={() => setAddingContact(false)} style={{ padding: "8px 14px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 700, fontSize: 12, cursor: "pointer", alignSelf: "end", color: "var(--hw-text-secondary)", textTransform: "uppercase", letterSpacing: 3 }}>Cancel</button>
               </div>
             </div>
@@ -411,7 +411,7 @@ function ContactRow({
 
               {/* Actions */}
               <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                <button onClick={onSave} disabled={saving} style={{ padding: "8px 16px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-crimson)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: saving ? 0.5 : 1, textTransform: "uppercase", letterSpacing: 3 }}>
+                <button onClick={onSave} disabled={saving} style={{ padding: "8px 16px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-action-primary)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 700, fontSize: 12, cursor: "pointer", opacity: saving ? 0.5 : 1, textTransform: "uppercase", letterSpacing: 3 }}>
                   {saving ? "Saving..." : "Save Changes"}
                 </button>
                 {!c.my_flag && (

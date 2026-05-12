@@ -517,7 +517,7 @@ export default function FinancialsPage() {
                   <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>Actual Expenses</div>
                   <div style={{ fontSize: 12, color: "var(--hw-text-muted)", marginTop: 2 }}>{expenses.length} expense{expenses.length !== 1 ? "s" : ""} &middot; {fmtUSD(expGrandTotal)} total</div>
                 </div>
-                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>+ ADD EXPENSE</button>
+                <button onClick={() => setAddingExp(true)} style={{ padding: "6px 14px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "var(--hw-text-invert)", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer" }}>+ ADD EXPENSE</button>
               </div>
 
               {/* Category filters */}

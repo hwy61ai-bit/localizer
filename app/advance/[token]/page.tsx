@@ -237,7 +237,7 @@ export default function AdvanceFormPage() {
           disabled={submitting}
           style={{
             width: "100%", padding: "16px 28px",
-            border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff",
+            border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff",
             fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "3px", textTransform: "uppercase",
             cursor: submitting ? "wait" : "pointer",
             opacity: submitting ? 0.4 : 1, marginTop: 8,
