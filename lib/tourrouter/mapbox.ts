@@ -1,4 +1,3 @@
-import { CITY_COORDS } from './constants';
 import { getCityCoords, buildDriveDataKey, type DriveDataMap } from './geography';
 
 const KM_PER_MILE = 1.60934;
