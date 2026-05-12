@@ -2,337 +2,9 @@
 
 Forward-looking list of features, refactors, and design questions to revisit after Phase 7 launch. Not a commitment — a parking lot. Items here require Tim sign-off before moving to the build plan.
 
-## Post-launch considerations
+## 🔴 Active issues affecting users (2)
 
-### In-app chatbot
-
-Goal: user-facing helper chatbot inside TourRouter/Localizer that answers questions about how to use the app and, ideally, about the user's specific current context.
-
-**Tier 1 — Docs-aware helper (~3–5 days build)**
-- Claude API call with system prompt containing help docs, feature descriptions, common workflows
-- Answers general "how do I..." questions from docs only
-- No knowledge of user's actual data — read-only, low risk
-- Best implemented with RAG (retrieval-augmented generation) over indexed docs so it scales as the app grows
-- Hidden cost: requires real user-facing help docs to exist first (currently lives in session log, build plan, Drew's head). ~2–3 weeks of writing before the bot is worth building. Tim will have opinions on voice/content.
-
-**Tier 2 — Context-aware helper (~2–3 weeks build, after Tier 1)**
-- Same as Tier 1, plus current page context passed into each message ("user is on Settlement screen, Tour X, Leg 4, Stuttgart show")
-- Can answer specific questions like "why is my fuel cost high on this leg?" with real data
-- Still read-only — no writes, no tool calls, no edits on user's behalf
-- Sanitized data snapshot per message; no persistent access
-
-**Deliberately skipped: Tier 3 (agentic helper with write access).** Same risk profile as managed agents — new attack surface for RLS bypasses, silent write failures, user error via liberal interpretation. Revisit only after product is stable.
-
-**Dependencies before starting:** written help docs, Tim sign-off on scope and voice, decision on RAG infrastructure (likely Supabase pgvector since we're on Postgres — no new vendor).
-
----
-
-### Onboarding wizard — per-user vs per-org state mismatch
-
-`orgs.onboarding_completed` is org-level state, but `org_members.user_role` is per-user. When a new user joins an existing onboarded org, they skip the wizard entirely and never get a chance to set their role.
-
-**Example found April 9, 2026:** Drew completed the wizard on HWY 61 TEST CO. and got user_role = Tour Manager. Tim is also a member of the same org with user_role = null because the wizard only runs once per org, not once per user.
-
-**Possible fixes (need Tim's input):**
-1. Move onboarding state to org_members so each user onboards independently (org_members.onboarding_completed, org_members.onboarding_step)
-2. Keep onboarding_completed on orgs but add a lightweight "role picker" prompt that fires on first login for any member whose user_role is null, regardless of org-level state
-3. Accept the gap — assume Tim's beta invites will be sent to users who create their own orgs, not users joining existing orgs
-
-**Decision needed before beta launch** since Tim's beta users will be joining orgs Tim already created for them.
-
----
-
-### Audit and clean up stale test workspaces
-
-As of April 9, 2026, the orgs table has 12 rows all named "My Workspace" — leftover test accounts from earlier development. Before public launch, audit and delete any that aren't tied to active users (Drew, Tim, or beta invitees).
-
----
-
-### OnboardingGate / old welcome choice screen retirement
-
-app/components/OnboardingWizard.tsx (the GET STARTED / EXPLORE DEMO / SKIP welcome choice screen) still renders on dashboard login for users with zero artists. Its role is being absorbed by the new three-field WelcomeWizard plus the demo tour button that will eventually live inside it. Retire the old choice screen and OnboardingGate wrapper once:
-1. Tim delivers demo tour seed data and the demo tour button is wired into the new wizard
-2. The new wizard covers the "fresh user with nothing" state end-to-end
-
-Until then, both flows coexist: WelcomeWizard runs once per org on first login, and OnboardingGate still shows to users with zero artists.
-
----
-
-### Stylized export files (PDF, day sheets, advance sheets)
-
-**Idea logged:** April 9, 2026. Currently all exports — PDF tour summary, day sheets, advance sheets, end-of-tour finance report — are functional but visually generic. They don't look like they came from HWY61. For a product whose thesis is "the platform every touring band rolls down," the physical artifacts (the PDFs a tour manager hands to a promoter, the day sheet a driver reads at 6 AM) should be instantly recognizable as ours.
-
-**What this means concretely:**
-- Apply the Warhol design system to PDF exports: black, white, crimson (#c5535b), halftone dot overlay, Bebas Neue / Space Mono / DM Sans typography, 3px black borders, flat offset shadows, zero border-radius.
-- HWY61 Labs wordmark and/or logo in the header of every exported document.
-- Consistent layout grid across all five export types so they feel like a family.
-- Subtle footer line: "Generated by HWY61 Labs · hwy61labs.com" or similar — Tim to refine copy.
-- Tour manager name and generation timestamp on the cover/header.
-
-**Technical notes:**
-- Exports are built with pdfkit (the TourRouter export routes use pdfkit; pdf-lib is used elsewhere in the codebase, e.g. Localizer's poster PDF path — verify which one a given file uses before making changes) server-side. Typography requires the existing Google Fonts user-agent spoof trick to fetch .ttf files (documented in CLAUDE.md rule 16).
-- The Canvas renderer used by Localizer posters is a separate system and lives in its own universe (CLAUDE.md rule 15). Do not try to share code between the two — the PDF exports need their own styling layer.
-- day sheet and advance sheet templates live in app/api/tourrouter/tours/[tourId]/export/daysheet and .../advance respectively.
-- Five files to restyle: csv (N/A — stays plain), excel (stays plain), pdf, daysheet, advance, plus the finance report PDF.
-
-**Priority:** Medium. Not blocking launch, but a real conversion lever — when a promoter sees the day sheet branded with HWY61, that is free marketing. Worth doing in the first month post-launch, alongside the tutorial video production.
-
-**Dependencies:** Tim sign-off on final visual treatment, logo files at the right export resolution, any typography licensing questions resolved.
-
----
-
-### Remaining custom fonts need to be re-uploaded
-
-Two of the three existing `custom_fonts` rows still point at Cloudinary assets that don't exist: BebasNeue-Regular and Pragmatica-Extended-Extra-Bold. They were uploaded under the old broken pipeline that never wrote to Cloudinary. The render code will silently fail on any tour that uses these two fonts on a video overlay.
-
-BullandRegular-d91g6 was already re-uploaded tonight and verified working on Uncle Lucius. The other two just need to be deleted via the UI and re-uploaded from their original font files (sources in Supabase storage URLs from the `custom_fonts.storage_url` column if Drew no longer has the local originals).
-
----
-
-### Font upload route uses old plan schema
-
-`app/api/fonts/upload/route.ts` lines 37–54 check `org.plan` against `"pro"` or `"agency"` for the plan gate on custom font uploads. That's the old pre-freemium billing schema. The April 9 freemium rollout is replacing those checks with `localizer_plan_status` and `bundle_plan_status` (see `lib/localizer/billingGate.ts`). When the 41-route billing gate rollout happens, this route should be migrated to use `requirePaidLocalizerAccess()` or the Localizer-side three-state enum instead of the raw `plan` column.
-
----
-
-### Unit D — Rate limiting (Upstash Redis)
-
-Fourth unit of the April 9 freemium work, not started. Tim's decision doc specifies Upstash Redis with four priority tiers: AI parsing routes (50/hr/org), venue/contact reads (200/hr/org), exports (30/hr/org), everything else (500/hr/org). Returns 429 with `Retry-After` header on limit. Scoped for roughly 90 minutes when tackled fresh. Deferred to a future session because Tim's Localizer bug (discovered mid-session) took priority and consumed the remaining time in the April 9 session.
-
----
-
-### Custom font upload architectural debt
-
-The current font pipeline writes fonts to both Supabase storage (for browser Canvas previews + image rendering) and Cloudinary (for video `l_text` overlays). Two sources of truth means race conditions on partial failures (handled via cleanup logic tonight, but real complexity). Post-launch consideration: move to Cloudinary-only font storage with the browser renderer loading fonts from Cloudinary's URL via `@font-face`. One source of truth. Requires touching `lib/clientRender.ts` (protected code) and a one-time backfill script for existing fonts.
-
----
-
-### Template editor stale video preview on asset replacement
-
-When a user replaces a video in Import Assets and navigates to the template editor without a full page reload, the editor displays the old video instead of the newly uploaded one. Hard refresh (Cmd+Shift+R) resolves it. Likely cause: either browser video caching keyed on a stable URL, or stale React state in the template editor component not reacting to prop changes on navigation. Not a data integrity issue — the database and render pipeline correctly use the new video. Only the in-page preview is stale.
-
-Discovered April 10, 2026 during post-session testing on production. Affected artist: Uncle Lucius.
-
-Fix options: (a) include a version/timestamp query param in the template editor's video src so the browser treats new uploads as different URLs, (b) reload the tour state from the server on asset-replacement events, or (c) add a `key` prop to the video element that changes on replacement so React remounts it. Option (a) is probably the simplest and most robust.
-
----
-
-### BUG-B — Stale `allowed` whitelist in tourrouter artist PUT route
-
-`app/api/tourrouter/artists/[artistId]/route.ts` lines 38–48
-has a stale `allowed` field whitelist. Missing: `tour_manager_name`,
-`tour_manager_email`, `tour_manager_phone`, plus phone fields for
-all existing roles (`manager_phone`, `booking_agent_phone`,
-`publicist_phone`). Stale entries that should be removed:
-`agent_name`, `agent_email` (Agent role removed from UI in commit
-12db1b5, April 12).
-
-**Why not broken today:** the profile page saves flat team columns
-via the browser Supabase client directly, not through this API
-route. Only `key_contacts` and other JSON columns flow through the
-route, and those are in the whitelist.
-
-**Why it matters:** any future code that tries to update
-`tour_manager_*` fields via the API route will get a silent 400
-"No valid fields to update."
-
-Found in QA report 2026-04-14. Single-file fix.
-
----
-
-### Centralize `ADMIN_EMAILS` constant
-
-Admin emails (`hwy61ai@gmail.com`, `tentenpm@gmail.com`) are
-duplicated across five locations, three as exported `ADMIN_EMAILS`
-arrays and two as inline hardcoded email comparisons:
-
-1. `lib/tourrouter/billingGate.ts` line 4 (array)
-2. `lib/localizer/billingGate.ts` line 8 (array)
-3. `app/dashboard/artists/[artistId]/ArtistHubClient.tsx` line 9 (array)
-4. `app/dashboard/page.tsx` line 46 (inline hardcoded)
-5. `app/api/fonts/upload/route.ts` line 45 (inline hardcoded)
-
-Any update requires touching all five. The inline checks in
-locations 4 and 5 will drift silently if someone updates the
-three array locations expecting them to be authoritative.
-
-**Fix:** extract to `lib/auth/adminEmails.ts` as a single
-exported constant, import everywhere, convert inline checks to
-`ADMIN_EMAILS.includes(email)`.
-
-Effort: ~30 minutes. Not urgent. Do before launch so new admin
-additions don't require five-file edits.
-
----
-
-### Verify new-user signup works end-to-end before launch
-
-Supabase email signups are currently DISABLED at the project
-level (Authentication → Providers → Email). No new user can sign
-up on production right now. This is deliberate during the Coming
-Soon gate.
-
-**Before flipping `COMING_SOON=false`:**
-1. Re-enable Supabase email signups
-2. Create a fresh test email (e.g. `yourname+test1@gmail.com`
-   via Gmail plus-addressing)
-3. Run through full signup → magic link → auth callback →
-   onboarding wizard flow
-4. Verify `ensureOrgExists` correctly provisions a new org and
-   `org_members` row (it has never been tested from this code
-   path — HWY 61 TEST CO. was created manually on March 10,
-   before `ensureOrgExists` was moved to the auth callback in
-   commit 9f88d03 on April 9)
-5. Verify the beta invite gate at app level correctly blocks
-   un-invited signups
-6. Verify Google OAuth also works for a fresh account
-
-**Launch blocker if untested.**
-
----
-
-### Send to All Promoters — bulk send button on gigs page (proposed, awaiting Tim sign-off)
-
-Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three sub-questions before build.
-
-**Build constraints (don't lose these when implementing):**
-- **Resend rate limits:** Sends must fire serially with a small delay between them, not in parallel. Resend has per-second and per-minute rate limits, and clustered sends also increase spam-folder risk because mailbox providers flag bursts of identical-template emails to similar domains. A 25-show tour firing 25 sends in parallel could trip both rate limiting and spam classifiers. Recommend serial sends with 200–500ms delay between each (final number to be tuned during build), or a proper queue if Resend's batch API is more appropriate.
-- **Idempotency:** Default behavior must skip rows already sent — re-sending the same link to a promoter who already received it would damage trust with promoters and the platform's reputation.
-- **Failure handling:** A failure mid-loop must not block the rest of the sends. Collect failures and surface them in the final summary.
-- **Reuse existing send mechanism:** Must call the same per-promoter send route as the single-send button, not duplicate the email path. Otherwise we'll have two send code paths to maintain.
-- **Confirmation modal required:** Bulk email actions need a "Will send to N of M, K skipped, L missing email" confirmation before firing. No one-click bulk sends.
-
-**Open questions for Tim (carried in TIM_STATUS_2026-04-15.md):**
-- Force re-send checkbox in the modal? (Off by default if added.)
-- Handling for rows missing a promoter email — silent skip or surface in confirmation?
-- Button label preference?
-
----
-
-### /api/venue-link — missing auth check
-
-*Surfaced April 17, 2026 during ESLint rule design for supabaseServer forbidden zones.*
-
-app/api/venue-link/route.ts (the POST handler that creates or fetches a venue share token for an event) is called only from the dashboard by logged-in tour managers — as of April 17 the only caller is app/dashboard/tours/[tourId]/components/EventsTable.tsx line 524. But the route itself doesn't verify the caller is logged in. It trusts whatever orgId and eventId arrive in the request body and happily creates a venue_links row under that org.
-
-In practice this hasn't been exploited because only dashboard code calls it and no malicious traffic is hitting the endpoint. But the route would gladly create tokens for any orgId an unauthenticated attacker posts, and the RLS policies on venue_links may or may not catch it depending on how they're written (not yet audited).
-
-**Fix:**
-- Add a `supabase.auth.getUser()` check at the top. Return 401 if null.
-- Verify the authenticated user is a member of the requested orgId before creating the row. Return 403 on mismatch.
-- Pattern to follow: app/api/marketing-tokens/create/route.ts already does this correctly — model after it.
-
-**Priority:** Low-medium. Hygiene, not a user-facing bug. Belongs in a pre-launch security hygiene pass rather than a standalone urgent fix.
-
----
-
-### /api/venue-links — possibly dead code
-
-*Surfaced April 17, 2026 during ESLint rule design.*
-
-app/api/venue-links/route.ts (the GET handler that takes tourId + orgId and returns render URLs for all events in that tour) has **zero call sites** in the codebase as of April 17. Grepped the full repo, including tsx and ts files, and nothing references the endpoint.
-
-Possibilities:
-1. Genuinely dead — was built for a feature that shipped with different plumbing, never cleaned up. Delete the file.
-2. Called by something outside the grep's reach (external tool, manual curl, third-party integration, Vercel cron). Unlikely given the route shape but possible.
-3. Reserved for a future feature and left as a placeholder. If so, worth a comment explaining that.
-
-**Next step:** Before deleting, check Vercel's function invocation logs for the last 30 days. If the route has zero invocations, safe to delete. If non-zero, figure out who's calling it.
-
-Like the venue-link audit above, no user impact either way. Just code hygiene / reducing the attack surface of unused endpoints.
-
----
-
-### Lint cleanup pass on public viewer pages
-
-*Surfaced April 17, 2026 when running eslint against app/v, app/advance, app/report, app/api/download, app/api/download-all for the first time.*
-
-These folders carry ~20 pre-existing lint errors and warnings. None are user-facing bugs — all are code quality signals — but they're worth cleaning up in a single pass so future lint runs in these zones stay clean (and the new no-restricted-imports rule's signal doesn't get lost in noise).
-
-The inventory:
-- **13 @typescript-eslint/no-explicit-any errors** in app/v/e/[token]/page.tsx, app/v/m/[token]/page.tsx, and app/v/tour/[token]/page.tsx. Developer wrote `any` when the real data shape wasn't obvious. Fix requires understanding what each piece of data actually is — not mechanical.
-- **1 react/no-unescaped-entities error** in app/v/e/[token]/PrintDownloadButton.tsx line 78 (a literal apostrophe in JSX). Trivial one-character fix.
-- **2 @next/next/no-img-element warnings** on two `<img>` tags in the public viewer pages. Swap to Next.js `<Image>` for auto-optimization; requires knowing the image dimensions.
-- **2 @typescript-eslint/no-unused-vars warnings** for `cleanVenue` in app/api/download-all/route.ts and app/api/download-all/marketing/route.ts. Dead variable from a refactor. Delete the assignments.
-
-**Estimated effort:** 30-45 minutes if done in one pass. Can be done cold — no Tim input needed, no product decisions. Good "fill an hour" task.
-
-Reproduce with:
-```bash
-cd ~/localizer && npx eslint app/v app/advance app/report app/api/download app/api/download-all --max-warnings=0
-```
-
----
-
-### Custom text lines — two user-editable text fields per tour
-
-*Surfaced April 17, 2026 end of session. Tim has confirmed as must-have for Localizer. Drew plans to start first thing next session.*
-
-**STATUS:** Tim sign-off confirmed. Ready to build. Not speculative.
-
-**What it is.** Two additional text fields, editable in the template editor, that render on all non-print formats (square, story, landscape, TikTok, YT Shorts). Use cases the user has in mind: band website URL, supporting act name, tour sponsor tagline, or any secondary text a tour manager wants on all their social posts without editing each base image.
-
-**Why it matters.** Today a tour manager who wants "w/ The Supporting Band Name" on their square posters has to either build it into the base image in Photoshop or go without. Both are bad. This is a frequent-enough use case that Tim called it must-have.
-
-**Design decisions (locked in with Tim on 4/17):**
-
-1. **Global text, per-format position.** The text itself is stored once at the tour level (in `tours.custom_text_1` and `tours.custom_text_2` — new columns). Position, size, and align are stored per-format inside each format's overlay config, matching how venue/date/city already work. A user types "www.bandname.com" once and it appears on square, story, landscape, TikTok, and YT Shorts — each in its own position that the user has set independently.
-2. **Font and color inherited.** No separate font picker or color swatch for custom text. Whatever font and color the rest of the overlay text uses (same source as venue/date/city) is what custom text uses. Keeps the controls column tight.
-3. **Empty-state placeholder shows in editor only.** If a user enables a custom text line but hasn't typed anything yet, the live preview in the template editor shows the draggable element with "Your text here" as visual placeholder. Final rendered outputs (JPEGs, video overlays) skip the draw entirely if the text is empty — no "Your text here" leaking into a published poster.
-4. **Works on video formats too.** This means touching two render paths: `lib/clientRender.ts` for the image formats, and `app/api/renders/generate/route.ts` (Cloudinary URL overlays) for TikTok / YT Shorts.
-5. **Hidden on Local Poster for Print tab.** Matches the `isPrintFormat` / `formatKey !== "print"` pattern established today in commits a1b1ce6 and db983db. Custom text controls, preview, canvas renderer, and video overlay builder all skip when format is print. Full tour posters are designed externally — we don't layer our own text on them.
-6. **35-character max per line.** Soft enough for most use cases ("w/ The Opening Band", "www.longbandname.com/tour"), tight enough to prevent visual overflow surprises. Auto-shrink already handles any residual sizing issues.
-7. **Controls live at the bottom of the sidebar**, below the existing sections (Band Name, Venue, Date, City, and on non-print tabs, Band Logo and the two Sponsor Logos). Two text inputs plus two sets of position controls.
-
-**What the build actually touches:**
-
-- **Supabase migration:** add `custom_text_1 text` and `custom_text_2 text` columns to `tours`. Both nullable, no default.
-- **Config type:** extend the format overlay config type to include `customText1` and `customText2` field configs (position/size/align — matching the FieldConfig shape used by venue/date/city).
-- **TemplateEditor.tsx:** two new text inputs (global, at the bottom of the sidebar), two new control sections for position/size/align, two new preview elements in the live preview with drag handlers, all gated with `!isPrintFormat`. Character-limit enforcement via `maxLength={35}` on the inputs.
-- **lib/clientRender.ts:** two new `drawText` calls inside `renderPoster`, gated with `formatKey !== "print"`, skipped when text is empty.
-- **app/api/renders/generate/route.ts:** two new Cloudinary text overlay layers for TikTok and YT Shorts, skipped when text is empty or format is print (though print shouldn't hit this path anyway).
-- **Defaults:** decide starting position for each custom line on each format. Reasonable first pass: `customText1` near top-center, `customText2` near bottom-center, both at the same font size as the date field. Easy to revise after building.
-
-**Estimated effort:** 5-7 hours focused work for a single person, spread across 4-5 files plus one migration. Build cold from these specs — no Tim input needed mid-build.
-
-**Things to verify before starting:**
-- That the existing overlay config graceful-defaults handles the two new undefined fields on pre-existing tours (it almost certainly does, since this file pattern has been extended several times, but worth a quick check of how unknown FieldConfigs get handled on load)
-- Where the Cloudinary text overlay syntax lives in `generate/route.ts` — the TikTok/YT Shorts video path hasn't been touched in recent sessions so the code shape may have drifted from the image path
-
-**Open questions deferred to build time (not blocking):**
-- Exact pixel position of the two defaults on each of the five non-print formats
-- Whether the text input should live in a separate "Text Content" section at the bottom, or be inline with each custom text's position controls
-
-### Router cache stale UI on template editor — needs different fix
-
-*Surfaced April 18, 2026. Two attempted fixes (`export const dynamic = "force-dynamic"` and `export const revalidate = 0`) worked in `npm run dev` but triggered an unrelated production failure on Vercel that broke Re-Generate All (count: 0 with no Cloudinary calls) and venue link page asset rendering. Both cache-fix commits reverted (f3eae0d + 2c7ff86).*
-
-**The bug:** On the template editor page (`/dashboard/tours/[tourId]/template`), after a user saves changes and navigates away via Next.js client-side navigation, returning to the editor shows stale UI state. The server sends fresh data in the response HTML (confirmed via response body inspection), but React client-side state from the earlier visit is preserved and displayed instead. Workaround: hard refresh or incognito session.
-
-**Only affects returning users within the same browser session.** First-visit users (including new sessions, incognito, hard refresh) always see fresh data.
-
-**Candidate fixes to try:**
-- `revalidatePath("/dashboard/tours/[tourId]/template")` called from the mutation routes (`/api/tours/[tourId]/overlay-config` and any others that update tour state)
-- Move the editor's data loading to a client-side SWR-style fetch pattern so stale state naturally gets invalidated on mutation
-- Investigate whether the prod-only failure from `revalidate = 0` is specifically related to authentication or edge caching, in which case a more targeted directive might work
-
-**Not blocking beta launch.** User just needs to know "hard refresh if something looks stale." But should be fixed before Tim's full rollout to paying customers.
-
----
-
-### Parallel FormatConfig / FieldConfig type declarations in TemplateEditor.tsx and lib/clientRender.ts
-
-*Surfaced during custom text build on April 18, 2026.*
-
-Both `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx` (lines ~30-58) and `lib/clientRender.ts` (lines 4-26) declare their own local `FieldConfig` and `FormatConfig` types. Not imported from a shared file — fully parallel declarations.
-
-Existing minor drift: `FieldConfig.align` is typed `Align` (a strict union) in TemplateEditor vs `string` (wide) in clientRender.ts. Works today because `Align` values are string literals that satisfy the wide string type. But any future field extension requires updating both files independently — as happened multiple times today for custom text.
-
-**Fix (when ready):** Extract to `lib/types/overlayConfig.ts` or similar. Import in both places. Estimated 30-45 min mechanical refactor. No Tim input needed.
-
-**Not urgent.** Both files compile and function correctly. Filed here so future devs understand the parallel-declaration pattern is a known debt, not an accident.
-
----
+*Bugs your beta users could trip over right now.*
 
 ### Custom text lines — Step 6: Cloudinary video overlays (TikTok + YT Shorts)
 
@@ -356,6 +28,7 @@ Existing minor drift: `FieldConfig.align` is typed `Align` (a strict union) in T
 
 **Dependencies:** None — all data plumbing already in place from April 18 work. Tour-data route already returns `custom_text_1` / `custom_text_2`. EventsTable already passes them through. Just need the video layer construction.
 
+---
 
 ### Venue link page serves stale render URL — bypasses DB updates
 
@@ -396,11 +69,68 @@ Debug data captured:
 
 ---
 
-## TourRouter — Blocked items discovered during Localizer beta
+## 🟡 Pre-launch gates (5)
 
-Items discovered during Localizer beta development that need addressing before TourRouter is production-ready. Not urgent while the beta is Localizer-only, but critical before TourRouter ever ships to real users.
+*Things that must be true before flipping `COMING_SOON=false`.*
+
+### Onboarding wizard — per-user vs per-org state mismatch
+
+`orgs.onboarding_completed` is org-level state, but `org_members.user_role` is per-user. When a new user joins an existing onboarded org, they skip the wizard entirely and never get a chance to set their role.
+
+**Example found April 9, 2026:** Drew completed the wizard on HWY 61 TEST CO. and got user_role = Tour Manager. Tim is also a member of the same org with user_role = null because the wizard only runs once per org, not once per user.
+
+**Possible fixes (need Tim's input):**
+1. Move onboarding state to org_members so each user onboards independently (org_members.onboarding_completed, org_members.onboarding_step)
+2. Keep onboarding_completed on orgs but add a lightweight "role picker" prompt that fires on first login for any member whose user_role is null, regardless of org-level state
+3. Accept the gap — assume Tim's beta invites will be sent to users who create their own orgs, not users joining existing orgs
+
+**Decision needed before beta launch** since Tim's beta users will be joining orgs Tim already created for them.
+
+---
+
+### Audit and clean up stale test workspaces
+
+As of April 9, 2026, the orgs table has 12 rows all named "My Workspace" — leftover test accounts from earlier development. Before public launch, audit and delete any that aren't tied to active users (Drew, Tim, or beta invitees).
+
+---
+
+### Remaining custom fonts need to be re-uploaded
+
+Two of the three existing `custom_fonts` rows still point at Cloudinary assets that don't exist: BebasNeue-Regular and Pragmatica-Extended-Extra-Bold. They were uploaded under the old broken pipeline that never wrote to Cloudinary. The render code will silently fail on any tour that uses these two fonts on a video overlay.
+
+BullandRegular-d91g6 was already re-uploaded tonight and verified working on Uncle Lucius. The other two just need to be deleted via the UI and re-uploaded from their original font files (sources in Supabase storage URLs from the `custom_fonts.storage_url` column if Drew no longer has the local originals).
+
+---
+
+### Verify new-user signup works end-to-end before launch
+
+Supabase email signups are currently DISABLED at the project
+level (Authentication → Providers → Email). No new user can sign
+up on production right now. This is deliberate during the Coming
+Soon gate.
+
+**Before flipping `COMING_SOON=false`:**
+1. Re-enable Supabase email signups
+2. Create a fresh test email (e.g. `yourname+test1@gmail.com`
+   via Gmail plus-addressing)
+3. Run through full signup → magic link → auth callback →
+   onboarding wizard flow
+4. Verify `ensureOrgExists` correctly provisions a new org and
+   `org_members` row (it has never been tested from this code
+   path — HWY 61 TEST CO. was created manually on March 10,
+   before `ensureOrgExists` was moved to the auth callback in
+   commit 9f88d03 on April 9)
+5. Verify the beta invite gate at app level correctly blocks
+   un-invited signups
+6. Verify Google OAuth also works for a fresh account
+
+**Launch blocker if untested.**
+
+---
 
 ### Advance feature — full audit needed before re-enabling
+
+*Items discovered during Localizer beta development that need addressing before TourRouter is production-ready. Not urgent while the beta is Localizer-only, but critical before TourRouter ever ships to real users.*
 
 **Context:** Discovered on April 22, 2026 that the TourRouter advance cron was firing daily but the underlying implementation had multiple issues. The cron was disabled (commit `c121f76`) before any real damage occurred — all apparent "sends" were to seed data with names instead of email addresses in the recipient field, so Resend rejected every attempt. No real promoter received anything. But the bugs are real and must be fixed before the feature ever goes live.
 
@@ -444,15 +174,188 @@ Before adding the cron back to `vercel.json`:
 - [ ] Verify `advance_emails` log matches Resend delivery confirmations
 - [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
 
-- **Middleware auth error handling** — when a request comes in with stale/invalid Supabase refresh tokens, middleware throws 'Invalid Refresh Token: Refresh Token Not Found' instead of gracefully treating the user as anonymous. Logs are noisy and the recovery path is suboptimal. Reproduced May 5: laptop with stale cookies got refresh-token errors on every request including public routes (/coming-soon). Cleared by clearing cookies. Fix: middleware should catch refresh_token_not_found and proceed as anonymous, only logging at debug/info level.
+---
 
-## Auth follow-ups (after May 5 maxAge fix)
+## 🟢 Ready to build (6)
 
-Primary auth bug — cookie max-age=3600 (1 hour) in lib/supabaseClient.ts cookieStorage adapter — was fixed in commit a7e0ef2 (bumped to 30 days = 2592000s). Three follow-ups remain:
+*Scoped, unblocked, just needs a session.*
 
-1. **Migrate from implicit flow to PKCE.** lib/supabaseClient.ts currently uses flowType: 'implicit' which is deprecated. PKCE is more secure and better-suited to SSR. Touches login flow end-to-end (email magic links, OAuth callbacks, /auth/callback handler). Dedicated session.
+### Unit D — Rate limiting (Upstash Redis)
 
-2. **Graceful middleware error handling on getSession() failures.** middleware.ts has two getSession() calls (lines 117, 156) that destructure data without checking error. When 'Refresh Token Not Found' fires, the error is logged noisily by Supabase before being swallowed. Wrap in try/catch, treat as anonymous, log at debug level. Captured separately above.
+Fourth unit of the April 9 freemium work, not started. Tim's decision doc specifies Upstash Redis with four priority tiers: AI parsing routes (50/hr/org), venue/contact reads (200/hr/org), exports (30/hr/org), everything else (500/hr/org). Returns 429 with `Retry-After` header on limit. Scoped for roughly 90 minutes when tackled fresh. Deferred to a future session because Tim's Localizer bug (discovered mid-session) took priority and consumed the remaining time in the April 9 session.
+
+---
+
+### Template editor stale video preview on asset replacement
+
+When a user replaces a video in Import Assets and navigates to the template editor without a full page reload, the editor displays the old video instead of the newly uploaded one. Hard refresh (Cmd+Shift+R) resolves it. Likely cause: either browser video caching keyed on a stable URL, or stale React state in the template editor component not reacting to prop changes on navigation. Not a data integrity issue — the database and render pipeline correctly use the new video. Only the in-page preview is stale.
+
+Discovered April 10, 2026 during post-session testing on production. Affected artist: Uncle Lucius.
+
+Fix options: (a) include a version/timestamp query param in the template editor's video src so the browser treats new uploads as different URLs, (b) reload the tour state from the server on asset-replacement events, or (c) add a `key` prop to the video element that changes on replacement so React remounts it. Option (a) is probably the simplest and most robust.
+
+---
+
+### Centralize `ADMIN_EMAILS` constant
+
+Admin emails (`hwy61ai@gmail.com`, `tentenpm@gmail.com`) are
+duplicated across five locations, three as exported `ADMIN_EMAILS`
+arrays and two as inline hardcoded email comparisons:
+
+1. `lib/tourrouter/billingGate.ts` line 4 (array)
+2. `lib/localizer/billingGate.ts` line 8 (array)
+3. `app/dashboard/artists/[artistId]/ArtistHubClient.tsx` line 9 (array)
+4. `app/dashboard/page.tsx` line 46 (inline hardcoded)
+5. `app/api/fonts/upload/route.ts` line 45 (inline hardcoded)
+
+Any update requires touching all five. The inline checks in
+locations 4 and 5 will drift silently if someone updates the
+three array locations expecting them to be authoritative.
+
+**Fix:** extract to `lib/auth/adminEmails.ts` as a single
+exported constant, import everywhere, convert inline checks to
+`ADMIN_EMAILS.includes(email)`.
+
+Effort: ~30 minutes. Not urgent. Do before launch so new admin
+additions don't require five-file edits.
+
+---
+
+### /api/venue-link — missing auth check
+
+*Surfaced April 17, 2026 during ESLint rule design for supabaseServer forbidden zones.*
+
+app/api/venue-link/route.ts (the POST handler that creates or fetches a venue share token for an event) is called only from the dashboard by logged-in tour managers — as of April 17 the only caller is app/dashboard/tours/[tourId]/components/EventsTable.tsx line 524. But the route itself doesn't verify the caller is logged in. It trusts whatever orgId and eventId arrive in the request body and happily creates a venue_links row under that org.
+
+In practice this hasn't been exploited because only dashboard code calls it and no malicious traffic is hitting the endpoint. But the route would gladly create tokens for any orgId an unauthenticated attacker posts, and the RLS policies on venue_links may or may not catch it depending on how they're written (not yet audited).
+
+**Fix:**
+- Add a `supabase.auth.getUser()` check at the top. Return 401 if null.
+- Verify the authenticated user is a member of the requested orgId before creating the row. Return 403 on mismatch.
+- Pattern to follow: app/api/marketing-tokens/create/route.ts already does this correctly — model after it.
+
+**Priority:** Low-medium. Hygiene, not a user-facing bug. Belongs in a pre-launch security hygiene pass rather than a standalone urgent fix.
+
+---
+
+### Router cache stale UI on template editor — needs different fix
+
+*Surfaced April 18, 2026. Two attempted fixes (`export const dynamic = "force-dynamic"` and `export const revalidate = 0`) worked in `npm run dev` but triggered an unrelated production failure on Vercel that broke Re-Generate All (count: 0 with no Cloudinary calls) and venue link page asset rendering. Both cache-fix commits reverted (f3eae0d + 2c7ff86).*
+
+**The bug:** On the template editor page (`/dashboard/tours/[tourId]/template`), after a user saves changes and navigates away via Next.js client-side navigation, returning to the editor shows stale UI state. The server sends fresh data in the response HTML (confirmed via response body inspection), but React client-side state from the earlier visit is preserved and displayed instead. Workaround: hard refresh or incognito session.
+
+**Only affects returning users within the same browser session.** First-visit users (including new sessions, incognito, hard refresh) always see fresh data.
+
+**Candidate fixes to try:**
+- `revalidatePath("/dashboard/tours/[tourId]/template")` called from the mutation routes (`/api/tours/[tourId]/overlay-config` and any others that update tour state)
+- Move the editor's data loading to a client-side SWR-style fetch pattern so stale state naturally gets invalidated on mutation
+- Investigate whether the prod-only failure from `revalidate = 0` is specifically related to authentication or edge caching, in which case a more targeted directive might work
+
+**Not blocking beta launch.** User just needs to know "hard refresh if something looks stale." But should be fixed before Tim's full rollout to paying customers.
+
+---
+
+### `drive_cache` schema: add `origin_country` / `dest_country` columns
+
+*Surfaced 2026-05-11.*
+
+`drive_cache` is keyed by `(origin_city, dest_city)` lowercased text. No country columns, no country in the unique constraint. After the May 11 fix the geocoding step is country-disambiguated, so coords going into Mapbox Directions are correct — but the `drive_cache` row that gets written is still keyed only on city pair. Two tours can collide on same-named cities across countries, and `Prefer: resolution=merge-duplicates` will overwrite blindly.
+
+The five `(chicago, il → chicago, il)` zero-distance fossil rows in `drive_cache` today appear to be from a much earlier era when `origin_city` was being set to the raw `"city, state"` string — not from real legs. Inert. Can be deleted as part of this cleanup.
+
+**Fix:** add `origin_country text` and `dest_country text` columns, update the unique constraint to `(origin_city, origin_country, dest_city, dest_country)`, update `cacheDriveInfo` in `mapbox.ts` to write country, update the `drive_cache` lookup query in `getDriveInfo` to filter on country. Old rows without country can either be backfilled from resolved coords or just left to age out as new lookups write fresh rows.
+
+Effort: ~1 hour including migration, writer update, reader update, and verifying existing rows behave.
+
+---
+
+## ⚪ Awaiting Tim (5)
+
+*Blocked on his decision, copy, or sign-off.*
+
+### In-app chatbot
+
+Goal: user-facing helper chatbot inside TourRouter/Localizer that answers questions about how to use the app and, ideally, about the user's specific current context.
+
+**Tier 1 — Docs-aware helper (~3–5 days build)**
+- Claude API call with system prompt containing help docs, feature descriptions, common workflows
+- Answers general "how do I..." questions from docs only
+- No knowledge of user's actual data — read-only, low risk
+- Best implemented with RAG (retrieval-augmented generation) over indexed docs so it scales as the app grows
+- Hidden cost: requires real user-facing help docs to exist first (currently lives in session log, build plan, Drew's head). ~2–3 weeks of writing before the bot is worth building. Tim will have opinions on voice/content.
+
+**Tier 2 — Context-aware helper (~2–3 weeks build, after Tier 1)**
+- Same as Tier 1, plus current page context passed into each message ("user is on Settlement screen, Tour X, Leg 4, Stuttgart show")
+- Can answer specific questions like "why is my fuel cost high on this leg?" with real data
+- Still read-only — no writes, no tool calls, no edits on user's behalf
+- Sanitized data snapshot per message; no persistent access
+
+**Deliberately skipped: Tier 3 (agentic helper with write access).** Same risk profile as managed agents — new attack surface for RLS bypasses, silent write failures, user error via liberal interpretation. Revisit only after product is stable.
+
+**Dependencies before starting:** written help docs, Tim sign-off on scope and voice, decision on RAG infrastructure (likely Supabase pgvector since we're on Postgres — no new vendor).
+
+---
+
+### OnboardingGate / old welcome choice screen retirement
+
+app/components/OnboardingWizard.tsx (the GET STARTED / EXPLORE DEMO / SKIP welcome choice screen) still renders on dashboard login for users with zero artists. Its role is being absorbed by the new three-field WelcomeWizard plus the demo tour button that will eventually live inside it. Retire the old choice screen and OnboardingGate wrapper once:
+1. Tim delivers demo tour seed data and the demo tour button is wired into the new wizard
+2. The new wizard covers the "fresh user with nothing" state end-to-end
+
+Until then, both flows coexist: WelcomeWizard runs once per org on first login, and OnboardingGate still shows to users with zero artists.
+
+---
+
+### Stylized export files (PDF, day sheets, advance sheets)
+
+**Idea logged:** April 9, 2026. Currently all exports — PDF tour summary, day sheets, advance sheets, end-of-tour finance report — are functional but visually generic. They don't look like they came from HWY61. For a product whose thesis is "the platform every touring band rolls down," the physical artifacts (the PDFs a tour manager hands to a promoter, the day sheet a driver reads at 6 AM) should be instantly recognizable as ours.
+
+**What this means concretely:**
+- Apply the Warhol design system to PDF exports: black, white, crimson (#c5535b), halftone dot overlay, Bebas Neue / Space Mono / DM Sans typography, 3px black borders, flat offset shadows, zero border-radius.
+- HWY61 Labs wordmark and/or logo in the header of every exported document.
+- Consistent layout grid across all five export types so they feel like a family.
+- Subtle footer line: "Generated by HWY61 Labs · hwy61labs.com" or similar — Tim to refine copy.
+- Tour manager name and generation timestamp on the cover/header.
+
+**Technical notes:**
+- Exports are built with pdfkit (the TourRouter export routes use pdfkit; pdf-lib is used elsewhere in the codebase, e.g. Localizer's poster PDF path — verify which one a given file uses before making changes) server-side. Typography requires the existing Google Fonts user-agent spoof trick to fetch .ttf files (documented in CLAUDE.md rule 16).
+- The Canvas renderer used by Localizer posters is a separate system and lives in its own universe (CLAUDE.md rule 15). Do not try to share code between the two — the PDF exports need their own styling layer.
+- day sheet and advance sheet templates live in app/api/tourrouter/tours/[tourId]/export/daysheet and .../advance respectively.
+- Five files to restyle: csv (N/A — stays plain), excel (stays plain), pdf, daysheet, advance, plus the finance report PDF.
+
+**Priority:** Medium. Not blocking launch, but a real conversion lever — when a promoter sees the day sheet branded with HWY61, that is free marketing. Worth doing in the first month post-launch, alongside the tutorial video production.
+
+**Dependencies:** Tim sign-off on final visual treatment, logo files at the right export resolution, any typography licensing questions resolved.
+
+---
+
+### Font upload route uses old plan schema
+
+`app/api/fonts/upload/route.ts` lines 37–54 check `org.plan` against `"pro"` or `"agency"` for the plan gate on custom font uploads. That's the old pre-freemium billing schema. The April 9 freemium rollout is replacing those checks with `localizer_plan_status` and `bundle_plan_status` (see `lib/localizer/billingGate.ts`). When the 41-route billing gate rollout happens, this route should be migrated to use `requirePaidLocalizerAccess()` or the Localizer-side three-state enum instead of the raw `plan` column.
+
+---
+
+### Send to All Promoters — bulk send button on gigs page (proposed, awaiting Tim sign-off)
+
+Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three sub-questions before build.
+
+**Build constraints (don't lose these when implementing):**
+- **Resend rate limits:** Sends must fire serially with a small delay between them, not in parallel. Resend has per-second and per-minute rate limits, and clustered sends also increase spam-folder risk because mailbox providers flag bursts of identical-template emails to similar domains. A 25-show tour firing 25 sends in parallel could trip both rate limiting and spam classifiers. Recommend serial sends with 200–500ms delay between each (final number to be tuned during build), or a proper queue if Resend's batch API is more appropriate.
+- **Idempotency:** Default behavior must skip rows already sent — re-sending the same link to a promoter who already received it would damage trust with promoters and the platform's reputation.
+- **Failure handling:** A failure mid-loop must not block the rest of the sends. Collect failures and surface them in the final summary.
+- **Reuse existing send mechanism:** Must call the same per-promoter send route as the single-send button, not duplicate the email path. Otherwise we'll have two send code paths to maintain.
+- **Confirmation modal required:** Bulk email actions need a "Will send to N of M, K skipped, L missing email" confirmation before firing. No one-click bulk sends.
+
+**Open questions for Tim (carried in TIM_STATUS_2026-04-15.md):**
+- Force re-send checkbox in the modal? (Off by default if added.)
+- Handling for rows missing a promoter email — silent skip or surface in confirmation?
+- Button label preference?
+
+---
+
+## ⏳ Soak items (3)
+
+*Waiting on production data or time to pass.*
 
 ### April 28 middleware band-aid removal
 
@@ -530,17 +433,157 @@ Effort: 4–6 hours including testing.
 
 ---
 
-### `drive_cache` schema: add `origin_country` / `dest_country` columns
+## 🧹 Code hygiene queue (9)
 
-*Surfaced 2026-05-11.*
+*Refactors, dead code, low-pressure cleanup.*
 
-`drive_cache` is keyed by `(origin_city, dest_city)` lowercased text. No country columns, no country in the unique constraint. After the May 11 fix the geocoding step is country-disambiguated, so coords going into Mapbox Directions are correct — but the `drive_cache` row that gets written is still keyed only on city pair. Two tours can collide on same-named cities across countries, and `Prefer: resolution=merge-duplicates` will overwrite blindly.
+### BUG-B — Stale `allowed` whitelist in tourrouter artist PUT route
 
-The five `(chicago, il → chicago, il)` zero-distance fossil rows in `drive_cache` today appear to be from a much earlier era when `origin_city` was being set to the raw `"city, state"` string — not from real legs. Inert. Can be deleted as part of this cleanup.
+`app/api/tourrouter/artists/[artistId]/route.ts` lines 38–48
+has a stale `allowed` field whitelist. Missing: `tour_manager_name`,
+`tour_manager_email`, `tour_manager_phone`, plus phone fields for
+all existing roles (`manager_phone`, `booking_agent_phone`,
+`publicist_phone`). Stale entries that should be removed:
+`agent_name`, `agent_email` (Agent role removed from UI in commit
+12db1b5, April 12).
 
-**Fix:** add `origin_country text` and `dest_country text` columns, update the unique constraint to `(origin_city, origin_country, dest_city, dest_country)`, update `cacheDriveInfo` in `mapbox.ts` to write country, update the `drive_cache` lookup query in `getDriveInfo` to filter on country. Old rows without country can either be backfilled from resolved coords or just left to age out as new lookups write fresh rows.
+**Why not broken today:** the profile page saves flat team columns
+via the browser Supabase client directly, not through this API
+route. Only `key_contacts` and other JSON columns flow through the
+route, and those are in the whitelist.
 
-Effort: ~1 hour including migration, writer update, reader update, and verifying existing rows behave.
+**Why it matters:** any future code that tries to update
+`tour_manager_*` fields via the API route will get a silent 400
+"No valid fields to update."
+
+Found in QA report 2026-04-14. Single-file fix.
+
+---
+
+### Custom font upload architectural debt
+
+The current font pipeline writes fonts to both Supabase storage (for browser Canvas previews + image rendering) and Cloudinary (for video `l_text` overlays). Two sources of truth means race conditions on partial failures (handled via cleanup logic tonight, but real complexity). Post-launch consideration: move to Cloudinary-only font storage with the browser renderer loading fonts from Cloudinary's URL via `@font-face`. One source of truth. Requires touching `lib/clientRender.ts` (protected code) and a one-time backfill script for existing fonts.
+
+---
+
+### Lint cleanup pass on public viewer pages
+
+*Surfaced April 17, 2026 when running eslint against app/v, app/advance, app/report, app/api/download, app/api/download-all for the first time.*
+
+These folders carry ~20 pre-existing lint errors and warnings. None are user-facing bugs — all are code quality signals — but they're worth cleaning up in a single pass so future lint runs in these zones stay clean (and the new no-restricted-imports rule's signal doesn't get lost in noise).
+
+The inventory:
+- **13 @typescript-eslint/no-explicit-any errors** in app/v/e/[token]/page.tsx, app/v/m/[token]/page.tsx, and app/v/tour/[token]/page.tsx. Developer wrote `any` when the real data shape wasn't obvious. Fix requires understanding what each piece of data actually is — not mechanical.
+- **1 react/no-unescaped-entities error** in app/v/e/[token]/PrintDownloadButton.tsx line 78 (a literal apostrophe in JSX). Trivial one-character fix.
+- **2 @next/next/no-img-element warnings** on two `<img>` tags in the public viewer pages. Swap to Next.js `<Image>` for auto-optimization; requires knowing the image dimensions.
+- **2 @typescript-eslint/no-unused-vars warnings** for `cleanVenue` in app/api/download-all/route.ts and app/api/download-all/marketing/route.ts. Dead variable from a refactor. Delete the assignments.
+
+**Estimated effort:** 30-45 minutes if done in one pass. Can be done cold — no Tim input needed, no product decisions. Good "fill an hour" task.
+
+Reproduce with:
+```bash
+cd ~/localizer && npx eslint app/v app/advance app/report app/api/download app/api/download-all --max-warnings=0
+```
+
+---
+
+### Custom text lines — two user-editable text fields per tour
+
+*Surfaced April 17, 2026 end of session. Tim has confirmed as must-have for Localizer. Drew plans to start first thing next session.*
+
+**STATUS:** Tim sign-off confirmed. Ready to build. Not speculative.
+
+**What it is.** Two additional text fields, editable in the template editor, that render on all non-print formats (square, story, landscape, TikTok, YT Shorts). Use cases the user has in mind: band website URL, supporting act name, tour sponsor tagline, or any secondary text a tour manager wants on all their social posts without editing each base image.
+
+**Why it matters.** Today a tour manager who wants "w/ The Supporting Band Name" on their square posters has to either build it into the base image in Photoshop or go without. Both are bad. This is a frequent-enough use case that Tim called it must-have.
+
+**Design decisions (locked in with Tim on 4/17):**
+
+1. **Global text, per-format position.** The text itself is stored once at the tour level (in `tours.custom_text_1` and `tours.custom_text_2` — new columns). Position, size, and align are stored per-format inside each format's overlay config, matching how venue/date/city already work. A user types "www.bandname.com" once and it appears on square, story, landscape, TikTok, and YT Shorts — each in its own position that the user has set independently.
+2. **Font and color inherited.** No separate font picker or color swatch for custom text. Whatever font and color the rest of the overlay text uses (same source as venue/date/city) is what custom text uses. Keeps the controls column tight.
+3. **Empty-state placeholder shows in editor only.** If a user enables a custom text line but hasn't typed anything yet, the live preview in the template editor shows the draggable element with "Your text here" as visual placeholder. Final rendered outputs (JPEGs, video overlays) skip the draw entirely if the text is empty — no "Your text here" leaking into a published poster.
+4. **Works on video formats too.** This means touching two render paths: `lib/clientRender.ts` for the image formats, and `app/api/renders/generate/route.ts` (Cloudinary URL overlays) for TikTok / YT Shorts.
+5. **Hidden on Local Poster for Print tab.** Matches the `isPrintFormat` / `formatKey !== "print"` pattern established today in commits a1b1ce6 and db983db. Custom text controls, preview, canvas renderer, and video overlay builder all skip when format is print. Full tour posters are designed externally — we don't layer our own text on them.
+6. **35-character max per line.** Soft enough for most use cases ("w/ The Opening Band", "www.longbandname.com/tour"), tight enough to prevent visual overflow surprises. Auto-shrink already handles any residual sizing issues.
+7. **Controls live at the bottom of the sidebar**, below the existing sections (Band Name, Venue, Date, City, and on non-print tabs, Band Logo and the two Sponsor Logos). Two text inputs plus two sets of position controls.
+
+**What the build actually touches:**
+
+- **Supabase migration:** add `custom_text_1 text` and `custom_text_2 text` columns to `tours`. Both nullable, no default.
+- **Config type:** extend the format overlay config type to include `customText1` and `customText2` field configs (position/size/align — matching the FieldConfig shape used by venue/date/city).
+- **TemplateEditor.tsx:** two new text inputs (global, at the bottom of the sidebar), two new control sections for position/size/align, two new preview elements in the live preview with drag handlers, all gated with `!isPrintFormat`. Character-limit enforcement via `maxLength={35}` on the inputs.
+- **lib/clientRender.ts:** two new `drawText` calls inside `renderPoster`, gated with `formatKey !== "print"`, skipped when text is empty.
+- **app/api/renders/generate/route.ts:** two new Cloudinary text overlay layers for TikTok and YT Shorts, skipped when text is empty or format is print (though print shouldn't hit this path anyway).
+- **Defaults:** decide starting position for each custom line on each format. Reasonable first pass: `customText1` near top-center, `customText2` near bottom-center, both at the same font size as the date field. Easy to revise after building.
+
+**Estimated effort:** 5-7 hours focused work for a single person, spread across 4-5 files plus one migration. Build cold from these specs — no Tim input needed mid-build.
+
+**Things to verify before starting:**
+- That the existing overlay config graceful-defaults handles the two new undefined fields on pre-existing tours (it almost certainly does, since this file pattern has been extended several times, but worth a quick check of how unknown FieldConfigs get handled on load)
+- Where the Cloudinary text overlay syntax lives in `generate/route.ts` — the TikTok/YT Shorts video path hasn't been touched in recent sessions so the code shape may have drifted from the image path
+
+**Open questions deferred to build time (not blocking):**
+- Exact pixel position of the two defaults on each of the five non-print formats
+- Whether the text input should live in a separate "Text Content" section at the bottom, or be inline with each custom text's position controls
+
+---
+
+### Parallel FormatConfig / FieldConfig type declarations in TemplateEditor.tsx and lib/clientRender.ts
+
+*Surfaced during custom text build on April 18, 2026.*
+
+Both `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx` (lines ~30-58) and `lib/clientRender.ts` (lines 4-26) declare their own local `FieldConfig` and `FormatConfig` types. Not imported from a shared file — fully parallel declarations.
+
+Existing minor drift: `FieldConfig.align` is typed `Align` (a strict union) in TemplateEditor vs `string` (wide) in clientRender.ts. Works today because `Align` values are string literals that satisfy the wide string type. But any future field extension requires updating both files independently — as happened multiple times today for custom text.
+
+**Fix (when ready):** Extract to `lib/types/overlayConfig.ts` or similar. Import in both places. Estimated 30-45 min mechanical refactor. No Tim input needed.
+
+**Not urgent.** Both files compile and function correctly. Filed here so future devs understand the parallel-declaration pattern is a known debt, not an accident.
+
+---
+
+### /api/venue-links — possibly dead code
+
+*Surfaced April 17, 2026 during ESLint rule design.*
+
+app/api/venue-links/route.ts (the GET handler that takes tourId + orgId and returns render URLs for all events in that tour) has **zero call sites** in the codebase as of April 17. Grepped the full repo, including tsx and ts files, and nothing references the endpoint.
+
+Possibilities:
+1. Genuinely dead — was built for a feature that shipped with different plumbing, never cleaned up. Delete the file.
+2. Called by something outside the grep's reach (external tool, manual curl, third-party integration, Vercel cron). Unlikely given the route shape but possible.
+3. Reserved for a future feature and left as a placeholder. If so, worth a comment explaining that.
+
+**Next step:** Before deleting, check Vercel's function invocation logs for the last 30 days. If the route has zero invocations, safe to delete. If non-zero, figure out who's calling it.
+
+Like the venue-link audit above, no user impact either way. Just code hygiene / reducing the attack surface of unused endpoints.
+
+---
+
+### Middleware auth error handling
+
+when a request comes in with stale/invalid Supabase refresh tokens, middleware throws 'Invalid Refresh Token: Refresh Token Not Found' instead of gracefully treating the user as anonymous. Logs are noisy and the recovery path is suboptimal. Reproduced May 5: laptop with stale cookies got refresh-token errors on every request including public routes (/coming-soon). Cleared by clearing cookies. Fix: middleware should catch refresh_token_not_found and proceed as anonymous, only logging at debug/info level.
+
+---
+
+### PKCE migration
+
+*Primary auth bug — cookie max-age=3600 (1 hour) in lib/supabaseClient.ts cookieStorage adapter — was fixed in commit a7e0ef2 (bumped to 30 days = 2592000s). Three follow-ups remain:*
+
+lib/supabaseClient.ts currently uses flowType: 'implicit' which is deprecated. PKCE is more secure and better-suited to SSR. Touches login flow end-to-end (email magic links, OAuth callbacks, /auth/callback handler). Dedicated session.
+
+---
+
+### Graceful middleware error handling on getSession() failures
+
+middleware.ts has two getSession() calls (lines 117, 156) that destructure data without checking error. When 'Refresh Token Not Found' fires, the error is logged noisily by Supabase before being swallowed. Wrap in try/catch, treat as anonymous, log at debug level. Captured separately above.
+
+---
+
+## 💭 Future ideas (0)
+
+*Speculative post-launch work.*
+
+*No items currently — speculative items will accumulate here over time.*
 
 ---
 
@@ -694,4 +737,3 @@ The fix requires: reading `lib/clientRender.ts` to understand how the logo is re
 Discovered tonight while verifying the font fix worked — Tim's video renders with correct text and font, but the logo was missing. Not a regression, a latent missing feature.
 
 **Resolution (2026-05-12):** Verified working in production on this date — Drew added a band logo to a video, rendered it, and the logo appeared correctly in the output. The April 9 entry's technical diagnosis (`buildCloudinaryVideoUrl` having no `l_image`/`l_fetch` block) is stale. Most likely fix was incidental during the April 14 sponsor logo work, which added image overlay construction to the same function — sponsor logos on TikTok video URLs are confirmed live per the open "Venue link page serves stale render URL" entry. The band logo path either reused the same layer-building code or was extended in the same pass. User-workflow verification is sufficient — no code archaeology required.
-
