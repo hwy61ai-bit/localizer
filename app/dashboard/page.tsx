@@ -119,7 +119,7 @@ export default async function DashboardPage() {
             </div>
             <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "3px solid var(--hw-border-strong)" }}>HWY61</h1>
             <HwPageHeader title="YOUR ARTISTS" />
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 4 }}>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 4 }}>
               {artists.length} artist{artists.length !== 1 ? "s" : ""}
             </div>
           </div>
@@ -205,7 +205,7 @@ export default async function DashboardPage() {
                 transition: "var(--hw-ease)",
               }}>
                 <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 120, fontWeight: 400, color: "var(--hw-text)", lineHeight: 1 }}>+</span>
-                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NEW ARTIST</span>
+                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NEW ARTIST</span>
               </button>
             </form>
           </div>

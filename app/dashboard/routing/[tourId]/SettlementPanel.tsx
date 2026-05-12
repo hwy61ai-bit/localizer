@@ -174,7 +174,7 @@ export default function SettlementPanel({
 
   const sectionStyle: React.CSSProperties = { marginBottom: 16 };
   const headerStyle: React.CSSProperties = {
-    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 400,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 13, fontWeight: 400,
     textTransform: 'uppercase' as const, letterSpacing: '2px',
     color: 'var(--hw-blue)', marginBottom: 8, display: 'flex',
     justifyContent: 'space-between', alignItems: 'center',
@@ -199,7 +199,7 @@ export default function SettlementPanel({
   };
   const tagStyle: React.CSSProperties = {
     display: 'inline-block', padding: '3px 10px',
-    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 700,
     letterSpacing: '2px', textTransform: 'uppercase' as const,
     background: 'var(--hw-green-ghost)', color: 'var(--hw-green)',
     border: '2px solid var(--hw-green-border)',
@@ -218,7 +218,7 @@ export default function SettlementPanel({
   };
   const toggleBtnStyle = (active: boolean): React.CSSProperties => ({
     flex: 1, padding: '8px 0',
-    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 700,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 13, fontWeight: 700,
     letterSpacing: '2px', textTransform: 'uppercase' as const,
     border: 'none', cursor: 'pointer', textAlign: 'center' as const,
     background: active ? 'var(--hw-bg-invert)' : 'var(--hw-bg-surface)',
@@ -234,7 +234,7 @@ export default function SettlementPanel({
     fontSize: 14,
   };
   const summaryLabelStyle: React.CSSProperties = {
-    fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px',
+    fontFamily: 'var(--hw-font-mono)', fontSize: 12, letterSpacing: '1.5px',
     textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)',
   };
   const summaryValueStyle: React.CSSProperties = {
@@ -243,7 +243,7 @@ export default function SettlementPanel({
   };
   const btnStyle: React.CSSProperties = {
     padding: '4px 10px',
-    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 700,
     letterSpacing: '1.5px', textTransform: 'uppercase' as const,
     border: '2px solid var(--hw-border-strong)', background: 'var(--hw-bg-surface)',
     color: 'var(--hw-text)', cursor: 'pointer', transition: 'var(--hw-ease)',
@@ -366,7 +366,7 @@ export default function SettlementPanel({
       <div style={sectionStyle}>
         <div style={headerStyle}>
           <span>Settlement Waterfall</span>
-          {saving && <span style={{ fontSize: 11, color: '#888880' }}>Saving...</span>}
+          {saving && <span style={{ fontSize: 13, color: '#888880' }}>Saving...</span>}
         </div>
 
         <div style={rowStyle}>

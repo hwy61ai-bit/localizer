@@ -198,8 +198,8 @@ export default function AssetsPage() {
         <div key={fmt.id}>
           <div style={{ marginBottom: 10 }}>
             <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{fmt.label}</div>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{(fmt as any).sub} {fmt.w} × {fmt.h}</div>
-            {fmt.id === "print" && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 400, color: "var(--hw-amber)", marginTop: 3 }}>Recommended: 3300×5100px or higher resolution</div>}
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{(fmt as any).sub} {fmt.w} × {fmt.h}</div>
+            {fmt.id === "print" && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-amber)", marginTop: 3 }}>Recommended: 3300×5100px or higher resolution</div>}
           </div>
           <input
             ref={(el) => { fileRefs.current[fmt.id] = el; }}
@@ -240,11 +240,11 @@ export default function AssetsPage() {
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = "0")}>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={(e) => { e.stopPropagation(); fileRefs.current[fmt.id]?.click(); }}
-                      style={{ padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>
+                      style={{ padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>
                       REPLACE
                     </button>
                     <button onClick={(e) => { e.stopPropagation(); handleDeleteAsset(fmt.id); }}
-                      style={{ padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "transparent", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>
+                      style={{ padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "transparent", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>
                       DELETE
                     </button>
                   </div>
@@ -256,22 +256,22 @@ export default function AssetsPage() {
                   const percent = videoProgress[fmt.id] ?? 0;
                   return (
                     <>
-                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "1.5px", textTransform: "uppercase" }}>UPLOADING</div>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "1.5px", textTransform: "uppercase" }}>UPLOADING</div>
                       <div style={{ width: "70%", height: 24, border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", position: "relative", overflow: "hidden" }}>
                         <div style={{ position: "absolute", inset: 0, width: `${percent}%`, background: "var(--hw-crimson)", transition: "width 0.15s linear" }} />
                       </div>
-                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 8 }}>{percent}%</div>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 8 }}>{percent}%</div>
                     </>
                   );
                 })() : (
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>UPLOADING...</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-text-muted)", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>UPLOADING...</div>
                 )}
               </div>
             ) : (
               <div style={{ textAlign: "center", pointerEvents: "none" }}>
                 <div style={{ fontSize: 22, color: "var(--hw-text-muted)", marginBottom: 8, opacity: 0.4 }}>&#8593;</div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1.5px" }}>UPLOAD</div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, color: "var(--hw-text-muted)", marginTop: 4, letterSpacing: "1px" }}>or drag and drop</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1.5px" }}>UPLOAD</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", marginTop: 4, letterSpacing: "1px" }}>or drag and drop</div>
               </div>
             )}
           </div>
@@ -283,7 +283,7 @@ export default function AssetsPage() {
   return (
     <div className="fade-in" style={{ minHeight: "100vh", color: "var(--hw-text)" }}>
       <div className="assets-page-header" style={{ padding: "24px 28px", borderBottom: "3px solid var(--hw-border-strong)", maxWidth: 1100, margin: "0 auto" }}>
-        <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
+        <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
         <div className="assets-page-header-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
             <div style={{ display: "inline-block" }}>
@@ -294,10 +294,10 @@ export default function AssetsPage() {
           </div>
           <div className="assets-page-nav" style={{ flex: 1, display: "flex", justifyContent: "center" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
-              <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>1. IMPORT SCHEDULE</Link>
-              <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>2. IMPORT ASSETS</Link>
-              <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. DESIGN TEMPLATE</Link>
-              <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>4. GIGS</Link>
+              <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>1. IMPORT SCHEDULE</Link>
+              <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>2. IMPORT ASSETS</Link>
+              <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. DESIGN TEMPLATE</Link>
+              <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>4. GIGS</Link>
             </div>
           </div>
         </div>
@@ -307,19 +307,19 @@ export default function AssetsPage() {
           Upload one master photo per format. Click an uploaded image to open the text editor.
         </div>
         <div style={{ marginBottom: 32, padding: "16px 20px", background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)" }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 10 }}>UPLOAD TIPS</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 10 }}>UPLOAD TIPS</div>
           <div className="assets-tips-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
             <div>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>Match Dimensions</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Upload at the exact size shown below each format for best results.</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Upload at the exact size shown below each format for best results.</div>
             </div>
             <div>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>Aspect Ratio</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Images are cropped to fit. Matching the aspect ratio avoids unexpected cropping.</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Images are cropped to fit. Matching the aspect ratio avoids unexpected cropping.</div>
             </div>
             <div>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, color: "var(--hw-text)", marginBottom: 4 }}>High Resolution</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Use files at least 1080px wide for sharp, professional output.</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)", lineHeight: 1.6 }}>Use files at least 1080px wide for sharp, professional output.</div>
             </div>
           </div>
         </div>

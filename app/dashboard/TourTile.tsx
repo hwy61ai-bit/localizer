@@ -137,12 +137,12 @@ export default function TourTile({
         </div>
         <div style={{ position: "relative", zIndex: 1 }}>
           {dateRange && (
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)", marginBottom: 8 }}>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)", marginBottom: 8 }}>
               {dateRange}
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>
               {eventCount} tour{eventCount !== 1 ? "s" : ""}
             </span>
             <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, color: currentImage ? "rgba(255,255,255,0.5)" : "var(--hw-border-light)" }}>→</span>
@@ -174,7 +174,7 @@ export default function TourTile({
         <div style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10 }}>
           <button
             onClick={handleDelete}
-            style={{ padding: "5px 12px", border: "3px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
+            style={{ padding: "5px 12px", border: "3px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
           >
             {deleting ? "Deleting…" : "Delete"}
           </button>

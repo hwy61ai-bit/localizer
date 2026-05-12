@@ -215,10 +215,10 @@ export default function RosterPanel({
     marginBottom: 8, cursor: 'pointer',
   };
   const nameStyle: React.CSSProperties = { fontFamily: 'var(--hw-font-display)', fontSize: 18, letterSpacing: '1px', textTransform: 'uppercase' as const, color: 'var(--hw-text)' };
-  const roleStyle: React.CSSProperties = { fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginTop: 2 };
+  const roleStyle: React.CSSProperties = { fontFamily: 'var(--hw-font-mono)', fontSize: 12, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)', marginTop: 2 };
   const tagStyle = (active: boolean): React.CSSProperties => ({
     display: 'inline-block', padding: '3px 8px',
-    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
     background: active ? 'var(--hw-green-ghost)' : 'var(--hw-red-ghost)',
     color: active ? 'var(--hw-green)' : 'var(--hw-crimson)',
     border: `2px solid ${active ? 'var(--hw-green-border)' : 'var(--hw-crimson)'}`,
@@ -226,7 +226,7 @@ export default function RosterPanel({
   });
   const categoryTagStyle = (cat: 'band' | 'crew'): React.CSSProperties => ({
     display: 'inline-block', padding: '3px 8px',
-    fontFamily: 'var(--hw-font-mono)', fontSize: 9, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase' as const,
     background: cat === 'band' ? 'var(--hw-blue-ghost)' : 'var(--hw-amber-ghost)',
     color: cat === 'band' ? 'var(--hw-blue)' : 'var(--hw-amber)',
     border: `2px solid ${cat === 'band' ? 'var(--hw-blue)' : 'var(--hw-amber)'}`,
@@ -245,7 +245,7 @@ export default function RosterPanel({
     ...inputStyle, minWidth: 120, appearance: 'none' as const,
   };
   const btnStyle: React.CSSProperties = {
-    padding: '4px 10px', fontSize: 11, fontWeight: 700,
+    padding: '4px 10px', fontSize: 13, fontWeight: 700,
     fontFamily: 'var(--hw-font-mono)', letterSpacing: '1.5px', textTransform: 'uppercase' as const,
     border: '2px solid var(--hw-border-strong)', background: 'var(--hw-bg-surface)', color: 'var(--hw-text)',
     cursor: 'pointer', transition: 'var(--hw-ease)',
@@ -261,7 +261,7 @@ export default function RosterPanel({
     borderBottom: '2px solid var(--hw-border)', flexWrap: 'wrap' as const,
   };
   const sectionLabel: React.CSSProperties = {
-    fontFamily: 'var(--hw-font-mono)', fontSize: 11, fontWeight: 400,
+    fontFamily: 'var(--hw-font-mono)', fontSize: 13, fontWeight: 400,
     textTransform: 'uppercase' as const, color: 'var(--hw-text-muted)',
     letterSpacing: '2px', marginTop: 12, marginBottom: 6,
   };
@@ -277,10 +277,10 @@ export default function RosterPanel({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <div>
           <span style={{ fontFamily: 'var(--hw-font-display)', fontSize: 22, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--hw-text)' }}>TOUR ROSTER</span>
-          <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 12 }}>
+          <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 12, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 12 }}>
             {roster.length} member{roster.length !== 1 ? 's' : ''}
           </span>
-          {saving && <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 8 }}>SAVING...</span>}
+          {saving && <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--hw-text-muted)', marginLeft: 8 }}>SAVING...</span>}
         </div>
         <button style={addBtnStyle} onClick={() => setAddingNew(true)}>
           + ADD MEMBER
@@ -473,7 +473,7 @@ function MemberCard({
           <div style={sectionLabel}>
             Pay Components
             <button
-              style={{ ...addBtnStyle, marginLeft: 8, padding: '2px 8px', fontSize: 11 }}
+              style={{ ...addBtnStyle, marginLeft: 8, padding: '2px 8px', fontSize: 13 }}
               onClick={onAddComponent}
             >
               + Add
@@ -515,7 +515,7 @@ function MemberCard({
 
               {/* Day type checkboxes for applicable types */}
               {['per_show', 'per_day', 'per_diem', 'base_bonus'].includes(comp.type) && (
-                <div style={{ display: 'flex', gap: 4, fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1px', color: 'var(--hw-text-muted)' }}>
+                <div style={{ display: 'flex', gap: 4, fontFamily: 'var(--hw-font-mono)', fontSize: 12, letterSpacing: '1px', color: 'var(--hw-text-muted)' }}>
                   {(Object.entries(DAY_TYPE_LABELS) as [DayType, string][]).map(([dt, label]) => (
                     <label key={dt} style={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'pointer' }}>
                       <input
@@ -539,7 +539,7 @@ function MemberCard({
               {/* Bonus fields for base_bonus */}
               {comp.type === 'base_bonus' && (
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                  <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 10, letterSpacing: '1px', color: 'var(--hw-text-muted)' }}>Bonus:</span>
+                  <span style={{ fontFamily: 'var(--hw-font-mono)', fontSize: 12, letterSpacing: '1px', color: 'var(--hw-text-muted)' }}>Bonus:</span>
                   <input
                     style={{ ...smallInputStyle, width: 70 }}
                     placeholder="$"
@@ -550,7 +550,7 @@ function MemberCard({
                     }}
                   />
                   <select
-                    style={{ ...selectStyle, minWidth: 100, fontSize: 11 }}
+                    style={{ ...selectStyle, minWidth: 100, fontSize: 13 }}
                     value={comp.bonusCondition || ''}
                     onChange={(e) => onUpdateComponent(idx, 'bonusCondition', e.target.value)}
                   >
@@ -573,7 +573,7 @@ function MemberCard({
               )}
 
               <button
-                style={{ ...dangerBtnStyle, padding: '2px 6px', fontSize: 11 }}
+                style={{ ...dangerBtnStyle, padding: '2px 6px', fontSize: 13 }}
                 onClick={() => onRemoveComponent(idx)}
               >
                 &times;

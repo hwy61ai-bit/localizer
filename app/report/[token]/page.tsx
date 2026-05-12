@@ -105,7 +105,7 @@ export default function PublicReportPage() {
 
         {/* Header */}
         <div style={{ marginBottom: 32, paddingBottom: 20, borderBottom: "3px solid var(--hw-border-strong)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 8, fontFamily: "var(--hw-font-mono)" }}>Tour Financial Report</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: 8, fontFamily: "var(--hw-font-mono)" }}>Tour Financial Report</div>
           <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 4, fontFamily: "var(--hw-font-display)", textTransform: "uppercase" as const }}>{report.artistName || report.tourName}</div>
           {report.artistName && <div style={{ fontSize: 18, fontWeight: 600, color: "var(--hw-text-muted)", marginBottom: 8, fontFamily: "var(--hw-font-body)" }}>{report.tourName}</div>}
           <div style={{ fontSize: 14, color: "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)" }}>
@@ -125,7 +125,7 @@ export default function PublicReportPage() {
             { label: "Margin", value: s.margin.toFixed(1) + "%", positive: s.margin >= 0 ? true : false },
           ].map((c) => (
             <div key={c.label} style={{ border: "3px solid var(--hw-border-strong)", borderRadius: 0, padding: "16px 20px", background: "var(--hw-bg-surface)" }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.04em", marginBottom: 4, fontFamily: "var(--hw-font-mono)" }}>{c.label}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.04em", marginBottom: 4, fontFamily: "var(--hw-font-mono)" }}>{c.label}</div>
               <div style={{ fontSize: 22, fontWeight: 800, fontFamily: "var(--hw-font-mono)", color: c.positive === null ? "var(--hw-text-primary)" : c.positive ? "var(--hw-positive)" : "var(--hw-crimson)" }}>{c.value}</div>
             </div>
           ))}
@@ -180,7 +180,7 @@ export default function PublicReportPage() {
               <thead>
                 <tr>
                   {["#", "Date", "Venue", "City", "Offer", "Currency", "Status"].map((h) => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.04em", borderBottom: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)" }}>{h}</th>
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.04em", borderBottom: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -192,11 +192,11 @@ export default function PublicReportPage() {
                     <td style={{ padding: "8px 12px", fontSize: 13, fontWeight: 600, fontFamily: "var(--hw-font-body)" }}>{show.venue || "\u2014"}</td>
                     <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-body)" }}>{show.city}{show.country ? `, ${show.country}` : ""}</td>
                     <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{show.offerDisplay || (show.guarantee ? fmt(show.guarantee) : "\u2014")}</td>
-                    <td style={{ padding: "8px 12px", fontSize: 11, color: "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)" }}>{show.currency}</td>
+                    <td style={{ padding: "8px 12px", fontSize: 13, color: "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)" }}>{show.currency}</td>
                     <td style={{ padding: "8px 12px" }}>
                       {show.status && (
                         <span style={{
-                          fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 0,
+                          fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 0,
                           border: "1px solid var(--hw-border-strong)",
                           background: show.status.toLowerCase().includes("confirm") ? "var(--hw-bg-surface)" : "var(--hw-bg-surface)",
                           color: show.status.toLowerCase().includes("confirm") ? "var(--hw-positive)" : "var(--hw-text-muted)",
@@ -216,7 +216,7 @@ export default function PublicReportPage() {
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, fontFamily: "var(--hw-font-display)", textTransform: "uppercase" as const, letterSpacing: "3px" }}>Transport</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div style={{ border: "3px solid var(--hw-border-strong)", borderRadius: 0, padding: 16, background: "var(--hw-bg-surface)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, marginBottom: 10, fontFamily: "var(--hw-font-mono)" }}>Driving</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, marginBottom: 10, fontFamily: "var(--hw-font-mono)" }}>Driving</div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13 }}>
                 <span style={{ color: "var(--hw-text-muted)", fontFamily: "var(--hw-font-body)" }}>Total distance</span>
                 <span style={{ fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>
@@ -229,7 +229,7 @@ export default function PublicReportPage() {
               </div>
             </div>
             <div style={{ border: "3px solid var(--hw-border-strong)", borderRadius: 0, padding: 16, background: "var(--hw-bg-surface)" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, marginBottom: 10, fontFamily: "var(--hw-font-mono)" }}>Flights</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase" as const, marginBottom: 10, fontFamily: "var(--hw-font-mono)" }}>Flights</div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13 }}>
                 <span style={{ color: "var(--hw-text-muted)", fontFamily: "var(--hw-font-body)" }}>Flight legs</span>
                 <span style={{ fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{report.transport.flightLegs}</span>
@@ -260,7 +260,7 @@ export default function PublicReportPage() {
         )}
 
         {/* Footer */}
-        <div style={{ borderTop: "3px solid var(--hw-border-strong)", paddingTop: 16, textAlign: "center", fontSize: 11, color: "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)" }}>
+        <div style={{ borderTop: "3px solid var(--hw-border-strong)", paddingTop: 16, textAlign: "center", fontSize: 13, color: "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)" }}>
           Generated by HWY61 TourRouter &middot; {new Date(report.generatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
         </div>
       </div>

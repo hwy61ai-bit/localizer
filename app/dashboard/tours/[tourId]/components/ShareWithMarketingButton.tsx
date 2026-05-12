@@ -151,7 +151,7 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
         <div style={{ marginTop: 24 }}>
           <div style={{
             fontFamily: "var(--hw-font-mono)",
-            fontSize: 11,
+            fontSize: 13,
             letterSpacing: "2px",
             textTransform: "uppercase",
             color: "var(--hw-text-muted)",
@@ -195,7 +195,7 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
                     </div>
                     <div style={{
                       fontFamily: "var(--hw-font-mono)",
-                      fontSize: 11,
+                      fontSize: 13,
                       color: "var(--hw-text-muted)",
                       marginTop: 2,
                     }}>

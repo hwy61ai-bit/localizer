@@ -187,26 +187,26 @@ export default function ContactsPage() {
             <div style={{ fontSize: 14, fontFamily: "var(--hw-font-display)", fontWeight: 700, marginBottom: 12, color: "var(--hw-text)", textTransform: "uppercase", letterSpacing: 3 }}>New Contact</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 120px 1fr 1fr", gap: 10, alignItems: "end" }}>
               <div>
-                <label style={{ fontSize: 11, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Name *</label>
+                <label style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Name *</label>
                 <input value={newContact.name} onChange={(e) => setNewContact((p) => ({ ...p, name: e.target.value }))} placeholder="Full name" style={inputStyle} />
               </div>
               <div>
-                <label style={{ fontSize: 11, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Company</label>
+                <label style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Company</label>
                 <input value={newContact.company} onChange={(e) => setNewContact((p) => ({ ...p, company: e.target.value }))} placeholder="Company" style={inputStyle} />
               </div>
               <div>
-                <label style={{ fontSize: 11, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Role</label>
+                <label style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Role</label>
                 <select value={newContact.role} onChange={(e) => setNewContact((p) => ({ ...p, role: e.target.value }))} style={{ ...inputStyle, background: "var(--hw-bg-surface)" }}>
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: 11, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Email</label>
+                <label style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Email</label>
                 <input value={newContact.email} onChange={(e) => setNewContact((p) => ({ ...p, email: e.target.value }))} placeholder="email@example.com" type="email" style={inputStyle} />
               </div>
               <div style={{ display: "flex", gap: 6 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 11, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Phone</label>
+                  <label style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>Phone</label>
                   <input value={newContact.phone} onChange={(e) => setNewContact((p) => ({ ...p, phone: e.target.value }))} placeholder="Phone" style={inputStyle} />
                 </div>
                 <button onClick={addContact} style={{ padding: "8px 14px", borderRadius: 0, border: "3px solid var(--hw-border-strong)", background: "var(--hw-action-primary)", color: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-display)", fontWeight: 700, fontSize: 12, cursor: "pointer", alignSelf: "end", textTransform: "uppercase", letterSpacing: 3 }}>Add</button>
@@ -233,7 +233,7 @@ export default function ContactsPage() {
               key={role}
               onClick={() => onRoleFilter(role)}
               style={{
-                padding: "5px 14px", borderRadius: 0, fontSize: 11, fontFamily: "var(--hw-font-display)", fontWeight: 700, cursor: "pointer",
+                padding: "5px 14px", borderRadius: 0, fontSize: 13, fontFamily: "var(--hw-font-display)", fontWeight: 700, cursor: "pointer",
                 textTransform: "uppercase", letterSpacing: 3,
                 border: roleFilter === role ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border-strong)",
                 background: roleFilter === role ? "var(--hw-crimson)" : "var(--hw-bg-surface)",
@@ -257,7 +257,7 @@ export default function ContactsPage() {
               <thead>
                 <tr>
                   {["Name", "Company", "Role", "Email", "Phone", "Rating", "Flags"].map((h) => (
-                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10, fontFamily: "var(--hw-font-display)", fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: 3, borderBottom: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>{h}</th>
+                    <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontFamily: "var(--hw-font-display)", fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: 3, borderBottom: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -316,11 +316,11 @@ function ContactRow({
       >
         <td style={{ padding: "10px 14px", fontSize: 13, fontFamily: "var(--hw-font-body)", fontWeight: 600, color: "var(--hw-text)" }}>
           {c.name}
-          {c.my_flag && <span style={{ marginLeft: 6, fontSize: 10, color: "var(--hw-crimson)" }}>(flagged)</span>}
+          {c.my_flag && <span style={{ marginLeft: 6, fontSize: 12, color: "var(--hw-crimson)" }}>(flagged)</span>}
         </td>
         <td style={{ padding: "10px 14px", fontSize: 13, fontFamily: "var(--hw-font-body)", color: "var(--hw-text-secondary)" }}>{c.company || "\u2014"}</td>
         <td style={{ padding: "10px 14px", fontSize: 12 }}>
-          {c.role && <span style={{ padding: "2px 8px", borderRadius: 0, background: "var(--hw-bg-surface)", border: "2px solid var(--hw-border-strong)", fontSize: 10, fontFamily: "var(--hw-font-display)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2 }}>{c.role}</span>}
+          {c.role && <span style={{ padding: "2px 8px", borderRadius: 0, background: "var(--hw-bg-surface)", border: "2px solid var(--hw-border-strong)", fontSize: 12, fontFamily: "var(--hw-font-display)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2 }}>{c.role}</span>}
         </td>
         <td style={{ padding: "10px 14px", fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)" }}>{c.email || "\u2014"}</td>
         <td style={{ padding: "10px 14px", fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)" }}>{c.phone || "\u2014"}</td>
@@ -334,7 +334,7 @@ function ContactRow({
         <td style={{ padding: "10px 14px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>
           {flagCount > 0 && (
             <span style={{
-              padding: "2px 8px", borderRadius: 0, fontWeight: 700, fontSize: 11,
+              padding: "2px 8px", borderRadius: 0, fontWeight: 700, fontSize: 13,
               border: "2px solid var(--hw-border-strong)",
               background: flagCount >= 3 ? "var(--hw-crimson)" : "var(--hw-bg-surface)",
               color: flagCount >= 3 ? "var(--hw-bg-surface)" : "var(--hw-crimson)",
@@ -349,55 +349,55 @@ function ContactRow({
           <td colSpan={7} style={{ padding: "0 14px 16px", borderBottom: "1px solid var(--hw-border-strong)" }}>
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", borderRadius: 0, padding: 16, marginTop: 4 }}>
               {/* Shared fields */}
-              <div style={{ fontSize: 11, fontFamily: "var(--hw-font-display)", fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: 3, marginBottom: 8 }}>Contact Info</div>
+              <div style={{ fontSize: 13, fontFamily: "var(--hw-font-display)", fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: 3, marginBottom: 8 }}>Contact Info</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 16 }}>
                 <div>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Name</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Name</label>
                   <input value={String(editForm.name || "")} onChange={(e) => onEditChange("name", e.target.value)} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Company</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Company</label>
                   <input value={String(editForm.company || "")} onChange={(e) => onEditChange("company", e.target.value)} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Role</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Role</label>
                   <input value={String(editForm.role || "")} onChange={(e) => onEditChange("role", e.target.value)} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Email</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Email</label>
                   <input value={String(editForm.email || "")} onChange={(e) => onEditChange("email", e.target.value)} type="email" style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Phone</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Phone</label>
                   <input value={String(editForm.phone || "")} onChange={(e) => onEditChange("phone", e.target.value)} style={inputStyle} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Website</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Website</label>
                   <input value={String(editForm.website || "")} onChange={(e) => onEditChange("website", e.target.value)} style={inputStyle} />
                 </div>
               </div>
 
               {/* Private fields */}
               <div style={{ borderTop: "3px solid var(--hw-border-strong)", paddingTop: 12, marginTop: 4 }}>
-                <div style={{ fontSize: 11, fontFamily: "var(--hw-font-display)", fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: 3, marginBottom: 8 }}>
+                <div style={{ fontSize: 13, fontFamily: "var(--hw-font-display)", fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: 3, marginBottom: 8 }}>
                   Private Notes <span style={{ fontWeight: 400, textTransform: "none", fontFamily: "var(--hw-font-body)", letterSpacing: 0 }}>&mdash; only visible to your team</span>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
                   <div>
-                    <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Rating</label>
+                    <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Rating</label>
                     <StarRating value={Number(editForm.relationship_rating) || 0} onChange={(v) => onEditChange("relationship_rating", v)} />
                   </div>
                   <div>
-                    <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Tags</label>
+                    <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Tags</label>
                     <input value={String(editForm.tags || "")} onChange={(e) => onEditChange("tags", e.target.value)} placeholder="e.g. reliable, slow-pay" style={inputStyle} />
                   </div>
                 </div>
                 <div style={{ marginBottom: 10 }}>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Notes</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Notes</label>
                   <textarea value={String(editForm.private_notes || "")} onChange={(e) => onEditChange("private_notes", e.target.value)} placeholder="Private notes about this contact..." rows={3} style={{ ...inputStyle, resize: "vertical" }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Last Contact Date</label>
+                  <label style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", display: "block", marginBottom: 2 }}>Last Contact Date</label>
                   <input type="date" value={String(editForm.last_contact_date || "")} onChange={(e) => onEditChange("last_contact_date", e.target.value)} style={{ ...inputStyle, width: 180 }} />
                 </div>
               </div>

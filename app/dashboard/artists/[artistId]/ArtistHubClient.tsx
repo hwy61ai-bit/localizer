@@ -92,7 +92,7 @@ export default function ArtistHubClient({
   if (access.loading) {
     return (
       <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>Loading...</div>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>Loading...</div>
       </div>
     );
   }

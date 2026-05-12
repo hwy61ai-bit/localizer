@@ -1139,13 +1139,13 @@ export default function OnboardingPage() {
                       <span className="wiz-label" style={{ marginBottom: 0 }}>Show {index + 1}</span>
                       <button onClick={() => removeShowRow(row.id)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "#8A8580" }}>&times;</button>
                     </div>
-                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 9 }}>Date</label>
+                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 11 }}>Date</label>
                     <input className="wiz-input" type="date" value={row.date} onChange={(e) => updateShowRow(row.id, "date", e.target.value)} />
-                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 9 }}>City</label>
+                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 11 }}>City</label>
                     <input className="wiz-input" type="text" placeholder="Austin, TX" value={row.city} onChange={(e) => updateShowRow(row.id, "city", e.target.value)} />
-                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 9 }}>Venue</label>
+                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 11 }}>Venue</label>
                     <input className="wiz-input" type="text" placeholder="The Continental Club" value={row.venue} onChange={(e) => updateShowRow(row.id, "venue", e.target.value)} />
-                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 9 }}>Offer</label>
+                    <label className="wiz-label" style={{ marginBottom: 2, fontSize: 11 }}>Offer</label>
                     <input className="wiz-input" type="number" placeholder="$0" value={row.offer} onChange={(e) => updateShowRow(row.id, "offer", e.target.value)} />
                   </div>
                 ))}

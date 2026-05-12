@@ -112,7 +112,7 @@ export default function AdvanceFormPage() {
   };
 
   const labelStyle: React.CSSProperties = {
-    fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+    fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400,
     letterSpacing: "1.5px", textTransform: "uppercase",
     color: "var(--hw-text-secondary)", display: "block", marginBottom: 6,
   };
@@ -120,7 +120,7 @@ export default function AdvanceFormPage() {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
       </div>
     );
   }
@@ -156,7 +156,7 @@ export default function AdvanceFormPage() {
         {/* Header */}
         <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: "3px solid var(--hw-border-strong)" }}>
           <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4 }}>HWY61</div>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "4px", textTransform: "uppercase", color: "var(--hw-blue)" }}>ADVANCE INFORMATION REQUEST</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "4px", textTransform: "uppercase", color: "var(--hw-blue)" }}>ADVANCE INFORMATION REQUEST</div>
         </div>
 
         {/* Show info card */}
@@ -168,7 +168,7 @@ export default function AdvanceFormPage() {
 
         {/* Error */}
         {error && (
-          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
+          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)" }}>
             {error}
           </div>
         )}
@@ -245,7 +245,7 @@ export default function AdvanceFormPage() {
           }}
         >{submitting ? "SUBMITTING..." : "SUBMIT ADVANCE INFORMATION"}</button>
 
-        <div style={{ textAlign: "center", marginTop: 24, fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
+        <div style={{ textAlign: "center", marginTop: 24, fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
           POWERED BY HWY61
         </div>
       </div>
@@ -256,7 +256,7 @@ export default function AdvanceFormPage() {
 function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 24, marginBottom: 16 }}>
-      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", textTransform: "uppercase", letterSpacing: "4px", marginBottom: 16 }}>{title}</div>
+      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", textTransform: "uppercase", letterSpacing: "4px", marginBottom: 16 }}>{title}</div>
       {children}
     </div>
   );

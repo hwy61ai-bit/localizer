@@ -453,7 +453,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
     <>
       <div style={{ overflowX: "auto" }}>
         <div style={{ padding: "12px 16px", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
             {events.length === 0 ? "NO EVENTS YET" : `${events.length} EVENT${events.length !== 1 ? "S" : ""} · ${events.filter(e => !!e.sent_at).length} SENT`}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -462,11 +462,11 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                 <div style={{ width: 120, height: 8, background: "var(--hw-border)", overflow: "hidden", border: "1px solid var(--hw-border-light)" }}>
                   <div style={{ width: (renderProgress.done / renderProgress.total * 100) + "%", height: "100%", background: "var(--hw-crimson)", transition: "width 0.3s" }} />
                 </div>
-                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", fontWeight: 700 }}>{renderProgress.done}/{renderProgress.total}</span>
+                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-text-muted)", fontWeight: 700 }}>{renderProgress.done}/{renderProgress.total}</span>
               </div>
             )}
             {generateError && (
-              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)", fontWeight: 700 }}>{generateError}</span>
+              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)", fontWeight: 700 }}>{generateError}</span>
             )}
             <button
               onClick={generateAll}
@@ -475,13 +475,13 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             >
               {generating ? "GENERATING..." : allReady ? "RE-GENERATE ALL" : "GENERATE ALL"}
             </button>
-            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 10, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 4, textAlign: "right" }}>Hit Generate to create all localized assets.</div>
+            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 4, textAlign: "right" }}>Hit Generate to create all localized assets.</div>
           </div>
         </div>
 
         <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", padding: "8px 0 4px 16px" }}>All info can be edited below.</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: COLS + " 80px", gap: 0, padding: "12px 16px", background: "var(--hw-bg-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#fff" }}>
+        <div style={{ display: "grid", gridTemplateColumns: COLS + " 80px", gap: 0, padding: "12px 16px", background: "var(--hw-bg-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#fff" }}>
           <div>DATE</div><div>DAY</div><div>CITY, ST</div><div>VENUE</div>
           <div>PROMOTER EMAIL</div>
           <div>STATUS</div><div>LINK</div>
@@ -512,7 +512,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                       <div style={{ padding: "2px 4px", borderRadius: 0, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
                         <input ref={inputRef} value={draft} onChange={ev => setDraft(ev.target.value)} onBlur={commitEdit} onKeyDown={handleKey} style={{ border: "none", outline: "none", width: "100%", fontSize: 14, background: "transparent", padding: 0 }} />
                       </div>
-                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 10, color: "var(--hw-text-secondary)", marginTop: 3, paddingLeft: 2 }}>Hit + to add another email address</div>
+                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, color: "var(--hw-text-secondary)", marginTop: 3, paddingLeft: 2 }}>Hit + to add another email address</div>
                     </>
                   ) : (() => {
                     const emails = (e.promoter_email ?? "").split(",").map(x => x.trim()).filter(Boolean);
@@ -521,7 +521,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                       <div onClick={() => startEdit(e, "promoter_email")} style={{ cursor: "text", padding: "2px 4px", borderRadius: 0, border: "2px solid transparent" }} onMouseEnter={ev => (ev.currentTarget.style.borderColor = "var(--hw-border)")} onMouseLeave={ev => (ev.currentTarget.style.borderColor = "transparent")}>
                         <div style={{ fontSize: 14, lineHeight: 1.4 }}>{emails[0]}</div>
                         {emails.length === 2 && <div style={{ fontSize: 14, lineHeight: 1.4 }}>{emails[1]}</div>}
-                        {emails.length > 2 && <div style={{ fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 2 }}>+{emails.length - 1} more</div>}
+                        {emails.length > 2 && <div style={{ fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 2 }}>+{emails.length - 1} more</div>}
                       </div>
                     );
                   })()}
@@ -529,15 +529,15 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
               </div>
               <div>
                 {e.sent_at ? (
-                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-green-border)", background: "var(--hw-green-ghost)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-green)" }}>SENT</span>
+                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-green-border)", background: "var(--hw-green-ghost)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-green)" }}>SENT</span>
                 ) : e.render_status === "rendering" ? (
-                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-amber)", background: "var(--hw-amber-ghost)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-amber)" }}>RENDERING...</span>
+                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-amber)", background: "var(--hw-amber-ghost)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-amber)" }}>RENDERING...</span>
                 ) : e.render_status === "ready" ? (
-                  <button onClick={() => sendEvent(e.id)} style={{ padding: "4px 12px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase" }}>SEND</button>
+                  <button onClick={() => sendEvent(e.id)} style={{ padding: "4px 12px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" }}>SEND</button>
                 ) : e.render_status === "error" ? (
-                  <button onClick={() => reRenderEvent(e.id)} style={{ padding: "4px 12px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-crimson)" }}>RETRY</button>
+                  <button onClick={() => reRenderEvent(e.id)} style={{ padding: "4px 12px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-crimson)" }}>RETRY</button>
                 ) : (
-                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NOT READY</span>
+                  <span style={{ display: "inline-block", padding: "4px 10px", border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NOT READY</span>
                 )}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -545,18 +545,18 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
                   const res = await fetch("/api/venue-link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orgId, eventId: e.id }) });
                   const data = await res.json();
                   if (data.token) window.open(`/v/e/${data.token}`, "_blank");
-                }} style={{ padding: "4px 12px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase" }}>LINK</button>
-                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 9, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 3, textAlign: "center" }}>Preview assets</div>
+                }} style={{ padding: "4px 12px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" }}>LINK</button>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 3, textAlign: "center" }}>Preview assets</div>
               </div>
               {hoveredRow === e.id && (
                 <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>
                   {confirmDelete === e.id ? (
                     <div style={{ display: "flex", gap: 4 }}>
-                      <button onClick={() => deleteEvent(e.id)} style={{ padding: "4px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>DELETE</button>
-                      <button onClick={() => setConfirmDelete(null)} style={{ padding: "4px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>CANCEL</button>
+                      <button onClick={() => deleteEvent(e.id)} style={{ padding: "4px 10px", border: "2px solid var(--hw-crimson)", background: "var(--hw-bg-surface)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>DELETE</button>
+                      <button onClick={() => setConfirmDelete(null)} style={{ padding: "4px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}>CANCEL</button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "4px 10px", border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9, cursor: "pointer", color: "var(--hw-text-muted)" }}>x</button>
+                    <button onClick={() => setConfirmDelete(e.id)} style={{ padding: "4px 10px", border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, cursor: "pointer", color: "var(--hw-text-muted)" }}>x</button>
                   )}
                 </div>
               )}
@@ -574,7 +574,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             <div style={{ padding: "16px 24px" }}>
               {longVenues.map((lv, i) => (
                 <div key={lv.eventId} style={{ marginBottom: 12 }}>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 4 }}>ORIGINAL: {lv.venue}</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 4 }}>ORIGINAL: {lv.venue}</div>
                   <input
                     value={lv.edited}
                     onChange={(e) => {

@@ -358,7 +358,7 @@ export default function FinancialsPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
-          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
+          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>HWY61</h1>
@@ -373,7 +373,7 @@ export default function FinancialsPage() {
                     border: item.active ? "3px solid var(--hw-border-strong)" : "3px solid transparent",
                     background: item.active ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
                     color: item.active ? "var(--hw-text-invert)" : "var(--hw-text)",
-                    textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: item.active ? 700 : 400,
+                    textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: item.active ? 700 : 400,
                     letterSpacing: "1.5px", textTransform: "uppercase",
                   }}>{item.num}. {item.label}</Link>
                 ))}
@@ -383,22 +383,22 @@ export default function FinancialsPage() {
         </div>
 
         {loading || !fin ? (
-          <div style={{ textAlign: "center", padding: 60, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
+          <div style={{ textAlign: "center", padding: 60, fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
         ) : !flags.financeLayer ? (
           <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 48, textAlign: "center" }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", fontWeight: 800, marginBottom: 8 }}>Financial Tools</div>
             <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text-muted)", marginBottom: 20 }}>Detailed financial tracking, expense management, and reporting are available with TourRouter.</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, maxWidth: 500, margin: "0 auto", marginBottom: 24 }}>
               <div style={{ background: "var(--hw-bg-warm)", padding: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Shows</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Shows</div>
                 <div style={{ fontSize: 20, fontWeight: 800 }}>{fin.showDayCount}</div>
               </div>
               <div style={{ background: "var(--hw-bg-warm)", padding: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Income</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Income</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "var(--hw-green)" }}>{fmtUSD(fin.totalIncome)}</div>
               </div>
               <div style={{ background: "var(--hw-bg-warm)", padding: 16 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Est. Fuel</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 4 }}>Est. Fuel</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalFuel)}</div>
               </div>
             </div>
@@ -417,7 +417,7 @@ export default function FinancialsPage() {
                 { label: "Est. Fuel", value: fmtUSD(fin.totalFuel), color: "var(--hw-crimson)" },
               ].map((c) => (
                 <div key={c.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: "16px 20px" }}>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 4 }}>{c.label}</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 4 }}>{c.label}</div>
                   <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "1px", color: c.color || "var(--hw-text)" }}>{c.value}</div>
                 </div>
               ))}
@@ -527,7 +527,7 @@ export default function FinancialsPage() {
                     key={cat}
                     onClick={() => setExpFilter(cat)}
                     style={{
-                      padding: "4px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+                      padding: "4px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700,
                       letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer",
                       border: expFilter === cat ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)",
                       background: expFilter === cat ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
@@ -540,13 +540,13 @@ export default function FinancialsPage() {
               {expFilter === "All" && fin && fin.totalHotel > 0 && (
                 <div style={{ margin: "0 20px 12px", padding: "10px 16px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)" }}>Hotel Costs</span>
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)" }}>Hotel Costs</span>
                     <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 800, color: "var(--hw-crimson)" }}>{fmtUSD(fin.totalHotel)}</span>
-                    {fin.hotelCostByState.actual > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-green)" }}>Actual: {fmtUSD(fin.hotelCostByState.actual)}</span>}
-                    {fin.hotelCostByState.confirmed > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-amber)" }}>Confirmed: {fmtUSD(fin.hotelCostByState.confirmed)}</span>}
-                    {fin.hotelCostByState.projected > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-text-muted)" }}>Projected: {fmtUSD(fin.hotelCostByState.projected)}</span>}
+                    {fin.hotelCostByState.actual > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-green)" }}>Actual: {fmtUSD(fin.hotelCostByState.actual)}</span>}
+                    {fin.hotelCostByState.confirmed > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-amber)" }}>Confirmed: {fmtUSD(fin.hotelCostByState.confirmed)}</span>}
+                    {fin.hotelCostByState.projected > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>Projected: {fmtUSD(fin.hotelCostByState.projected)}</span>}
                   </div>
-                  <button onClick={() => { setExpFilter("Accommodation"); setHotelBreakdownExpanded(true); }} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-muted)", padding: "4px 10px", cursor: "pointer" }}>
+                  <button onClick={() => { setExpFilter("Accommodation"); setHotelBreakdownExpanded(true); }} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-muted)", padding: "4px 10px", cursor: "pointer" }}>
                     See Breakdown →
                   </button>
                 </div>
@@ -555,11 +555,11 @@ export default function FinancialsPage() {
               {expFilter === "All" && fin && (fin.totalFuel > 0 || expTotalByCategory["Fuel"] > 0) && (
                 <div style={{ margin: "0 20px 12px", padding: "10px 16px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)" }}>Fuel</span>
+                    <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)" }}>Fuel</span>
                     {fin.totalFuel > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>Est: {fmtUSD(fin.totalFuel)}</span>}
                     {expTotalByCategory["Fuel"] > 0 && <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 800, color: "var(--hw-crimson)" }}>Actual receipts: {fmtUSD(expTotalByCategory["Fuel"])}</span>}
                   </div>
-                  <button onClick={() => setExpFilter("Fuel")} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-muted)", padding: "4px 10px", cursor: "pointer" }}>
+                  <button onClick={() => setExpFilter("Fuel")} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-muted)", padding: "4px 10px", cursor: "pointer" }}>
                     See Fuel →
                   </button>
                 </div>
@@ -568,8 +568,8 @@ export default function FinancialsPage() {
               {expFilter === "Accommodation" && fin && (fin.totalHotel > 0 || shows.some(s => s.hotel_rate || s.hotel_cost_actual)) && (
                 <div style={{ margin: "16px 20px", border: "3px solid var(--hw-border-strong)", overflow: "hidden" }}>
                   <div style={{ padding: "12px 16px", background: "var(--hw-bg-warm)", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>Hotel Cost Breakdown</div>
-                    <div style={{ display: "flex", gap: 16, fontFamily: "var(--hw-font-mono)", fontSize: 10 }}>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>Hotel Cost Breakdown</div>
+                    <div style={{ display: "flex", gap: 16, fontFamily: "var(--hw-font-mono)", fontSize: 12 }}>
                       {fin.hotelCostByState.actual > 0 && <span style={{ color: "var(--hw-green)" }}>Actual: {fmtUSD(fin.hotelCostByState.actual)}</span>}
                       {fin.hotelCostByState.confirmed > 0 && <span style={{ color: "var(--hw-amber)" }}>Confirmed: {fmtUSD(fin.hotelCostByState.confirmed)}</span>}
                       {fin.hotelCostByState.projected > 0 && <span style={{ color: "var(--hw-text-muted)" }}>Projected: {fmtUSD(fin.hotelCostByState.projected)}</span>}
@@ -577,7 +577,7 @@ export default function FinancialsPage() {
                       <button
                         onClick={() => setHotelBreakdownExpanded(!hotelBreakdownExpanded)}
                         style={{
-                          fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+                          fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700,
                           letterSpacing: "1.5px", textTransform: "uppercase",
                           border: "2px solid var(--hw-border-strong)", background: "transparent",
                           color: "var(--hw-text)", padding: "4px 10px", cursor: "pointer",
@@ -593,7 +593,7 @@ export default function FinancialsPage() {
                     <thead>
                       <tr style={{ background: "var(--hw-bg-invert)" }}>
                         {["Date", "City", "Hotel", "Rooms", "Rate", "Nights", "Total", "Source"].map((h) => (
-                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "1.5px" }}>{h}</th>
+                          <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "1.5px" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -621,7 +621,7 @@ export default function FinancialsPage() {
                               <span style={{
                                 padding: "2px 8px",
                                 border: "2px solid",
-                                fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase",
+                                fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase",
                                 borderColor: source === "actual" ? "var(--hw-green)" : source === "confirmed" ? "var(--hw-amber)" : "var(--hw-border)",
                                 color: source === "actual" ? "var(--hw-green)" : source === "confirmed" ? "var(--hw-amber)" : "var(--hw-text-muted)",
                               }}>{source}</span>
@@ -640,7 +640,7 @@ export default function FinancialsPage() {
                   <thead>
                     <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Date", "Category", "Description", "Amount", "Paid By", "Reimb.", ""].map((h) => (
-                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)", background: "var(--hw-bg-invert)" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)", background: "var(--hw-bg-invert)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -674,7 +674,7 @@ export default function FinancialsPage() {
                       <tr key={exp.id} style={{ borderTop: "2px solid var(--hw-border)" }}>
                         <td style={{ padding: "8px 12px", fontSize: 12, fontFamily: "var(--hw-font-mono)" }}>{exp.date}</td>
                         <td style={{ padding: "8px 12px", fontSize: 12 }}>
-                          <span style={{ padding: "3px 10px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>{exp.category}</span>
+                          <span style={{ padding: "3px 10px", background: "var(--hw-bg-warm)", border: "2px solid var(--hw-border)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>{exp.category}</span>
                         </td>
                         <td style={{ padding: "8px 12px", fontSize: 13 }}>{exp.description || "\u2014"}</td>
                         <td style={{ padding: "8px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600, color: "var(--hw-crimson)" }}>{fmtUSD(exp.amount)}</td>
@@ -774,7 +774,7 @@ export default function FinancialsPage() {
                   <thead>
                     <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Date", "Venue", "City", "Offer", "Cur", "USD", "Expenses", "Net"].map((h) => (
-                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", whiteSpace: "nowrap" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", whiteSpace: "nowrap" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -787,7 +787,7 @@ export default function FinancialsPage() {
                         <td style={{ padding: "9px 12px", fontSize: 13, fontWeight: 600 }}>{row.show.venue || "\u2014"}</td>
                         <td style={{ padding: "9px 12px", fontSize: 13 }}>{row.show.city || "\u2014"}</td>
                         <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)" }}>{row.show.offer_display || "\u2014"}</td>
-                        <td style={{ padding: "9px 12px", fontSize: 11, color: "var(--hw-text-muted)" }}>{row.show.offer_currency}</td>
+                        <td style={{ padding: "9px 12px", fontSize: 13, color: "var(--hw-text-muted)" }}>{row.show.offer_currency}</td>
                         <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", color: "var(--hw-green)", fontWeight: 600 }}>{fmtUSD(row.usd)}</td>
                         <td style={{ padding: "9px 12px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -799,7 +799,7 @@ export default function FinancialsPage() {
                               placeholder="0"
                               style={{ width: 60, padding: "4px 6px", border: "3px solid var(--hw-border)", fontSize: 12, fontFamily: "var(--hw-font-mono)", outline: "none" }}
                             />
-                            {blanketShowAmt > 0 && <span style={{ fontSize: 10, color: "var(--hw-text-muted)" }}>+{fmtUSD(blanketShowAmt)}</span>}
+                            {blanketShowAmt > 0 && <span style={{ fontSize: 12, color: "var(--hw-text-muted)" }}>+{fmtUSD(blanketShowAmt)}</span>}
                           </div>
                         </td>
                         <td style={{ padding: "9px 12px", fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 700, color: row.net >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" }}>{fmtUSD(row.net)}</td>
@@ -832,7 +832,7 @@ export default function FinancialsPage() {
                   <thead>
                     <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {["Currency", "Shows", "Total (Original)", "Rate (to USD)", "Total (USD)"].map((h) => (
-                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 12px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-text-invert)", textTransform: "uppercase", letterSpacing: "2px", borderBottom: "2px solid var(--hw-border)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -870,7 +870,7 @@ export default function FinancialsPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {/* Drive */}
                 <div style={{ border: "3px solid var(--hw-border)", padding: 16 }}>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 12 }}>Driving</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 12 }}>Driving</div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                     <span style={{ fontSize: 13, color: "var(--hw-text-secondary)" }}>Drive legs</span>
                     <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{driveLegs}</span>
@@ -901,7 +901,7 @@ export default function FinancialsPage() {
 
                 {/* Fly */}
                 <div style={{ border: "3px solid var(--hw-border)", padding: 16 }}>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 12 }}>Flights</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "2px", marginBottom: 12 }}>Flights</div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                     <span style={{ fontSize: 13, color: "var(--hw-text-secondary)" }}>Flight legs</span>
                     <span style={{ fontSize: 13, fontFamily: "var(--hw-font-mono)", fontWeight: 600 }}>{fin.flightLegs}</span>

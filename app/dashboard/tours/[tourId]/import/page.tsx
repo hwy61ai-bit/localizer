@@ -209,7 +209,7 @@ export default function ImportPage() {
 
         {/* Header */}
         <div style={{ marginBottom: 28, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
-          <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
+          <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ display: "inline-block" }}>
@@ -224,10 +224,10 @@ export default function ImportPage() {
             </div>
             <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
               <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
-                <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>1. IMPORT SCHEDULE</Link>
-                <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>2. IMPORT ASSETS</Link>
-                <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. DESIGN TEMPLATE</Link>
-                <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>4. GIGS</Link>
+                <Link href={`/dashboard/tours/${tourId}/import`} style={{ padding: "10px 18px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>1. IMPORT SCHEDULE</Link>
+                <Link href={`/dashboard/tours/${tourId}/assets`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>2. IMPORT ASSETS</Link>
+                <Link href={`/dashboard/tours/${tourId}/template`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>3. DESIGN TEMPLATE</Link>
+                <Link href={`/dashboard/tours/${tourId}`} style={{ padding: "10px 18px", border: "3px solid transparent", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase" }}>4. GIGS</Link>
               </div>
             </div>
           </div>
@@ -394,7 +394,7 @@ const col = {
   day: { width: 80, flexShrink: 0, fontSize: 13 },
   venue: { width: 180, flexShrink: 0, fontSize: 14, fontWeight: 500 as const, color: "var(--hw-text)" },
   city: { width: 140, flexShrink: 0, fontSize: 14 },
-  email: { width: 220, flexShrink: 0, fontFamily: "var(--hw-font-mono)", fontSize: 11 },
+  email: { width: 220, flexShrink: 0, fontFamily: "var(--hw-font-mono)", fontSize: 13 },
   notes: { flex: 1, fontSize: 12, color: "var(--hw-text-muted)" },
 };
 
@@ -416,7 +416,7 @@ const styles = {
   },
   eyebrow: {
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 400,
     letterSpacing: "2px",
     textTransform: "uppercase" as const,
@@ -501,7 +501,7 @@ const styles = {
     background: "var(--hw-bg-surface)",
     padding: "0 12px",
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 11,
+    fontSize: 13,
     letterSpacing: "2px",
     textTransform: "uppercase" as const,
     color: "var(--hw-text-muted)",
@@ -527,7 +527,7 @@ const styles = {
     background: "var(--hw-red-ghost)",
     border: "3px solid var(--hw-crimson)",
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 11,
+    fontSize: 13,
     color: "var(--hw-crimson)",
   },
   parseBtn: {
@@ -547,7 +547,7 @@ const styles = {
   parsingNote: {
     marginTop: 10,
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 11,
+    fontSize: 13,
     letterSpacing: "1px",
     color: "var(--hw-text-muted)",
     textAlign: "center" as const,
@@ -608,7 +608,7 @@ const styles = {
   },
   warningsTitle: {
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 700,
     letterSpacing: "1.5px",
     textTransform: "uppercase" as const,
@@ -631,7 +631,7 @@ const styles = {
     padding: "12px 16px",
     background: "var(--hw-bg-invert)",
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: "2px",
     textTransform: "uppercase" as const,

@@ -21,11 +21,11 @@ export default async function NewEventPage({
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 140px", gap: 12 }}>
               <div>
-                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Date</div>
+                <div style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Date</div>
                 <input name="event_date" type="date" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
               </div>
               <div>
-                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Day</div>
+                <div style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Day</div>
                 <select name="day" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", background: "var(--hw-bg-surface)", boxSizing: "border-box" }}>
                   <option value="">—</option>
                   <option>Monday</option>
@@ -41,27 +41,27 @@ export default async function NewEventPage({
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 100px", gap: 12 }}>
               <div>
-                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>City</div>
+                <div style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>City</div>
                 <input name="city" placeholder="Memphis" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
               </div>
               <div>
-                <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>State</div>
+                <div style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>State</div>
                 <input name="state" placeholder="TN" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
               </div>
             </div>
 
             <div>
-              <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Venue</div>
+              <div style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Venue</div>
               <input name="venue_name" placeholder="The Fillmore" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
             </div>
 
             <div>
-              <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Promoter Email</div>
+              <div style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Promoter Email</div>
               <input name="promoter_email" type="email" placeholder="promoter@example.com" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
             </div>
 
             <div>
-              <div style={{ fontSize: 10, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Manager Email</div>
+              <div style={{ fontSize: 12, fontFamily: "var(--hw-font-mono)", fontWeight: 700, marginBottom: 6, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--hw-text-muted)" }}>Manager Email</div>
               <input name="manager_email" type="email" placeholder="manager@example.com" style={{ width: "100%", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", borderRadius: 0, fontSize: 14, fontFamily: "var(--hw-font-body)", boxSizing: "border-box" }} />
             </div>
 

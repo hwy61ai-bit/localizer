@@ -90,12 +90,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Header */}
         <div style={{ padding: "24px 0 20px", borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 32, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px" }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span></span>
-          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "4px", textTransform: "uppercase" }}>Official Asset Kit</span>
+          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "4px", textTransform: "uppercase" }}>Official Asset Kit</span>
         </div>
 
         {/* Hero */}
         <div style={{ marginBottom: 48, border: "3px solid var(--hw-border-strong)", padding: 28, background: "var(--hw-bg-surface)" }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 8 }}>Show Assets</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 8 }}>Show Assets</div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 52, letterSpacing: "2px", lineHeight: 1, textTransform: "uppercase" }}>{bandName}</div>
             <a href={`/api/download-all?token=${token}`} download style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0, textTransform: "uppercase", transition: "var(--hw-ease)" }}>↓ DOWNLOAD ALL</a>
@@ -103,19 +103,19 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
             {formattedDate && (
               <div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "1.5px" }}>Date</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "1.5px" }}>Date</div>
                 <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 400, color: "var(--hw-text-secondary)" }}>{formattedDate}</div>
               </div>
             )}
             {venueName && (
               <div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "1.5px" }}>Venue</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "1.5px" }}>Venue</div>
                 <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 400, color: "var(--hw-text-secondary)" }}>{venueName}</div>
               </div>
             )}
             {(city || state) && (
               <div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "1.5px" }}>Location</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", marginBottom: 3, textTransform: "uppercase", letterSpacing: "1.5px" }}>Location</div>
                 <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 400, color: "var(--hw-text-secondary)" }}>{[city, state].filter(Boolean).join(", ")}</div>
               </div>
             )}
@@ -125,7 +125,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Photos */}
         {photoAssets.some(a => a.url) && (
           <>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 48 }}>
           {photoAssets.map((asset) => (
             <div key={asset.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
@@ -133,7 +133,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                 {asset.url ? (
                   <img src={asset.url} alt={asset.label} style={{ width: "100%", display: "block" }} />
                 ) : (
-                  <div style={{ aspectRatio: asset.aspect, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", fontSize: 11, letterSpacing: "1px", textTransform: "uppercase" }}>
+                  <div style={{ aspectRatio: asset.aspect, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", fontSize: 13, letterSpacing: "1px", textTransform: "uppercase" }}>
                     Not provided
                   </div>
                 )}
@@ -141,7 +141,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
               <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid var(--hw-border-strong)", marginTop: "auto" }}>
                 <div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 500, color: "var(--hw-text)", marginBottom: 2 }}>{asset.label}</div>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{asset.dims}</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{asset.dims}</div>
                 </div>
                 {asset.url && (
                   <a href={`/api/download?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(filenameSlug + "+" + asset.label.replace(/ /g,"_") + ".jpg")}&token=${token}`} download
@@ -159,7 +159,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Print Poster PDF */}
         {hasPrintPoster && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
             <PrintDownloadButton eventId={event.id} venueName={venueName} token={token} />
           </div>
         )}
@@ -167,7 +167,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Video */}
         {((link as any).render_tiktok_url || (link as any).render_yt_shorts_url) && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
               {[
                 { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", dims: "1080 × 1920", url: (link as any).render_tiktok_url },
@@ -180,7 +180,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                   <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid var(--hw-border-strong)", marginTop: "auto" }}>
                     <div>
                       <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 500, color: "var(--hw-text)", marginBottom: 2 }}>{video.label}</div>
-                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{video.dims}</div>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{video.dims}</div>
                     </div>
                     <a href={`/api/download?url=${encodeURIComponent(video.url)}&filename=${encodeURIComponent(filenameSlug + "+" + video.label.replace(/ /g,"_") + ".mp4")}&token=${token}`} download
                       style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16 }}>
@@ -195,7 +195,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
         {/* Advance Materials */}
         <div style={{ marginBottom: 48 }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {advMaterials.map((mat) => (
               mat.url ? (
@@ -209,7 +209,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                   style={{ aspectRatio: "1 / 1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 16, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", cursor: "not-allowed", textAlign: "center" }}>
                   <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, opacity: 0.3, color: "var(--hw-text-muted)" }}>↓</span>
                   <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 15, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", lineHeight: 1.2 }}>{mat.label}</span>
-                  <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 400, fontStyle: "italic", letterSpacing: "1px", color: "var(--hw-text-muted)" }}>Not uploaded yet</span>
+                  <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, fontStyle: "italic", letterSpacing: "1px", color: "var(--hw-text-muted)" }}>Not uploaded yet</span>
                 </div>
               )
             ))}
@@ -219,7 +219,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Spotify */}
         {spotifyEmbedUrl && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Listen</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Listen</div>
             <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy" style={{ border: "3px solid var(--hw-border-strong)" }} />
@@ -229,7 +229,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Footer */}
         <div style={{ borderTop: "3px solid var(--hw-border-strong)", paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "3px" }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span></span>
-          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>POWERED BY HWY61 LABS</span>
+          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>POWERED BY HWY61 LABS</span>
         </div>
       </div>
     </div>

@@ -523,7 +523,7 @@ export default function ImportPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
-          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
+          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>TOURROUTER</h1>
@@ -542,7 +542,7 @@ export default function ImportPage() {
                       background: item.active ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
                       color: item.active ? "#fff" : "var(--hw-text)",
                       textDecoration: "none",
-                      fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: item.active ? 700 : 400,
+                      fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: item.active ? 700 : 400,
                       letterSpacing: "1.5px", textTransform: "uppercase",
                     }}
                   >{item.num}. {item.label}</Link>
@@ -557,7 +557,7 @@ export default function ImportPage() {
           {[1, 2, 3].map((s) => (
             <div key={s} style={{
               padding: "8px 16px",
-              fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700,
+              fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700,
               letterSpacing: "1.5px", textTransform: "uppercase",
               background: step === s ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
               color: step === s ? "#fff" : "var(--hw-text-muted)",
@@ -571,7 +571,7 @@ export default function ImportPage() {
 
         {/* Error */}
         {error && (
-          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
+          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)" }}>
             {error}
           </div>
         )}
@@ -602,7 +602,7 @@ export default function ImportPage() {
               <div style={{ fontSize: 36, marginBottom: 12, opacity: dragOverSpreadsheet ? 0.7 : 0.4 }}>{"\u{1F4CA}"}</div>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>UPLOAD SPREADSHEET</div>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.5 }}>Upload a .csv, .xlsx, or .xls file with your tour schedule</div>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 10 }}>OR DRAG AND DROP</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 10 }}>OR DRAG AND DROP</div>
               <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: "none" }} onChange={handleFileUpload} />
             </div>
 
@@ -618,7 +618,7 @@ export default function ImportPage() {
               <div style={{ fontSize: 36, marginBottom: 12, opacity: dragOverPdf ? 0.7 : 0.4 }}>{pdfLoading ? "\u23F3" : "\u{1F4C4}"}</div>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>{pdfLoading ? "PARSING PDF..." : "UPLOAD DEAL MEMO (PDF)"}</div>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.5 }}>Upload a deal memo PDF — AI will extract show data automatically</div>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 10 }}>OR DRAG AND DROP</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 10 }}>OR DRAG AND DROP</div>
               <input ref={pdfInputRef} type="file" accept=".pdf" style={{ display: "none" }} onChange={handlePdfUpload} />
             </div>
           </div>
@@ -654,7 +654,7 @@ export default function ImportPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
                 <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>MAP COLUMNS</div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
                   {rawRows.length} rows detected &middot; {headers.length} columns
                   {resolving && <span style={{ marginLeft: 8, color: "var(--hw-amber)" }}>&middot; AI MAPPING HEADERS...</span>}
                 </div>
@@ -665,7 +665,7 @@ export default function ImportPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 24 }}>
               {MAPPER_FIELDS.map((f) => (
                 <div key={f.key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <label style={{ width: 160, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: f.required ? 700 : 400, color: f.required ? "var(--hw-text)" : "var(--hw-text-muted)" }}>
+                  <label style={{ width: 160, fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: f.required ? 700 : 400, color: f.required ? "var(--hw-text)" : "var(--hw-text-muted)" }}>
                     {f.label}{f.required ? " *" : ""}
                   </label>
                   <select
@@ -684,13 +684,13 @@ export default function ImportPage() {
 
             {/* Preview first 3 rows */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-blue)", marginBottom: 8 }}>PREVIEW (FIRST 3 ROWS)</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-blue)", marginBottom: 8 }}>PREVIEW (FIRST 3 ROWS)</div>
               <div style={{ overflowX: "auto", border: "3px solid var(--hw-border-strong)" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "var(--hw-bg-invert)" }}>
                       {headers.map((h) => (
-                        <th key={h} style={{ padding: "10px 10px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", color: "#fff", whiteSpace: "nowrap", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding: "10px 10px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "2px", color: "#fff", whiteSpace: "nowrap", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -722,7 +722,7 @@ export default function ImportPage() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
                 <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>REVIEW SHOWS</div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{shows.length} shows parsed</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{shows.length} shows parsed</div>
               </div>
               <div style={{ display: "flex", gap: 10 }}>
                 <button onClick={() => { setStep(headers.length > 0 ? 2 : 1); setError(""); }} style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", cursor: "pointer", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" }}>BACK</button>
@@ -739,7 +739,7 @@ export default function ImportPage() {
                 <thead>
                   <tr style={{ background: "var(--hw-bg-invert)" }}>
                     {["#", "Date", "Event", "City", "Country", "Venue", "Offer", "Currency", "Status", "Capacity"].map((h) => (
-                      <th key={h} style={{ padding: "12px 10px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", color: "#fff", whiteSpace: "nowrap", textTransform: "uppercase" }}>{h}</th>
+                      <th key={h} style={{ padding: "12px 10px", textAlign: "left", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "2px", color: "#fff", whiteSpace: "nowrap", textTransform: "uppercase" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -759,7 +759,7 @@ export default function ImportPage() {
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", background: unresolved ? "var(--hw-amber-ghost)" : undefined }}>
                         {s.city}
                         {unresolved && (
-                          <span style={{ marginLeft: 6, fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1px", color: "var(--hw-amber)", textTransform: "uppercase" }}>&#9888; NOT FOUND</span>
+                          <span style={{ marginLeft: 6, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", color: "var(--hw-amber)", textTransform: "uppercase" }}>&#9888; NOT FOUND</span>
                         )}
                       </td>
                       <td style={{ padding: "10px 10px", fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{s.country}</td>

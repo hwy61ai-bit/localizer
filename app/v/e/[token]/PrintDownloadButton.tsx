@@ -74,7 +74,7 @@ export default function PrintDownloadButton({ eventId, venueName, token }: { eve
           <div style={{ width: "100%", height: 8, background: "var(--hw-bg-surface)", overflow: "hidden" }}>
             <div style={{ width: "100%", height: "100%", background: "repeating-linear-gradient(45deg, var(--hw-crimson) 0px, var(--hw-crimson) 10px, transparent 10px, transparent 20px)", animation: "hwStripeMove 1s linear infinite" }} />
           </div>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "1px", textAlign: "center" }}>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "1px", textAlign: "center" }}>
             This can take up to 30 seconds. Please don&apos;t refresh.
           </div>
         </>

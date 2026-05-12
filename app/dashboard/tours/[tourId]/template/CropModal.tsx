@@ -255,7 +255,7 @@ export default function CropModal({
               <span
                 style={{
                   fontFamily: "var(--hw-font-mono)",
-                  fontSize: 11,
+                  fontSize: 13,
                   letterSpacing: "1.5px",
                   textTransform: "uppercase",
                   color: "var(--hw-text-muted)",
@@ -278,7 +278,7 @@ export default function CropModal({
             <div
               style={{
                 fontFamily: "var(--hw-font-mono)",
-                fontSize: 11,
+                fontSize: 13,
                 letterSpacing: "1.5px",
                 textTransform: "uppercase",
                 color: "var(--hw-text-muted)",

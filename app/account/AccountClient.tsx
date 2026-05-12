@@ -50,7 +50,7 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
 
         {/* Back link */}
         <div style={{ marginBottom: 24 }}>
-          <Link href="/dashboard" style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none" }}>
+          <Link href="/dashboard" style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none" }}>
             &larr; BACK TO DASHBOARD
           </Link>
         </div>
@@ -67,7 +67,7 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
         {/* ── Workspace ── */}
         <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 28, marginBottom: 16 }}>
           <div style={{
-            fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+            fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400,
             letterSpacing: "4px", textTransform: "uppercase",
             color: "var(--hw-blue)", marginBottom: 16,
           }}>
@@ -84,7 +84,7 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
         {/* ── Plan ── */}
         <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 28, marginBottom: 16 }}>
           <div style={{
-            fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+            fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400,
             letterSpacing: "4px", textTransform: "uppercase",
             color: "var(--hw-blue)", marginBottom: 16,
           }}>
@@ -96,20 +96,20 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
               <span style={{
                 display: "inline-block", padding: "4px 10px",
                 background: "var(--hw-crimson)", color: "#fff",
-                fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 9,
+                fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11,
                 letterSpacing: "2px", textTransform: "uppercase",
                 border: "2px solid var(--hw-crimson)",
               }}>
                 {planLabel}
               </span>
               {planStatus !== "active" && (
-                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-crimson)" }}>
+                <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-crimson)" }}>
                   {planStatus}
                 </span>
               )}
             </div>
             <Link href="/pricing" style={{
-              fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+              fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400,
               letterSpacing: "1.5px", textTransform: "uppercase",
               color: "var(--hw-text-secondary)", textDecoration: "none",
             }}>
@@ -120,7 +120,7 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
           {/* Usage bar */}
           <div style={{ marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
+              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
                 RENDERS THIS MONTH
               </span>
               <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text)" }}>
@@ -140,7 +140,7 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
         {/* ── Billing ── */}
         <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 28, marginBottom: 16 }}>
           <div style={{
-            fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+            fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400,
             letterSpacing: "4px", textTransform: "uppercase",
             color: "var(--hw-blue)", marginBottom: 16,
           }}>
@@ -149,7 +149,7 @@ export default function AccountClient({ email, orgName, plan, planStatus, hasStr
 
           {error && (
             <div style={{
-              fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+              fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400,
               color: "var(--hw-crimson)", marginBottom: 12,
             }}>
               {error}

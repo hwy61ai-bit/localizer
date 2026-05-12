@@ -111,7 +111,7 @@ export default function WelcomeWizard({
         display: "inline-block",
         marginTop: 16,
         fontFamily: "var(--hw-font-mono)",
-        fontSize: 11,
+        fontSize: 13,
         fontWeight: 700,
         letterSpacing: "1.5px",
         textTransform: "uppercase",

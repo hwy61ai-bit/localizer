@@ -191,7 +191,7 @@ export default function FinanceDashboard() {
                 { label: "Total Net", value: fmtUSD(totalNet), color: totalNet >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" },
               ].map((c) => (
                 <div key={c.label} style={{ background: "white", border: "3px solid black", borderRadius: 0, padding: "18px 22px" }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6, fontFamily: "var(--hw-font-mono)" }}>{c.label}</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 6, fontFamily: "var(--hw-font-mono)" }}>{c.label}</div>
                   <div style={{ fontSize: 36, fontWeight: 800, fontFamily: "var(--hw-font-display)", color: c.color }}>{c.value}</div>
                 </div>
               ))}
@@ -204,7 +204,7 @@ export default function FinanceDashboard() {
                   <thead>
                     <tr>
                       {["Tour", "Artist", "Shows", "Gross Income", "Commissions", "Expenses", "Net", "Margin", "Status"].map((h) => (
-                        <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "3px solid var(--hw-border-strong)", whiteSpace: "nowrap", background: "var(--hw-bg-invert)", fontFamily: "var(--hw-font-mono)" }}>{h}</th>
+                        <th key={h} style={{ padding: "12px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.04em", borderBottom: "3px solid var(--hw-border-strong)", whiteSpace: "nowrap", background: "var(--hw-bg-invert)", fontFamily: "var(--hw-font-mono)" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -227,7 +227,7 @@ export default function FinanceDashboard() {
                         <td style={{ padding: "12px 14px", fontSize: 13, fontFamily: "var(--hw-font-mono)", color: row.fin.margin >= 0 ? "var(--hw-green)" : "var(--hw-crimson)" }}>{row.fin.margin.toFixed(1)}%</td>
                         <td style={{ padding: "12px 14px" }}>
                           <span style={{
-                            fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 0,
+                            fontSize: 12, fontWeight: 700, padding: "3px 8px", borderRadius: 0,
                             background: row.status === "active" ? "var(--hw-green)" : "var(--hw-bg-surface)",
                             color: row.status === "active" ? "#fff" : "var(--hw-text-muted)",
                             fontFamily: "var(--hw-font-mono)", textTransform: "uppercase" as const,

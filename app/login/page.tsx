@@ -112,7 +112,7 @@ function LoginContent() {
 
   const labelStyle: React.CSSProperties = {
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 400,
     letterSpacing: "1.5px",
     textTransform: "uppercase",
@@ -263,7 +263,7 @@ function LoginContent() {
                 {inviteLoading ? "VERIFYING\u2026" : "CONTINUE"}
               </button>
               {inviteError && (
-                <p style={{ marginTop: 12, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
+                <p style={{ marginTop: 12, fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)" }}>
                   {inviteError}
                 </p>
               )}
@@ -297,7 +297,7 @@ function LoginContent() {
                 margin: "20px 0",
                 textAlign: "center",
                 fontFamily: "var(--hw-font-mono)",
-                fontSize: 11,
+                fontSize: 13,
                 letterSpacing: "2px",
                 textTransform: "uppercase",
                 color: "var(--hw-text-muted)",
@@ -369,7 +369,7 @@ function LoginContent() {
           )}
 
           {error && (
-            <p style={{ marginTop: 12, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
+            <p style={{ marginTop: 12, fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)" }}>
               {error}
             </p>
           )}

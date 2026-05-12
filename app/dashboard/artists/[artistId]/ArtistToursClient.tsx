@@ -74,10 +74,10 @@ export default function ArtistToursClient({
     <div style={{ padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 24 }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 6 }}>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 6 }}>
             {artistName}
           </div>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
             {loading ? "Loading..." : `${tours.length} tour${tours.length !== 1 ? "s" : ""}`}
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function ArtistToursClient({
               }}
             >
               <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 120, fontWeight: 400, color: "var(--hw-text)", lineHeight: 1 }}>+</span>
-              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NEW TOUR</span>
+              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>NEW TOUR</span>
             </button>
           </div>
         )}
@@ -135,7 +135,7 @@ export default function ArtistToursClient({
           </>
         }
       >
-        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 20 }}>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 20 }}>
           for {artistName}
         </div>
         <HwInput
@@ -236,7 +236,7 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
             {tour.name}
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>
+            <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: currentImage ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>
               {new Date(tour.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -252,7 +252,7 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
       {mounted && hovered && (
         <button
           onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
-          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
+          style={{ position: "absolute", top: 10, right: 10, zIndex: 10, padding: "5px 12px", border: "2px solid rgba(255,255,255,0.3)", background: "rgba(0,0,0,0.6)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
         >
           {uploading ? "Uploading\u2026" : currentImage ? "Change photo" : "+ Photo"}
         </button>
@@ -261,7 +261,7 @@ function TourTile({ tour, onDelete }: { tour: Tour; onDelete: (id: string, e: Re
       {mounted && hovered && (
         <button
           onClick={(e) => onDelete(tour.id, e)}
-          style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
+          style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}
         >
           Delete
         </button>

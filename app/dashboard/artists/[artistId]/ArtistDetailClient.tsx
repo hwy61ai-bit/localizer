@@ -62,7 +62,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 16 }}>
           <h2 style={{ fontFamily: "var(--hw-font-display)", fontSize: 36, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", margin: 0 }}>TOURS</h2>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 4 }}>{tours.length} tour{tours.length !== 1 ? "s" : ""}</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 4 }}>{tours.length} tour{tours.length !== 1 ? "s" : ""}</div>
         </div>
 
         {tours.length === 0 && !creatingTour && (
@@ -87,7 +87,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.65) 100%)" }} />
                   </>
                 )}
-                <div style={{ position: "relative", zIndex: 1, fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "2px", textTransform: "uppercase", color: (tour.image_url ?? artistImageUrl) ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>TOUR</div>
+                <div style={{ position: "relative", zIndex: 1, fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: (tour.image_url ?? artistImageUrl) ? "rgba(255,255,255,0.7)" : "var(--hw-text-muted)" }}>TOUR</div>
                 <div style={{ position: "relative", zIndex: 1 }}>
                   <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: (tour.image_url ?? artistImageUrl) ? "#fff" : "var(--hw-text)", marginBottom: 8 }}>{tour.band_tour_label ?? tour.name}</div>
                   <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, color: (tour.image_url ?? artistImageUrl) ? "rgba(255,255,255,0.5)" : "var(--hw-border-light)", textAlign: "right" }}>&rarr;</div>
@@ -95,7 +95,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
               </div>
               {hoveredTourId === tour.id && (
                 <button onClick={(e) => handleDeleteTour(e, tour.id)}
-                  style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>
+                  style={{ position: "absolute", bottom: 10, left: 10, zIndex: 10, padding: "5px 12px", border: "2px solid var(--hw-crimson)", background: "rgba(0,0,0,0.6)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", cursor: "pointer" }}>
                   {deletingTourId === tour.id ? "DELETING\u2026" : "DELETE"}
                 </button>
               )}
@@ -104,7 +104,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
           {tours.length > 0 && (
             <button onClick={handleCreateTour} disabled={creatingTour} style={{ width: "100%", aspectRatio: "1 / 1", background: "var(--hw-bg-surface)", border: "3px dashed var(--hw-border-light)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, cursor: "pointer", padding: 20, transition: "var(--hw-ease)" }}>
               <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 120, fontWeight: 400, color: "var(--hw-text)", lineHeight: 1 }}>+</span>
-              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{creatingTour ? "CREATING..." : "NEW TOUR"}</span>
+              <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{creatingTour ? "CREATING..." : "NEW TOUR"}</span>
             </button>
           )}
         </div>

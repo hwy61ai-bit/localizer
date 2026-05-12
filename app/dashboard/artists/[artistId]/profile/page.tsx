@@ -668,7 +668,7 @@ export default function ArtistProfilePage() {
   if (loading || !artist) {
     return (
       <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>LOADING...</div>
       </div>
     );
   }
@@ -685,18 +685,18 @@ export default function ArtistProfilePage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
           <button
             onClick={() => router.back()}
-            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", padding: 0 }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", padding: 0 }}
           >
             &larr; BACK
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <button
               onClick={() => router.push(`/dashboard/artists/${artistId}`)}
-              style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", cursor: "pointer" }}
+              style={{ padding: "6px 14px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", cursor: "pointer" }}
             >
               VIEW TOURS &rarr;
             </button>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: saving ? "var(--hw-text-muted)" : showSaved ? "var(--hw-green)" : "transparent", transition: "color 0.2s" }}>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: saving ? "var(--hw-text-muted)" : showSaved ? "var(--hw-green)" : "transparent", transition: "color 0.2s" }}>
               {saving ? "SAVING..." : showSaved ? "SAVED" : "."}
             </div>
           </div>
@@ -780,7 +780,7 @@ export default function ArtistProfilePage() {
                 ) : (
                   <div style={{ textAlign: "center" }}>
                     <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 30, color: "var(--hw-text-muted)" }}>+</div>
-                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>PHOTO</div>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>PHOTO</div>
                   </div>
                 )}
               </div>
@@ -817,7 +817,7 @@ export default function ArtistProfilePage() {
                 ) : (
                   <div style={{ textAlign: "center" }}>
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" /></svg>
-                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px", marginTop: 6 }}>SPOTIFY</div>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px", marginTop: 6 }}>SPOTIFY</div>
                   </div>
                 )}
               </div>
@@ -866,8 +866,8 @@ export default function ArtistProfilePage() {
                 ) : (
                   <div style={{ textAlign: "center" }}>
                     <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 30, color: "var(--hw-text-muted)" }}>+</div>
-                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>LOGO</div>
-                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: 3 }}>transparent .png</div>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>LOGO</div>
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: 3 }}>transparent .png</div>
                   </div>
                 )}
               </div>
@@ -962,7 +962,7 @@ export default function ArtistProfilePage() {
                   </div>
                   <div style={{
                     fontFamily: "var(--hw-font-body)",
-                    fontSize: 11,
+                    fontSize: 13,
                     fontWeight: 500,
                     color: "var(--hw-text)",
                     marginBottom: 2,
@@ -974,7 +974,7 @@ export default function ArtistProfilePage() {
                   </div>
                   <div style={{
                     fontFamily: "var(--hw-font-mono)",
-                    fontSize: 9,
+                    fontSize: 11,
                     color: "var(--hw-text-secondary)",
                   }}>
                     JPEG &middot; 2.4 MB
@@ -997,7 +997,7 @@ export default function ArtistProfilePage() {
                 </svg>
                 <span style={{
                   fontFamily: "var(--hw-font-mono)",
-                  fontSize: 9,
+                  fontSize: 11,
                   letterSpacing: "0.5px",
                   color: "var(--hw-green)",
                   textTransform: "uppercase",
@@ -1018,7 +1018,7 @@ export default function ArtistProfilePage() {
               }}
               placeholder="Paste Spotify artist URL"
               style={{
-                fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "0.5px",
+                fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "0.5px",
                 color: "var(--hw-text-secondary)", width: "100%", padding: "8px 0",
                 border: "none", borderBottom: "1px solid var(--hw-border)", outline: "none",
                 background: "transparent",
@@ -1131,14 +1131,14 @@ export default function ArtistProfilePage() {
                       <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text)", marginBottom: 2 }}>
                         {field.label}
                       </div>
-                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" as const, color: url ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: url ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
                         {isUploading ? "Uploading..." : url ? "Uploaded" : "Not uploaded"}
                       </div>
                     </div>
                     <div>
                       {url ? (
                         <span style={{
-                          fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, color: "var(--hw-green)",
+                          fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-green)",
                           background: "var(--hw-green-ghost)", padding: "4px 10px", border: "2px solid var(--hw-green-border)",
                           textTransform: "uppercase" as const, letterSpacing: "2px",
                         }}>
@@ -1201,14 +1201,14 @@ export default function ArtistProfilePage() {
                           <path d="m15 5 4 4" />
                         </svg>
                       </div>
-                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" as const, color: url ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: url ? "var(--hw-green)" : "var(--hw-text-muted)" }}>
                         {isUploading ? "Uploading..." : url ? "Uploaded" : "Not uploaded"}
                       </div>
                     </div>
                     <div>
                       {url ? (
                         <span style={{
-                          fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, color: "var(--hw-green)",
+                          fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-green)",
                           background: "var(--hw-green-ghost)", padding: "4px 10px", border: "2px solid var(--hw-green-border)",
                           textTransform: "uppercase" as const, letterSpacing: "2px",
                         }}>
@@ -1293,7 +1293,7 @@ export default function ArtistProfilePage() {
           />
           <div style={{ borderTop: "2px solid var(--hw-border)", marginTop: 16, paddingTop: 12 }}>
             <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Storage Location</label>
+              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Storage Location</label>
               <input
                 style={rowInputStyle}
                 value={(artist.vehicles_equipment as any)?.storageLocation || ""}
@@ -1304,7 +1304,7 @@ export default function ArtistProfilePage() {
               />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Notes</label>
+              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Notes</label>
               <textarea
                 style={rowTextareaStyle}
                 value={(artist.vehicles_equipment as any)?.notes || ""}
@@ -1397,7 +1397,7 @@ export default function ArtistProfilePage() {
                 {w9ImportMsg}
               </div>
             ) : (
-              <div style={{ marginBottom: 10, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>
+              <div style={{ marginBottom: 10, fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>
                 Drop a W-9 PDF here to autofill
               </div>
             )}
@@ -1462,7 +1462,7 @@ export default function ArtistProfilePage() {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400,
+      fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400,
       textTransform: "uppercase" as const, letterSpacing: "4px",
       color: "var(--hw-blue)",
       borderBottom: "3px solid var(--hw-border-strong)", paddingBottom: 8, marginBottom: 16,
@@ -1497,7 +1497,7 @@ function TeamCard({
       border: "3px solid var(--hw-border-strong)",
     }}>
       <div style={{
-        fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700,
+        fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700,
         textTransform: "uppercase" as const, letterSpacing: "1.5px",
         color: "var(--hw-text-muted)", marginBottom: 10,
       }}>
@@ -1569,7 +1569,7 @@ function Accordion({
           <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>{title}</span>
           {badge && (
             <span style={{
-              fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+              fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700,
               letterSpacing: "2px", textTransform: "uppercase",
               padding: "3px 10px", border: `2px solid ${bc.border}`,
               background: bc.bg, color: bc.text,
@@ -1628,7 +1628,7 @@ function JsonFieldRows({
             alignItems: f.type === "textarea" ? "flex-start" : "center",
             padding: "8px 0", borderBottom: "2px solid var(--hw-border)",
           }}>
-            <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400, paddingTop: f.type === "textarea" ? 6 : 0 }}>
+            <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400, paddingTop: f.type === "textarea" ? 6 : 0 }}>
               {f.label}
             </label>
             {f.type === "textarea" ? (
@@ -1882,7 +1882,7 @@ function RosterSection({
                   <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>
                     {member.legalName || "Unnamed"}
                   </div>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)" }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)" }}>
                     {member.role || "No role"}{member.showDayRate ? ` \u00b7 $${member.showDayRate}/show` : ""}
                   </div>
                 </div>
@@ -1895,7 +1895,7 @@ function RosterSection({
                   >
                     &times;
                   </button>
-                  <span style={{ fontSize: 11, color: "var(--hw-text-muted)", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", display: "inline-block" }}>&#9656;</span>
+                  <span style={{ fontSize: 13, color: "var(--hw-text-muted)", transform: isOpen ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s", display: "inline-block" }}>&#9656;</span>
                 </div>
               </div>
               {isOpen && (
@@ -1972,7 +1972,7 @@ function RosterSection({
         <div style={{
           marginTop: 8,
           fontFamily: "var(--hw-font-mono)",
-          fontSize: 10,
+          fontSize: 12,
           fontWeight: 400,
           letterSpacing: "1px",
           color: "var(--hw-text-muted)",
@@ -1989,7 +1989,7 @@ function RosterSection({
 
 function RosterSubLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, color: "var(--hw-blue)", textTransform: "uppercase" as const, letterSpacing: "2px", marginTop: 14, marginBottom: 6, borderBottom: "2px solid var(--hw-border)", paddingBottom: 4 }}>
+    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-blue)", textTransform: "uppercase" as const, letterSpacing: "2px", marginTop: 14, marginBottom: 6, borderBottom: "2px solid var(--hw-border)", paddingBottom: 4 }}>
       {children}
     </div>
   );
@@ -2017,7 +2017,7 @@ function RosterMemberField({
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8, alignItems: "center", padding: "4px 0" }}>
-      <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>{label}</label>
+      <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>{label}</label>
       <input
         style={rowInputStyle}
         type={type || "text"}
@@ -2083,7 +2083,7 @@ function LodgingSection({
 
   const labelStyle: React.CSSProperties = {
     fontFamily: "var(--hw-font-mono)",
-    fontSize: 11,
+    fontSize: 13,
     letterSpacing: "1.5px",
     textTransform: "uppercase",
     color: "var(--hw-text-secondary)",
@@ -2129,7 +2129,7 @@ function LodgingSection({
 
       {/* Room list */}
       <div style={{ borderTop: "2px solid var(--hw-border)", paddingTop: 12, marginBottom: 8 }}>
-        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", marginBottom: 8 }}>
+        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", marginBottom: 8 }}>
           Room Breakdown
         </div>
         {rooms.length === 0 && (
@@ -2161,7 +2161,7 @@ function LodgingSection({
             />
             <button
               onClick={() => removeRoom(idx)}
-              style={{ padding: "4px 8px", border: "2px solid var(--hw-crimson)", background: "transparent", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 11, cursor: "pointer" }}
+              style={{ padding: "4px 8px", border: "2px solid var(--hw-crimson)", background: "transparent", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 13, cursor: "pointer" }}
             >
               ✕
             </button>
@@ -2169,7 +2169,7 @@ function LodgingSection({
         ))}
         <button
           onClick={addRoom}
-          style={{ marginTop: 4, padding: "6px 14px", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}
+          style={{ marginTop: 4, padding: "6px 14px", border: "2px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }}
         >
           + Add Room
         </button>

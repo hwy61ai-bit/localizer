@@ -102,7 +102,7 @@ export default function ExportPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
-          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
+          <Link href={`/dashboard/routing/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>HWY61</h1>
@@ -117,7 +117,7 @@ export default function ExportPage() {
                     border: item.active ? "3px solid var(--hw-border-strong)" : "3px solid transparent",
                     background: item.active ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
                     color: item.active ? "#fff" : "var(--hw-text)",
-                    textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: item.active ? 700 : 400,
+                    textDecoration: "none", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: item.active ? 700 : 400,
                     letterSpacing: "1.5px", textTransform: "uppercase",
                   }}>{item.num}. {item.label}</Link>
                 ))}
@@ -128,7 +128,7 @@ export default function ExportPage() {
 
         {/* Error */}
         {error && (
-          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>
+          <div style={{ background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "10px 16px", marginBottom: 16, fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)" }}>
             {error}
           </div>
         )}

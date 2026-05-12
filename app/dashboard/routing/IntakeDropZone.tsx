@@ -218,7 +218,7 @@ export default function IntakeDropZone({
           }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, marginBottom: 12, opacity: 0.7, color: "var(--hw-crimson)" }}>+</div>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, letterSpacing: "2px", textTransform: "uppercase", color: "#fff" }}>DROP DOCUMENT TO PROCESS</div>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", marginTop: 8 }}>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "rgba(255,255,255,0.6)", marginTop: 8 }}>
               DEAL MEMOS, SETTLEMENTS, HOTEL CONFIRMATIONS, RECEIPTS, ADVANCES
             </div>
           </div>
@@ -230,8 +230,8 @@ export default function IntakeDropZone({
         <div style={{ position: "fixed", inset: 0, zIndex: 960, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-xl)", padding: 40, textAlign: "center", maxWidth: 400 }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>PROCESSING DOCUMENT</div>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 16 }}>{fileName}</div>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", color: "var(--hw-text)" }}>{processingStep}</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 16 }}>{fileName}</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1px", color: "var(--hw-text)" }}>{processingStep}</div>
             <style>{`@keyframes intakeProgress { from { width: 0%; } to { width: 85%; } }`}</style>
             <div style={{ width: "100%", height: 4, background: "var(--hw-border)", marginTop: 16 }}>
               <div style={{ height: "100%", background: "var(--hw-crimson)", animation: "intakeProgress 15s linear forwards" }} />
@@ -242,14 +242,14 @@ export default function IntakeDropZone({
 
       {/* Saved toast */}
       {savedMsg && (
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "var(--hw-bg-invert)", color: "var(--hw-text-invert)", padding: "12px 24px", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-lg)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "var(--hw-bg-invert)", color: "var(--hw-text-invert)", padding: "12px 24px", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-lg)", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>
           {savedMsg}
         </div>
       )}
 
       {/* Error toast */}
       {error && !result && !processing && (
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "var(--hw-crimson)", color: "#fff", padding: "12px 24px", border: "3px solid var(--hw-crimson)", boxShadow: "var(--hw-shadow-lg)", fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }} onClick={() => setError(null)}>
+        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", zIndex: 970, background: "var(--hw-crimson)", color: "#fff", padding: "12px 24px", border: "3px solid var(--hw-crimson)", boxShadow: "var(--hw-shadow-lg)", fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer" }} onClick={() => setError(null)}>
           {error} (CLICK TO DISMISS)
         </div>
       )}
@@ -268,7 +268,7 @@ export default function IntakeDropZone({
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)" }}>
               <div>
                 <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>REVIEW EXTRACTED DATA</div>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{fileName}</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>{fileName}</div>
               </div>
               <button onClick={closeReview} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--hw-text-muted)" }}>&times;</button>
             </div>
@@ -276,7 +276,7 @@ export default function IntakeDropZone({
             {/* Document type */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: "0 24px", marginTop: 16, marginBottom: 16 }}>
               <div>
-                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>DOCUMENT TYPE</label>
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>DOCUMENT TYPE</label>
                 <select
                   value={editedType}
                   onChange={(e) => setEditedType(e.target.value)}
@@ -285,13 +285,13 @@ export default function IntakeDropZone({
                   {Object.entries(DOC_TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
                 {result.documentTypeConfidence < 0.8 && result.suggestedTypes.length > 0 && (
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, color: "var(--hw-amber)", marginTop: 4 }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-amber)", marginTop: 4 }}>
                     Low confidence ({Math.round(result.documentTypeConfidence * 100)}%). Also consider: {result.suggestedTypes.map((t) => DOC_TYPE_LABELS[t] || t).join(", ")}
                   </div>
                 )}
               </div>
               <div>
-                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>MATCHED SHOW</label>
+                <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", display: "block", marginBottom: 6 }}>MATCHED SHOW</label>
                 <select
                   value={editedShowId || ""}
                   onChange={(e) => setEditedShowId(e.target.value || null)}
@@ -301,14 +301,14 @@ export default function IntakeDropZone({
                   {(shows || []).map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                 </select>
                 {result.matchedShowId && (
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, marginTop: 4, color: result.matchedShowConfidence >= 0.8 ? "var(--hw-green)" : "var(--hw-amber)" }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, marginTop: 4, color: result.matchedShowConfidence >= 0.8 ? "var(--hw-green)" : "var(--hw-amber)" }}>
                     {result.matchedShowConfidence >= 0.8
                       ? `Auto-matched (${Math.round(result.matchedShowConfidence * 100)}% confidence)`
                       : `Low confidence match (${Math.round(result.matchedShowConfidence * 100)}%) — please verify`}
                   </div>
                 )}
                 {!result.matchedShowId && (
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, marginTop: 4, color: "var(--hw-text-muted)" }}>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, marginTop: 4, color: "var(--hw-text-muted)" }}>
                     No show auto-matched — please select from the list
                   </div>
                 )}
@@ -316,7 +316,7 @@ export default function IntakeDropZone({
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", gap: 12, padding: "0 24px", marginBottom: 12, fontFamily: "var(--hw-font-mono)", fontSize: 9, letterSpacing: "1px", textTransform: "uppercase" }}>
+            <div style={{ display: "flex", gap: 12, padding: "0 24px", marginBottom: 12, fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", textTransform: "uppercase" }}>
               <span><span style={{ display: "inline-block", width: 10, height: 10, background: "var(--hw-green-ghost)", border: "2px solid var(--hw-green-border)", marginRight: 4 }} />Auto-confirmed</span>
               <span><span style={{ display: "inline-block", width: 10, height: 10, background: "var(--hw-amber-ghost)", border: "2px solid var(--hw-amber)", marginRight: 4 }} />Review</span>
               <span><span style={{ display: "inline-block", width: 10, height: 10, background: "var(--hw-red-ghost)", border: "2px solid var(--hw-crimson)", marginRight: 4 }} />Confirm required</span>
@@ -329,7 +329,7 @@ export default function IntakeDropZone({
                 const isObject = typeof val === "object";
                 return (
                   <div key={key} style={{ gridColumn: isObject || String(val).length > 60 ? "1 / -1" : undefined }}>
-                    <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 10, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>
+                    <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", display: "block", marginBottom: 4 }}>
                       {key.replace(/_/g, " ")}
                       {result.confidence[key] !== undefined && (
                         <span style={{ marginLeft: 4, color: result.confidence[key] >= 0.95 ? "var(--hw-green)" : result.confidence[key] >= 0.75 ? "var(--hw-amber)" : "var(--hw-crimson)" }}>
@@ -357,7 +357,7 @@ export default function IntakeDropZone({
             </div>
 
             {error && (
-              <div style={{ margin: "0 24px 12px", background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "8px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-crimson)" }}>{error}</div>
+              <div style={{ margin: "0 24px 12px", background: "var(--hw-red-ghost)", border: "3px solid var(--hw-crimson)", padding: "8px 12px", fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)" }}>{error}</div>
             )}
 
             {/* Actions */}
