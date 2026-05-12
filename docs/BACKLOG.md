@@ -150,32 +150,6 @@ Found in QA report 2026-04-14. Single-file fix.
 
 ---
 
-### BUG-E — `render_poster_url` dead column in venue_links
-
-Four download routes (`app/api/download/route.ts`,
-`app/api/download/marketing/route.ts`,
-`app/api/download-all/route.ts`,
-`app/api/download-all/marketing/route.ts`) still `SELECT
-render_poster_url` from `venue_links`. The `tour_poster` format
-was removed from the codebase March 25, so this column is always
-null for post-March-25 renders. Routes filter it out with
-`.filter((a) => !!a.url)` before zipping, so no runtime impact.
-
-Schema check on 2026-04-14 confirmed the column still exists in
-`venue_links` (not dropped). LOW cleanup: either remove from
-selects or drop from schema.
-
-Found in QA report 2026-04-14.
-
-**Resolution (2026-04-14):** Closed as misdiagnosis. No code change required.
-
-- Verified: `render_poster_url` is a LIVE column on the `venue_links` table (90 rows total, 9 populated).
-- It is written by the Print Poster render pipeline (`lib/clientRender.ts` + `app/api/renders/print-pdf/route.ts`) and read correctly by all 4 download routes alongside the other 5 render format URLs.
-- The low population rate reflects that Print Poster is an optional/opt-in format, not that the column is dead.
-- Stripping these references would break tour poster downloads for the 9 venue_links that have rendered posters.
-
----
-
 ### Centralize `ADMIN_EMAILS` constant
 
 Admin emails (`hwy61ai@gmail.com`, `tentenpm@gmail.com`) are
@@ -516,24 +490,6 @@ Total work: ~10 minutes. Zero new code, pure deletion. Low risk on a calm day wi
 
 ---
 
-### Drive-info cache writes bleed in Vercel serverless
-
-*Surfaced 2026-05-11 during country-aware geocoding fix verification.*
-
-Both `cacheGeocode` and `cacheDriveInfo` in `lib/tourrouter/mapbox.ts` are called fire-and-forget (no `await`, no `waitUntil`) from `app/api/tourrouter/drive-info/route.ts`. The Vercel function tears down on response return, killing the cache writes before they complete. Confirmed by querying `drive_cache` after the fix deployed — zero rows from the past 30 minutes despite ~9 drive-info calls per Cal's Cutoff page load. Same for `geocode_cache`: `cambridge` and `washington` timestamps unchanged from before deploy.
-
-**Why this got worse after the May 11 fix.** The old path took 2–3 seconds per drive-info call (legacy `geocodeCity` did its own Mapbox geocoding twice, plus the Directions call). Background writes had that whole window to land. The new path drops total request time to ~500–1000ms (in-memory cache hits for the geocoding step), shrinking the fire-and-forget window. Same writer code, less time, fewer landings.
-
-**Functional impact:** none user-facing. Drive times are correct on every page load — they just always come from a fresh Mapbox call instead of `drive_cache`. Wastes API quota: 10-show tour ≈ 9 directions calls per page load, multiplied across every routing-page visit. Currently <1% of Mapbox free tier, but Tim's beta users will multiply traffic.
-
-**Fix:** either `await cacheDriveInfo(...)` (adds ~50–200ms per drive-info response, predictable) or `import { waitUntil } from 'next/server'` and wrap the cache write (non-blocking, Vercel-aware). Same pattern for `cacheGeocode` — though once `geocode_cache` is dropped (separate backlog item below) those writes go away entirely.
-
-Effort: ~30 minutes.
-
-**Resolution (2026-05-11):** Fixed via three commits (d369b71, f8381dc, 9540155). Bleed was actually three nested failure modes: (1) fire-and-forget teardown as suspected, (2) silent HTTP error swallowing in cacheGeocode/cacheDriveInfo, (3) `drive_seconds` integer column rejecting Mapbox's float `route.duration`. All three fixed; verified 9 fresh rows in drive_cache on Cal's Cutoff page refresh. See SESSION_LOG.md 2026-05-11 (continued) for the full diagnostic arc. Actual effort: ~75 minutes (vs estimated 30).
-
----
-
 ### Delete `geocodeCity` / `cacheGeocode` and drop `geocode_cache` table
 
 *Surfaced 2026-05-11 as Phase 3 follow-up to the country-aware geocoding fix.*
@@ -595,6 +551,54 @@ The five `(chicago, il → chicago, il)` zero-distance fossil rows in `drive_cac
 **Fix:** add `origin_country text` and `dest_country text` columns, update the unique constraint to `(origin_city, origin_country, dest_city, dest_country)`, update `cacheDriveInfo` in `mapbox.ts` to write country, update the `drive_cache` lookup query in `getDriveInfo` to filter on country. Old rows without country can either be backfilled from resolved coords or just left to age out as new lookups write fresh rows.
 
 Effort: ~1 hour including migration, writer update, reader update, and verifying existing rows behave.
+
+---
+
+## Resolved
+
+*Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### BUG-E — `render_poster_url` dead column in venue_links
+
+Four download routes (`app/api/download/route.ts`,
+`app/api/download/marketing/route.ts`,
+`app/api/download-all/route.ts`,
+`app/api/download-all/marketing/route.ts`) still `SELECT
+render_poster_url` from `venue_links`. The `tour_poster` format
+was removed from the codebase March 25, so this column is always
+null for post-March-25 renders. Routes filter it out with
+`.filter((a) => !!a.url)` before zipping, so no runtime impact.
+
+Schema check on 2026-04-14 confirmed the column still exists in
+`venue_links` (not dropped). LOW cleanup: either remove from
+selects or drop from schema.
+
+Found in QA report 2026-04-14.
+
+**Resolution (2026-04-14):** Closed as misdiagnosis. No code change required.
+
+- Verified: `render_poster_url` is a LIVE column on the `venue_links` table (90 rows total, 9 populated).
+- It is written by the Print Poster render pipeline (`lib/clientRender.ts` + `app/api/renders/print-pdf/route.ts`) and read correctly by all 4 download routes alongside the other 5 render format URLs.
+- The low population rate reflects that Print Poster is an optional/opt-in format, not that the column is dead.
+- Stripping these references would break tour poster downloads for the 9 venue_links that have rendered posters.
+
+---
+
+### Drive-info cache writes bleed in Vercel serverless
+
+*Surfaced 2026-05-11 during country-aware geocoding fix verification.*
+
+Both `cacheGeocode` and `cacheDriveInfo` in `lib/tourrouter/mapbox.ts` are called fire-and-forget (no `await`, no `waitUntil`) from `app/api/tourrouter/drive-info/route.ts`. The Vercel function tears down on response return, killing the cache writes before they complete. Confirmed by querying `drive_cache` after the fix deployed — zero rows from the past 30 minutes despite ~9 drive-info calls per Cal's Cutoff page load. Same for `geocode_cache`: `cambridge` and `washington` timestamps unchanged from before deploy.
+
+**Why this got worse after the May 11 fix.** The old path took 2–3 seconds per drive-info call (legacy `geocodeCity` did its own Mapbox geocoding twice, plus the Directions call). Background writes had that whole window to land. The new path drops total request time to ~500–1000ms (in-memory cache hits for the geocoding step), shrinking the fire-and-forget window. Same writer code, less time, fewer landings.
+
+**Functional impact:** none user-facing. Drive times are correct on every page load — they just always come from a fresh Mapbox call instead of `drive_cache`. Wastes API quota: 10-show tour ≈ 9 directions calls per page load, multiplied across every routing-page visit. Currently <1% of Mapbox free tier, but Tim's beta users will multiply traffic.
+
+**Fix:** either `await cacheDriveInfo(...)` (adds ~50–200ms per drive-info response, predictable) or `import { waitUntil } from 'next/server'` and wrap the cache write (non-blocking, Vercel-aware). Same pattern for `cacheGeocode` — though once `geocode_cache` is dropped (separate backlog item below) those writes go away entirely.
+
+Effort: ~30 minutes.
+
+**Resolution (2026-05-11):** Fixed via three commits (d369b71, f8381dc, 9540155). Bleed was actually three nested failure modes: (1) fire-and-forget teardown as suspected, (2) silent HTTP error swallowing in cacheGeocode/cacheDriveInfo, (3) `drive_seconds` integer column rejecting Mapbox's float `route.duration`. All three fixed; verified 9 fresh rows in drive_cache on Cal's Cutoff page refresh. See SESSION_LOG.md 2026-05-11 (continued) for the full diagnostic arc. Actual effort: ~75 minutes (vs estimated 30).
 
 ---
 
@@ -688,3 +692,4 @@ Effort: ~2 minutes.
 Effort: ~5 minutes including a clean build and one verification cycle.
 
 **Resolution (2026-05-12):** Fixed in commit e710dd7 — added `fetched_at: new Date().toISOString()` to the `cacheDriveInfo` POST body in `lib/tourrouter/mapbox.ts`. PostgREST `Prefer: resolution=merge-duplicates` now writes the column on both INSERT and UPDATE paths. Verified in production by deleting `(cambridge → brooklyn)` from `drive_cache`, hard-refreshing Cal's Cutoff, and confirming the row repopulated with a current timestamp while the other two Monday-fixed legs retained their original timestamps (correct read-through cache behavior).
+
