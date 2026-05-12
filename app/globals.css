@@ -18,7 +18,7 @@
   --hw-green:         #5a9e6a;
   --hw-green-ghost:   rgba(90,158,106,0.1);
   --hw-green-border:  rgba(90,158,106,0.25);
-  --hw-amber:         #c49a3c;
+  --hw-amber:         #946F1F;
   --hw-amber-ghost:   rgba(196,154,60,0.1);
   --hw-red:           #c5535b;
   --hw-red-ghost:     rgba(197,83,91,0.08);
@@ -32,7 +32,7 @@
   /* ---- Text ---- */
   --hw-text:          #1A1A1A;
   --hw-text-secondary:#4A4540;
-  --hw-text-muted:    #8A8580;
+  --hw-text-muted:    #6B6661;
   --hw-text-invert:   #F5F0E8;
 
   /* ---- Borders ---- */

@@ -15,6 +15,9 @@
   box-shadow: var(--hw-shadow-xl);
   max-width: 480px;
   width: 90%;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
 }
 
 .wide {
@@ -55,6 +58,8 @@
 
 .body {
   padding: 24px;
+  overflow-y: auto;
+  flex: 1;
   font-family: var(--hw-font-body);
   font-size: 15px;
   font-weight: 300;
