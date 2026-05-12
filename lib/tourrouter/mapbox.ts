@@ -291,6 +291,7 @@ export async function cacheDriveInfo(
         drive_seconds: Math.round(info.driveSeconds),
         drive_hours: info.driveHours,
         route_summary: info.routeSummary,
+        fetched_at: new Date().toISOString(),
       }),
       cache: 'no-store',
     }
