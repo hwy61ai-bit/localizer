@@ -142,7 +142,7 @@ Effort: 30-60 min once root cause is found.
 
 ---
 
-## 🟢 Ready to build (6)
+## 🟢 Ready to build (7)
 
 *Scoped, unblocked, just needs a session.*
 
@@ -235,6 +235,20 @@ Effort: ~1 hour including migration, writer update, reader update, and verifying
 
 ---
 
+### Kurt Penny notes — batch 2 (template editor UX)
+
+*Surfaced 2026-05-12 in Kurt's original beta-feedback email. The first 10 notes shipped today; these three were missed in the initial pass and need their own design session. Treat as a coherent design batch, not individual bugs.*
+
+**#1 — Checkbox-to-reveal pattern + Band Name consolidation:** Currently field visibility (showVenue/showCity/showDate checkboxes) is decoupled from field controls (sliders, color, position in the TEXT SIZES card). Kurt suggests folding them: checking the box reveals that field's full control set. Also consolidate the separate Band Name panel into the same City/Venue/Date panel — currently Band Name has its own card.
+
+**#2 — Group related options near what they modify:** "Short date" and "All caps" currently sit at the end of the sidebar in their own panels. Kurt suggests moving them adjacent to City/Venue/Date where they apply. Short date is Date-specific. All caps applies to all text fields — TBD whether it stays global or becomes per-field.
+
+**#3 — Wide horizontal stepper, not stacked vertical:** The workflow nav (1. IMPORT → 2. ARTIST → 3. GIGS → 4. ASSETS → 5. TEMPLATE) currently reads as a stacked vertical list. Kurt argues a horizontal stepper better communicates linear forward motion through a process, while stacked layouts read as a single-page outline. Trade-off: narrow laptop widths might truncate stepper labels or push content below the fold. Worth a sketch before committing to a redesign.
+
+**Effort estimate:** Half-day to full-day session, depending on how much of #3 ends up in scope. #1 and #2 are the biggest UX wins — both restructure the template editor sidebar. #3 is a separate concern (workflow nav, not sidebar) and might warrant its own session.
+
+---
+
 ## ⚪ Awaiting Tim (5)
 
 *Blocked on his decision, copy, or sign-off.*
@@ -319,7 +333,7 @@ Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three su
 
 ---
 
-## ⏳ Soak items (3)
+## ⏳ Soak items (4)
 
 *Waiting on production data or time to pass.*
 
@@ -396,6 +410,25 @@ Country was enough to fix the May 11 bug (Washington D.C. vs WA State, Cambridge
 Defer until the country-only fix has soaked and we see whether state-level ambiguity actually surfaces in real beta tours. Probably will — Springfield, Portland, and Columbus are real touring markets.
 
 Effort: 4–6 hours including testing.
+
+---
+
+### Supabase Data API grant change — Oct 29-30, 2026 verification
+
+*Surfaced 2026-05-13 from a Supabase email announcing the rollout.*
+
+Starting Oct 30, 2026, Supabase removes the default Data API grant on public-schema tables for all existing projects. New tables created after that date require explicit GRANT statements for anon/authenticated/service_role roles. Existing tables (drive_cache, tours, artists, etc.) keep their current grants and are unaffected.
+
+**Status:**
+- CLAUDE.md rule added 2026-05-13 enforcing explicit GRANTs on new-table migrations going forward.
+- No action needed until Oct 29.
+
+**Oct 29 verification (one-time, ~10 min):**
+- Re-read Supabase's latest docs on the rollout — confirm scope hasn't changed
+- Spot-check that the standard new-table pattern still works in this project
+- Verify public viewer routes (/v/**, /advance/**, /report/**) still serve anonymous traffic correctly the day after the cutoff
+
+**Fail-loud safety net:** if a GRANT is forgotten post-Oct-30, PostgREST returns 42501 with the exact GRANT statement to paste.
 
 ---
 

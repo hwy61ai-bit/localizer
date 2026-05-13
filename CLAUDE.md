@@ -58,6 +58,28 @@ These are the rules that silently break production when violated. Do not deviate
 
 17. **When committing code, never add a Co-Authored-By trailer to the commit message** (e.g. `Co-Authored-By: Claude <noreply@anthropic.com>`). Commits should be attributed to the user only. This applies to all commit messages you write via `git commit -m`, `git commit -F`, or any other method.
 
+18. **Explicit GRANTs on new public-schema tables.** When creating a new table in the public schema, the migration SQL must include explicit GRANT statements alongside ENABLE RLS + CREATE POLICY. Starting Oct 30, 2026, Supabase removes the default Data API grant; without explicit GRANTs, supabase-js will return 42501. Existing tables are unaffected and keep their current grants.
+
+    ```sql
+    CREATE TABLE public.your_table (
+      id uuid primary key default gen_random_uuid()
+      -- columns...
+    );
+
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.your_table TO authenticated;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.your_table TO service_role;
+    -- GRANT SELECT ON public.your_table TO anon;  -- only for tokenized public viewer access
+
+    ALTER TABLE public.your_table ENABLE ROW LEVEL SECURITY;
+
+    CREATE POLICY "org_access" ON public.your_table
+      FOR ALL USING (
+        org_id IN (SELECT org_id FROM org_members WHERE user_id = auth.uid())
+      );
+    ```
+
+    Fail-loud safety net: if a GRANT is forgotten post-Oct-30, PostgREST returns 42501 with the exact GRANT statement to paste.
+
 ---
 
 ## Workflow rules
