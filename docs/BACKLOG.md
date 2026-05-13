@@ -142,23 +142,13 @@ Effort: 30-60 min once root cause is found.
 
 ---
 
-## 🟢 Ready to build (7)
+## 🟢 Ready to build (5)
 
 *Scoped, unblocked, just needs a session.*
 
 ### Unit D — Rate limiting (Upstash Redis)
 
 Fourth unit of the April 9 freemium work, not started. Tim's decision doc specifies Upstash Redis with four priority tiers: AI parsing routes (50/hr/org), venue/contact reads (200/hr/org), exports (30/hr/org), everything else (500/hr/org). Returns 429 with `Retry-After` header on limit. Scoped for roughly 90 minutes when tackled fresh. Deferred to a future session because Tim's Localizer bug (discovered mid-session) took priority and consumed the remaining time in the April 9 session.
-
----
-
-### Template editor stale video preview on asset replacement
-
-When a user replaces a video in Import Assets and navigates to the template editor without a full page reload, the editor displays the old video instead of the newly uploaded one. Hard refresh (Cmd+Shift+R) resolves it. Likely cause: either browser video caching keyed on a stable URL, or stale React state in the template editor component not reacting to prop changes on navigation. Not a data integrity issue — the database and render pipeline correctly use the new video. Only the in-page preview is stale.
-
-Discovered April 10, 2026 during post-session testing on production. Affected artist: Uncle Lucius.
-
-Fix options: (a) include a version/timestamp query param in the template editor's video src so the browser treats new uploads as different URLs, (b) reload the tour state from the server on asset-replacement events, or (c) add a `key` prop to the video element that changes on replacement so React remounts it. Option (a) is probably the simplest and most robust.
 
 ---
 
@@ -201,23 +191,6 @@ In practice this hasn't been exploited because only dashboard code calls it and 
 - Pattern to follow: app/api/marketing-tokens/create/route.ts already does this correctly — model after it.
 
 **Priority:** Low-medium. Hygiene, not a user-facing bug. Belongs in a pre-launch security hygiene pass rather than a standalone urgent fix.
-
----
-
-### Router cache stale UI on template editor — needs different fix
-
-*Surfaced April 18, 2026. Two attempted fixes (`export const dynamic = "force-dynamic"` and `export const revalidate = 0`) worked in `npm run dev` but triggered an unrelated production failure on Vercel that broke Re-Generate All (count: 0 with no Cloudinary calls) and venue link page asset rendering. Both cache-fix commits reverted (f3eae0d + 2c7ff86).*
-
-**The bug:** On the template editor page (`/dashboard/tours/[tourId]/template`), after a user saves changes and navigates away via Next.js client-side navigation, returning to the editor shows stale UI state. The server sends fresh data in the response HTML (confirmed via response body inspection), but React client-side state from the earlier visit is preserved and displayed instead. Workaround: hard refresh or incognito session.
-
-**Only affects returning users within the same browser session.** First-visit users (including new sessions, incognito, hard refresh) always see fresh data.
-
-**Candidate fixes to try:**
-- `revalidatePath("/dashboard/tours/[tourId]/template")` called from the mutation routes (`/api/tours/[tourId]/overlay-config` and any others that update tour state)
-- Move the editor's data loading to a client-side SWR-style fetch pattern so stale state naturally gets invalidated on mutation
-- Investigate whether the prod-only failure from `revalidate = 0` is specifically related to authentication or edge caching, in which case a more targeted directive might work
-
-**Not blocking beta launch.** User just needs to know "hard refresh if something looks stale." But should be fixed before Tim's full rollout to paying customers.
 
 ---
 
@@ -805,3 +778,34 @@ Debug data captured:
 4. If image formats also show the stale-URL issue, the fix is the same mechanism and covers images too. If only video formats, look for a video-specific render path.
 
 **Resolution (2026-05-12):** Verified working in production on this date. Pulled the DB row for the original-bug Memphis venue link (token 974351a5e0c51b5aae02a76140a9e7dd538315cfd3d6b41ff05d3ed6623c9e5b), opened the venue link page `/v/e/[token]` in incognito on hwy61labs.com, and grabbed the served TikTok URL from the page source. Compared against the DB value: byte-for-byte identical. All four diagnostic markers from the original bug entry matched — public ID `tour_b7b9da2f-55c3-477b-a92c-7a5bf87c3d24_tiktok_1773703791368`, band logo at `h_510` (not the old `h_560`), sponsor logo `l_fetch` block present, custom text `l_text` block with "SHORTS TEST 20:35" present. The cache-serving-stale-snapshots behavior is no longer reproducing. Exact mechanism of the fix is unknown — could have been an explicit cache directive added to the `/v/e/[token]` route, deployment-level change, or incidental fix from related work. User-workflow verification is sufficient.
+
+---
+
+### Template editor stale video preview on asset replacement
+
+When a user replaces a video in Import Assets and navigates to the template editor without a full page reload, the editor displays the old video instead of the newly uploaded one. Hard refresh (Cmd+Shift+R) resolves it. Likely cause: either browser video caching keyed on a stable URL, or stale React state in the template editor component not reacting to prop changes on navigation. Not a data integrity issue — the database and render pipeline correctly use the new video. Only the in-page preview is stale.
+
+Discovered April 10, 2026 during post-session testing on production. Affected artist: Uncle Lucius.
+
+Fix options: (a) include a version/timestamp query param in the template editor's video src so the browser treats new uploads as different URLs, (b) reload the tour state from the server on asset-replacement events, or (c) add a `key` prop to the video element that changes on replacement so React remounts it. Option (a) is probably the simplest and most robust.
+
+**Resolution (2026-05-13):** Fixed in commit 34dc628 — `Refetch tour image IDs in template editor on mount and tab visibility`. Effectively implemented fix option (b) from the entry body — "reload the tour state from the server on asset-replacement events." Surfaced via Rule 14 verification pass on 2026-05-13. Resolved on commit-message evidence; not empirically re-verified.
+
+---
+
+### Router cache stale UI on template editor — needs different fix
+
+*Surfaced April 18, 2026. Two attempted fixes (`export const dynamic = "force-dynamic"` and `export const revalidate = 0`) worked in `npm run dev` but triggered an unrelated production failure on Vercel that broke Re-Generate All (count: 0 with no Cloudinary calls) and venue link page asset rendering. Both cache-fix commits reverted (f3eae0d + 2c7ff86).*
+
+**The bug:** On the template editor page (`/dashboard/tours/[tourId]/template`), after a user saves changes and navigates away via Next.js client-side navigation, returning to the editor shows stale UI state. The server sends fresh data in the response HTML (confirmed via response body inspection), but React client-side state from the earlier visit is preserved and displayed instead. Workaround: hard refresh or incognito session.
+
+**Only affects returning users within the same browser session.** First-visit users (including new sessions, incognito, hard refresh) always see fresh data.
+
+**Candidate fixes to try:**
+- `revalidatePath("/dashboard/tours/[tourId]/template")` called from the mutation routes (`/api/tours/[tourId]/overlay-config` and any others that update tour state)
+- Move the editor's data loading to a client-side SWR-style fetch pattern so stale state naturally gets invalidated on mutation
+- Investigate whether the prod-only failure from `revalidate = 0` is specifically related to authentication or edge caching, in which case a more targeted directive might work
+
+**Not blocking beta launch.** User just needs to know "hard refresh if something looks stale." But should be fixed before Tim's full rollout to paying customers.
+
+**Resolution (2026-05-13):** Fixed in commit a580240 — `fix(template editor): invalidate Router Cache on save to prevent stale state on client-side back-navigation`. Targeted fix that avoided the prod-breaking `force-dynamic` / `revalidate=0` patterns from the reverted f3eae0d / 2c7ff86. Surfaced via Rule 14 verification pass on 2026-05-13; entry sat unmoved because no one tracked it back after the fix shipped.
