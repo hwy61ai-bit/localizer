@@ -194,30 +194,34 @@ export async function getDriveInfo(
 ): Promise<DriveInfo> {
   const originKey = originCity.toLowerCase().trim();
   const destKey = destCity.toLowerCase().trim();
+  const oc = (originCountry || '').toUpperCase().trim();
+  const dc = (destCountry || '').toUpperCase().trim();
 
-  // 1. Check drive_cache table
-  const cacheResp = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/drive_cache?origin_city=eq.${encodeURIComponent(originKey)}&dest_city=eq.${encodeURIComponent(destKey)}&select=distance_km,distance_miles,drive_seconds,drive_hours,route_summary&limit=1`,
-    {
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
-      },
-      cache: 'no-store',
-    }
-  );
+  // 1. Check drive_cache table (skip when either country is missing — incomplete data)
+  if (oc && dc) {
+    const cacheResp = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/drive_cache?origin_city=eq.${encodeURIComponent(originKey)}&origin_country=eq.${encodeURIComponent(oc)}&dest_city=eq.${encodeURIComponent(destKey)}&dest_country=eq.${encodeURIComponent(dc)}&select=distance_km,distance_miles,drive_seconds,drive_hours,route_summary&limit=1`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+        cache: 'no-store',
+      }
+    );
 
-  if (cacheResp.ok) {
-    const rows = await cacheResp.json();
-    if (rows.length > 0) {
-      const r = rows[0];
-      return {
-        distanceKm: Number(r.distance_km),
-        distanceMiles: Number(r.distance_miles),
-        driveSeconds: Number(r.drive_seconds),
-        driveHours: Number(r.drive_hours),
-        routeSummary: r.route_summary || '',
-      };
+    if (cacheResp.ok) {
+      const rows = await cacheResp.json();
+      if (rows.length > 0) {
+        const r = rows[0];
+        return {
+          distanceKm: Number(r.distance_km),
+          distanceMiles: Number(r.distance_miles),
+          driveSeconds: Number(r.drive_seconds),
+          driveHours: Number(r.drive_hours),
+          routeSummary: r.route_summary || '',
+        };
+      }
     }
   }
 
@@ -262,12 +266,18 @@ export async function getDriveInfo(
  */
 export async function cacheDriveInfo(
   originCity: string,
+  originCountry: string,
   destCity: string,
+  destCountry: string,
   originCoords: { lat: number; lng: number },
   destCoords: { lat: number; lng: number },
   info: DriveInfo,
   serviceRoleKey: string
 ): Promise<void> {
+  const oc = (originCountry || '').toUpperCase().trim();
+  const dc = (destCountry || '').toUpperCase().trim();
+  if (!oc || !dc) return;
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/drive_cache`,
     {
@@ -280,9 +290,11 @@ export async function cacheDriveInfo(
       },
       body: JSON.stringify({
         origin_city: originCity.toLowerCase().trim(),
+        origin_country: oc,
         origin_lat: originCoords.lat,
         origin_lng: originCoords.lng,
         dest_city: destCity.toLowerCase().trim(),
+        dest_country: dc,
         dest_lat: destCoords.lat,
         dest_lng: destCoords.lng,
         distance_km: info.distanceKm,

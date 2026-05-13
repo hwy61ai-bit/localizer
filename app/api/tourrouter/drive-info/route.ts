@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     // Cache drive result if we have service role key
     if (serviceRoleKey) {
       try {
-        await cacheDriveInfo(originCity, destCity, origin, dest, info, serviceRoleKey);
+        await cacheDriveInfo(originCity, originCountry, destCity, destCountry, origin, dest, info, serviceRoleKey);
       } catch (e) {
         console.warn('[drive-info] cacheDriveInfo write failed:', e);
       }
