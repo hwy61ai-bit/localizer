@@ -3108,3 +3108,36 @@ Workflow rules now total 14. Both rules used immediately at end of today's sessi
 - Color-contrast and font-size passes both ran as "single token edit / single regex pass = N hundred propagated changes" — payoff of CSS variables and consistent inline-style conventions. Net change: 5 small edits in `globals.css` and `HwModal.module.css`, plus 433 inline `fontSize:` replacements, plus 22 inline button-color replacements. All low-risk, high-leverage.
 - Rule 13 (BACKLOG reconciliation) used at session end — confirmed no open items needed to move. Today's work was net-new improvement, not resolution of prior tracked items. Reconciliation took ~5 minutes; would have caught a missed resolution had there been one.
 - Mid-pass on button-color decoupling, user flagged a still-red Confirm Import button on the Localizer schedule import page. Re-grepped the file, found two missed buttons (`parseBtn` and `confirmBtn` style objects), shipped follow-up commit e9ae45f. Lesson: when the inventory pass relies on grepping for a usage pattern (here, `background: var(--hw-crimson)` on inline-styled buttons), styles defined as object literals in a `const s = { ... }` style dictionary at the bottom of the file are easy to miss because they're declarative rather than inline-rendered. Future inventory passes should grep for the pattern AND scan style-dictionary objects.
+
+## 2026-05-13 — Five-item Kurt + geocoding + Rule 14 day
+
+**Commits:**
+- 6266023 — feat(template editor): consolidate Short Date Format and All Caps toggles into Venue/City/Date card (Kurt batch 2 item 2)
+- a4a9f07 — feat(tourrouter): country-aware drive_cache (Phase 2)
+- 18a022e — docs: migration discipline rule for Supabase Oct 2026 grant change
+- a137e27 — docs: mark two template editor bugs Resolved (Rule 14 verification pass)
+- dfb3c5c — feat(tourrouter): add drag-drop to PASTE TEXT / CSV card on import page (work completed 2026-05-13, committed 2026-05-14)
+- af0016e — docs: mark Kurt batch 2 item #2 shipped in BACKLOG (reconcile, committed 2026-05-14)
+
+**Kurt batch 2 — item #2 shipped.** Consolidated Short Date Format and All Caps toggles into the Venue/City/Date card on the template editor. The two toggles previously sat stranded at the bottom of the sidebar, four cards below the field-visibility checkboxes for the fields they actually modify. Moved them in under a horizontal divider with the existing field-visibility checkboxes. Also fixed the vestigial "Venue, city & state in uppercase" caption to "Venue and city in uppercase" (state was merged into city in April). Items #1 (checkbox-to-reveal + Band Name consolidation) and #3 (horizontal stepper) still open.
+
+**Country-aware drive_cache (Phase 2) — shipped.** Schema migration added `origin_country` and `dest_country` NOT NULL columns, swapped unique constraint to include them. Code changes in `lib/tourrouter/mapbox.ts` (getDriveInfo filters cache on country, cacheDriveInfo writes country with `.toUpperCase().trim()` normalization mirroring cacheKey, defensive guard skips cache entirely when either country is empty — handles off-day rows) and `app/api/tourrouter/drive-info/route.ts` (passes country into cacheDriveInfo). The 55 existing pre-Phase-2 rows were truncated as part of the migration since cache data is regeneratable. Verified working in production today (2026-05-14): 38 rows in drive_cache, all with country populated, zero NULL/empty country fields. Disambiguation between same-named cities (Paris-FR vs Paris-TX, London-UK vs London-ON) is now structurally enforced.
+
+**CLAUDE.md rule 18 + BACKLOG entry for Supabase Oct 2026 grant change.** Reactive to a Supabase email announcing the default Data API grant on public-schema tables will be removed Oct 30, 2026. New rule formalizes the standard new-table SQL pattern (CREATE TABLE + explicit GRANTs for authenticated/service_role + ENABLE RLS + CREATE POLICY) so the discipline is in place before the cutoff. BACKLOG soak entry tracks Oct 29 verification work.
+
+**Rule 14 verification pass — two stale entries moved to Resolved.** Deliberate verification of the two items the kickoff doc flagged as "possibly already stale." Both turned out to be quietly fixed in earlier commits but never moved out of 🟢 Ready to build. Router cache stale UI on template editor: fixed in a580240 (targeted router cache invalidation on save, avoiding the prod-breaking force-dynamic / revalidate=0 patterns from f3eae0d / 2c7ff86). Stale video preview on asset replacement: fixed in 34dc628 (refetch tour image IDs on mount + tab visibility). Rule 14 paid for itself on its first deliberate run.
+
+**TourRouter import drop zone — feature add, not bug fix.** The BACKLOG entry described a drag-drop regression. Investigation showed the two actual drop zones (UPLOAD SPREADSHEET, UPLOAD DEAL MEMO) worked correctly — the entry conflated them with the PASTE TEXT / CSV card, which was paste-only by design and never had drag-drop wired. Added drag-drop on the paste card for visual + functional parity. Mirrors the spreadsheet card pattern, reuses handleSpreadsheetDrop, click still opens the paste modal. Closed via feature add rather than regression fix.
+
+**Post-session verification today (2026-05-14) and a methodology-driven detour.** Confirmed Phase 2 is live in production. Briefly went down the wrong path — verification query filtered to "rows from past 15 minutes," which returned zero. Misread this as "the fire-and-forget bug is killing Phase 2 writes in prod." Claude Code traced the route handler and correctly pushed back: the fire-and-forget bug was already fixed on 2026-05-11 (commits d369b71, f8381dc, 9540155), and the current code awaits both cache writes inside try/catch. The 15-minute filter just excluded yesterday's correctly-written rows. ~45 minutes diagnosing a phantom.
+
+**Lessons reinforced:**
+
+- Verification queries need to answer the question you actually want answered. "Past 15 minutes" answered "is the cache being written to right now," not "did Phase 2 ship its benefit." Better verification: `count(*), max(fetched_at) FROM drive_cache`. State the question explicitly before writing the query.
+- Trace-first prompts create the space for premise pushback. If the prompt is "fix this bug," the model fixes it. If the prompt is "read the relevant files and report, no edits yet," the model has room to flag that the premise is wrong. The fire-and-forget pushback today only happened because the prompt asked for a trace before a fix. Treat "trace before fix" as the default pattern for any diagnostic work.
+- Rule 14 catches real things. First deliberate audit pass closed two stale entries that would have sat indefinitely otherwise.
+
+**Next session should start with:**
+
+- Open candidates: Kurt batch 2 items #1 (checkbox-to-reveal + Band Name consolidation) or #3 (horizontal stepper), Unit D rate limiting (still well-scoped, ~90 min, no blockers), or Localizer launch-prep work. No urgent bugs.
+- BACKLOG state is fully current as of 2026-05-14.
