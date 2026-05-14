@@ -185,15 +185,15 @@ Effort: ~1 hour including migration, writer update, reader update, and verifying
 
 ### Kurt Penny notes — batch 2 (template editor UX)
 
-*Surfaced 2026-05-12 in Kurt's original beta-feedback email. The first 10 notes shipped 2026-05-12. Item #2 below shipped 2026-05-13 (commit 6266023). Items #1 and #3 remain open. Treat as a coherent design batch, not individual bugs — but #2 is closed.*
+*Surfaced 2026-05-12 in Kurt's original beta-feedback email. The first 10 notes shipped 2026-05-12. Item #2 below shipped 2026-05-13 (commit 6266023). Item #3 declined 2026-05-14 — not pursuing. Item #1 is the only remaining open work.*
 
 **#1 — Checkbox-to-reveal pattern + Band Name consolidation:** Currently field visibility (showVenue/showCity/showDate checkboxes) is decoupled from field controls (sliders, color, position in the TEXT SIZES card). Kurt suggests folding them: checking the box reveals that field's full control set. Also consolidate the separate Band Name panel into the same City/Venue/Date panel — currently Band Name has its own card.
 
 **#2 — Group related options near what they modify:** ✅ Shipped 2026-05-13 (commit 6266023). "Short date" and "All caps" currently sit at the end of the sidebar in their own panels. Kurt suggests moving them adjacent to City/Venue/Date where they apply. Short date is Date-specific. All caps applies to all text fields — TBD whether it stays global or becomes per-field.
 
-**#3 — Wide horizontal stepper, not stacked vertical:** The workflow nav (1. IMPORT → 2. ARTIST → 3. GIGS → 4. ASSETS → 5. TEMPLATE) currently reads as a stacked vertical list. Kurt argues a horizontal stepper better communicates linear forward motion through a process, while stacked layouts read as a single-page outline. Trade-off: narrow laptop widths might truncate stepper labels or push content below the fold. Worth a sketch before committing to a redesign.
+**#3 — Wide horizontal stepper, not stacked vertical:** ❌ Declined 2026-05-14. Keeping the existing stacked vertical workflow nav. The workflow nav (1. IMPORT → 2. ARTIST → 3. GIGS → 4. ASSETS → 5. TEMPLATE) currently reads as a stacked vertical list. Kurt argues a horizontal stepper better communicates linear forward motion through a process, while stacked layouts read as a single-page outline. Trade-off: narrow laptop widths might truncate stepper labels or push content below the fold. Worth a sketch before committing to a redesign.
 
-**Effort estimate (remaining #1 and #3):** Half-day session for #1 alone (template editor sidebar restructure — biggest UX win remaining). #3 is a separate concern (workflow nav, not sidebar) and warrants its own session — sketch first before committing to a redesign.
+**Effort estimate (remaining #1 only):** Half-day session for the template editor sidebar restructure.
 
 ---
 
