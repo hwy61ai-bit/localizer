@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (6)
+## 🟡 Pre-launch gates (5)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -114,31 +114,6 @@ Before adding the cron back to `vercel.json`:
 - [ ] End-to-end test with a real (test) promoter email address, not a name string
 - [ ] Verify `advance_emails` log matches Resend delivery confirmations
 - [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
-
----
-
-### TourRouter import — paste text and CSV drop zone broken
-
-*Surfaced 2026-05-12 during Kurt-note button color decoupling testing. Suspected pre-existing, not a regression from today's CSS-only edits.*
-
-**Symptoms:**
-- Dragging a CSV file over the TourRouter import drop zone produces no visual highlight (drag-over state doesn't fire).
-- Dropping the file does nothing — no upload, no parse, no error.
-- The paste text / CSV window also rejects dragged input.
-
-**Files likely involved:**
-- `app/dashboard/routing/[tourId]/import/page.tsx` — import page UI
-- `app/dashboard/routing/IntakeDropZone.tsx` — dedicated drop-zone component
-
-**Diagnostic steps:**
-1. Hard refresh, open DevTools console, attempt drag — note any JS errors.
-2. Inspect the drop zone in DevTools — confirm `onDragOver` / `onDrop` handlers are attached.
-3. Check git history on both files for recent changes.
-4. Cross-reference against the Localizer schedule import drop zone at `app/dashboard/tours/[tourId]/import/page.tsx` (similar pattern, may still work — useful for diff).
-
-**Why 🟡 Pre-launch gates:** Same TourRouter-blocker category as Advance feature audit. Blocks TourRouter beta launch. Not blocking Localizer launch (paste/CSV import isn't in Localizer flow).
-
-Effort: 30-60 min once root cause is found.
 
 ---
 
@@ -809,3 +784,30 @@ Fix options: (a) include a version/timestamp query param in the template editor'
 **Not blocking beta launch.** User just needs to know "hard refresh if something looks stale." But should be fixed before Tim's full rollout to paying customers.
 
 **Resolution (2026-05-13):** Fixed in commit a580240 — `fix(template editor): invalidate Router Cache on save to prevent stale state on client-side back-navigation`. Targeted fix that avoided the prod-breaking `force-dynamic` / `revalidate=0` patterns from the reverted f3eae0d / 2c7ff86. Surfaced via Rule 14 verification pass on 2026-05-13; entry sat unmoved because no one tracked it back after the fix shipped.
+
+---
+
+### TourRouter import — paste text and CSV drop zone broken
+
+*Surfaced 2026-05-12 during Kurt-note button color decoupling testing. Suspected pre-existing, not a regression from today's CSS-only edits.*
+
+**Symptoms:**
+- Dragging a CSV file over the TourRouter import drop zone produces no visual highlight (drag-over state doesn't fire).
+- Dropping the file does nothing — no upload, no parse, no error.
+- The paste text / CSV window also rejects dragged input.
+
+**Files likely involved:**
+- `app/dashboard/routing/[tourId]/import/page.tsx` — import page UI
+- `app/dashboard/routing/IntakeDropZone.tsx` — dedicated drop-zone component
+
+**Diagnostic steps:**
+1. Hard refresh, open DevTools console, attempt drag — note any JS errors.
+2. Inspect the drop zone in DevTools — confirm `onDragOver` / `onDrop` handlers are attached.
+3. Check git history on both files for recent changes.
+4. Cross-reference against the Localizer schedule import drop zone at `app/dashboard/tours/[tourId]/import/page.tsx` (similar pattern, may still work — useful for diff).
+
+**Why 🟡 Pre-launch gates:** Same TourRouter-blocker category as Advance feature audit. Blocks TourRouter beta launch. Not blocking Localizer launch (paste/CSV import isn't in Localizer flow).
+
+Effort: 30-60 min once root cause is found.
+
+**Resolution (2026-05-13):** Closed via feature add, not bug fix. Empirical reproduction showed the two real drop zones (UPLOAD SPREADSHEET and UPLOAD DEAL MEMO) worked correctly — the entry conflated them with the PASTE TEXT / CSV card, which was paste-only by design and never had drag-drop wired. After confirming the actual drop zones worked, decided to add drag-drop to the paste card for visual + functional parity across all three import options. Shipped in the same commit as this entry move — mirrors the spreadsheet card pattern, reuses handleSpreadsheetDrop, click still opens the paste modal as before.

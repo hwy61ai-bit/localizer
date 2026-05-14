@@ -87,6 +87,7 @@ export default function ImportPage() {
 
   const [dragOverSpreadsheet, setDragOverSpreadsheet] = useState(false);
   const [dragOverPdf, setDragOverPdf] = useState(false);
+  const [dragOverPasteText, setDragOverPasteText] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -581,13 +582,17 @@ export default function ImportPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             <div
               onClick={() => setPasteMode(true)}
-              style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 32, textAlign: "center", cursor: "pointer", transition: "var(--hw-ease)" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--hw-shadow-lg)"; }}
+              onDragOver={(e) => { e.preventDefault(); setDragOverPasteText(true); }}
+              onDragLeave={() => setDragOverPasteText(false)}
+              onDrop={handleSpreadsheetDrop}
+              style={{ background: "var(--hw-bg-surface)", border: dragOverPasteText ? "3px solid var(--hw-crimson)" : "3px solid var(--hw-border-strong)", padding: 32, textAlign: "center", cursor: "pointer", transition: "var(--hw-ease)" }}
+              onMouseEnter={(e) => { if (!dragOverPasteText) { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "var(--hw-shadow-lg)"; } }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "none"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
             >
-              <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.4 }}>{"\u{1F4CB}"}</div>
+              <div style={{ fontSize: 36, marginBottom: 12, opacity: dragOverPasteText ? 0.7 : 0.4 }}>{"\u{1F4CB}"}</div>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 8 }}>PASTE TEXT / CSV</div>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.5 }}>Paste comma or tab-separated text directly from a spreadsheet</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 10 }}>OR DRAG AND DROP</div>
             </div>
 
             <div
