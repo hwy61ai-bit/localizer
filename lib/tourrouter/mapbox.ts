@@ -279,7 +279,7 @@ export async function cacheDriveInfo(
   if (!oc || !dc) return;
 
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/drive_cache`,
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/drive_cache?on_conflict=origin_city,origin_country,dest_city,dest_country`,
     {
       method: 'POST',
       headers: {
