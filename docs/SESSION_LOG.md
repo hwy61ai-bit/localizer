@@ -3141,3 +3141,36 @@ Workflow rules now total 14. Both rules used immediately at end of today's sessi
 
 - Open candidates: Kurt batch 2 items #1 (checkbox-to-reveal + Band Name consolidation) or #3 (horizontal stepper), Unit D rate limiting (still well-scoped, ~90 min, no blockers), or Localizer launch-prep work. No urgent bugs.
 - BACKLOG state is fully current as of 2026-05-14.
+
+
+## 2026-05-19 — Strategic pivot to Localizer focus + 30-day launch plan
+
+**What happened:**
+- Tim delivered four-product build scope (Plan/Books/Road App/Localizer + Suite) on May 18
+- Read Tim's scope + decisions doc. Initial response framed as 4-month phased build.
+- After codebase analysis (~70-75% of foundation already built), revised to ~4 months realistic.
+- Pulled back further: surfaced the endless build trap pattern. Three strategy pivots in three months. Zero paying customers. Decision: focus on Localizer, defer four-product plan.
+- Tim conversation went well. All-in on 30-day Localizer launch. Bank account opening this afternoon.
+- Hero pitch locked: "Tour marketing assets in 10 minutes, not 10 hours."
+
+**Pushed:**
+- 7dff86b — docs/HWY61_Codebase_vs_Four_Product_Plan_May_19_2026.md (coverage analysis)
+- (prior commit) — docs/HWY61_Detailed_Weekly_Build_Plan_May_19_2026.md
+- 1798af7 — docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md (the actual contract)
+
+**Did NOT push (superseded by Localizer pivot):**
+- HWY61_Engineering_Response_To_Build_Scope_May_19_2026.md — argued for 4-month four-product build, no longer the path
+
+**Key decisions locked with Tim:**
+- 30-day timebox to ship Localizer publicly. Target: June 19.
+- Pricing migrates to $29/$59/$129 (no existing customers to migrate — Kurt + Tim are free beta)
+- Four-product decisions defer 60 days post-launch
+- Tim delivers Localizer-only onboarding narrative by EOD Fri May 22
+- Tim commits to specific outreach volume starting June 20
+- Stripe restructure (Phase 1A) starts when bank account closes — kills manual SQL-flip pain regardless
+
+**Next session starts with:**
+- Confirm bank account closure
+- Begin Day 1 of the 30-day plan: archive legacy Stripe products, create new Localizer SKUs
+- Start Auto-Advancing audit in background (independent investigation)
+- Pre-stage onboarding wizard build scaffold pending Tim's narrative
