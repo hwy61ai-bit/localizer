@@ -485,11 +485,32 @@ middleware.ts has two getSession() calls (lines 117, 156) that destructure data 
 
 ---
 
-## 💭 Future ideas (0)
+## 💭 Future ideas (1)
 
 *Speculative post-launch work.*
 
-*No items currently — speculative items will accumulate here over time.*
+### Trackable asset delivery (read-receipts for artists) — 💭 Future idea
+
+Artist-side feature inside Localizer that lets an artist send assets to a promoter per show via Localizer (instead of email/Dropbox), and shows the artist who actually engaged with them.
+
+**The flow:** Artist enters promoter email per show → Localizer sends a branded email with a unique link to a `/share/[token]` page hosting that show's assets → every interaction logs back. Promoter never needs an account; works like Docsend/Calendly/Mailchimp tracking from the recipient's side.
+
+**Events tracked per show:**
+- Email opened (Resend tracking pixel — already in stack)
+- Share page visited (server log on the share token)
+- Specific assets viewed (Cloudinary impression data)
+- Assets downloaded (download button events)
+- Ticket-link clicked (UTM on the URL — strongest signal the post is live)
+
+Artist's tour dashboard surfaces per-show delivery status: green for "downloaded and ticket link clicked," yellow for "opened, no downloads," red for "email never opened."
+
+**Why this is worth preserving:** Originally the killer feature of the parked Localizer 2.0 venue-side concept. The full version required promoters to have accounts; this scaled-down version delivers most of the value with no second user base. Strong paid-tier upgrade trigger candidate — managers and artists have zero visibility into which promoters actually market their shows today.
+
+**Infrastructure required:** All existing — Resend (with open-tracking), public viewer route pattern (/v/*), Cloudinary asset hosting, Supabase for share tokens + engagement table. Rough estimate: 1–2 weeks focused work when prioritized.
+
+**Why not in the 30-day Localizer launch:** Not on the contract. Worth revisiting post-launch once retention data exists and we know which artists are asking for visibility into their promo flow.
+
+**Originated:** May 20, 2026 brainstorm session.
 
 ---
 
