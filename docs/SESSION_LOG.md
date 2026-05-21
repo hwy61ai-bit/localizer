@@ -3167,3 +3167,32 @@ Workflow rules now total 14. Both rules used immediately at end of today's sessi
 
 ### Notes
 - Continuing the 30-day sprint in a new chat for clean context.
+
+## 2026-05-21 — Stripe business setup + Localizer onboarding welcome
+
+**Stripe business setup (partial):**
+- Connected HWY61 Labs LLC bank account in Stripe live mode via Plaid
+- Uploaded EIN verification document
+- Updated public/support email to billing@hwy61labs.com (kept account-alerts on drew@hwy61labs.com)
+- Product creation (Day 1 of 30-day plan) parked pending Tim's pricing reconsideration
+- Discovered: all Stripe products created since March were in sandbox, not live. Live mode is a clean slate, so Day 3 customer migration in the 30-day plan is moot.
+
+**Localizer onboarding welcome page:**
+- SQL migration: added orgs.localizer_onboarding_completed (bool) and orgs.localizer_onboarding_step (int). Backfilled all existing orgs to completed=true.
+- New route /dashboard/onboarding/localizer with server-side eligibility gate (Localizer plan signal + not completed)
+- New step persistence API at /api/onboarding/localizer/step
+- Parent /dashboard/onboarding page now redirects Localizer-only users to the new route
+- Initial implementation was a 5-step wizard (welcome → artist → show → generate asset → share link). Built end-to-end. On test: the flow was contrived — Localizer is a batch-tour tool, not a single-show tool. Single-show wizard doesn't match real product workflow.
+- Pivoted to a simple welcome page with optional video and one CTA ("GET STARTED" → /dashboard/artists). 80 lines instead of 530. Ships today, video to be added later.
+- All infrastructure (schema, API, redirect) preserved through the pivot — only the wizard component itself was replaced.
+
+**What didn't get done:**
+- Day 1 product creation (parked on Tim's pricing reconsideration)
+- Day 2 webhook updates (blocked on Day 1)
+- Tim's CP 575 for EIN verification (parked, sandbox products in test mode aren't affected)
+- Onboarding video recording
+
+**Next session should start with:**
+- Address the /dashboard direct-access gap (see BACKLOG note below) — users hitting /dashboard directly with onboarding incomplete bypass the wizard
+- Or pick the next Tim-independent item from Days 4–7 of the 30-day plan
+- Or revisit Stripe product creation once Tim resolves pricing

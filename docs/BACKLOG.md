@@ -832,3 +832,28 @@ Fix options: (a) include a version/timestamp query param in the template editor'
 Effort: 30-60 min once root cause is found.
 
 **Resolution (2026-05-13):** Closed via feature add, not bug fix. Empirical reproduction showed the two real drop zones (UPLOAD SPREADSHEET and UPLOAD DEAL MEMO) worked correctly — the entry conflated them with the PASTE TEXT / CSV card, which was paste-only by design and never had drag-drop wired. After confirming the actual drop zones worked, decided to add drag-drop to the paste card for visual + functional parity across all three import options. Shipped in the same commit as this entry move — mirrors the spreadsheet card pattern, reuses handleSpreadsheetDrop, click still opens the paste modal as before.
+
+### Dashboard direct-access onboarding redirect
+
+Users who hit /dashboard directly (Stripe checkout success URL, bookmarks,
+email links) bypass the /dashboard/onboarding redirect chain and never see
+the Localizer welcome page even if localizer_onboarding_completed=false.
+
+Fix: add a check at the top of app/dashboard/page.tsx — if
+localizer_plan_status IS NOT NULL OR bundle_plan_status IS NOT NULL,
+AND localizer_onboarding_completed === false, redirect to
+/dashboard/onboarding/localizer.
+
+Half-hour change. Not blocking immediate testing because the welcome page
+itself works when accessed directly. Becomes critical when public signup
+starts pointing new users at /dashboard.
+
+### Localizer onboarding welcome video
+
+Welcome page at /dashboard/onboarding/localizer has a video placeholder
+controlled by ONBOARDING_VIDEO_URL constant in LocalizerWelcome.tsx
+(currently empty string — video element hidden).
+
+When Drew records the walkthrough video (2-3 min covering import → upload →
+generate → share), upload to Cloudinary or YouTube and set the constant to
+the playback URL.
