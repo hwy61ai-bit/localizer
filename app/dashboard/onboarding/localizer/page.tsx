@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
-import WelcomeWizard from "./WelcomeWizard";
+import LocalizerWelcome from "./LocalizerWelcome";
 
 // Force dynamic rendering — server component reads auth cookies and per-user
 // org state, must never be statically cached. This is the Next.js 14 equivalent
@@ -8,7 +8,7 @@ import WelcomeWizard from "./WelcomeWizard";
 // expose a per-query cache option the way raw fetch does).
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingPage() {
+export default async function LocalizerOnboardingPage() {
   const supabase = await supabaseServer();
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -25,50 +25,38 @@ export default async function OnboardingPage() {
     .maybeSingle();
 
   // Edge case: authenticated user with no org membership.
-  // Mirrors app/account/page.tsx — redirect to /dashboard, which has its
-  // own handling for the empty-state case.
   if (!membership?.org_id) redirect("/dashboard");
 
   const { data: org } = await supabase
     .from("orgs")
     .select(
-      "id, name, onboarding_step, onboarding_completed, localizer_onboarding_completed, localizer_plan_status, bundle_plan_status"
+      "id, name, localizer_onboarding_step, localizer_onboarding_completed, localizer_plan_status, bundle_plan_status"
     )
     .eq("id", membership.org_id)
     .maybeSingle();
 
   if (!org) redirect("/dashboard");
 
-  // Route Localizer-eligible orgs through the Localizer wizard first.
-  // Strict === false so a NULL localizer_onboarding_completed (legacy rows)
-  // does not trigger the redirect.
-  if (
-    org.localizer_onboarding_completed === false &&
-    (org.localizer_plan_status !== null || org.bundle_plan_status !== null)
-  ) {
-    redirect("/dashboard/onboarding/localizer");
-  }
-
-  // Treat step >= 4 as completed even if the boolean is out of sync,
-  // to defend against partial writes.
-  if (org.onboarding_completed || (org.onboarding_step ?? 0) >= 4) {
+  // Eligibility gate: org must have a Localizer plan or a bundle plan.
+  // Anything else means this user shouldn't see the Localizer wizard.
+  if (org.localizer_plan_status === null && org.bundle_plan_status === null) {
     redirect("/dashboard");
   }
 
-  // Clamp to the three valid wizard screens: 1 = org name, 2 = user name, 3 = role.
-  const rawStep = org.onboarding_step ?? 0;
-  const initialStep = Math.min(Math.max(rawStep || 1, 1), 3) as 1 | 2 | 3;
-
-  const initialFullName =
-    (user.user_metadata?.full_name as string | undefined) ?? "";
+  // Treat step >= 5 as completed even if the boolean is out of sync,
+  // to defend against partial writes.
+  if (
+    org.localizer_onboarding_completed ||
+    (org.localizer_onboarding_step ?? 0) >= 5
+  ) {
+    redirect("/dashboard");
+  }
 
   return (
-    <WelcomeWizard
-      initialStep={initialStep}
+    <LocalizerWelcome
       orgId={org.id}
       orgName={org.name ?? ""}
       userId={user.id}
-      initialFullName={initialFullName}
     />
   );
 }
