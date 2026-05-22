@@ -42,11 +42,22 @@ export default async function DashboardPage() {
   // Fetch org plan + trial status
   const { data: org } = await admin
     .from("orgs")
-    .select("plan, plan_status, trial_ends_at, stripe_customer_id, tourrouter_enabled")
+    .select("plan, plan_status, trial_ends_at, stripe_customer_id, tourrouter_enabled, localizer_onboarding_completed, localizer_plan_status, bundle_plan_status")
     .eq("id", orgId)
     .maybeSingle();
 
   if (!org) redirect("/login?error=no_org");
+
+  // Send Localizer-eligible users to the onboarding welcome page if they
+  // haven't completed it yet. This catches users who land at /dashboard
+  // directly (Stripe checkout success URL, bookmarks, email links) and
+  // would otherwise bypass the welcome flow.
+  if (
+    org.localizer_onboarding_completed === false &&
+    (org.localizer_plan_status !== null || org.bundle_plan_status !== null)
+  ) {
+    redirect("/dashboard/onboarding/localizer");
+  }
 
   const isPaid = !!org?.stripe_customer_id && org?.plan_status === "active";
   const trialActive = org?.trial_ends_at ? new Date(org.trial_ends_at) > new Date() : false;
