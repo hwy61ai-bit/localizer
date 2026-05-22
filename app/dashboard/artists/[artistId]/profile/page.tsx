@@ -63,6 +63,11 @@ export default function ArtistProfilePage() {
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
+  // TourRouter section gating — null until plan status loads; treated as
+  // "deny" while pending so TourRouter sections don't flash in for
+  // Localizer-only orgs.
+  const [hasTourRouterAccess, setHasTourRouterAccess] = useState<boolean | null>(null);
+
   // Logo
   const logoFileRef = useRef<HTMLInputElement>(null);
   const [logoHovered, setLogoHovered] = useState(false);
@@ -236,6 +241,36 @@ export default function ArtistProfilePage() {
     }
     load();
   }, [artistId, router]);
+
+  // ── Plan-status gate for TourRouter sections ────────────────
+  // Fetched once on mount. Failures and missing data deny access — the rest
+  // of the artist page still renders, just no TourRouter-only sections.
+  useEffect(() => {
+    let cancelled = false;
+    async function loadPlanStatus() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { if (!cancelled) setHasTourRouterAccess(false); return; }
+        const { data: membership } = await supabase
+          .from("org_members").select("org_id").eq("user_id", user.id).maybeSingle();
+        if (!membership?.org_id) { if (!cancelled) setHasTourRouterAccess(false); return; }
+        const { data: org } = await supabase
+          .from("orgs")
+          .select("tourrouter_plan_status, bundle_plan_status")
+          .eq("id", membership.org_id)
+          .maybeSingle();
+        const hasAccess =
+          (org?.tourrouter_plan_status ?? null) !== null ||
+          (org?.bundle_plan_status ?? null) !== null;
+        if (!cancelled) setHasTourRouterAccess(hasAccess);
+      } catch (e) {
+        console.warn("[artist-profile] could not resolve plan status — gating TourRouter sections off:", e);
+        if (!cancelled) setHasTourRouterAccess(false);
+      }
+    }
+    loadPlanStatus();
+    return () => { cancelled = true; };
+  }, []);
 
   // ── Save (debounced) ─────────────────────────────────────────
 
@@ -1235,222 +1270,254 @@ export default function ArtistProfilePage() {
           </button>
         </div>
 
-        {/* ══════ Divider ══════ */}
-        <div style={{ borderTop: "3px solid var(--hw-border-strong)", margin: "2rem 0" }} />
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ Divider ══════ */}
+            <div style={{ borderTop: "3px solid var(--hw-border-strong)", margin: "2rem 0" }} />
+          </>
+        )}
 
-        {/* ══════ 1. Roster ══════ */}
-        <Accordion
-          title="Roster"
-          badge={String((artist.default_roster as any[] || []).length)}
-          badgeColor="gray"
-        >
-          <RosterSection
-            roster={(artist.default_roster as any[]) || []}
-            onUpdate={(v) => saveJsonColumn("default_roster", v)}
-          />
-        </Accordion>
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ 1. Roster ══════ */}
+            <Accordion
+              title="Roster"
+              badge={String((artist.default_roster as any[] || []).length)}
+              badgeColor="gray"
+            >
+              <RosterSection
+                roster={(artist.default_roster as any[]) || []}
+                onUpdate={(v) => saveJsonColumn("default_roster", v)}
+              />
+            </Accordion>
+          </>
+        )}
 
-        {/* ══════ 2. Lodging ══════ */}
-        <Accordion
-          title="Lodging"
-          badge={(() => {
-            const ld = (artist.lodging_defaults as any) || {};
-            const rooms = (ld.rooms as any[] || []);
-            const total = rooms.reduce((sum: number, r: any) => sum + (r.count || 1), 0);
-            return total ? `${total} room${total !== 1 ? "s" : ""}` : "Not set";
-          })()}
-          badgeColor={(() => {
-            const ld = (artist.lodging_defaults as any) || {};
-            const rooms = (ld.rooms as any[] || []);
-            const total = rooms.reduce((sum: number, r: any) => sum + (r.count || 1), 0);
-            return total > 0 ? "green" : "gray";
-          })()}
-        >
-          <LodgingSection
-            lodging={(artist.lodging_defaults as any) || {}}
-            onUpdate={(v) => saveJsonColumn("lodging_defaults", v)}
-          />
-        </Accordion>
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ 2. Lodging ══════ */}
+            <Accordion
+              title="Lodging"
+              badge={(() => {
+                const ld = (artist.lodging_defaults as any) || {};
+                const rooms = (ld.rooms as any[] || []);
+                const total = rooms.reduce((sum: number, r: any) => sum + (r.count || 1), 0);
+                return total ? `${total} room${total !== 1 ? "s" : ""}` : "Not set";
+              })()}
+              badgeColor={(() => {
+                const ld = (artist.lodging_defaults as any) || {};
+                const rooms = (ld.rooms as any[] || []);
+                const total = rooms.reduce((sum: number, r: any) => sum + (r.count || 1), 0);
+                return total > 0 ? "green" : "gray";
+              })()}
+            >
+              <LodgingSection
+                lodging={(artist.lodging_defaults as any) || {}}
+                onUpdate={(v) => saveJsonColumn("lodging_defaults", v)}
+              />
+            </Accordion>
+          </>
+        )}
 
-        {/* ══════ 3. Vehicles & Equipment ══════ */}
-        <Accordion
-          title="Vehicles & Equipment"
-          badge={(() => {
-            const ve = (artist.vehicles_equipment as any) || {};
-            const count = (ve.vehicles as any[] || []).length;
-            return count ? String(count) : "0";
-          })()}
-          badgeColor="gray"
-        >
-          <VehicleManager
-            vehicles={((artist.vehicles_equipment as any)?.vehicles || []) as never[]}
-            defaultFuelPrice={4.00}
-            onSave={async (updated) => {
-              const current = (artist.vehicles_equipment as any) || {};
-              const next = { ...current, vehicles: updated };
-              saveJsonColumn("vehicles_equipment", next);
-            }}
-          />
-          <div style={{ borderTop: "2px solid var(--hw-border)", marginTop: 16, paddingTop: 12 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Storage Location</label>
-              <input
-                style={rowInputStyle}
-                value={(artist.vehicles_equipment as any)?.storageLocation || ""}
-                onChange={(e) => {
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ 3. Vehicles & Equipment ══════ */}
+            <Accordion
+              title="Vehicles & Equipment"
+              badge={(() => {
+                const ve = (artist.vehicles_equipment as any) || {};
+                const count = (ve.vehicles as any[] || []).length;
+                return count ? String(count) : "0";
+              })()}
+              badgeColor="gray"
+            >
+              <VehicleManager
+                vehicles={((artist.vehicles_equipment as any)?.vehicles || []) as never[]}
+                defaultFuelPrice={4.00}
+                onSave={async (updated) => {
                   const current = (artist.vehicles_equipment as any) || {};
-                  saveJsonColumn("vehicles_equipment", { ...current, storageLocation: e.target.value || null });
+                  const next = { ...current, vehicles: updated };
+                  saveJsonColumn("vehicles_equipment", next);
                 }}
               />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
-              <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Notes</label>
-              <textarea
-                style={rowTextareaStyle}
-                value={(artist.vehicles_equipment as any)?.notes || ""}
-                placeholder="Trailers, major equipment, etc."
-                onChange={(e) => {
-                  const current = (artist.vehicles_equipment as any) || {};
-                  saveJsonColumn("vehicles_equipment", { ...current, notes: e.target.value || null });
-                }}
-              />
-            </div>
-          </div>
-        </Accordion>
-
-        {/* ══════ 4. Hospitality ══════ */}
-        <Accordion
-          title="Hospitality"
-          badge={(() => {
-            const h = (artist.hospitality_rider as any) || {};
-            const fields = ["dressingRoomRequirements", "cateringRequirements", "hospitalityRequirements", "dietaryNotes", "alcoholPreferences", "buyoutAmount", "towelCount", "greenRoomRequirements"];
-            const filled = fields.filter((f) => h[f]).length;
-            return filled === fields.length ? "Complete" : `${filled} of ${fields.length}`;
-          })()}
-          badgeColor={(() => {
-            const h = (artist.hospitality_rider as any) || {};
-            const fields = ["dressingRoomRequirements", "cateringRequirements", "hospitalityRequirements", "dietaryNotes", "alcoholPreferences", "buyoutAmount", "towelCount", "greenRoomRequirements"];
-            const filled = fields.filter((f) => h[f]).length;
-            return filled === fields.length ? "green" : filled > 0 ? "amber" : "gray";
-          })()}
-        >
-          <JsonFieldRows column="hospitality_rider" artist={artist} onUpdate={(p, v) => updateJsonPath("hospitality_rider", p, v)} fields={[
-            { path: "dressingRoomRequirements", label: "Dressing Room", type: "textarea" },
-            { path: "cateringRequirements", label: "Catering", type: "textarea" },
-            { path: "hospitalityRequirements", label: "Hospitality", type: "textarea" },
-            { path: "greenRoomRequirements", label: "Green Room", type: "textarea" },
-            { path: "buyoutAmount", label: "Buyout Amount", type: "number" },
-            { path: "buyoutCurrency", label: "Buyout Currency" },
-            { path: "towelCount", label: "Towels", type: "number" },
-            { path: "dietaryNotes", label: "Dietary Notes", type: "textarea" },
-            { path: "alcoholPreferences", label: "Alcohol Preferences", type: "textarea" },
-            { path: "notes", label: "Notes", type: "textarea" },
-          ]} />
-        </Accordion>
-
-        {/* ══════ 5. Promo & Marketing ══════ */}
-        <Accordion
-          title="Promo & Marketing"
-          badge={(() => {
-            const p = (artist.promo_marketing as any) || {};
-            const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl"];
-            const filled = fields.filter((f) => p[f]).length;
-            return `${filled} of ${fields.length}`;
-          })()}
-          badgeColor={(() => {
-            const p = (artist.promo_marketing as any) || {};
-            const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl"];
-            const filled = fields.filter((f) => p[f]).length;
-            return filled >= 6 ? "green" : filled > 0 ? "amber" : "gray";
-          })()}
-        >
-          <JsonFieldRows column="promo_marketing" artist={artist} onUpdate={(p, v) => updateJsonPath("promo_marketing", p, v)} fields={[
-            { path: "websiteUrl", label: "Website", placeholder: "https://" },
-            { path: "spotifyUrl", label: "Spotify" },
-            { path: "instagramUrl", label: "Instagram" },
-            { path: "tiktokUrl", label: "TikTok" },
-            { path: "youtubeUrl", label: "YouTube" },
-            { path: "facebookUrl", label: "Facebook" },
-            { path: "twitterUrl", label: "Twitter / X" },
-            { path: "appleMusicUrl", label: "Apple Music" },
-            { path: "bandcampUrl", label: "Bandcamp" },
-            { path: "epkUrl", label: "EPK URL" },
-            { path: "notes", label: "Notes", type: "textarea" },
-          ]} />
-        </Accordion>
-
-        {/* ══════ 6. Business Entity ══════ */}
-        <div
-          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (!w9Importing) setW9DragOver(true); }}
-          onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          onDragLeave={(e) => { e.preventDefault(); setW9DragOver(false); }}
-          onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setW9DragOver(false); if (!w9Importing) { const f = e.dataTransfer.files?.[0]; if (f) handleW9Drop(f); } }}
-          style={{
-            border: w9DragOver ? "3px dashed var(--hw-crimson)" : "3px solid transparent",
-            background: w9DragOver ? "var(--hw-crimson-ghost)" : "transparent",
-            transition: "var(--hw-ease)",
-          }}
-        >
-          <Accordion title="Business Entity" badge="" badgeColor="gray">
-            {w9ImportMsg ? (
-              <div style={{ marginBottom: 10, padding: "8px 14px", background: w9ImportMsg.startsWith("Filled") ? "var(--hw-green-ghost)" : w9ImportMsg.startsWith("Reading") ? "var(--hw-bg)" : "var(--hw-red-ghost)", border: w9ImportMsg.startsWith("Filled") ? "2px solid var(--hw-green-border)" : w9ImportMsg.startsWith("Reading") ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: w9ImportMsg.startsWith("Filled") ? "var(--hw-green)" : w9ImportMsg.startsWith("Reading") ? "var(--hw-text-muted)" : "var(--hw-crimson)" }}>
-                {w9ImportMsg}
+              <div style={{ borderTop: "2px solid var(--hw-border)", marginTop: 16, paddingTop: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
+                  <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Storage Location</label>
+                  <input
+                    style={rowInputStyle}
+                    value={(artist.vehicles_equipment as any)?.storageLocation || ""}
+                    onChange={(e) => {
+                      const current = (artist.vehicles_equipment as any) || {};
+                      saveJsonColumn("vehicles_equipment", { ...current, storageLocation: e.target.value || null });
+                    }}
+                  />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 10, padding: "6px 0" }}>
+                  <label style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "var(--hw-text-secondary)", fontWeight: 400 }}>Notes</label>
+                  <textarea
+                    style={rowTextareaStyle}
+                    value={(artist.vehicles_equipment as any)?.notes || ""}
+                    placeholder="Trailers, major equipment, etc."
+                    onChange={(e) => {
+                      const current = (artist.vehicles_equipment as any) || {};
+                      saveJsonColumn("vehicles_equipment", { ...current, notes: e.target.value || null });
+                    }}
+                  />
+                </div>
               </div>
-            ) : (
-              <div style={{ marginBottom: 10, fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>
-                Drop a W-9 PDF here to autofill
-              </div>
-            )}
-            <JsonFieldRows column="business_entity" artist={artist} onUpdate={(p, v) => updateJsonPath("business_entity", p, v)} fields={[
-              { path: "legalName", label: "Legal Name", placeholder: "As registered" },
-              { path: "dba", label: "DBA / Artist Name" },
-              { path: "entityType", label: "Entity Type", placeholder: "LLC, S-Corp, etc." },
-              { path: "ein", label: "EIN / Tax ID", placeholder: "XX-XXXXXXX" },
-              { path: "stateOfFormation", label: "State of Formation" },
-              { path: "countryOfFormation", label: "Country" },
-              { path: "businessAddress", label: "Business Address" },
-              { path: "mailingAddress", label: "Mailing Address" },
-              { path: "businessPhone", label: "Phone" },
-              { path: "businessEmail", label: "Email" },
-              { path: "yearFormed", label: "Year Formed", type: "number" },
-              { path: "registeredAgent", label: "Registered Agent" },
-            ]} />
-          </Accordion>
-        </div>
+            </Accordion>
+          </>
+        )}
 
-        {/* ══════ 9. Technical Production ══════ */}
-        <Accordion
-          title="Technical Production"
-          badge={(() => {
-            const t = (artist.technical_production as any) || {};
-            const fields = ["fohConsolePreference", "monitorConsolePreference", "iemSystem", "backlineRequirements", "lightingRequirements", "powerRequirements", "stageMinWidth", "stageMinDepth", "setLength", "changeover"];
-            const filled = fields.filter((f) => t[f]).length;
-            return `${filled} of ${fields.length}`;
-          })()}
-          badgeColor={(() => {
-            const t = (artist.technical_production as any) || {};
-            const fields = ["fohConsolePreference", "monitorConsolePreference", "iemSystem", "backlineRequirements", "lightingRequirements", "powerRequirements", "stageMinWidth", "stageMinDepth", "setLength", "changeover"];
-            const filled = fields.filter((f) => t[f]).length;
-            return filled >= 5 ? "green" : filled > 0 ? "amber" : "gray";
-          })()}
-        >
-          <JsonFieldRows column="technical_production" artist={artist} onUpdate={(p, v) => updateJsonPath("technical_production", p, v)} fields={[
-            { path: "fohConsolePreference", label: "FOH Console", placeholder: "e.g. Avid S6L" },
-            { path: "monitorConsolePreference", label: "Monitor Console" },
-            { path: "iemSystem", label: "IEM System" },
-            { path: "backlineRequirements", label: "Backline", type: "textarea" },
-            { path: "lightingRequirements", label: "Lighting", type: "textarea" },
-            { path: "videoRequirements", label: "Video", type: "textarea" },
-            { path: "powerRequirements", label: "Power" },
-            { path: "stageMinWidth", label: "Min Stage Width" },
-            { path: "stageMinDepth", label: "Min Stage Depth" },
-            { path: "riggingNeeds", label: "Rigging" },
-            { path: "sfxNeeds", label: "SFX" },
-            { path: "setLength", label: "Set Length (min)", type: "number" },
-            { path: "changeover", label: "Changeover (min)", type: "number" },
-            { path: "notes", label: "Notes", type: "textarea" },
-          ]} />
-        </Accordion>
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ 4. Hospitality ══════ */}
+            <Accordion
+              title="Hospitality"
+              badge={(() => {
+                const h = (artist.hospitality_rider as any) || {};
+                const fields = ["dressingRoomRequirements", "cateringRequirements", "hospitalityRequirements", "dietaryNotes", "alcoholPreferences", "buyoutAmount", "towelCount", "greenRoomRequirements"];
+                const filled = fields.filter((f) => h[f]).length;
+                return filled === fields.length ? "Complete" : `${filled} of ${fields.length}`;
+              })()}
+              badgeColor={(() => {
+                const h = (artist.hospitality_rider as any) || {};
+                const fields = ["dressingRoomRequirements", "cateringRequirements", "hospitalityRequirements", "dietaryNotes", "alcoholPreferences", "buyoutAmount", "towelCount", "greenRoomRequirements"];
+                const filled = fields.filter((f) => h[f]).length;
+                return filled === fields.length ? "green" : filled > 0 ? "amber" : "gray";
+              })()}
+            >
+              <JsonFieldRows column="hospitality_rider" artist={artist} onUpdate={(p, v) => updateJsonPath("hospitality_rider", p, v)} fields={[
+                { path: "dressingRoomRequirements", label: "Dressing Room", type: "textarea" },
+                { path: "cateringRequirements", label: "Catering", type: "textarea" },
+                { path: "hospitalityRequirements", label: "Hospitality", type: "textarea" },
+                { path: "greenRoomRequirements", label: "Green Room", type: "textarea" },
+                { path: "buyoutAmount", label: "Buyout Amount", type: "number" },
+                { path: "buyoutCurrency", label: "Buyout Currency" },
+                { path: "towelCount", label: "Towels", type: "number" },
+                { path: "dietaryNotes", label: "Dietary Notes", type: "textarea" },
+                { path: "alcoholPreferences", label: "Alcohol Preferences", type: "textarea" },
+                { path: "notes", label: "Notes", type: "textarea" },
+              ]} />
+            </Accordion>
+          </>
+        )}
+
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ 5. Promo & Marketing ══════ */}
+            <Accordion
+              title="Promo & Marketing"
+              badge={(() => {
+                const p = (artist.promo_marketing as any) || {};
+                const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl"];
+                const filled = fields.filter((f) => p[f]).length;
+                return `${filled} of ${fields.length}`;
+              })()}
+              badgeColor={(() => {
+                const p = (artist.promo_marketing as any) || {};
+                const fields = ["websiteUrl", "spotifyUrl", "instagramUrl", "tiktokUrl", "youtubeUrl", "facebookUrl", "twitterUrl", "appleMusicUrl", "bandcampUrl", "epkUrl"];
+                const filled = fields.filter((f) => p[f]).length;
+                return filled >= 6 ? "green" : filled > 0 ? "amber" : "gray";
+              })()}
+            >
+              <JsonFieldRows column="promo_marketing" artist={artist} onUpdate={(p, v) => updateJsonPath("promo_marketing", p, v)} fields={[
+                { path: "websiteUrl", label: "Website", placeholder: "https://" },
+                { path: "spotifyUrl", label: "Spotify" },
+                { path: "instagramUrl", label: "Instagram" },
+                { path: "tiktokUrl", label: "TikTok" },
+                { path: "youtubeUrl", label: "YouTube" },
+                { path: "facebookUrl", label: "Facebook" },
+                { path: "twitterUrl", label: "Twitter / X" },
+                { path: "appleMusicUrl", label: "Apple Music" },
+                { path: "bandcampUrl", label: "Bandcamp" },
+                { path: "epkUrl", label: "EPK URL" },
+                { path: "notes", label: "Notes", type: "textarea" },
+              ]} />
+            </Accordion>
+          </>
+        )}
+
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ 6. Business Entity ══════ */}
+            <div
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); if (!w9Importing) setW9DragOver(true); }}
+              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); }}
+              onDragLeave={(e) => { e.preventDefault(); setW9DragOver(false); }}
+              onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setW9DragOver(false); if (!w9Importing) { const f = e.dataTransfer.files?.[0]; if (f) handleW9Drop(f); } }}
+              style={{
+                border: w9DragOver ? "3px dashed var(--hw-crimson)" : "3px solid transparent",
+                background: w9DragOver ? "var(--hw-crimson-ghost)" : "transparent",
+                transition: "var(--hw-ease)",
+              }}
+            >
+              <Accordion title="Business Entity" badge="" badgeColor="gray">
+                {w9ImportMsg ? (
+                  <div style={{ marginBottom: 10, padding: "8px 14px", background: w9ImportMsg.startsWith("Filled") ? "var(--hw-green-ghost)" : w9ImportMsg.startsWith("Reading") ? "var(--hw-bg)" : "var(--hw-red-ghost)", border: w9ImportMsg.startsWith("Filled") ? "2px solid var(--hw-green-border)" : w9ImportMsg.startsWith("Reading") ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: w9ImportMsg.startsWith("Filled") ? "var(--hw-green)" : w9ImportMsg.startsWith("Reading") ? "var(--hw-text-muted)" : "var(--hw-crimson)" }}>
+                    {w9ImportMsg}
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: 10, fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>
+                    Drop a W-9 PDF here to autofill
+                  </div>
+                )}
+                <JsonFieldRows column="business_entity" artist={artist} onUpdate={(p, v) => updateJsonPath("business_entity", p, v)} fields={[
+                  { path: "legalName", label: "Legal Name", placeholder: "As registered" },
+                  { path: "dba", label: "DBA / Artist Name" },
+                  { path: "entityType", label: "Entity Type", placeholder: "LLC, S-Corp, etc." },
+                  { path: "ein", label: "EIN / Tax ID", placeholder: "XX-XXXXXXX" },
+                  { path: "stateOfFormation", label: "State of Formation" },
+                  { path: "countryOfFormation", label: "Country" },
+                  { path: "businessAddress", label: "Business Address" },
+                  { path: "mailingAddress", label: "Mailing Address" },
+                  { path: "businessPhone", label: "Phone" },
+                  { path: "businessEmail", label: "Email" },
+                  { path: "yearFormed", label: "Year Formed", type: "number" },
+                  { path: "registeredAgent", label: "Registered Agent" },
+                ]} />
+              </Accordion>
+            </div>
+          </>
+        )}
+
+        {hasTourRouterAccess && (
+          <>
+            {/* ══════ 9. Technical Production ══════ */}
+            <Accordion
+              title="Technical Production"
+              badge={(() => {
+                const t = (artist.technical_production as any) || {};
+                const fields = ["fohConsolePreference", "monitorConsolePreference", "iemSystem", "backlineRequirements", "lightingRequirements", "powerRequirements", "stageMinWidth", "stageMinDepth", "setLength", "changeover"];
+                const filled = fields.filter((f) => t[f]).length;
+                return `${filled} of ${fields.length}`;
+              })()}
+              badgeColor={(() => {
+                const t = (artist.technical_production as any) || {};
+                const fields = ["fohConsolePreference", "monitorConsolePreference", "iemSystem", "backlineRequirements", "lightingRequirements", "powerRequirements", "stageMinWidth", "stageMinDepth", "setLength", "changeover"];
+                const filled = fields.filter((f) => t[f]).length;
+                return filled >= 5 ? "green" : filled > 0 ? "amber" : "gray";
+              })()}
+            >
+              <JsonFieldRows column="technical_production" artist={artist} onUpdate={(p, v) => updateJsonPath("technical_production", p, v)} fields={[
+                { path: "fohConsolePreference", label: "FOH Console", placeholder: "e.g. Avid S6L" },
+                { path: "monitorConsolePreference", label: "Monitor Console" },
+                { path: "iemSystem", label: "IEM System" },
+                { path: "backlineRequirements", label: "Backline", type: "textarea" },
+                { path: "lightingRequirements", label: "Lighting", type: "textarea" },
+                { path: "videoRequirements", label: "Video", type: "textarea" },
+                { path: "powerRequirements", label: "Power" },
+                { path: "stageMinWidth", label: "Min Stage Width" },
+                { path: "stageMinDepth", label: "Min Stage Depth" },
+                { path: "riggingNeeds", label: "Rigging" },
+                { path: "sfxNeeds", label: "SFX" },
+                { path: "setLength", label: "Set Length (min)", type: "number" },
+                { path: "changeover", label: "Changeover (min)", type: "number" },
+                { path: "notes", label: "Notes", type: "textarea" },
+              ]} />
+            </Accordion>
+          </>
+        )}
 
       </div>
     </div>
