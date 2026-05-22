@@ -43,12 +43,7 @@ export default async function LocalizerOnboardingPage() {
     redirect("/dashboard");
   }
 
-  // Treat step >= 5 as completed even if the boolean is out of sync,
-  // to defend against partial writes.
-  if (
-    org.localizer_onboarding_completed ||
-    (org.localizer_onboarding_step ?? 0) >= 5
-  ) {
+  if (org.localizer_onboarding_completed) {
     redirect("/dashboard");
   }
 
