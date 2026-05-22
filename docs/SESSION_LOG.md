@@ -3196,3 +3196,27 @@ Workflow rules now total 14. Both rules used immediately at end of today's sessi
 - Address the /dashboard direct-access gap (see BACKLOG note below) — users hitting /dashboard directly with onboarding incomplete bypass the wizard
 - Or pick the next Tim-independent item from Days 4–7 of the 30-day plan
 - Or revisit Stripe product creation once Tim resolves pricing
+
+**Continued evening — onboarding video script + artist tile polish:**
+
+- Drafted Localizer onboarding walkthrough script (`docs/LOCALIZER_ONBOARDING_VIDEO_SCRIPT.md`). ~2:30 narration, tour-manager-to-tour-manager tone, scene markers from hook through to the venue-link share moment. First pass; needs voice edits before recording.
+- Identified the gear icon on artist tiles (links to master artist profile) was hover-only AND unlabeled — failing both desktop discoverability and mobile entirely.
+- Located source: `app/dashboard/TourTile.tsx`. TourTile is reused for both artists and tours — the `tourId` prop holds the artist id for artist tiles. The gear icon block was nested inside a `mounted && hovered && type === "artist"` conditional.
+- Build iteration on the tile button (three rounds):
+  1. Removed hover-only condition, added "ARTIST PROFILE" text label, positioned absolutely top-right.
+  2. Top-right overlapped the artist name → moved to bottom-right, replacing the existing "→" arrow span (artist tiles only; non-artist tour tiles still get the bare arrow).
+  3. Text-only styling didn't read as a button → added 3px border, padding, and image-aware background (transparent on plain tiles, `rgba(0,0,0,0.3)` on image-backed tiles).
+- Final state: artist tiles display a visible "ARTIST PROFILE →" pill in the bottom-right corner, image-aware styling, click propagation stopped so the button navigates independently of the main tile.
+
+**Still backlog'd from today:**
+
+- Master Artist profile page: hide TourRouter-only sections (Roster, Lodging, Vehicles, Hospitality, Promo & Marketing, Business Entity, Technical Production) from Localizer-only users. Existing `FeatureFlagContext` is hostname-based (DIY vs not) and doesn't know plan status — recommend tactical plan-status check in the page rather than refactoring the flag system. ~60-90 min focused work.
+- Dashboard direct-access redirect gap (separate backlog entry).
+- Onboarding video recording.
+
+**Updated next-session entry points:**
+
+- Master Artist polish (section gating) — fully unblocked, 60-90 min
+- Dashboard direct-access redirect fix — half-hour
+- Onboarding video recording — solo task
+- Stripe pricing decision — check in with Tim
