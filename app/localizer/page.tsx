@@ -87,7 +87,6 @@ export default function LocalizerProductPage() {
         .localizer-page .nav-links { display: flex; gap: 28px; align-items: center; list-style: none; }
         .localizer-page .nav-links a { font-family: var(--hw-font-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--hw-gray); text-decoration: none; transition: color 0.15s ease; }
         .localizer-page .nav-links a:hover { color: var(--hw-text-invert); }
-        .localizer-page .nav-links a.active { color: var(--hw-crimson); }
         .localizer-page .nav-cta { font-family: var(--hw-font-display); font-size: 14px; letter-spacing: 3px; text-transform: uppercase; background: var(--hw-crimson); color: white; padding: 10px 24px; border: 3px solid var(--hw-crimson); border-radius: 0; text-decoration: none; transition: all 0.15s ease; }
         .localizer-page .nav-cta:hover { background: var(--hw-crimson-dark); transform: translateY(-2px); box-shadow: var(--hw-shadow-md); }
 
@@ -120,7 +119,6 @@ export default function LocalizerProductPage() {
         /* ── HERO ── */
         .localizer-page .hero { padding: 100px 0 80px; text-align: center; }
         .localizer-page .hero .sub-headline { margin-left: auto; margin-right: auto; }
-        .localizer-page .hero-eyebrow { font-family: var(--hw-font-mono); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--hw-crimson); margin-bottom: 20px; display: inline-block; background: var(--hw-crimson-ghost); padding: 6px 16px; border: 2px solid var(--hw-crimson); }
         .localizer-page .localizer-wordmark {
           --shadow-x: 6px;
           --shadow-y: 6px;
@@ -168,33 +166,6 @@ export default function LocalizerProductPage() {
         .localizer-page .math-line.math-total { border-top: 3px solid var(--hw-border-strong); margin-top: 8px; padding-top: 16px; }
         .localizer-page .math-line.math-total .math-value { color: var(--hw-crimson); font-size: 18px; }
 
-        /* ── FEATURES ── */
-        .localizer-page .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-top: 40px; }
-        .localizer-page .feature-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 32px; transition: all 0.15s ease; position: relative; border-radius: 0; }
-        .localizer-page .feature-card:hover { transform: translateY(-4px); box-shadow: var(--hw-shadow-md); }
-        .localizer-page .feature-card .feature-accent { position: absolute; top: 0; left: 0; width: 100%; height: 4px; }
-        .localizer-page .feature-card .feature-number { font-family: var(--hw-font-display); font-size: 48px; color: var(--hw-border); line-height: 1; margin-bottom: 12px; }
-        .localizer-page .feature-card h3 { font-family: var(--hw-font-display); font-size: 22px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
-        .localizer-page .feature-card p { font-size: 15px; line-height: 1.7; color: var(--hw-text-secondary); }
-
-        /* ── USE CASES ── */
-        .localizer-page .use-cases-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-top: 40px; }
-        .localizer-page .use-case-card { padding: 32px; border: 3px solid var(--hw-border-strong); background: var(--hw-bg-surface); position: relative; overflow: hidden; border-radius: 0; }
-        .localizer-page .use-case-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
-        .localizer-page .use-case-card:nth-child(1)::before { background: var(--hw-crimson); }
-        .localizer-page .use-case-card:nth-child(2)::before { background: var(--hw-blue); }
-        .localizer-page .use-case-card:nth-child(3)::before { background: var(--hw-purple); }
-        .localizer-page .use-case-card:nth-child(4)::before { background: var(--hw-rose); }
-        .localizer-page .use-case-card h3 { font-family: var(--hw-font-display); font-size: 22px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; padding-left: 12px; }
-        .localizer-page .use-case-card p { font-size: 15px; line-height: 1.7; color: var(--hw-text-secondary); padding-left: 12px; }
-
-        /* ── TESTIMONIALS ── */
-        .localizer-page .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 40px; }
-        .localizer-page .testimonial-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 32px; border-radius: 0; }
-        .localizer-page .testimonial-card .quote-mark { font-family: var(--hw-font-display); font-size: 72px; color: var(--hw-border); line-height: 1; margin-bottom: -12px; }
-        .localizer-page .testimonial-card .quote-text { font-size: 16px; line-height: 1.7; font-style: italic; color: var(--hw-text-secondary); margin-bottom: 16px; }
-        .localizer-page .testimonial-card .quote-author { font-family: var(--hw-font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--hw-text-muted); }
-
         /* ── PRICING ── */
         .localizer-page .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 40px; }
         .localizer-page .pricing-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 40px 32px; text-align: center; transition: all 0.15s ease; border-radius: 0; }
@@ -222,7 +193,7 @@ export default function LocalizerProductPage() {
           .localizer-page section { padding: 60px 0; }
           .localizer-page .container { padding: 0 20px; }
           .localizer-page .hero { padding: 60px 0; }
-          .localizer-page .features-grid, .localizer-page .use-cases-grid, .localizer-page .pricing-grid, .localizer-page .testimonial-grid { grid-template-columns: 1fr; }
+          .localizer-page .pricing-grid { grid-template-columns: 1fr; }
           .localizer-page nav .nav-links { display: none; }
           .localizer-page .btn-row { flex-direction: column; }
           .localizer-page .btn-row .btn { text-align: center; }
