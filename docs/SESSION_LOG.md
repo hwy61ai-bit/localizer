@@ -3220,3 +3220,34 @@ Workflow rules now total 14. Both rules used immediately at end of today's sessi
 - Dashboard direct-access redirect fix — half-hour
 - Onboarding video recording — solo task
 - Stripe pricing decision — check in with Tim
+
+
+## May 23, 2026
+
+### Shipped
+- Cursor-responsive LOCALIZER wordmark with bordered box treatment (`9ab6490`) — black 3px border, crimson text-shadow + box-shadow that track cursor position via CSS variables, smooth 0.45s cubic-bezier easing. Includes eyebrow removal ("Tour Marketing" tag was conflicting with new bordered box).
+- Tim launch briefing doc at `docs/TIM_LAUNCH_BRIEFING.md` (`810dc1b`) — covers 30-day plan status, blockers on Tim, strategic decisions made without him, current docket.
+- Nav header simplified for public launch — removed JOIN THE BETA button and portfolio links (/tourrouter, /diy, /roadapp). Three nav items now: Pricing, Sign in, "Start your free trial" CTA.
+- Dead CSS cleanup (`d72807f`) — stripped 6 abandoned rule groups (.features-grid, .feature-card, .use-cases-grid, .use-case-card, .testimonial-grid, .testimonial-card, .hero-eyebrow) plus orphan nav button styles. No behavior change.
+- Launch progress tracker at `docs/LAUNCH_PROGRESS.md` (`c6fcbf5`) — week-by-week checkbox structure mirroring the May 19 30-day plan, grounded in actual SESSION_LOG and BACKLOG.
+
+### Decisions
+- **Option A locked for landing strategy:** `/` (root) becomes the Localizer landing page. `/tourrouter`, `/diy`, `/roadapp` to be hidden at launch. When TourRouter ships, we re-architect.
+- **Pricing tier names locked:** Solo (1 artist), Pro (up to 5), Agency (up to 12). Prices remain placeholder $XX until Tim confirms.
+- **All CTAs:** "Start your free trial" everywhere. Beta framing dropped.
+- **LOCALIZER wordmark animation:** explored 14+ directions across two brainstorm rounds. Settled on cursor-responsive shadow (cursor = light source casting wordmark shadow). Letterpress depth was too subtle; sound wave bisect didn't land; setlist scribble felt cheap. The cursor-light effect was the only one that earned "I like this."
+
+### New process rule
+After every Localizer/HWY61 session: update both `docs/SESSION_LOG.md` (this file) AND `docs/LAUNCH_PROGRESS.md` (checkbox tracker). Both files commit and push together. Added to Claude's memory.
+
+### Blocked on Tim
+- Pricing decision — blocks Stripe Day 1 product creation, downstream effects on Days 2 + 6
+- Onboarding video v1 notes — sent earlier this week, awaiting feedback
+- Welcome email copy review — I'll draft next, ping Tim before it goes live
+- Canned support response copy — Day 7 item, would benefit from Tim's input
+
+### Next session candidates
+- Welcome email (Day 6 of 30-day plan) — Drew-owned, ~45 min
+- Move `/localizer` content to root `/` — small, mechanical
+- Hide `/tourrouter`, `/diy`, `/roadapp` routes (redirect to `/coming-soon`)
+- Bump Tim if blockers haven't moved in ~48 hours
