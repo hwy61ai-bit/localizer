@@ -234,12 +234,9 @@ export default function LocalizerProductPage() {
         <div className="nav-inner">
           <Link href="/" className="logo">HWY<span>61</span> Labs</Link>
           <ul className="nav-links">
-            <li><Link href="/tourrouter">TourRouter</Link></li>
-            <li><Link href="/localizer" className="active">Localizer</Link></li>
-            <li><Link href="/diy">DIY</Link></li>
-            <li><Link href="/roadapp">Road App</Link></li>
             <li><a href="#pricing">Pricing</a></li>
-            <li><Link href="/#waitlist" className="nav-cta">Join the Beta</Link></li>
+            <li><Link href="/login">Sign in</Link></li>
+            <li><Link href="/#waitlist" className="nav-cta">Start your free trial</Link></li>
           </ul>
         </div>
       </nav>
