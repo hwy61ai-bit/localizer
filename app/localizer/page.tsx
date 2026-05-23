@@ -1,8 +1,57 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+
+// TODO: Drew uploaded the v1 onboarding video. Set LANDING_VIDEO_URL
+// when it's hosted (Cloudinary URL or YouTube embed URL).
+// Empty string hides the video element gracefully.
+const LANDING_VIDEO_URL = "";
 
 export default function LocalizerProductPage() {
+  const heroRef = useRef<HTMLElement>(null);
+  const wordmarkRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    const hero = heroRef.current;
+    const wordmark = wordmarkRef.current;
+    if (!hero || !wordmark) return;
+
+    let frameId: number | null = null;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        const rect = wordmark.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dx = centerX - e.clientX;
+        const dy = centerY - e.clientY;
+        const scale = 0.08;
+        const maxOff = 18;
+        const minOff = -8;
+        const shadowX = Math.max(minOff, Math.min(maxOff, dx * scale + 6));
+        const shadowY = Math.max(minOff, Math.min(maxOff, dy * scale + 6));
+        wordmark.style.setProperty('--shadow-x', `${shadowX}px`);
+        wordmark.style.setProperty('--shadow-y', `${shadowY}px`);
+      });
+    };
+
+    const handleMouseLeave = () => {
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      wordmark.style.setProperty('--shadow-x', '6px');
+      wordmark.style.setProperty('--shadow-y', '6px');
+    };
+
+    hero.addEventListener('mousemove', handleMouseMove);
+    hero.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      hero.removeEventListener('mousemove', handleMouseMove);
+      hero.removeEventListener('mouseleave', handleMouseLeave);
+      if (frameId !== null) cancelAnimationFrame(frameId);
+    };
+  }, []);
+
   return (
     <div className="localizer-page">
       <style dangerouslySetInnerHTML={{ __html: `
@@ -69,11 +118,30 @@ export default function LocalizerProductPage() {
         .localizer-page .btn-invert:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--hw-crimson); }
 
         /* ── HERO ── */
-        .localizer-page .hero { padding: 100px 0 80px; }
+        .localizer-page .hero { padding: 100px 0 80px; text-align: center; }
+        .localizer-page .hero .sub-headline { margin-left: auto; margin-right: auto; }
         .localizer-page .hero-eyebrow { font-family: var(--hw-font-mono); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--hw-crimson); margin-bottom: 20px; display: inline-block; background: var(--hw-crimson-ghost); padding: 6px 16px; border: 2px solid var(--hw-crimson); }
+        .localizer-page .localizer-wordmark {
+          --shadow-x: 6px;
+          --shadow-y: 6px;
+          font-family: var(--hw-font-display);
+          font-size: clamp(80px, 12vw, 160px);
+          letter-spacing: 6px;
+          text-transform: uppercase;
+          line-height: 1;
+          margin-bottom: 16px;
+          color: var(--hw-text);
+          display: inline-block;
+          border: 3px solid var(--hw-text);
+          padding: 18px 36px;
+          background: var(--hw-bg-warm);
+          text-shadow: var(--shadow-x) var(--shadow-y) 0 var(--hw-crimson);
+          box-shadow: calc(var(--shadow-x) + 2px) calc(var(--shadow-y) + 2px) 0 var(--hw-crimson);
+          transition: text-shadow 0.45s cubic-bezier(0.2, 0.65, 0.3, 1), box-shadow 0.45s cubic-bezier(0.2, 0.65, 0.3, 1);
+        }
         .localizer-page .hero-headline { font-family: var(--hw-font-display); font-size: clamp(48px, 6vw, 72px); letter-spacing: 3px; text-transform: uppercase; line-height: 1.05; margin-bottom: 24px; }
         .localizer-page .hero-headline span { color: var(--hw-crimson); }
-        .localizer-page .btn-row { display: flex; gap: 16px; flex-wrap: wrap; }
+        .localizer-page .btn-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
 
         /* ── MATH BLOCK ── */
         .localizer-page .math-block {
@@ -164,7 +232,7 @@ export default function LocalizerProductPage() {
       {/* NAV */}
       <nav>
         <div className="nav-inner">
-          <Link href="/" className="logo">HWY<span>61</span></Link>
+          <Link href="/" className="logo">HWY<span>61</span> Labs</Link>
           <ul className="nav-links">
             <li><Link href="/tourrouter">TourRouter</Link></li>
             <li><Link href="/localizer" className="active">Localizer</Link></li>
@@ -177,15 +245,20 @@ export default function LocalizerProductPage() {
       </nav>
 
       {/* HERO */}
-      <section className="hero">
+      <section className="hero" ref={heroRef}>
         <div className="container">
-          <div className="hero-eyebrow">Tour Marketing</div>
+          <h2 className="localizer-wordmark" ref={wordmarkRef}>LOCALIZER</h2>
           <h1 className="hero-headline">One image. Every asset.<br />Every platform. <span>Every show.</span></h1>
           <p className="sub-headline">Localizer is tour marketing automation. Upload one promo image and generate every show asset for every platform &mdash; Instagram, Facebook, X, poster, web &mdash; branded with your fonts, your colors, your layout. Then send the whole tour to every promoter in one link.</p>
           <div className="btn-row">
-            <Link href="/#waitlist" className="btn btn-primary">Start Free During Beta</Link>
+            <Link href="/#waitlist" className="btn btn-primary">Start your free trial</Link>
             <a href="#pricing" className="btn btn-secondary">See Pricing</a>
           </div>
+          {LANDING_VIDEO_URL && (
+            <div style={{ marginTop: 40 }}>
+              <video controls style={{ width: "100%" }} src={LANDING_VIDEO_URL} />
+            </div>
+          )}
         </div>
       </section>
 
@@ -223,104 +296,6 @@ export default function LocalizerProductPage() {
 
       <hr className="section-divider" />
 
-      {/* FEATURES */}
-      <section className="alt-bg">
-        <div className="container">
-          <div className="section-tag">What It Does</div>
-          <h2 className="section-headline">Upload. Generate. Distribute.</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-accent" style={{ background: "var(--hw-crimson)" }} />
-              <div className="feature-number">01</div>
-              <h3>Automatic Asset Generation</h3>
-              <p>One promo image becomes a complete set of show assets. Instagram Story (1080&times;1920), Facebook Event (1920&times;1005), X/Twitter Post (1200&times;675), Poster (11&times;17), Web Graphic (1200&times;630) &mdash; every format, every show, every time. Add a custom format and it generates retroactively across all shows.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-accent" style={{ background: "var(--hw-blue)" }} />
-              <div className="feature-number">02</div>
-              <h3>Brand Control</h3>
-              <p>Upload your fonts. Set your colors. Choose your layout. Every asset is on-brand without manual design work. Consistent across every show, every platform, every market.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-accent" style={{ background: "var(--hw-purple)" }} />
-              <div className="feature-number">03</div>
-              <h3>Promoter Distribution</h3>
-              <p>Generate a single shareable link for each tour. Promoters click the link and see every asset for their show, pre-sized for every platform. They download what they need. No back-and-forth. No &ldquo;can you send me the Instagram version?&rdquo;</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-accent" style={{ background: "var(--hw-rose)" }} />
-              <div className="feature-number">04</div>
-              <h3>Venue-Branded Assets</h3>
-              <p>Promoters and venues can use Localizer from their side too &mdash; pull artist promo images and generate venue-branded versions for their own marketing. Same automation, their branding.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-accent" style={{ background: "var(--hw-green)" }} />
-              <div className="feature-number">05</div>
-              <h3>Real-Time Updates</h3>
-              <p>Change a date, add a show, swap the promo image &mdash; every asset across every platform updates automatically. No re-exporting. No re-sending.</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-accent" style={{ background: "var(--hw-amber)" }} />
-              <div className="feature-number">06</div>
-              <h3>Multi-Artist Support</h3>
-              <p>Agencies and management companies with multiple acts manage all their tour marketing from one dashboard. Each artist has their own brand settings. Assets generate per-artist across all tours.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <hr className="section-divider" />
-
-      {/* USE CASES */}
-      <section>
-        <div className="container">
-          <div className="section-tag">Who Uses It</div>
-          <h2 className="section-headline">Built for every side of the show.</h2>
-          <div className="use-cases-grid">
-            <div className="use-case-card">
-              <h3>Manager / Marketing</h3>
-              <p>Stop spending hours in Canva duplicating files for every show. Upload the promo image, set the brand, and let every asset generate itself. Send one link to every promoter. Time saved per tour: dozens of hours.</p>
-            </div>
-            <div className="use-case-card">
-              <h3>Booking Agent</h3>
-              <p>When your act confirms a run, send the promoters a Localizer link immediately. Every asset is ready before the announcement. The promoter has everything they need to market the show from day one.</p>
-            </div>
-            <div className="use-case-card">
-              <h3>Promoter / Venue</h3>
-              <p>Get the artist&rsquo;s promo image in every format you need &mdash; or generate your own venue-branded versions. No more emailing the management company for the right file size.</p>
-            </div>
-            <div className="use-case-card">
-              <h3>Self-Managed Artist</h3>
-              <p>You don&rsquo;t have a marketing team. Localizer is your marketing team. Upload your image and every show asset for every platform is done. Focus on the music.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <hr className="section-divider" />
-
-      {/* TESTIMONIALS */}
-      <section className="alt-bg">
-        <div className="container">
-          <div className="section-tag">From the Road</div>
-          <h2 className="section-headline">What they&rsquo;re saying.</h2>
-          <div className="testimonial-grid">
-            <div className="testimonial-card">
-              <div className="quote-mark">&ldquo;</div>
-              <p className="quote-text">Beta user quote &mdash; manager or marketing person perspective. How Localizer changed their tour announcement workflow.</p>
-              <div className="quote-author">&mdash; Name, Manager</div>
-            </div>
-            <div className="testimonial-card">
-              <div className="quote-mark">&ldquo;</div>
-              <p className="quote-text">Beta user quote &mdash; promoter perspective. What it&rsquo;s like receiving assets via Localizer instead of email chains.</p>
-              <div className="quote-author">&mdash; Name, Promoter</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <hr className="section-divider" />
-
       {/* PRICING */}
       <section id="pricing">
         <div className="container">
@@ -328,25 +303,25 @@ export default function LocalizerProductPage() {
           <h2 className="section-headline">Tour marketing that scales.</h2>
           <div className="pricing-grid">
             <div className="pricing-card">
-              <div className="plan-name">Basic</div>
-              <div className="plan-price">$39</div>
+              <div className="plan-name">Solo</div>
+              <div className="plan-price">$XX</div>
               <div className="plan-period">Per Month</div>
-              <p className="plan-desc">1 artist.<br />Core asset generation.</p>
-              <Link href="/#waitlist" className="btn btn-secondary">Start Free</Link>
+              <p className="plan-desc">1 artist.</p>
+              <Link href="/#waitlist" className="btn btn-secondary">Start your free trial</Link>
             </div>
             <div className="pricing-card featured">
               <div className="plan-name">Pro</div>
-              <div className="plan-price">$69</div>
+              <div className="plan-price">$XX</div>
               <div className="plan-period">Per Month</div>
-              <p className="plan-desc">3 artists. Custom formats.<br />Priority rendering.</p>
-              <Link href="/#waitlist" className="btn btn-primary">Start Free</Link>
+              <p className="plan-desc">Up to 5 artists.</p>
+              <Link href="/#waitlist" className="btn btn-primary">Start your free trial</Link>
             </div>
             <div className="pricing-card">
               <div className="plan-name">Agency</div>
-              <div className="plan-price">$139</div>
+              <div className="plan-price">$XX</div>
               <div className="plan-period">Per Month</div>
-              <p className="plan-desc">Unlimited artists.<br />Team members. Full feature set.</p>
-              <Link href="/#waitlist" className="btn btn-secondary">Start Free</Link>
+              <p className="plan-desc">Up to 12 artists.</p>
+              <Link href="/#waitlist" className="btn btn-secondary">Start your free trial</Link>
             </div>
           </div>
           <p className="pricing-note">Annual billing saves 20%. Free during beta &mdash; no credit card required.</p>
@@ -361,14 +336,14 @@ export default function LocalizerProductPage() {
           <div className="section-tag">Get Started</div>
           <h2 className="section-headline">Stop making show assets by hand.</h2>
           <p className="sub-headline" style={{ color: "var(--hw-gray)" }}>Free during beta. Upload one image. Get every asset for every show on every platform.</p>
-          <Link href="/#waitlist" className="btn btn-invert">Get Early Access</Link>
+          <Link href="/#waitlist" className="btn btn-invert">Start your free trial</Link>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer>
         <div className="container">
-          <p>&copy; 2026 HWY61 Labs &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link> &nbsp;&middot;&nbsp; <a href="mailto:hello@hwy61labs.com">Contact</a></p>
+          <p>&copy; 2026 HWY61 Labs &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link> &nbsp;&middot;&nbsp; <a href="mailto:support@hwy61labs.com">support@hwy61labs.com</a></p>
         </div>
       </footer>
     </div>
