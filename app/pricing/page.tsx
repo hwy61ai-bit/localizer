@@ -5,7 +5,6 @@ import posthog from "posthog-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LOCALIZER_PRICE_MAP } from "@/lib/stripe/localizerPrices";
-import "./pricing.css";
 
 const PLANS = [
   {
@@ -127,6 +126,19 @@ export default function PricingPage() {
         .pricing-page .pricing-cta:disabled { cursor: not-allowed; opacity: 0.6; }
         .pricing-page .pricing-card.featured .pricing-cta { background: var(--hw-crimson); color: white; border-color: var(--hw-crimson); }
         .pricing-page .pricing-card.featured .pricing-cta:hover { background: var(--hw-crimson-dark); border-color: var(--hw-crimson-dark); color: white; }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+          .pricing-page { padding: 32px 16px 60px; }
+          .pricing-page .pricing-header { margin-bottom: 32px; }
+          .pricing-page .pricing-headline { font-size: 22px; }
+          .pricing-page .pricing-subline { font-size: 14px; margin-bottom: 20px; }
+          .pricing-page .pricing-grid { grid-template-columns: 1fr; gap: 20px; }
+          .pricing-page .pricing-card { padding: 24px 20px; }
+          .pricing-page .plan-price { font-size: 36px; }
+          .pricing-page .pricing-cta { padding: 14px; font-size: 14px; }
+          .pricing-page .pricing-trial-banner { padding: 14px 18px; font-size: 13px; }
+        }
       ` }} />
 
       {/* NAV */}
