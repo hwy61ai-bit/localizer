@@ -1,17 +1,18 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: May 23, 2026*
+*Last updated: May 26, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
 ## At a glance
 
-- **2 of 25 day-items complete** (Day 4–5 shipped as a welcome page; Day 8–9 partial — page lives at `/localizer`, not `/`)
+- **2 of 30 day-items complete** (25 in the original 30-day plan + 5 Free tier items added May 23; Day 4–5 shipped as a welcome page, Day 8–9 partial — page lives at `/localizer`, not `/`)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
+- **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a net-new Free tier (1 artist, 5 shows/mo, watermarked, 3 formats)
 - **7 items added since the original plan was written** (see "Added since the original plan" section)
-- **Blocked on:** Tim's pricing decision (Days 1–2), Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafting now), Tim's canned support responses (Day 7)
-- **Currently in flight:** welcome email draft (Day 6)
+- **Blocked on:** Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafting now), Tim's canned support responses (Day 7)
+- **Currently in flight:** Stripe Days 1–2 (price IDs + webhook); welcome email draft (Day 6)
 
 ---
 
@@ -19,16 +20,20 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ### Day 1 — Stripe restructure kickoff
 - ⬜ Archive legacy Stripe products (TR Standalone $29, Add-on $20, Add-on Agency $30, old Localizer Basic $39)
-- ⬜ Create 6 new Localizer price IDs (Solo $29/$290, Pro $59/$590, Agency $129/$1,290 — pending repricing)
+- ⬜ Create 6 new Localizer price IDs:
+  - `LOCALIZER_SOLO_MONTHLY` — $29/mo
+  - `LOCALIZER_SOLO_ANNUAL` — $290/yr
+  - `LOCALIZER_PRO_MONTHLY` — $59/mo
+  - `LOCALIZER_PRO_ANNUAL` — $590/yr
+  - `LOCALIZER_AGENCY_MONTHLY` — $129/mo
+  - `LOCALIZER_AGENCY_ANNUAL` — $1,290/yr
 - ⬜ Capture price IDs into `LOCALIZER_PRICE_MAP` constant
 - ⬜ Enable 7-day free trial on all three tiers
-  - *Blocked on: Tim's pricing decision*
 
 ### Day 2 — Stripe webhook update + price ID rotation
 - ⬜ Update `app/api/stripe/webhook/route.ts` for new price IDs
 - ⬜ Update Vercel env vars
 - ⬜ Test sandbox subscription through each tier
-  - *Blocked on: Day 1*
 
 ### Day 3 — Existing customer pricing migration
 - ⬜ ~~Identify existing Localizer customers via Stripe~~
@@ -218,6 +223,18 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ---
 
+## Free tier scope (added May 23 — Tim's pricing decision)
+
+Tim's pricing locked in a Free tier ($0, 1 artist, 5 shows/mo, 3 formats, watermarked). This is net-new engineering not in the original 30-day plan. Estimated 2–3 days; runs as a parallel track to Stripe Days 1–2.
+
+- ⬜ **Watermark renderer** — Cloudinary `l_text` overlay reading `localizer.hwy61labs.com` in footer/corner position. Free users only. Applies to both image and video outputs.
+- ⬜ **Shows-per-month counter on orgs** — DB column tracking shows touched this billing month, monthly reset, enforcement at asset-gen time. Block + upgrade wall at the 6th show.
+- ⬜ **Feature gates on Free accounts** — block: format count >3, custom font upload, video asset generation, PDF routing parser.
+- ⬜ **Upgrade wall UI** — modal shown at every gated action. Monthly and annual prices side-by-side, annual highlighted as default.
+- ⬜ **Plan-status check for Free** — extension of existing eligibility pattern in `lib/localizer/billingGate.ts`. Free becomes a real plan status, not "no plan."
+
+---
+
 ## Added since the original plan
 
 Real work shipped that wasn't in the 30-day plan as written. Most of this came out of testing the original specs and finding gaps.
@@ -239,11 +256,19 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 
 | Blocker | Owner | What unblocks it |
 |---|---|---|
-| Stripe Days 1–2 (product creation + webhook) | Tim | Final pricing decision on Solo / Pro / Agency dollar amounts |
 | Day 6 welcome email | Tim | Review pass on Drew's draft (incoming) |
 | Day 7 canned support responses | Tim | Tim drafts 5 canned responses |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
 | Pre-launch — onboarding wizard per-user vs per-org mismatch | Tim | Decision on which of three fixes to take (see BACKLOG) |
+
+---
+
+## Open items parked for later
+
+Deliberately deferred — not blocking launch, revisit on the timeline indicated.
+
+- **Pro price review at 60 days post-launch.** Most likely change: $59 → $79 if conversion data supports it.
+- **Annual conversion prompt motion for Free users at 60–90 days.** Separate from the upgrade wall — more of a "you've been with us a while" email nudge inviting annual upgrade.
 
 ---
 
