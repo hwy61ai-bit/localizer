@@ -10,6 +10,14 @@ const nextConfig = {
   async headers() {
     return [];
   },
+  async redirects() {
+    return [
+      { source: '/localizer', destination: '/', permanent: true },
+      { source: '/tourrouter', destination: '/coming-soon', permanent: false },
+      { source: '/diy', destination: '/coming-soon', permanent: false },
+      { source: '/roadapp', destination: '/coming-soon', permanent: false },
+    ];
+  },
 };
 
 // Patch the body size limit for API routes

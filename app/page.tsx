@@ -175,7 +175,7 @@ export default function LocalizerProductPage() {
         .localizer-page .math-line.math-total .math-value { color: var(--hw-crimson); font-size: 18px; }
 
         /* ── PRICING ── */
-        .localizer-page .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 40px; }
+        .localizer-page .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
         .localizer-page .pricing-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 40px 32px; text-align: center; transition: all 0.15s ease; border-radius: 0; }
         .localizer-page .pricing-card.featured { border-color: var(--hw-crimson); transform: translateY(-8px); box-shadow: var(--hw-shadow-accent); }
         .localizer-page .pricing-card .plan-name { font-family: var(--hw-font-mono); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--hw-blue); margin-bottom: 8px; }
@@ -215,7 +215,7 @@ export default function LocalizerProductPage() {
           <ul className="nav-links">
             <li><a href="#pricing">Pricing</a></li>
             <li><Link href="/login">Sign in</Link></li>
-            <li><Link href="/#waitlist" className="nav-cta">Start your free trial</Link></li>
+            <li><Link href="/pricing" className="nav-cta">Start your free trial</Link></li>
           </ul>
         </div>
       </nav>
@@ -227,7 +227,7 @@ export default function LocalizerProductPage() {
           <h1 className="hero-headline">One image. Every asset.<br />Every platform. <span>Every show.</span></h1>
           <p className="sub-headline">Localizer is tour marketing automation. Upload one promo image and generate every show asset for every platform &mdash; Instagram, Facebook, X, poster, web &mdash; branded with your fonts, your colors, your layout. Then send the whole tour to every promoter in one link.</p>
           <div className="btn-row">
-            <Link href="/#waitlist" className="btn btn-primary">Start your free trial</Link>
+            <Link href="/pricing" className="btn btn-primary">Start your free trial</Link>
             <a href="#pricing" className="btn btn-secondary">See Pricing</a>
           </div>
           {LANDING_VIDEO_URL && (
@@ -283,21 +283,21 @@ export default function LocalizerProductPage() {
               <div className="plan-price">$29</div>
               <div className="plan-period">Per Month</div>
               <p className="plan-desc">1 artist.</p>
-              <Link href="/#waitlist" className="btn btn-secondary">Start your free trial</Link>
+              <Link href="/pricing" className="btn btn-secondary">Start free trial</Link>
             </div>
             <div className="pricing-card featured">
               <div className="plan-name">Pro</div>
               <div className="plan-price">$59</div>
               <div className="plan-period">Per Month</div>
               <p className="plan-desc">Up to 5 artists.</p>
-              <Link href="/#waitlist" className="btn btn-primary">Start your free trial</Link>
+              <Link href="/pricing" className="btn btn-primary">Start free trial</Link>
             </div>
             <div className="pricing-card">
               <div className="plan-name">Agency</div>
               <div className="plan-price">$129</div>
               <div className="plan-period">Per Month</div>
               <p className="plan-desc">Up to 12 artists.</p>
-              <Link href="/#waitlist" className="btn btn-secondary">Start your free trial</Link>
+              <Link href="/pricing" className="btn btn-secondary">Start free trial</Link>
             </div>
           </div>
           <p className="pricing-note">Annual billing saves 20%. Free during beta &mdash; no credit card required.</p>
@@ -312,7 +312,7 @@ export default function LocalizerProductPage() {
           <div className="section-tag">Get Started</div>
           <h2 className="section-headline">Stop making show assets by hand.</h2>
           <p className="sub-headline" style={{ color: "var(--hw-gray)" }}>Free during beta. Upload one image. Get every asset for every show on every platform.</p>
-          <Link href="/#waitlist" className="btn btn-invert">Start your free trial</Link>
+          <Link href="/pricing" className="btn btn-invert">Start your free trial</Link>
         </div>
       </section>
 
