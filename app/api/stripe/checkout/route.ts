@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { isLocalizerPriceId } from "@/lib/stripe/localizerPrices";
 
 export async function POST(request: Request) {
   try {
@@ -11,10 +12,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing price ID." }, { status: 400 });
     }
 
+    if (!isLocalizerPriceId(priceId)) {
+      return NextResponse.json({ error: "Invalid priceId" }, { status: 400 });
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
+      subscription_data: {
+        trial_period_days: 7,
+      },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?subscribed=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
     });

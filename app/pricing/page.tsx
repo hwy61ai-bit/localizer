@@ -3,16 +3,17 @@
 import { useState, useEffect } from "react";
 import posthog from "posthog-js";
 import { useRouter } from "next/navigation";
+import { LOCALIZER_PRICE_MAP } from "@/lib/stripe/localizerPrices";
 import "./pricing.css";
 
 const PLANS = [
   {
-    name: "Basic",
+    name: "Solo",
     desc: "Perfect for a single artist or band.",
     monthlyPrice: 29,
     annualPrice: 290,
-    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_MONTHLY!,
-    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_BASIC_ANNUAL!,
+    monthlyPriceId: LOCALIZER_PRICE_MAP.solo.monthly,
+    annualPriceId: LOCALIZER_PRICE_MAP.solo.annual,
     features: ["1 band", "3 tours", "AI import parser", "Venue share links", "All asset formats"],
     highlight: false,
   },
@@ -21,8 +22,8 @@ const PLANS = [
     desc: "For managers handling multiple artists.",
     monthlyPrice: 59,
     annualPrice: 590,
-    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY!,
-    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_PRO_ANNUAL!,
+    monthlyPriceId: LOCALIZER_PRICE_MAP.pro.monthly,
+    annualPriceId: LOCALIZER_PRICE_MAP.pro.annual,
     features: ["3 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support"],
     highlight: true,
   },
@@ -31,8 +32,8 @@ const PLANS = [
     desc: "For agencies and large rosters.",
     monthlyPrice: 129,
     annualPrice: 1290,
-    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_AGENCY_MONTHLY!,
-    annualPriceId: process.env.NEXT_PUBLIC_STRIPE_AGENCY_ANNUAL!,
+    monthlyPriceId: LOCALIZER_PRICE_MAP.agency.monthly,
+    annualPriceId: LOCALIZER_PRICE_MAP.agency.annual,
     features: ["Unlimited bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support", "Dedicated onboarding"],
     highlight: false,
   },
