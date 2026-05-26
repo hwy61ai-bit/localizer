@@ -3284,3 +3284,30 @@ After every Localizer/HWY61 session: update both `docs/SESSION_LOG.md` (this fil
 - Stripe Day 2: webhook consolidation (two webhook handlers exist; consolidate to /api/billing/webhook with idempotency)
 - Free tier engineering — pick one of the 5 items (watermark renderer is probably the simplest first step)
 - Vercel env var update: `STRIPE_SECRET_KEY` to live mode for production
+
+
+## May 26, 2026
+
+### Shipped — mobile responsive polish on /pricing and /
+
+Three small fixes after the initial `/pricing` restyle exposed mobile-layout problems:
+
+1. **Consolidated `pricing.css` into the `/pricing` inline `<style>` block.** Deleted `app/pricing/pricing.css`, removed the `import "./pricing.css"`, moved all 9 mobile-only rules into the inline `<style>` in `app/pricing/page.tsx` as a `@media (max-width: 768px) {}` section, rebased selectors to `.pricing-page .foo`, dropped every `!important` flag.
+
+2. **Hid the nav "Start your free trial" CTA at ≤768px on `/pricing`.** Was wrapping to 4 lines + colliding visually with the offset shadow at narrow widths. Redundant with the per-card "Get Solo/Pro/Agency" CTAs which stay visible. One-line rule inside the new mobile `@media` block: `.pricing-page .nav-cta { display: none; }`.
+
+3. **Scaled the LOCALIZER wordmark on `/` at ≤768px.** Pre-existing issue (not caused by this session): wordmark was overflowing the container at 375px and 600px viewports, pushing past sub-headline + buttons to the right. Root cause: `font-size: clamp(80px, 12vw, 160px)` floored at 80px on mobile, combined with 6px letter-spacing and 8×8 box-shadow, gave ~458px width in a 335px container. Mobile override added: font 48px, letter-spacing 3px, padding 12×20px, `--shadow-x`/`--shadow-y` rest values 3px (flows through to text-shadow 3×3 and box-shadow 5×5 via the existing `calc` formulas). Total mobile wordmark width ≈ 273px — fits comfortably with breathing room.
+
+### Why we didn't just strip `!important` from pricing.css
+
+Initial hypothesis going into the cleanup: when desktop styles moved from JSX `style={{}}` props into an inline `<style>` block scoped to `.pricing-page` earlier in the week, the `!important` flags in `pricing.css` would become dead weight. The inline `<style>` rules used `.pricing-page .foo` (specificity 0,2,0) vs the bare `.foo` in `pricing.css` (0,1,0), so the inline rules should win at desktop without `!important` doing anything.
+
+Reality: out of 12 properties guarded by `!important`, 10 turned out to be load-bearing. The inline `<style>` block lives in the `<body>` (rendered as part of the component output); `pricing.css` loads in the `<head>`. Inline `<style>` has equal selector specificity AND later source order, so it wins the cascade at desktop. At mobile widths, the bare `.foo` selectors in `pricing.css` were losing on specificity AND source order to `.pricing-page .foo` in the inline block — `!important` was the only thing forcing mobile rules through.
+
+Fix: move mobile rules INTO the inline `<style>` block under a `@media (max-width: 768px) {}` section. Now both rule sets have equal specificity and the mobile block comes later in source order, naturally winning at mobile widths. `!important` no longer needed anywhere.
+
+### Next session candidates
+- Welcome email draft (Day 6) — Drew-owned, ~45 min
+- Stripe Day 2: webhook consolidation
+- Free tier engineering — pick one of 5 items (watermark renderer is the simplest first step)
+- Vercel env var update: `STRIPE_SECRET_KEY` to live mode for production

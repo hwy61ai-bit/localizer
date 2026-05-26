@@ -10,7 +10,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - **3 of 30 day-items complete** (Day 1 wired May 26, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a net-new Free tier (1 artist, 5 shows/mo, watermarked, 3 formats)
-- **11 items added since the original plan was written** (see "Added since the original plan" section)
+- **12 items added since the original plan was written** (see "Added since the original plan" section)
 - **Blocked on:** Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafting now), Tim's canned support responses (Day 7)
 - **Currently in flight:** Drew picks next session work — likely welcome email draft (Day 6) or Stripe Day 2 webhook update
 
@@ -253,6 +253,7 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 - ✅ **fadeUp cascade + smooth scroll ported from labs to landing.** Staggered hero entrance animation (wordmark → headline → sub-headline → btn-row at 100ms increments) plus CSS `scroll-behavior: smooth` for nav anchors — ported from `/labs` to the Localizer landing.
 - ✅ **`/pricing` page restyled to match Localizer Warhol aesthetic.** Replaced inline `style={{}}` props with a class-based `<style>` block; added sticky dark nav matching the landing; featured Pro card now carries the crimson 6×6 flat offset shadow + translateY treatment.
 - ✅ **`noindex, nofollow` meta tag on `/labs`.** Server-component layout exports `metadata.robots` so search engines don't index the preserved portfolio at the `/labs` URL.
+- ✅ **Mobile responsive polish pass (May 26).** Three fixes after the initial restyle: consolidated `pricing.css` into the `/pricing` inline `<style>` block (deleted the file, dropped all `!important` flags); hid the nav "Start your free trial" CTA at ≤768px on `/pricing` (redundant with per-card CTAs); scaled the LOCALIZER wordmark on `/` at ≤768px (font 80px → 48px, letter-spacing 6px → 3px, shadow 6px → 3px via the existing `--shadow-x`/`-y` vars) so the hero no longer overflows the container at 375px / 600px.
 
 ---
 
