@@ -3251,3 +3251,36 @@ After every Localizer/HWY61 session: update both `docs/SESSION_LOG.md` (this fil
 - Move `/localizer` content to root `/` — small, mechanical
 - Hide `/tourrouter`, `/diy`, `/roadapp` routes (redirect to `/coming-soon`)
 - Bump Tim if blockers haven't moved in ~48 hours
+
+
+## May 24, 2026
+
+### Shipped
+- Landing page prices: $XX placeholders → real numbers ($29 / $59 / $129)
+- Localizer moved to root /; HWY61 Labs portfolio preserved at /labs with noindex meta tag
+- /tourrouter, /diy, /roadapp redirected to /coming-soon via next.config.js
+- Consolidated config: deleted empty next.config.mjs stub
+- fadeUp cascade + smooth scroll on landing hero (ported from labs page pattern)
+- Pricing grid layout fix on landing (3-column explicit, prevents wrap)
+- Landing page CTAs repointed from dead /#waitlist anchor to /pricing
+- **Stripe Day 1 complete:** 6 live prices created (Solo/Pro/Agency × monthly/annual), captured into `LOCALIZER_PRICE_MAP` at `lib/stripe/localizerPrices.ts`, 7-day trial wired via `subscription_data.trial_period_days`, priceId validation added to checkout route
+- /pricing page restyled to match Localizer Warhol aesthetic: sticky nav, featured-card crimson offset shadow, color-coded tier names (blue/crimson), proper button styling
+
+### Decisions
+- **Stripe product modeling:** 3 products (Solo / Pro / Agency), 2 prices each — cleaner subscription objects and receipts than single-product-six-prices
+- **7-day trial set in code**, not Stripe Dashboard — Stripe's modern UI doesn't expose trial config on the price form; configuring in checkout code is more flexible anyway
+- **/labs preserved**, not deleted — 562 lines of real HWY61 Labs portfolio, may revive when TourRouter launches
+
+### Security note
+- Restricted Stripe key (`rk_live_...`) pasted in chat by mistake when looking for the secret key. Rotated immediately in Stripe, replaced with proper standard secret key (`sk_live_...`) in `.env.local`.
+
+### Blocked on Tim (still pending)
+- Onboarding video v1 notes
+- Welcome email copy review (need to draft first)
+- Canned support response copy (Day 7)
+
+### Next session candidates
+- Welcome email draft (Day 6) — Drew-owned, ~45 min
+- Stripe Day 2: webhook consolidation (two webhook handlers exist; consolidate to /api/billing/webhook with idempotency)
+- Free tier engineering — pick one of the 5 items (watermark renderer is probably the simplest first step)
+- Vercel env var update: `STRIPE_SECRET_KEY` to live mode for production

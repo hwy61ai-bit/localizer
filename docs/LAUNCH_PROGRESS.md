@@ -7,28 +7,28 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **2 of 30 day-items complete** (25 in the original 30-day plan + 5 Free tier items added May 23; Day 4–5 shipped as a welcome page, Day 8–9 partial — page lives at `/localizer`, not `/`)
+- **3 of 30 day-items complete** (Day 1 wired May 26, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a net-new Free tier (1 artist, 5 shows/mo, watermarked, 3 formats)
-- **7 items added since the original plan was written** (see "Added since the original plan" section)
+- **11 items added since the original plan was written** (see "Added since the original plan" section)
 - **Blocked on:** Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafting now), Tim's canned support responses (Day 7)
-- **Currently in flight:** Stripe Days 1–2 (price IDs + webhook); welcome email draft (Day 6)
+- **Currently in flight:** Drew picks next session work — likely welcome email draft (Day 6) or Stripe Day 2 webhook update
 
 ---
 
 ## Week 1 (Days 1–7)
 
 ### Day 1 — Stripe restructure kickoff
-- ⬜ Archive legacy Stripe products (TR Standalone $29, Add-on $20, Add-on Agency $30, old Localizer Basic $39)
-- ⬜ Create 6 new Localizer price IDs:
+- ✅ ~~Archive legacy Stripe products~~ *(N/A — live mode was empty; nothing to archive. Sandbox-only products discovered May 21.)*
+- ✅ Create 6 new Localizer price IDs (live in Stripe May 23):
   - `LOCALIZER_SOLO_MONTHLY` — $29/mo
   - `LOCALIZER_SOLO_ANNUAL` — $290/yr
   - `LOCALIZER_PRO_MONTHLY` — $59/mo
   - `LOCALIZER_PRO_ANNUAL` — $590/yr
   - `LOCALIZER_AGENCY_MONTHLY` — $129/mo
   - `LOCALIZER_AGENCY_ANNUAL` — $1,290/yr
-- ⬜ Capture price IDs into `LOCALIZER_PRICE_MAP` constant
-- ⬜ Enable 7-day free trial on all three tiers
+- ✅ Capture price IDs into `LOCALIZER_PRICE_MAP` constant *(`lib/stripe/localizerPrices.ts`, May 26)*
+- ✅ Enable 7-day free trial on all three tiers *(configured in `app/api/stripe/checkout/route.ts` via `subscription_data.trial_period_days`, not Stripe dashboard)*
 
 ### Day 2 — Stripe webhook update + price ID rotation
 - ⬜ Update `app/api/stripe/webhook/route.ts` for new price IDs
@@ -75,14 +75,14 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ✅ `/localizer` rewritten and trimmed (376 → 319 lines)
 - ✅ Six-section structure (hero, problem, solution, pricing, final CTA, footer)
 - ✅ LOCALIZER wordmark with cursor-responsive crimson shadows
-- ✅ Pricing tier names: Solo / Pro / Agency at 1 / 5 / 12 artists (placeholder `$XX` dollar amounts)
+- ✅ Pricing tier names: Solo / Pro / Agency at 1 / 5 / 12 artists
 - ✅ Primary CTAs unified to "Start your free trial"
 - ✅ Nav reduced to Pricing / Sign in / Start your free trial
 - ✅ Footer contact updated to `support@hwy61labs.com`
-- ⬜ Page lives at `/` (currently at `/localizer`; root is still behind `COMING_SOON` gate)
+- ✅ Page lives at `/` (Localizer content moved to root May 26; old `/` landing preserved at `/labs`)
+- ✅ Hide `/tourrouter`, `/diy`, `/roadapp` via config-level redirects to `/coming-soon` (May 26)
 - ⬜ 90-second demo video embedded in hero
-- ⬜ Final dollar amounts in pricing tiers
-  - *Blocked on: Tim's pricing decision*
+- ✅ Final dollar amounts in pricing tiers ($29 / $59 / $129, locked May 23, applied May 26)
 - ⬜ "Built by working music industry people" callout with Tim's bio + photo
 
 ### Day 10 — Pricing page (`/pricing`)
@@ -249,6 +249,10 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 - ✅ **Stripe business setup (partial).** Bank account connected via Plaid, EIN verification document uploaded, public/support email updated to `billing@hwy61labs.com`. Product creation itself remains parked on Tim's pricing call.
 - ✅ **Onboarding video script (first pass).** `docs/LOCALIZER_ONBOARDING_VIDEO_SCRIPT.md` drafted with tour-manager-to-tour-manager voice, ~2:30 narration, scene markers.
 - ✅ **Artist tile "ARTIST PROFILE" button.** Bottom-right pill link on artist tiles with image-aware styling. Replaced a hover-only top-right gear icon that was failing desktop discoverability and mobile entirely.
+- ✅ **HWY61 Labs portfolio preserved at `/labs`.** Original 562-line `app/page.tsx` (drop-zone demo, four-product portfolio, multi-tier pricing) moved aside May 26 to make room for the Localizer landing at root. Still in git history, still browseable.
+- ✅ **fadeUp cascade + smooth scroll ported from labs to landing.** Staggered hero entrance animation (wordmark → headline → sub-headline → btn-row at 100ms increments) plus CSS `scroll-behavior: smooth` for nav anchors — ported from `/labs` to the Localizer landing.
+- ✅ **`/pricing` page restyled to match Localizer Warhol aesthetic.** Replaced inline `style={{}}` props with a class-based `<style>` block; added sticky dark nav matching the landing; featured Pro card now carries the crimson 6×6 flat offset shadow + translateY treatment.
+- ✅ **`noindex, nofollow` meta tag on `/labs`.** Server-component layout exports `metadata.robots` so search engines don't index the preserved portfolio at the `/labs` URL.
 
 ---
 
@@ -277,7 +281,8 @@ Deliberately deferred — not blocking launch, revisit on the timeline indicated
 Ranked by priority for the next focused session:
 
 1. **Welcome email draft (Day 6).** Drew-owned, drafting next. Roughly 30–60 min for a first pass + send to Tim.
-2. **First-asset celebration moment (Day 11).** Highest-leverage UX improvement per the source plan ("the most important UX in the whole product"). Confetti or success screen + prominent "Copy your venue link" button. Half-day session.
-3. **Empty states pass (Day 11).** Four empty-state surfaces (dashboard / artist / tour / template editor). Mechanical work, no Tim input needed. Half-day session.
-4. **"Getting Started with Localizer" help doc (Day 6 / Day 13).** Pairs naturally with the welcome email draft.
-5. **Pre-launch gate: signup smoke test end-to-end.** Per BACKLOG — Supabase email signups currently disabled, ensureOrgExists never tested from the new auth-callback path. Catches a major surprise before launch.
+2. **Stripe Day 2 — webhook consolidation + price ID rotation.** Two webhooks currently coexist (`/api/stripe/webhook` vs `/api/billing/webhook`) — Day 2 picks one and retires the other, wires plan-tier mapping via `tierFromPriceId` from the new pricing module. Half-day session.
+3. **First-asset celebration moment (Day 11).** Highest-leverage UX improvement per the source plan ("the most important UX in the whole product"). Confetti or success screen + prominent "Copy your venue link" button. Half-day session.
+4. **Empty states pass (Day 11).** Four empty-state surfaces (dashboard / artist / tour / template editor). Mechanical work, no Tim input needed. Half-day session.
+5. **"Getting Started with Localizer" help doc (Day 6 / Day 13).** Pairs naturally with the welcome email draft.
+6. **Pre-launch gate: signup smoke test end-to-end.** Per BACKLOG — Supabase email signups currently disabled, ensureOrgExists never tested from the new auth-callback path. Catches a major surprise before launch.
