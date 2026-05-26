@@ -138,6 +138,7 @@ export default function PricingPage() {
           .pricing-page .plan-price { font-size: 36px; }
           .pricing-page .pricing-cta { padding: 14px; font-size: 14px; }
           .pricing-page .pricing-trial-banner { padding: 14px 18px; font-size: 13px; }
+          .pricing-page .nav-cta { display: none; }
         }
       ` }} />
 
