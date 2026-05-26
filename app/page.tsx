@@ -201,6 +201,13 @@ export default function LocalizerProductPage() {
           .localizer-page section { padding: 60px 0; }
           .localizer-page .container { padding: 0 20px; }
           .localizer-page .hero { padding: 60px 0; }
+          .localizer-page .localizer-wordmark {
+            --shadow-x: 3px;
+            --shadow-y: 3px;
+            font-size: 48px;
+            letter-spacing: 3px;
+            padding: 12px 20px;
+          }
           .localizer-page .pricing-grid { grid-template-columns: 1fr; }
           .localizer-page nav .nav-links { display: none; }
           .localizer-page .btn-row { flex-direction: column; }
