@@ -53,7 +53,7 @@ const FAQ_DATA: Section[] = [
     items: [
       {
         q: "How much does HWY61 cost?",
-        a: "It depends on what you need:\n\u2022 TourRouter (the complete touring OS): $49\u2013$149/mo depending on how many artists and users\n\u2022 Localizer (tour marketing automation): $39\u2013$139/mo\n\u2022 DIY (routing + budget for self-managed acts): $19/mo\n\u2022 Road App (mobile schedule for band + crew): Free, always\n\u2022 The Full HWY61 Suite (everything bundled): $249/mo\n\nAnnual billing saves 20% across all plans.",
+        a: "It depends on what you need:\n\u2022 TourRouter (the complete touring OS): $49\u2013$149/mo depending on how many artists and users\n\u2022 Localizer (tour marketing automation): $29\u2013$129/mo\n\u2022 DIY (routing + budget for self-managed acts): $19/mo\n\u2022 Road App (mobile schedule for band + crew): Free, always\n\u2022 The Full HWY61 Suite (everything bundled): $249/mo\n\nAnnual billing saves 20% across all plans.",
       },
       {
         q: "Is there a free trial?",
