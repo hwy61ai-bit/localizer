@@ -197,6 +197,26 @@ Effort: ~1 hour including migration, writer update, reader update, and verifying
 
 ---
 
+## 🗣️ Comms / launch ops (1)
+
+*Launch-related tooling and content — not feature code, not Tim-blocked.*
+
+### Tim launch update PDF template
+
+Warhol-styled HTML template Drew duplicates every few days and prints to PDF from Chrome. Includes:
+
+- Hero with % complete + progress bar
+- Four current-state sections (Shipped / In flight / Waiting on Tim / Coming up this week)
+- "Road to launch" section with Week 2 / Week 3 / Week 4 subsections
+
+Design preview locked in May 24, 2026 chat session.
+
+**Build steps when picked up:**
+1. Create `docs/templates/TIM_LAUNCH_UPDATE_TEMPLATE.html` with Bebas Neue via Google Fonts + print stylesheet
+2. Create `docs/tim-updates/` directory with a README explaining the duplicate + edit + save-as-PDF workflow
+
+---
+
 ## ⚪ Awaiting Tim (5)
 
 *Blocked on his decision, copy, or sign-off.*
