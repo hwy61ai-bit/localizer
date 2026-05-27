@@ -12,7 +12,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a net-new Free tier (1 artist, 5 shows/mo, watermarked, 3 formats)
 - **12 items added since the original plan was written** (see "Added since the original plan" section)
 - **Blocked on:** Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafts ready), Tim's canned support responses (Day 7)
-- **Currently in flight:** Stripe Day 3 — live env var swap + live webhook setup
+- **Currently in flight:** Stripe Day 3 live verification (next session with Tim — screen-share); Free tier watermark renderer (next solo coding item)
 
 ---
 
@@ -35,7 +35,34 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ✅ Plan-tier mapping wired via `tierFromPriceId` from `lib/stripe/localizerPrices.ts` (replaces env-var-based `planFromPriceId` lookup)
 - ✅ `mapSubStatus()` helper covering all Stripe sub statuses; writes migrated to `localizer_plan` / `localizer_plan_status` columns; `.select()` + zero-row warnings on every `orgs` update (rule 6 compliance)
 
-### Day 3 — Existing customer pricing migration
+### Day 3 — Stripe live mode swap (code-complete, end-to-end verification pending)
+- ✅ STRIPE_SECRET_KEY in Vercel swapped to live (Production scope)
+- ✅ STRIPE_WEBHOOK_SECRET in Vercel set to live signing secret (Production scope)
+- ✅ Live mode webhook destination registered in Stripe (`Localizer Billing` at hwy61labs.com/api/billing/webhook, 3 events subscribed)
+- ✅ Production deploy green after env var fix
+- 🟡 End-to-end verification — pending screen-share session with Tim (test plan below)
+
+#### Live Stripe verification — pre-launch screen-share with Tim
+
+> Goal: validate the complete live checkout-to-org-update pipeline before any real customer hits it. Drew acts as the test customer using his own card. 7-day trial means no money moves; cancel before any charge fires.
+>
+> **Steps (run with Tim on screen-share):**
+>
+> 1. From a clean incognito session, navigate through the team-login path to access the app, then go to `/pricing`
+> 2. Pick Solo monthly ($29) — cheapest tier, simplest validation
+> 3. Use a real personal card at Stripe checkout. The 7-day trial means no immediate charge — Stripe should show "$0.00 today, $29 on [date 7 days from now]"
+> 4. Complete checkout — Stripe redirects back to the app
+> 5. Verify webhook fired in Stripe Dashboard → `Localizer Billing` destination → Event deliveries tab — `checkout.session.completed` should show 200 response
+> 6. Verify the customer + subscription got created: Stripe Dashboard → Customers → search by test email — should show as customer with active sub on Solo trial
+> 7. Verify the org row got updated: Supabase SQL Editor `SELECT id, owner_email, stripe_customer_id, stripe_subscription_id, localizer_plan, localizer_plan_status FROM orgs WHERE owner_email = '<test email>';` — should show `localizer_plan = 'solo'`, `localizer_plan_status = 'active'`, both Stripe IDs populated
+> 8. Cancel immediately via app's Account Settings (or Stripe Dashboard customer page). Verify `customer.subscription.deleted` also fires with 200, and Supabase shows `localizer_plan_status = 'canceled'`
+> 9. Optional: archive the test customer in Stripe for clean Customers list
+>
+> **Acceptance criteria:** all three webhook events return 200, all three Supabase row states (active → canceled) reflect correctly, no warn strings in Vercel logs (`unknown priceId`, `orgs update affected 0 rows`).
+>
+> **Why screen-share with Tim:** Tim owns the customer-experience side of billing/subscription flow. He should see the live checkout for the first time at the same moment Drew does — both for narrative-voice feedback on the experience and for shared knowledge of how it behaves.
+
+### Day 3 (original) — Existing customer pricing migration
 - ⬜ ~~Identify existing Localizer customers via Stripe~~
 - ⬜ ~~Migrate each to corresponding new lower-priced subscription~~
 - ⬜ ~~Send friendly notification email via Resend~~
@@ -262,6 +289,7 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 
 | Blocker | Owner | What unblocks it |
 |---|---|---|
+| Live Stripe verification end-to-end | Drew + Tim | Schedule screen-share session, run the 9-step test plan above |
 | Day 6 welcome email | Tim | Review pass on drafts (ready May 27, actionable now) |
 | Day 7 canned support responses | Tim | Tim drafts 5 canned responses |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
