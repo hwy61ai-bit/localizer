@@ -1,18 +1,18 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: May 26, 2026*
+*Last updated: May 27, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
 ## At a glance
 
-- **3 of 30 day-items complete** (Day 1 wired May 26, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending)
+- **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a net-new Free tier (1 artist, 5 shows/mo, watermarked, 3 formats)
 - **12 items added since the original plan was written** (see "Added since the original plan" section)
-- **Blocked on:** Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafting now), Tim's canned support responses (Day 7)
-- **Currently in flight:** Drew picks next session work — likely welcome email draft (Day 6) or Stripe Day 2 webhook update
+- **Blocked on:** Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafts ready), Tim's canned support responses (Day 7)
+- **Currently in flight:** Stripe Day 3 — live env var swap + live webhook setup
 
 ---
 
@@ -30,10 +30,10 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ✅ Capture price IDs into `LOCALIZER_PRICE_MAP` constant *(`lib/stripe/localizerPrices.ts`, May 26)*
 - ✅ Enable 7-day free trial on all three tiers *(configured in `app/api/stripe/checkout/route.ts` via `subscription_data.trial_period_days`, not Stripe dashboard)*
 
-### Day 2 — Stripe webhook update + price ID rotation
-- ⬜ Update `app/api/stripe/webhook/route.ts` for new price IDs
-- ⬜ Update Vercel env vars
-- ⬜ Test sandbox subscription through each tier
+### Day 2 — Stripe webhook consolidation
+- ✅ Consolidate dual webhook routes — `/api/stripe/webhook` deleted, `/api/billing/webhook` is now the single endpoint *(May 27)*
+- ✅ Plan-tier mapping wired via `tierFromPriceId` from `lib/stripe/localizerPrices.ts` (replaces env-var-based `planFromPriceId` lookup)
+- ✅ `mapSubStatus()` helper covering all Stripe sub statuses; writes migrated to `localizer_plan` / `localizer_plan_status` columns; `.select()` + zero-row warnings on every `orgs` update (rule 6 compliance)
 
 ### Day 3 — Existing customer pricing migration
 - ⬜ ~~Identify existing Localizer customers via Stripe~~
@@ -51,11 +51,12 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - *Pivoted from the 5-step wizard originally specced. Tested wizard end-to-end (commit reverted), confirmed contrived for batch-tour workflow, replaced with single welcome screen. 80 lines instead of 530.*
 
 ### Day 6 — Welcome email + getting-started doc
-- ⬜ Welcome email triggered on first sign-in (Resend transactional)
+- 🟡 Welcome email triggered on first sign-in (Resend transactional)
   - 1-paragraph welcome from Tim
   - 3-bullet "what to do next" steps
   - Link to help docs
   - Tim's email for direct support
+  - *Drafts ready May 27 — awaiting Tim's review pass before wiring the transactional send*
 - ⬜ "Getting Started with Localizer" help doc (single article)
   - *Drew drafting next — will share for Tim's review*
 
@@ -261,9 +262,11 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 
 | Blocker | Owner | What unblocks it |
 |---|---|---|
-| Day 6 welcome email | Tim | Review pass on Drew's draft (incoming) |
+| Day 6 welcome email | Tim | Review pass on drafts (ready May 27, actionable now) |
 | Day 7 canned support responses | Tim | Tim drafts 5 canned responses |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
+| FAQ positioning copy review | Tim | Voice/positioning pass on `/dashboard/support` FAQ answers (deferred during May 27 pricing-data fix) |
+| Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
 | Pre-launch — onboarding wizard per-user vs per-org mismatch | Tim | Decision on which of three fixes to take (see BACKLOG) |
 
 ---
@@ -281,9 +284,10 @@ Deliberately deferred — not blocking launch, revisit on the timeline indicated
 
 Ranked by priority for the next focused session:
 
-1. **Welcome email draft (Day 6).** Drew-owned, drafting next. Roughly 30–60 min for a first pass + send to Tim.
-2. **Stripe Day 2 — webhook consolidation + price ID rotation.** Two webhooks currently coexist (`/api/stripe/webhook` vs `/api/billing/webhook`) — Day 2 picks one and retires the other, wires plan-tier mapping via `tierFromPriceId` from the new pricing module. Half-day session.
-3. **First-asset celebration moment (Day 11).** Highest-leverage UX improvement per the source plan ("the most important UX in the whole product"). Confetti or success screen + prominent "Copy your venue link" button. Half-day session.
-4. **Empty states pass (Day 11).** Four empty-state surfaces (dashboard / artist / tour / template editor). Mechanical work, no Tim input needed. Half-day session.
-5. **"Getting Started with Localizer" help doc (Day 6 / Day 13).** Pairs naturally with the welcome email draft.
-6. **Pre-launch gate: signup smoke test end-to-end.** Per BACKLOG — Supabase email signups currently disabled, ensureOrgExists never tested from the new auth-callback path. Catches a major surprise before launch.
+1. **Stripe Day 3 — live env var swap + live webhook endpoint creation + verification.** Combined session: rotate `STRIPE_SECRET_KEY` and the webhook signing secret in Vercel (interlocked — both swap together), create the live webhook endpoint in the Stripe dashboard pointing at `/api/billing/webhook`, verify a real subscription event end-to-end. Currently in flight.
+2. **Tim handoff doc.** Bundle the welcome email v1+v2 drafts (4 variants total) for Tim's review, FAQ positioning copy review request (`/dashboard/support` voice pass), and the landing hero diff as an info note. Single document Tim can work through in one sitting.
+3. **Free tier engineering — watermark renderer.** First of the 5 free-tier items per the May 23 pricing kickoff. Half-day session. Cloudinary `l_text` overlay reading `localizer.hwy61labs.com` in footer/corner position for Free users on both image and video outputs.
+4. **First-asset celebration moment (Day 11).** Highest-leverage UX improvement per the source plan ("the most important UX in the whole product"). Confetti or success screen + prominent "Copy your venue link" button. Half-day session.
+5. **Empty states pass (Day 11).** Four empty-state surfaces (dashboard / artist / tour / template editor). Mechanical work, no Tim input needed. Half-day session.
+6. **"Getting Started with Localizer" help doc (Day 6 / Day 13).** Pairs naturally with the welcome email draft.
+7. **Pre-launch gate: signup smoke test end-to-end.** Per BACKLOG — Supabase email signups currently disabled, ensureOrgExists never tested from the new auth-callback path. Catches a major surprise before launch.

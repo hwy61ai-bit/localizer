@@ -3311,3 +3311,64 @@ Fix: move mobile rules INTO the inline `<style>` block under a `@media (max-widt
 - Stripe Day 2: webhook consolidation
 - Free tier engineering — pick one of 5 items (watermark renderer is the simplest first step)
 - Vercel env var update: `STRIPE_SECRET_KEY` to live mode for production
+
+
+## 2026-05-27 — Day 2 webhook consolidation (turned into real bug fix), welcome email drafts, landing positioning shift
+
+**Commits shipped today (3):**
+- c2e6cd6 — chore(stripe): consolidate webhooks + target localizer_plan columns (Day 2)
+- 678800a — feat(landing): elevate venue-delivery framing in hero, add W-9/stage plot/FOH to scope
+- 27f1f34 — fix(support): correct stale Localizer pricing in FAQ ($39-$139 -> $29-$129)
+
+**What shipped:**
+
+Day 2 turned into a real fix, not just cleanup. The existing /api/billing/webhook was writing to legacy `plan` + `plan_status` columns, while `lib/localizer/billingGate.ts:getLocalizerAccessLevel()` reads from `localizer_plan_status` and `bundle_plan_status` (the Unit A/C freemium columns). Result: paid signups would have authenticated through Stripe but never received product access through the gate. Latent bug, not yet observed only because no live customers exist. Now fixed.
+
+Webhook rewrite swaps:
+- `planFromPriceId` (env-var-based, returned "starter" as fallback) → `tierFromPriceId` from `lib/stripe/localizerPrices.ts` (returns null if unknown).
+- Old `plan` + `plan_status` columns → `localizer_plan` + `localizer_plan_status` (the canonical Localizer gating columns).
+- Stripe sub status mapping properly fleshed out: `trialing` → `active` so trialing customers get product access; `past_due`/`unpaid` → `past_due`; `canceled` → `canceled`; `paused`/`incomplete` mapped explicitly. Previous code mapped everything-not-active to `past_due`, which would have flagged trialing customers as behind on payments.
+- Unknown priceId logged as warning; customer mapping (`stripe_customer_id`, `stripe_subscription_id`) preserved, only the plan write is skipped. Webhook returns 200 regardless — Stripe retries can't recover from this case without restructuring the idempotency insert order (backlogged).
+- Added `.select()` + zero-row warning logs to all `orgs` update calls per standing rule.
+
+Old `/api/stripe/webhook/route.ts` deleted (was writing to the orphan `subscription_status` column). `subscription_status` column dropped from `orgs` table after deploy verified.
+
+Landing hero updated. Removed "Localizer is tour marketing automation" undersell line, added "Drop in your W-9, stage plot, and FOH requirements too," refreshed closer to "Every promoter gets one link with everything they need." Kept yesterday's redesigned 4-clause headline and CTAs untouched.
+
+Stale Localizer pricing corrected in the support FAQ at `app/dashboard/support/page.tsx:56`: $39–$139/mo → $29–$129/mo. Pre-May-23 numbers were live in a logged-in surface — credibility risk if a customer hit the FAQ post-checkout.
+
+**Drafted (awaiting Tim review):**
+
+Welcome email — 4 variants total. Two voice splits ("Get to work" peer-direct, "Friendly steps" structured) × two framing variants (v1 marketing-asset framing, v2 docs-inclusive framing). Drafts captured in chat; bundle into a Tim handoff doc next session.
+
+**Key learnings:**
+
+- "Trace before fix" saved the session twice. First when the constraint failure on the backfill exposed the three-coexisting-plan-systems architecture (legacy `plan`, current `localizer_plan`, bundle `bundle_plan`). Second when the grep for the hero file revealed the hero had already moved past "Tour dates in. Tour assets out." — would have written a diff against a tagline no longer on the page.
+- "Tim owns narrative/copy" is real but flexible. Landing page hero shipped with Drew's call (Tim sees the change in deploy). The shift was conservative enough — single paragraph edit, docs-inclusive framing — that ship-then-notify made sense. FAQ positioning copy deferred for Tim review.
+- Backlog item: webhook idempotency insert order should move to after successful processing if Stripe retries should actually recover from org-update failures. Current order makes retries no-op.
+- Localizer's docs-delivery feature (W-9, stage plots, FOH via venue share link) is shipped but was almost never mentioned in marketing surfaces. Positioning shift began today on landing hero; remaining surfaces (pricing page feature row, in-app empty states, /v/e/[token] venue page, first-asset celebration UI, video script) still need treatment.
+
+**Tim status:**
+
+Open threads:
+- Onboarding video v1 — notes/approval (no movement)
+- Welcome email copy review — NOW UNBLOCKED. Drafts exist (v1 + v2, 4 variants). Bundle into Tim review doc next session.
+- Canned support response copy — no movement
+- NEW: FAQ positioning copy review — `app/dashboard/support/page.tsx` lines 56 and 145 still contain "tour marketing automation" framing inconsistent with new landing hero. Bundle with Tim review.
+- NEW: Landing hero diff (informational) — single-paragraph copy shift Tim should see for narrative continuity.
+
+**Still open (not touched today):**
+
+- Stripe Day 3 (Vercel STRIPE_SECRET_KEY swap to live + create live webhook endpoint + verify) — natural next session
+- Free tier engineering: watermark renderer, shows-per-month counter, feature gates, upgrade wall UI
+- Onboarding Option B (Localizer-only wizard) — blocked on Tim's narrative input
+- Legacy `plan` / `plan_status` / `billing_subscription_id` column cleanup — backlogged
+- Trial countdown UX (`trial_ends_at` write from webhook) — backlogged
+- TourRouter/bundle webhook coverage when bundle pricing exists — backlogged
+- Docs-delivery positioning rollout to remaining surfaces (pricing page, in-app, venue page, celebration, video script) — partially done, more queued
+
+**Next session starts with:**
+
+Stripe Day 3 — live env var swap + live webhook endpoint creation + verification. Combine STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET swaps in one Vercel session (signing secret won't match production until both are live-mode). Then create the live webhook endpoint at dashboard.stripe.com/webhooks pointing at https://hwy61labs.com/api/billing/webhook, with the 3 events subscribed. Verify with Stripe Dashboard's "Send test webhook" — confirm 200 response and clean Vercel logs.
+
+Before Day 3 work, write the Tim handoff doc bundling: welcome email v1+v2 drafts (4 variants), FAQ positioning copy review request, landing hero informational note.
