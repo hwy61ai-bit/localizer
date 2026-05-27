@@ -232,7 +232,7 @@ export default function LocalizerProductPage() {
         <div className="container">
           <h2 className="localizer-wordmark" ref={wordmarkRef}>LOCALIZER</h2>
           <h1 className="hero-headline">One image. Every asset.<br />Every platform. <span>Every show.</span></h1>
-          <p className="sub-headline">Localizer is tour marketing automation. Upload one promo image and generate every show asset for every platform &mdash; Instagram, Facebook, X, poster, web &mdash; branded with your fonts, your colors, your layout. Then send the whole tour to every promoter in one link.</p>
+          <p className="sub-headline">Upload one promo image and generate every show asset for every platform &mdash; Instagram, Facebook, X, poster, web &mdash; branded with your fonts, your colors, your layout. Drop in your W-9, stage plot, and FOH requirements too. Every promoter gets one link with everything they need.</p>
           <div className="btn-row">
             <Link href="/pricing" className="btn btn-primary">Start your free trial</Link>
             <a href="#pricing" className="btn btn-secondary">See Pricing</a>
