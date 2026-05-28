@@ -13,10 +13,12 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  *   where the access_token arrives in the URL fragment that the
  *   server route can't see)
  *
- * During beta, new orgs are provisioned with active Localizer
- * status (plan='pro', localizer_plan='agency', localizer_plan_status='active').
- * These three lines must be removed before COMING_SOON=false to
- * restore correct freemium gating for public signups.
+ * New orgs start on a 7-day no-card Localizer trial via trial_ends_at
+ * (now + 7d). No active localizer_plan_status is seeded — the billing
+ * gate treats an unexpired trial_ends_at as paid-equivalent access, then
+ * falls through to "free" after expiry. The Stripe webhook flips
+ * localizer_plan_status to "active" on payment. plan='pro' remains as
+ * TourRouter's tier (separate product, out of scope here).
  */
 export async function ensureOrgExists(supabase: SupabaseClient) {
   const {
@@ -41,8 +43,7 @@ export async function ensureOrgExists(supabase: SupabaseClient) {
       name: "My Workspace",
       owner_email: user.email ?? null,
       plan: "pro",
-      localizer_plan: "agency",
-      localizer_plan_status: "active",
+      localizer_plan: null,
       trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       localizer_enabled: true,
     })
