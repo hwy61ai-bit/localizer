@@ -1,18 +1,18 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: May 27, 2026*
+*Last updated: May 28, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
 ## At a glance
 
-- **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending)
+- **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending; Day 7 canned support responses finalized May 28, other Day 7 operational items still open)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a net-new Free tier (1 artist, 5 shows/mo, watermarked, 3 formats)
-- **12 items added since the original plan was written** (see "Added since the original plan" section)
-- **Blocked on:** Tim's video script review (Day 12), Tim's welcome email review (Day 6, drafts ready), Tim's canned support responses (Day 7)
-- **Currently in flight:** Stripe Day 3 live verification (next session with Tim — screen-share); Free tier watermark renderer (next solo coding item)
+- **19 items added since the original plan was written** (see "Added since the original plan" section)
+- **Blocked on:** Tim's video script review (Day 12), Tim's welcome email variant pick (Day 6, 4 drafts ready), Tim's Day 3 live Stripe verification screen-share
+- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); Day 6 welcome email (4 variants drafted, awaiting Tim's pick)
 
 ---
 
@@ -92,8 +92,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ⬜ Decide ownership split (Tim replies, Drew handles bug escalations)
 - ⬜ Set up Linear or Notion board for tracking customer issues
 - ⬜ Smoke-test the support address end-to-end
-- ⬜ Tim drafts 5 canned responses (pricing, billing, "how do I do X", refund requests, "is my data safe")
-  - *Blocked on: Tim's canned responses*
+- ✅ 5 canned responses finalized (`docs/SUPPORT_CANNED_RESPONSES.md`, commits 2a3ad0b + ab4cc16, May 28) — pricing, billing, "how do I do X", refund requests, "is my data safe"
 
 ---
 
@@ -282,6 +281,10 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 - ✅ **`/pricing` page restyled to match Localizer Warhol aesthetic.** Replaced inline `style={{}}` props with a class-based `<style>` block; added sticky dark nav matching the landing; featured Pro card now carries the crimson 6×6 flat offset shadow + translateY treatment.
 - ✅ **`noindex, nofollow` meta tag on `/labs`.** Server-component layout exports `metadata.robots` so search engines don't index the preserved portfolio at the `/labs` URL.
 - ✅ **Mobile responsive polish pass (May 26).** Three fixes after the initial restyle: consolidated `pricing.css` into the `/pricing` inline `<style>` block (deleted the file, dropped all `!important` flags); hid the nav "Start your free trial" CTA at ≤768px on `/pricing` (redundant with per-card CTAs); scaled the LOCALIZER wordmark on `/` at ≤768px (font 80px → 48px, letter-spacing 6px → 3px, shadow 6px → 3px via the existing `--shadow-x`/`-y` vars) so the hero no longer overflows the container at 375px / 600px.
+- ✅ **Privacy Policy + Terms of Service content finalized (May 28).** Codebase-wide entity rename "HWY61 AI" → "HWY61 LLC" (9 instances across `app/privacy/page.tsx` and `app/terms/page.tsx`); Effective Date bumped April 1 → June 1, 2026; "invitation only" line dropped from Eligibility; "monthly render limit" line dropped from Subscription & Billing. Content is now internally consistent, current, and accurate to product behavior. Legal review by counsel still pending (logged as pre-launch blocker).
+- ✅ **Day 7 canned support responses finalized (May 28).** `docs/SUPPORT_CANNED_RESPONSES.md` with five Tim-voice replies: pricing, billing, generic how-to, refund requests, and data safety. Notes section flags `[help docs link]` placeholder for swap when Getting Started article ships.
+- ✅ **Pricing page (`/pricing`) Free tier card added (May 28).** Free tier added as first card in the four-tier grid; CSS grid bumped 3 → 4 columns; Free CTA routes to `/login` (skips Stripe checkout); Pro and Agency artist counts corrected from "3 bands" / "Unlimited bands" → "Up to 5 bands" / "Up to 12 bands" to match May 23 pricing model. Box-sizing fix on the shared `.pricing-cta` rule keeps `<a>` and `<button>` CTAs visually identical.
+- ✅ **Landing page (`/`) Free tier card added (May 28).** Free tier card added as first card in the landing pricing grid; CSS grid bumped 3 → 4 columns; "Annual billing saves 20%. Free during beta — no credit card required" replaced with "Annual billing saves ~17%. Free tier available — no credit card required" (the 20% number was inflated — actual is $290/yr vs $29×12=$348, savings = ~17%).
 
 ---
 
@@ -290,8 +293,10 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 | Blocker | Owner | What unblocks it |
 |---|---|---|
 | Live Stripe verification end-to-end | Drew + Tim | Schedule screen-share session, run the 9-step test plan above |
+| Free tier engineering | Drew | Build watermark renderer, shows-per-month counter, feature gates, format limit, upgrade wall — see BACKLOG. Free cards on `/pricing` and `/` are a broken promise without this. |
+| Legal review of Privacy Policy + Terms of Service | Drew | Commission counsel review of `app/privacy/page.tsx` and `app/terms/page.tsx` — content finalized May 28 but not legally vetted |
+| Verify dmca@, privacy@, support@ hwy61labs.com inbox routing | Drew | DNS / forwarding setup; verify all three route to a real monitored inbox |
 | Day 6 welcome email | Tim | Review pass on drafts (ready May 27, actionable now) |
-| Day 7 canned support responses | Tim | Tim drafts 5 canned responses |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
 | FAQ positioning copy review | Tim | Voice/positioning pass on `/dashboard/support` FAQ answers (deferred during May 27 pricing-data fix) |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |

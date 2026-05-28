@@ -3372,3 +3372,24 @@ Open threads:
 Stripe Day 3 — live env var swap + live webhook endpoint creation + verification. Combine STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET swaps in one Vercel session (signing secret won't match production until both are live-mode). Then create the live webhook endpoint at dashboard.stripe.com/webhooks pointing at https://hwy61labs.com/api/billing/webhook, with the 3 events subscribed. Verify with Stripe Dashboard's "Send test webhook" — confirm 200 response and clean Vercel logs.
 
 Before Day 3 work, write the Tim handoff doc bundling: welcome email v1+v2 drafts (4 variants), FAQ positioning copy review request, landing hero informational note.
+
+
+## 2026-05-28 — Legal docs finalized + pricing audit & Free card
+
+**Done:**
+- Privacy Policy + ToS finalized: HWY61 LLC entity, June 1 effective date, invite-only + render-limit lines dropped. Live in app/privacy/page.tsx and app/terms/page.tsx.
+- Canned support responses entity name corrected; doc finalized.
+- Entity rename complete codebase-wide (grep clean — no "HWY61 AI" anywhere in app/ or lib/).
+- /pricing: fixed Pro/Agency artist counts to 5/12; added Free tier card (non-checkout CTA, box-sizing fix for the <a>).
+- Landing page: added Free tier card; fixed annual savings 20%→~17%; dropped stale "Free during beta" line.
+- BACKLOG: 3 new pre-launch gates added (email routing, legal review, Free tier engineering).
+- Memory: legal entity corrected to HWY61 LLC (not HWY61 Labs LLC).
+
+**Not done / flagged:**
+- Free tier engineering (watermark additive pass, 5-shows/mo counter, feature/format gates, upgrade wall) — half-day+ net-new; now a launch blocker because Free cards are live on two pages.
+- /pricing "tours" vs "shows" terminology — Solo "3 tours" looks stale; flagged for Tim.
+- Landing pricing-note final wording — Tim should bless.
+- Day 3 live Stripe verification with Tim still pending (real-signup screen-share).
+
+**Next session starts with:**
+Free tier engineering build. Sequence: billing gate ("no plan" → free access) → watermark additive pass → shows/mo counter → feature/format gates → upgrade wall.
