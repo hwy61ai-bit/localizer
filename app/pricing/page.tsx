@@ -6,7 +6,30 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LOCALIZER_PRICE_MAP } from "@/lib/stripe/localizerPrices";
 
-const PLANS = [
+type Plan = {
+  name: string;
+  desc: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  monthlyPriceId: string | null;
+  annualPriceId: string | null;
+  features: string[];
+  highlight: boolean;
+  isFree: boolean;
+};
+
+const PLANS: Plan[] = [
+  {
+    name: "Free",
+    desc: "Try the full workflow at no cost.",
+    monthlyPrice: 0,
+    annualPrice: 0,
+    monthlyPriceId: null,
+    annualPriceId: null,
+    features: ["1 band", "5 shows per month", "3 asset formats", "Watermarked assets"],
+    highlight: false,
+    isFree: true,
+  },
   {
     name: "Solo",
     desc: "Perfect for a single artist or band.",
@@ -16,6 +39,7 @@ const PLANS = [
     annualPriceId: LOCALIZER_PRICE_MAP.solo.annual,
     features: ["1 band", "3 tours", "AI import parser", "Venue share links", "All asset formats"],
     highlight: false,
+    isFree: false,
   },
   {
     name: "Pro",
@@ -24,8 +48,9 @@ const PLANS = [
     annualPrice: 590,
     monthlyPriceId: LOCALIZER_PRICE_MAP.pro.monthly,
     annualPriceId: LOCALIZER_PRICE_MAP.pro.annual,
-    features: ["3 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support"],
+    features: ["Up to 5 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support"],
     highlight: true,
+    isFree: false,
   },
   {
     name: "Agency",
@@ -34,8 +59,9 @@ const PLANS = [
     annualPrice: 1290,
     monthlyPriceId: LOCALIZER_PRICE_MAP.agency.monthly,
     annualPriceId: LOCALIZER_PRICE_MAP.agency.annual,
-    features: ["Unlimited bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support", "Dedicated onboarding"],
+    features: ["Up to 12 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support", "Dedicated onboarding"],
     highlight: false,
+    isFree: false,
   },
 ];
 
@@ -105,7 +131,7 @@ export default function PricingPage() {
         .pricing-page .pricing-toggle .save-badge { margin-left: 8px; font-family: var(--hw-font-mono); font-size: 9px; font-weight: 700; letter-spacing: 1px; opacity: 0.7; }
 
         /* Pricing grid */
-        .pricing-page .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+        .pricing-page .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
         .pricing-page .pricing-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 40px 32px; text-align: center; transition: all 0.15s ease; border-radius: 0; position: relative; display: flex; flex-direction: column; }
         .pricing-page .pricing-card.featured { border-color: var(--hw-crimson); transform: translateY(-8px); box-shadow: 6px 6px 0 var(--hw-crimson); }
         .pricing-page .featured-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--hw-crimson); border: 3px solid var(--hw-border-strong); color: #fff; font-family: var(--hw-font-mono); font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 4px 14px; border-radius: 0; text-transform: uppercase; }
@@ -121,7 +147,7 @@ export default function PricingPage() {
         .pricing-page .plan-feature::before { content: "✓"; color: var(--hw-crimson); font-size: 16px; font-weight: 700; flex-shrink: 0; }
 
         /* CTA */
-        .pricing-page .pricing-cta { width: 100%; display: block; margin-top: auto; padding: 14px; font-family: var(--hw-font-display); font-size: 15px; letter-spacing: 3px; text-transform: uppercase; background: var(--hw-bg-surface); color: var(--hw-border-strong); border: 3px solid var(--hw-border-strong); border-radius: 0; cursor: pointer; transition: all 0.15s ease; }
+        .pricing-page .pricing-cta { width: 100%; display: block; box-sizing: border-box; margin-top: auto; padding: 14px; font-family: var(--hw-font-display); font-size: 15px; letter-spacing: 3px; text-transform: uppercase; text-align: center; background: var(--hw-bg-surface); color: var(--hw-border-strong); border: 3px solid var(--hw-border-strong); border-radius: 0; cursor: pointer; transition: all 0.15s ease; text-decoration: none; }
         .pricing-page .pricing-cta:hover { background: var(--hw-bg-invert); color: var(--hw-text-invert); transform: translateY(-2px); box-shadow: 4px 4px 0 var(--hw-crimson); }
         .pricing-page .pricing-cta:disabled { cursor: not-allowed; opacity: 0.6; }
         .pricing-page .pricing-card.featured .pricing-cta { background: var(--hw-crimson); color: white; border-color: var(--hw-crimson); }
@@ -188,21 +214,25 @@ export default function PricingPage() {
               <div key={plan.name} className={`pricing-card${plan.highlight ? " featured" : ""}`}>
                 {plan.highlight && <div className="featured-badge">Most Popular</div>}
                 <div className="plan-name">{plan.name}</div>
-                <div className="plan-price">${price}</div>
-                <div className="plan-period">{annual ? "Per Year" : "Per Month"}</div>
+                <div className="plan-price">{plan.isFree ? "$0" : `$${price}`}</div>
+                <div className="plan-period">{plan.isFree ? "Free forever" : (annual ? "Per Year" : "Per Month")}</div>
                 <div className="plan-desc">{plan.desc}</div>
                 <div className="plan-features">
                   {plan.features.map((f) => (
                     <div key={f} className="plan-feature">{f}</div>
                   ))}
                 </div>
-                <button
-                  className="pricing-cta"
-                  onClick={() => handleCheckout(priceId, plan.name)}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Loading…" : `Get ${plan.name}`}
-                </button>
+                {plan.isFree ? (
+                  <Link href="/login" className="pricing-cta">Start Free</Link>
+                ) : (
+                  <button
+                    className="pricing-cta"
+                    onClick={() => priceId && handleCheckout(priceId, plan.name)}
+                    disabled={isLoading || !priceId}
+                  >
+                    {isLoading ? "Loading…" : `Get ${plan.name}`}
+                  </button>
+                )}
               </div>
             );
           })}
