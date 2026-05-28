@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (7)
+## 🟡 Pre-launch gates (8)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -134,6 +134,23 @@ Before adding the cron back to `vercel.json`:
 Get a real legal review before public launch. The liability, indemnification, and limitation-of-liability clauses in particular warrant professional sign-off given HWY61 LLC processes payments through Stripe.
 
 **Launch blocker if not reviewed.**
+
+---
+
+### Build the Free tier (engineering) before launch
+
+Both `/pricing` (`app/pricing/page.tsx`) and the landing page (`app/page.tsx`) now show a Free tier card with a "Start Free" CTA → `/login`. The cards are live, but the Free tier itself is NOT built. Before flipping `COMING_SOON=false`, the Free tier must actually function, or "Start Free" signups land in a non-existent tier.
+
+Required pieces (per the locked May 23 pricing model — Free = 1 band, 5 shows/mo, 3 formats, watermarked, no custom fonts/video/PDF parsing):
+
+- Billing gate: "no plan / no active sub" must map to free-tier access, not no-access (`lib/localizer/billingGate.ts`)
+- Watermark on rendered assets — additive pass (`lib/clientRender.ts` is protected, do NOT edit it; apply watermark as a separate layer)
+- 5-shows-per-month counter + enforcement
+- Feature gates: disable custom fonts, video, and PDF parsing on free tier (UI + server)
+- Format limit: only 3 asset formats on free tier
+- Upgrade wall when a free user hits a limit
+
+**Launch blocker — the Free cards are a broken promise without this. Roughly a half-day+ of net-new work; its own session.**
 
 ---
 
