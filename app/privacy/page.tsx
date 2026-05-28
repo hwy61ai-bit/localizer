@@ -10,10 +10,10 @@ export default function PrivacyPage() {
         <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 40, letterSpacing: 3, textTransform: "uppercase" as const, marginBottom: 4, color: "var(--hw-text)" }}>LOCALIZER</div>
         <div style={{ width: 120, height: 3, background: "var(--hw-crimson)", marginBottom: 24 }} />
         <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, fontWeight: 400, letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 8, color: "var(--hw-text)" }}>Privacy Policy</h1>
-        <p style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: 4, textTransform: "uppercase" as const, color: "var(--hw-blue)", marginBottom: 32 }}>Effective Date: April 1, 2026</p>
+        <p style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: 4, textTransform: "uppercase" as const, color: "var(--hw-blue)", marginBottom: 32 }}>Effective Date: June 1, 2026</p>
         <div style={{ background: "var(--hw-bg-surface)", borderRadius: 0, border: "3px solid var(--hw-border-strong)", padding: "32px 28px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, lineHeight: 1.7, color: "var(--hw-text-secondary)" }}>
 
-          <p>This Privacy Policy describes how HWY61 AI collects, uses, and protects information when you use Localizer, TourRouter, and DIY at hwy61labs.com and its subdomains (localizer.hwy61labs.com, tourrouter.hwy61labs.com, diy.hwy61labs.com). By using the Service, you agree to the practices described in this policy.</p>
+          <p>This Privacy Policy describes how HWY61 LLC collects, uses, and protects information when you use Localizer, TourRouter, and DIY at hwy61labs.com and its subdomains (localizer.hwy61labs.com, tourrouter.hwy61labs.com, diy.hwy61labs.com). By using the Service, you agree to the practices described in this policy.</p>
 
           <h2 style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, fontWeight: 400, letterSpacing: 2, textTransform: "uppercase" as const, marginTop: 32, marginBottom: 12, color: "var(--hw-text)" }}>1. Information We Collect</h2>
           <p><strong>Account Information:</strong> We collect your email address. We use passwordless authentication (magic link) so we do not collect or store passwords.</p>
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           <p>We share information with service providers who help operate the Service:</p>
           <p><strong>Supabase</strong> — Database, authentication, file storage. <strong>Cloudinary</strong> — Image hosting and CDN. <strong>Stripe</strong> — Payment processing. <strong>Resend</strong> — Email delivery. <strong>Anthropic</strong> — AI processing. <strong>Vercel</strong> — Application hosting. <strong>Mapbox</strong> — Geocoding and route data. <strong>PostHog</strong> — Anonymous product analytics.</p>
           <p>Venue Links expose only poster images and event details (date, venue name, city). No personal account information is shared through Venue Links.</p>
-          <p>We may disclose information if required by law or to protect the rights, property, or safety of HWY61 AI, our users, or the public.</p>
+          <p>We may disclose information if required by law or to protect the rights, property, or safety of HWY61 LLC, our users, or the public.</p>
 
           <h2 style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, fontWeight: 400, letterSpacing: 2, textTransform: "uppercase" as const, marginTop: 32, marginBottom: 12, color: "var(--hw-text)" }}>4. Data Storage and Security</h2>
           <p>Your data is stored on servers operated by Supabase, Cloudinary, and Vercel. All data is transmitted over HTTPS. We use row-level security policies to ensure users can only access data within their own Organization.</p>
@@ -60,7 +60,7 @@ export default function PrivacyPage() {
           <p>We may update this policy from time to time. Continued use after changes constitutes acceptance.</p>
 
           <h2 style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, fontWeight: 400, letterSpacing: 2, textTransform: "uppercase" as const, marginTop: 32, marginBottom: 12, color: "var(--hw-text)" }}>12. Contact</h2>
-          <p><strong>HWY61 AI</strong><br />Email: privacy@hwy61labs.com<br />DMCA: dmca@hwy61labs.com</p>
+          <p><strong>HWY61 LLC</strong><br />Email: privacy@hwy61labs.com<br />DMCA: dmca@hwy61labs.com</p>
         </div>
       </div>
     </main>
