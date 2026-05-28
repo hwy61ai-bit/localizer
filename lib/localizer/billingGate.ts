@@ -31,12 +31,19 @@ export async function getLocalizerAccessLevel(
   const supabase = supabaseAdmin();
   const { data: org } = await supabase
     .from("orgs")
-    .select("localizer_plan_status, bundle_plan_status")
+    .select("localizer_plan_status, bundle_plan_status, trial_ends_at")
     .eq("id", orgId)
     .maybeSingle();
 
   // Null return = row not found OR RLS silent read. Treat as 'none' defensively.
   if (!org) return "none";
+
+  // Unexpired trial grants full (paid-equivalent) access regardless of plan status.
+  // trial_ends_at is seeded at org creation; null or past = no active trial.
+  const trialEndsAt = org.trial_ends_at as string | null;
+  if (trialEndsAt && new Date(trialEndsAt) > new Date()) {
+    return "paid";
+  }
 
   const paidStatuses = new Set(["active", "past_due"]);
   if (
