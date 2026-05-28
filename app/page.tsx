@@ -175,7 +175,7 @@ export default function LocalizerProductPage() {
         .localizer-page .math-line.math-total .math-value { color: var(--hw-crimson); font-size: 18px; }
 
         /* ── PRICING ── */
-        .localizer-page .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+        .localizer-page .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
         .localizer-page .pricing-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 40px 32px; text-align: center; transition: all 0.15s ease; border-radius: 0; }
         .localizer-page .pricing-card.featured { border-color: var(--hw-crimson); transform: translateY(-8px); box-shadow: var(--hw-shadow-accent); }
         .localizer-page .pricing-card .plan-name { font-family: var(--hw-font-mono); font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--hw-blue); margin-bottom: 8px; }
@@ -286,6 +286,13 @@ export default function LocalizerProductPage() {
           <h2 className="section-headline">Tour marketing that scales.</h2>
           <div className="pricing-grid">
             <div className="pricing-card">
+              <div className="plan-name">Free</div>
+              <div className="plan-price">$0</div>
+              <div className="plan-period">Free forever</div>
+              <p className="plan-desc">1 artist, watermarked.</p>
+              <Link href="/login" className="btn btn-secondary">Start Free</Link>
+            </div>
+            <div className="pricing-card">
               <div className="plan-name">Solo</div>
               <div className="plan-price">$29</div>
               <div className="plan-period">Per Month</div>
@@ -307,7 +314,7 @@ export default function LocalizerProductPage() {
               <Link href="/pricing" className="btn btn-secondary">Start free trial</Link>
             </div>
           </div>
-          <p className="pricing-note">Annual billing saves 20%. Free during beta &mdash; no credit card required.</p>
+          <p className="pricing-note">Annual billing saves ~17%. Free tier available &mdash; no credit card required.</p>
         </div>
       </section>
 
