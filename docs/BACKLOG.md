@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (5)
+## 🟡 Pre-launch gates (7)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -114,6 +114,26 @@ Before adding the cron back to `vercel.json`:
 - [ ] End-to-end test with a real (test) promoter email address, not a name string
 - [ ] Verify `advance_emails` log matches Resend delivery confirmations
 - [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
+
+---
+
+### Verify dmca@, privacy@, support@ hwy61labs.com inbox routing
+
+`dmca@hwy61labs.com`, `privacy@hwy61labs.com`, and `support@hwy61labs.com` are referenced as official contact channels in the finalized Privacy Policy (`app/privacy/page.tsx`) and Terms of Service (`app/terms/page.tsx`). Before public launch, verify all three route to a real, monitored inbox.
+
+`dmca@` is the legal DMCA agent channel — copyright notices must actually be received for HWY61 LLC to maintain safe-harbor status. Setup/DNS verification work, not code.
+
+**Launch blocker if any of the three bounce or silently drop.**
+
+---
+
+### Real legal review of Privacy Policy + Terms of Service
+
+`app/privacy/page.tsx` and `app/terms/page.tsx` were finalized for internal consistency on 2026-05-27 — HWY61 LLC entity name, June 1, 2026 effective date, hwy61labs.com domain, and content accurate to current product behavior — but they were not reviewed by counsel.
+
+Get a real legal review before public launch. The liability, indemnification, and limitation-of-liability clauses in particular warrant professional sign-off given HWY61 LLC processes payments through Stripe.
+
+**Launch blocker if not reviewed.**
 
 ---
 
