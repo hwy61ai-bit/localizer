@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (8)
+## 🟡 Pre-launch gates (7)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -134,23 +134,6 @@ Before adding the cron back to `vercel.json`:
 Get a real legal review before public launch. The liability, indemnification, and limitation-of-liability clauses in particular warrant professional sign-off given HWY61 LLC processes payments through Stripe.
 
 **Launch blocker if not reviewed.**
-
----
-
-### Build the Free tier (engineering) before launch
-
-Both `/pricing` (`app/pricing/page.tsx`) and the landing page (`app/page.tsx`) now show a Free tier card with a "Start Free" CTA → `/login`. The cards are live, but the Free tier itself is NOT built. Before flipping `COMING_SOON=false`, the Free tier must actually function, or "Start Free" signups land in a non-existent tier.
-
-Required pieces (per the locked May 23 pricing model — Free = 1 band, 5 shows/mo, 3 formats, watermarked, no custom fonts/video/PDF parsing):
-
-- Billing gate: "no plan / no active sub" must map to free-tier access, not no-access (`lib/localizer/billingGate.ts`)
-- Watermark on rendered assets — additive pass (`lib/clientRender.ts` is protected, do NOT edit it; apply watermark as a separate layer)
-- 5-shows-per-month counter + enforcement
-- Feature gates: disable custom fonts, video, and PDF parsing on free tier (UI + server)
-- Format limit: only 3 asset formats on free tier
-- Upgrade wall when a free user hits a limit
-
-**Launch blocker — the Free cards are a broken promise without this. Roughly a half-day+ of net-new work; its own session.**
 
 ---
 
@@ -914,3 +897,17 @@ controlled by ONBOARDING_VIDEO_URL constant in LocalizerWelcome.tsx
 When Drew records the walkthrough video (2-3 min covering import → upload →
 generate → share), upload to Cloudinary or YouTube and set the constant to
 the playback URL.
+
+---
+
+### Build the Free tier (engineering) before launch — CUT (2026-05-28)
+
+The May 23 Free tier spec (watermark renderer, 5-shows/mo counter, 3-format limit, custom-font / video / PDF blocks, upgrade-wall modal) was killed by Tim's call on 2026-05-28. Replaced by a no-card 7-day trial of full Localizer access. After expiry, access falls through to "free" — downloads return 402 until the user picks a plan. No watermark, no per-month cap, no per-feature gates, no upgrade-wall modal.
+
+**Resolution (2026-05-28):** Model replaced, not implemented. Original requirements list is dead. Trial model wired across three surfaces in one session:
+
+- `lib/localizer/billingGate.ts` reads `trial_ends_at` and returns `"paid"` while it's in the future, evaluated before the existing `paidStatuses` check. Commit `8095476` (unpushed at write time).
+- `lib/auth/ensureOrgExists.ts` seeds new orgs with `localizer_plan: null`, `localizer_plan_status: null`, `trial_ends_at = now() + 7d`. Replaces the prior beta-mode seed (`localizer_plan: "agency"` + `localizer_plan_status: "active"`). Commit `67cf438` (unpushed at write time).
+- Beta-org backfill in Supabase SQL Editor: 22 existing tester orgs reset to fresh June-5 trials; shared org `d38702d7` preserved as `active` with `owner_email = 'hwy61ai@gmail.com'`. Verified by SELECT.
+
+The Free cards on `/pricing` and `/` no longer constitute a "broken promise" — clicking "Start Free" lands a user in a 7-day trial of full access, then free/blocked until they pick a plan. The five sub-items in the original entry (watermark renderer, 5-shows/mo counter, feature gates, format limit, upgrade wall) are NOT happening. See `docs/LAUNCH_PROGRESS.md` "Trial model (locked May 28 — replaces the May 23 watermarked Free tier)" for current state. See `docs/SESSION_LOG.md` 2026-05-28 "No-card trial model locked" for the decision narrative.

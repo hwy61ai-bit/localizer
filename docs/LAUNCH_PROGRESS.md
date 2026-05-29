@@ -9,10 +9,11 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 - **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending; Day 7 canned support responses finalized May 28, other Day 7 operational items still open)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
-- **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a net-new Free tier (1 artist, 5 shows/mo, watermarked, 3 formats)
-- **19 items added since the original plan was written** (see "Added since the original plan" section)
-- **Blocked on:** Tim's video script review (Day 12), Tim's welcome email variant pick (Day 6, 4 drafts ready), Tim's Day 3 live Stripe verification screen-share
-- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); Day 6 welcome email (4 variants drafted, awaiting Tim's pick)
+- **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
+- **22 items added since the original plan was written** (see "Added since the original plan" section)
+- **Trial model functionally complete** — gate reads `trial_ends_at` (`8095476`), `ensureOrgExists` seeds trial-not-active (`67cf438`), 22-org beta backfill applied May 28. Both code commits unpushed.
+- **Blocked on:** Tim's video script review (Day 12), Tim's Day 3 live Stripe verification screen-share, Tim's 4 remaining trial-model email questions (Q1 of 5 resolved by trial-gate work)
+- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); two trial-model commits (`8095476` + `67cf438`) **unpushed** pending intentional Vercel deploy of trial behavior to production
 
 ---
 
@@ -83,7 +84,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
   - 3-bullet "what to do next" steps
   - Link to help docs
   - Tim's email for direct support
-  - *Drafts ready May 27 — awaiting Tim's review pass before wiring the transactional send*
+  - *Tim picked the rewritten 2A variant on May 28 and added Day 5/7 nudge drafts. Transactional wiring still pending — gated on Tim's answers to questions 2–5 (cron home for Day 5/7 sends; `/api/welcome` trigger point + new body; idempotency check against `localizer_plan_status === 'active'`; pre-upgrade cancellation copy).*
 - ⬜ "Getting Started with Localizer" help doc (single article)
   - *Drew drafting next — will share for Tim's review*
 
@@ -250,15 +251,19 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ---
 
-## Free tier scope (added May 23 — Tim's pricing decision)
+## Trial model (locked May 28 — replaces the May 23 watermarked Free tier)
 
-Tim's pricing locked in a Free tier ($0, 1 artist, 5 shows/mo, 3 formats, watermarked). This is net-new engineering not in the original 30-day plan. Estimated 2–3 days; runs as a parallel track to Stripe Days 1–2.
+The May 23 Free tier spec (watermark, 5-shows/mo counter, 3-format limit, custom-font / video / PDF blocks, upgrade-wall modal) is **DEAD**. Replaced by a no-card 7-day trial of full Localizer access. After expiry, access falls through to "free" — downloads return 402, signed-in dashboard surfaces remain usable until the user picks a plan. The watermark, shows-per-month counter, feature gates, and upgrade-wall items below are CUT — none of them ship.
 
-- ⬜ **Watermark renderer** — Cloudinary `l_text` overlay reading `localizer.hwy61labs.com` in footer/corner position. Free users only. Applies to both image and video outputs.
-- ⬜ **Shows-per-month counter on orgs** — DB column tracking shows touched this billing month, monthly reset, enforcement at asset-gen time. Block + upgrade wall at the 6th show.
-- ⬜ **Feature gates on Free accounts** — block: format count >3, custom font upload, video asset generation, PDF routing parser.
-- ⬜ **Upgrade wall UI** — modal shown at every gated action. Monthly and annual prices side-by-side, annual highlighted as default.
-- ⬜ **Plan-status check for Free** — extension of existing eligibility pattern in `lib/localizer/billingGate.ts`. Free becomes a real plan status, not "no plan."
+- ✅ **Trial gate reads `trial_ends_at`** — `lib/localizer/billingGate.ts` treats an unexpired `trial_ends_at` as paid-equivalent access, evaluated before the existing `paidStatuses` check (commit `8095476`, May 28).
+- ✅ **`ensureOrgExists` seeds trial-not-active** — new orgs created with `localizer_plan: null`, `localizer_plan_status: null`, `trial_ends_at = now() + 7d` (commit `67cf438`, May 28). Docstring updated.
+- ✅ **Beta-org backfill complete (May 28)** — 22 existing tester orgs reset to `localizer_plan = null`, `localizer_plan_status = null`, fresh `trial_ends_at = now() + 7d` (June 5 expiry); shared org `d38702d7` preserved as `active` with `owner_email = 'hwy61ai@gmail.com'`. Verified by SELECT in Supabase SQL Editor.
+- ⬜ **Push trial-model commits** — `8095476` + `67cf438` unpushed; pushing triggers Vercel auto-deploy of trial-state behavior to production. Intentional pause pending Tim's 4 remaining email questions.
+- ~~Watermark renderer~~ — **CUT** (no watermark in the trial model).
+- ~~Shows-per-month counter on orgs~~ — **CUT** (no per-month cap; trial gives unlimited, post-trial gates downloads only).
+- ~~Feature gates on Free accounts~~ — **CUT** (free state gates downloads via 402, not per-feature).
+- ~~Upgrade wall UI~~ — **CUT** (the download 402 carries the upgrade prompt).
+- ~~Plan-status check for Free~~ — **DONE differently** (free = `localizer_plan_status: null` + expired `trial_ends_at`, handled inline by the gate without a new status enum).
 
 ---
 
@@ -285,6 +290,9 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 - ✅ **Day 7 canned support responses finalized (May 28).** `docs/SUPPORT_CANNED_RESPONSES.md` with five Tim-voice replies: pricing, billing, generic how-to, refund requests, and data safety. Notes section flags `[help docs link]` placeholder for swap when Getting Started article ships.
 - ✅ **Pricing page (`/pricing`) Free tier card added (May 28).** Free tier added as first card in the four-tier grid; CSS grid bumped 3 → 4 columns; Free CTA routes to `/login` (skips Stripe checkout); Pro and Agency artist counts corrected from "3 bands" / "Unlimited bands" → "Up to 5 bands" / "Up to 12 bands" to match May 23 pricing model. Box-sizing fix on the shared `.pricing-cta` rule keeps `<a>` and `<button>` CTAs visually identical.
 - ✅ **Landing page (`/`) Free tier card added (May 28).** Free tier card added as first card in the landing pricing grid; CSS grid bumped 3 → 4 columns; "Annual billing saves 20%. Free during beta — no credit card required" replaced with "Annual billing saves ~17%. Free tier available — no credit card required" (the 20% number was inflated — actual is $290/yr vs $29×12=$348, savings = ~17%).
+- ✅ **Trial-gate reads `trial_ends_at` (May 28).** `lib/localizer/billingGate.ts` treats an unexpired `trial_ends_at` as paid-equivalent access — short-circuits to `"paid"` before the existing `paidStatuses` (active / past_due) check. Replaces the dead watermarked Free tier model. Commit `8095476`. tsc + build clean.
+- ✅ **`ensureOrgExists` seeds trial-not-active (May 28).** New orgs created with `localizer_plan: null`, `localizer_plan_status: null`, `trial_ends_at = now() + 7d`. Replaces the prior beta-mode seed (`localizer_plan: "agency"` + `localizer_plan_status: "active"`). Docstring rewritten to retire the "beta provisioning" note. Commit `67cf438`. tsc + build clean.
+- ✅ **Beta-org backfill complete (May 28).** Three SQL UPDATEs in Supabase SQL Editor: (1) 22 existing tester orgs reset to `localizer_plan = null`, `localizer_plan_status = null`, fresh `trial_ends_at = now() + 7d` (June 5 expiry); (2) shared org `d38702d7` preserved as `active`; (3) `owner_email = 'hwy61ai@gmail.com'` set on `d38702d7`. Verified by SELECT — 22 testers on fresh June-5 trials, shared org active with the right owner email.
 
 ---
 
@@ -292,11 +300,11 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 
 | Blocker | Owner | What unblocks it |
 |---|---|---|
+| Trial-model commits unpushed | Drew | Confirm intent + `git push origin main` for `8095476` + `67cf438`. Push auto-deploys trial-state behavior (gate + seed) to production via Vercel. Paused intentionally until Tim's 4 remaining email questions are decided. |
+| Tim's 4 remaining trial-model email questions | Tim | Answers to: (2) cron home for Day 5/7 nudge sends; (3) welcome email trigger point + new body via `/api/welcome`; (4) idempotency — skip Day 5/7 sends if `localizer_plan_status === 'active'`; (5) cancellation copy — confirm pre-upgrade users see no "cancel" action. (Q1 — trial timer source of truth — resolved May 28: `trial_ends_at` column read by the gate.) |
 | Live Stripe verification end-to-end | Drew + Tim | Schedule screen-share session, run the 9-step test plan above |
-| Free tier engineering | Drew | Build watermark renderer, shows-per-month counter, feature gates, format limit, upgrade wall — see BACKLOG. Free cards on `/pricing` and `/` are a broken promise without this. |
 | Legal review of Privacy Policy + Terms of Service | Drew | Commission counsel review of `app/privacy/page.tsx` and `app/terms/page.tsx` — content finalized May 28 but not legally vetted |
 | Verify dmca@, privacy@, support@ hwy61labs.com inbox routing | Drew | DNS / forwarding setup; verify all three route to a real monitored inbox |
-| Day 6 welcome email | Tim | Review pass on drafts (ready May 27, actionable now) |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
 | FAQ positioning copy review | Tim | Voice/positioning pass on `/dashboard/support` FAQ answers (deferred during May 27 pricing-data fix) |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
@@ -317,10 +325,10 @@ Deliberately deferred — not blocking launch, revisit on the timeline indicated
 
 Ranked by priority for the next focused session:
 
-1. **Stripe Day 3 — live env var swap + live webhook endpoint creation + verification.** Combined session: rotate `STRIPE_SECRET_KEY` and the webhook signing secret in Vercel (interlocked — both swap together), create the live webhook endpoint in the Stripe dashboard pointing at `/api/billing/webhook`, verify a real subscription event end-to-end. Currently in flight.
-2. **Tim handoff doc.** Bundle the welcome email v1+v2 drafts (4 variants total) for Tim's review, FAQ positioning copy review request (`/dashboard/support` voice pass), and the landing hero diff as an info note. Single document Tim can work through in one sitting.
-3. **Free tier engineering — watermark renderer.** First of the 5 free-tier items per the May 23 pricing kickoff. Half-day session. Cloudinary `l_text` overlay reading `localizer.hwy61labs.com` in footer/corner position for Free users on both image and video outputs.
+1. **Push trial-model commits + Stripe Day 3 verification.** Two interlocked moves: (a) push `8095476` + `67cf438` to deploy trial behavior to production (gate reads `trial_ends_at`, new signups seed trial-not-active); (b) the in-flight Stripe Day 3 live verification screen-share with Tim. Both belong in the same session so trial behavior + live Stripe both go live with eyes on Vercel logs.
+2. **Tim's 4 trial-model email questions (handoff + answers).** Concrete list: cron home for Day 5/7 nudge sends; `/api/welcome` trigger point + new body; idempotency (skip Day 5/7 if `localizer_plan_status === 'active'`); pre-upgrade cancellation copy. Once answered, unblocks Day 5/7 trial nudge implementation + the welcome transactional wiring. FAQ positioning copy review + landing hero diff fold into the same handoff doc.
+3. **Day 5/7 trial nudge emails — implementation.** Tim added drafts on May 28. Wire to a cron, gate by `trial_ends_at` countdown, idempotent against `localizer_plan_status === 'active'`. Dependent on Tim's answers to questions 2 + 4 above.
 4. **First-asset celebration moment (Day 11).** Highest-leverage UX improvement per the source plan ("the most important UX in the whole product"). Confetti or success screen + prominent "Copy your venue link" button. Half-day session.
 5. **Empty states pass (Day 11).** Four empty-state surfaces (dashboard / artist / tour / template editor). Mechanical work, no Tim input needed. Half-day session.
-6. **"Getting Started with Localizer" help doc (Day 6 / Day 13).** Pairs naturally with the welcome email draft.
+6. **"Getting Started with Localizer" help doc (Day 6 / Day 13).** Pairs naturally with the welcome email rewrite.
 7. **Pre-launch gate: signup smoke test end-to-end.** Per BACKLOG — Supabase email signups currently disabled, ensureOrgExists never tested from the new auth-callback path. Catches a major surprise before launch.

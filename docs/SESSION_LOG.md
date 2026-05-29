@@ -3393,3 +3393,22 @@ Before Day 3 work, write the Tim handoff doc bundling: welcome email v1+v2 draft
 
 **Next session starts with:**
 Free tier engineering build. Sequence: billing gate ("no plan" → free access) → watermark additive pass → shows/mo counter → feature/format gates → upgrade wall.
+
+
+## 2026-05-28 — No-card trial model locked
+
+DONE:
+- Watermark CUT (Tim's call). Free-tier-with-watermark model is DEAD.
+- No-card 7-day trial model locked: magic link → wizard → 7d full access → free/blocked.
+- Gate reads trial_ends_at as paid-equivalent (commit 8095476).
+- ensureOrgExists seeds trial-not-active (commit 67cf438, unpushed).
+- Backfilled 22 beta orgs → fresh 7-day trial (cold June 5). Shared org d38702d7 preserved active + owner_email set to hwy61ai@gmail.com.
+- Both code commits verified: `npx tsc --noEmit` clean, `npm run build` green (72/72 static pages). Both unpushed at session end.
+- Docs reconciled: `LAUNCH_PROGRESS.md` rewritten Free-tier-scope section as Trial model; `BACKLOG.md` "Build the Free tier (engineering) before launch" pre-launch gate moved to Resolved as CUT.
+
+⚠️ IGNORE the old handoff's "Free tier engineering" sequence (watermark, 5-shows/mo counter, format gates). None of it is happening. Trial model has no show limit, no watermark.
+
+NEXT SESSION, IN ORDER:
+1. PUSH the two unpushed commits → triggers Vercel deploy. Nothing is live until this.
+2. Tim's 5 email questions (Q1 resolved by trial-gate work; 4 remain): welcome rewrite trigger + body, Day 5/7 nudges, cron home, idempotency, cancellation copy.
+3. DONE this session — watermark struck from BACKLOG (Free tier engineering gate moved to Resolved/CUT).
