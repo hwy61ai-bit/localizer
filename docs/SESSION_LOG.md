@@ -3412,3 +3412,27 @@ NEXT SESSION, IN ORDER:
 1. PUSH the two unpushed commits → triggers Vercel deploy. Nothing is live until this.
 2. Tim's 5 email questions (Q1 resolved by trial-gate work; 4 remain): welcome rewrite trigger + body, Day 5/7 nudges, cron home, idempotency, cancellation copy.
 3. DONE this session — watermark struck from BACKLOG (Free tier engineering gate moved to Resolved/CUT).
+
+pushed trial model live + verified; built and shipped the Day 5/7 nudge system (table + route + schedule, commits 1d49587, b4f8fd9); dry-run verified; first fire June 3. Next session: watch the first live cron run, handle Tim's remaining email Qs (welcome body wiring), and the advance-cron-never-scheduled discovery.
+
+## 2026-06-02 — Trial model live + nudge system shipped
+
+DONE:
+- Pushed the trial model to production (commits 8095476 gate + 67cf438 seed). Verified live via access-bucket query: 22 active trials, 1 shared org (d38702d7) preserved active, 14 correctly expired/blocked. Vercel deploy green.
+- Built the Day 5/7 trial-nudge email system end to end:
+  - trial_nudge_emails idempotency table (RLS on, service-role only, unique(org_id,nudge_type)).
+  - Cron route app/api/billing/trial-nudge/cron/route.ts (commit 1d49587) — patterned on advance cron, Tim's May 28 copy, welcome-email styling, hardcoded 29/59/129.
+  - Dry-run verified targeting against live data June 2 — both windows empty (testers ~3 days out), no mis-targeted orgs.
+  - Created CRON_SECRET in Vercel; scheduled via vercel.json "0 13 * * *" (9am ET) (commit b4f8fd9). First real fire June 3–4 when testers hit the Day 5 window.
+- Docs updated: LAUNCH_PROGRESS reconciled (commit 10ad7ab) — trial commits no longer "unpushed," nudge system logged, Tim's email Qs down from 4 to 2.
+
+DISCOVERY (flag for Tim): the advance cron (app/api/tourrouter/advance/cron) has NO external trigger — no vercel.json entry before today, no GitHub Action, no scheduler. TourRouter advance emails are likely NOT auto-firing in production. Separate from Localizer; needs Tim's decision.
+
+NEXT SESSION:
+1. Watch the first live cron run (June 3, 9am ET) in Vercel Cron Jobs logs — confirm day5_sent/day7_sent/errors behave.
+2. Tim's 2 remaining email questions: Q3 welcome-body wiring into /api/welcome, Q5 cancellation copy.
+3. Raise the advance-cron-no-trigger discovery with Tim.
+
+HOUSEKEEPING (non-urgent): Claude Code has dual install (npm-global + native) — auto-update fails. Fix with native install when not on a deadline.
+
+NOTE: docs commit 10ad7ab is local-only (not pushed). Push it next session or whenever.
