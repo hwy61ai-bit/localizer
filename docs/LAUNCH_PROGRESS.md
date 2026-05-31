@@ -1,7 +1,7 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: May 28, 2026*
+*Last updated: June 2, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
@@ -10,10 +10,10 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending; Day 7 canned support responses finalized May 28, other Day 7 operational items still open)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
-- **22 items added since the original plan was written** (see "Added since the original plan" section)
-- **Trial model functionally complete** — gate reads `trial_ends_at` (`8095476`), `ensureOrgExists` seeds trial-not-active (`67cf438`), 22-org beta backfill applied May 28. Both code commits unpushed.
-- **Blocked on:** Tim's video script review (Day 12), Tim's Day 3 live Stripe verification screen-share, Tim's 4 remaining trial-model email questions (Q1 of 5 resolved by trial-gate work)
-- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); two trial-model commits (`8095476` + `67cf438`) **unpushed** pending intentional Vercel deploy of trial behavior to production
+- **26 items added since the original plan was written** (see "Added since the original plan" section)
+- **Trial model live in production (June 2)** — gate reads `trial_ends_at` (`8095476`), `ensureOrgExists` seeds trial-not-active (`67cf438`), 22-org beta backfill applied May 28. Both commits pushed and live; verified via access-bucket query (22 active trials, 1 shared org preserved, 14 correctly expired/blocked).
+- **Blocked on:** Tim's video script review (Day 12), Tim's Day 3 live Stripe verification screen-share, Tim's 2 remaining trial-model email questions (Q1, Q2, Q4 resolved; Q3 welcome-body wiring + Q5 cancellation copy remain)
+- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); first trial-nudge cron run lands June 3 at 9am ET — watch Vercel Cron Jobs logs for auth, delivery, and idempotency-log writes
 
 ---
 
@@ -258,7 +258,7 @@ The May 23 Free tier spec (watermark, 5-shows/mo counter, 3-format limit, custom
 - ✅ **Trial gate reads `trial_ends_at`** — `lib/localizer/billingGate.ts` treats an unexpired `trial_ends_at` as paid-equivalent access, evaluated before the existing `paidStatuses` check (commit `8095476`, May 28).
 - ✅ **`ensureOrgExists` seeds trial-not-active** — new orgs created with `localizer_plan: null`, `localizer_plan_status: null`, `trial_ends_at = now() + 7d` (commit `67cf438`, May 28). Docstring updated.
 - ✅ **Beta-org backfill complete (May 28)** — 22 existing tester orgs reset to `localizer_plan = null`, `localizer_plan_status = null`, fresh `trial_ends_at = now() + 7d` (June 5 expiry); shared org `d38702d7` preserved as `active` with `owner_email = 'hwy61ai@gmail.com'`. Verified by SELECT in Supabase SQL Editor.
-- ⬜ **Push trial-model commits** — `8095476` + `67cf438` unpushed; pushing triggers Vercel auto-deploy of trial-state behavior to production. Intentional pause pending Tim's 4 remaining email questions.
+- ✅ **Trial-model commits pushed (June 2)** — `8095476` + `67cf438` live in production via Vercel auto-deploy. Access-bucket query confirms behavior: 22 orgs on active trials, shared org `d38702d7` preserved as `active`, 14 orgs correctly past `trial_ends_at` and gated.
 - ~~Watermark renderer~~ — **CUT** (no watermark in the trial model).
 - ~~Shows-per-month counter on orgs~~ — **CUT** (no per-month cap; trial gives unlimited, post-trial gates downloads only).
 - ~~Feature gates on Free accounts~~ — **CUT** (free state gates downloads via 402, not per-feature).
@@ -293,6 +293,10 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 - ✅ **Trial-gate reads `trial_ends_at` (May 28).** `lib/localizer/billingGate.ts` treats an unexpired `trial_ends_at` as paid-equivalent access — short-circuits to `"paid"` before the existing `paidStatuses` (active / past_due) check. Replaces the dead watermarked Free tier model. Commit `8095476`. tsc + build clean.
 - ✅ **`ensureOrgExists` seeds trial-not-active (May 28).** New orgs created with `localizer_plan: null`, `localizer_plan_status: null`, `trial_ends_at = now() + 7d`. Replaces the prior beta-mode seed (`localizer_plan: "agency"` + `localizer_plan_status: "active"`). Docstring rewritten to retire the "beta provisioning" note. Commit `67cf438`. tsc + build clean.
 - ✅ **Beta-org backfill complete (May 28).** Three SQL UPDATEs in Supabase SQL Editor: (1) 22 existing tester orgs reset to `localizer_plan = null`, `localizer_plan_status = null`, fresh `trial_ends_at = now() + 7d` (June 5 expiry); (2) shared org `d38702d7` preserved as `active`; (3) `owner_email = 'hwy61ai@gmail.com'` set on `d38702d7`. Verified by SELECT — 22 testers on fresh June-5 trials, shared org active with the right owner email.
+- ✅ **`trial_nudge_emails` idempotency log table created (June 2).** New public-schema table with `(org_id, nudge_type, resend_id, sent_at)` columns + `unique(org_id, nudge_type)` constraint as the idempotency backstop. RLS enabled; service-role only — no `authenticated` GRANT (cron-only writes). Explicit GRANTs per rule 18.
+- ✅ **Day 5/7 trial-nudge cron route built (June 2).** `app/api/billing/trial-nudge/cron/route.ts` patterned on `app/api/tourrouter/advance/cron`: bearer-secret auth with dev bypass, inline service-role client, idempotency pre-fetch into a Set, try/catch per send, `errors[]` array, JSON response. Two HTML bodies in Tim's May 28 copy, welcome-email styling (cream `#F5F0E8` + crimson `#c5535b`). Windows: Day 5 (now+1d…now+2d), Day 7 (now−1d…now). Excludes paid orgs and shared org `d38702d7`. Commit `1d49587`. tsc + build clean.
+- ✅ **Dry-run verified against live data (June 2).** Hit the route with `?dryRun=true` after temporary scaffolding — both windows correctly returned empty (no mis-targeted orgs; backfilled trial cohort lands in the Day 5 window on June 3). Scaffolding reverted before commit.
+- ✅ **Cron scheduled live (June 2).** `CRON_SECRET` added to Vercel project env; `vercel.json` populated with `{ "crons": [{ "path": "/api/billing/trial-nudge/cron", "schedule": "0 13 * * *" }] }` (13:00 UTC = 9am EDT). Commit `b4f8fd9`. First real fire June 3–4 when backfilled testers land in the Day 5 window.
 
 ---
 
@@ -300,8 +304,8 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 
 | Blocker | Owner | What unblocks it |
 |---|---|---|
-| Trial-model commits unpushed | Drew | Confirm intent + `git push origin main` for `8095476` + `67cf438`. Push auto-deploys trial-state behavior (gate + seed) to production via Vercel. Paused intentionally until Tim's 4 remaining email questions are decided. |
-| Tim's 4 remaining trial-model email questions | Tim | Answers to: (2) cron home for Day 5/7 nudge sends; (3) welcome email trigger point + new body via `/api/welcome`; (4) idempotency — skip Day 5/7 sends if `localizer_plan_status === 'active'`; (5) cancellation copy — confirm pre-upgrade users see no "cancel" action. (Q1 — trial timer source of truth — resolved May 28: `trial_ends_at` column read by the gate.) |
+| Tim's 2 remaining trial-model email questions | Tim | Answers to: (3) welcome email trigger point + new body via `/api/welcome`; (5) cancellation copy — confirm pre-upgrade users see no "cancel" action. (Q1 resolved May 28 by trial-gate work; Q2 cron home + Q4 idempotency resolved June 2 by the trial-nudge cron build — Vercel cron at `0 13 * * *`, idempotency via `trial_nudge_emails` log table.) |
+| Advance cron has no external trigger | Drew → Tim | TourRouter's `app/api/tourrouter/advance/cron` route has no `vercel.json` entry, no GitHub Action, no other scheduler — advance follow-up emails are likely not auto-firing in production. Drew to raise with Tim: confirm whether this is intentional, then either add to `vercel.json` or document as out-of-scope for Localizer launch. |
 | Live Stripe verification end-to-end | Drew + Tim | Schedule screen-share session, run the 9-step test plan above |
 | Legal review of Privacy Policy + Terms of Service | Drew | Commission counsel review of `app/privacy/page.tsx` and `app/terms/page.tsx` — content finalized May 28 but not legally vetted |
 | Verify dmca@, privacy@, support@ hwy61labs.com inbox routing | Drew | DNS / forwarding setup; verify all three route to a real monitored inbox |
@@ -325,9 +329,9 @@ Deliberately deferred — not blocking launch, revisit on the timeline indicated
 
 Ranked by priority for the next focused session:
 
-1. **Push trial-model commits + Stripe Day 3 verification.** Two interlocked moves: (a) push `8095476` + `67cf438` to deploy trial behavior to production (gate reads `trial_ends_at`, new signups seed trial-not-active); (b) the in-flight Stripe Day 3 live verification screen-share with Tim. Both belong in the same session so trial behavior + live Stripe both go live with eyes on Vercel logs.
-2. **Tim's 4 trial-model email questions (handoff + answers).** Concrete list: cron home for Day 5/7 nudge sends; `/api/welcome` trigger point + new body; idempotency (skip Day 5/7 if `localizer_plan_status === 'active'`); pre-upgrade cancellation copy. Once answered, unblocks Day 5/7 trial nudge implementation + the welcome transactional wiring. FAQ positioning copy review + landing hero diff fold into the same handoff doc.
-3. **Day 5/7 trial nudge emails — implementation.** Tim added drafts on May 28. Wire to a cron, gate by `trial_ends_at` countdown, idempotent against `localizer_plan_status === 'active'`. Dependent on Tim's answers to questions 2 + 4 above.
+1. **Stripe Day 3 live verification.** In-flight screen-share with Tim — run the 9-step test plan above. Trial-model commits already pushed (June 2), so Stripe is the remaining half of the original June 2 in-flight pair.
+2. **Tim's 2 remaining trial-model email questions (handoff + answers).** Q3 (welcome email trigger point + new body via `/api/welcome`) and Q5 (pre-upgrade cancellation copy). Q1, Q2, Q4 all resolved. Once answered, unblocks welcome transactional wiring. FAQ positioning copy review + landing hero diff fold into the same handoff doc.
+3. **Watch first trial-nudge cron run + raise advance cron with Tim.** First scheduled fire is June 3 at 9am ET (13:00 UTC). Verify in Vercel Cron Jobs logs: bearer auth passes, Resend delivery succeeds, `trial_nudge_emails` rows insert correctly, idempotency holds on a manual second invocation. Same session: raise the TourRouter advance cron — no external trigger exists (see Active blockers), so advance follow-up emails are likely not auto-firing in production.
 4. **First-asset celebration moment (Day 11).** Highest-leverage UX improvement per the source plan ("the most important UX in the whole product"). Confetti or success screen + prominent "Copy your venue link" button. Half-day session.
 5. **Empty states pass (Day 11).** Four empty-state surfaces (dashboard / artist / tour / template editor). Mechanical work, no Tim input needed. Half-day session.
 6. **"Getting Started with Localizer" help doc (Day 6 / Day 13).** Pairs naturally with the welcome email rewrite.
