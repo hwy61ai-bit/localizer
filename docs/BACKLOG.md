@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (8)
+## 🟡 Pre-launch gates (9)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -160,6 +160,18 @@ In `app/pricing/page.tsx` (already `"use client"`):
 **Effort:** ~15 min. One file (`app/pricing/page.tsx`). `tsc` + build after.
 
 **Related latent issue (separate, lower priority):** `middleware.ts:104` — the unconditional `/` → `/coming-soon` redirect bounces authenticated users too. Self-resolves at launch when COMING_SOON lifts, but if any logged-in user needs `/` to work pre-launch, that's where to look. Not part of this fix.
+
+---
+
+### Pricing FAQ copy upgrades — gated on Stripe portal-config screen-share
+
+Two FAQ answers on `/pricing` currently ship in their SAFE/soft form because the behavior depends on Stripe Dashboard Customer Portal config (unverified). After the live-Stripe screen-share with Tim (already on the launch checklist), verify the portal config and upgrade the copy:
+
+1. **SWITCH PLANS** — current copy: "Reach out and we'll switch you over." IF the screen-share confirms the portal has plan-switching enabled with all 6 Localizer prices (Solo/Pro/Agency × monthly/annual) listed as switchable → swap in the stronger version: "Upgrade or downgrade anytime from your account settings. Changes take effect right away." (Tim pre-approved this stronger version conditional on the portal being live.) Also consider adding "…and switch plans" to the account-page button which currently reads "MANAGE BILLING & INVOICES" (doesn't telegraph plan-switching).
+
+2. **CANCEL** — current copy: "Anytime. And your data stays put… Re-subscribe whenever." (data-preservation only — verified unconditionally true). IF the screen-share confirms the portal is set to "cancel at period end" (Stripe default, NOT "cancel immediately") → add the end-of-period line back: "Your access runs through the end of the period you've already paid for." Only add if confirmed — if portal is "cancel immediately," leave as-is.
+
+Both are ~2-min copy swaps in `app/pricing/page.tsx` `FAQS` array. Gated on the Stripe screen-share, not standalone work.
 
 ---
 
