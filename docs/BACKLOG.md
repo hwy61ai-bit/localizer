@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (7)
+## 🟡 Pre-launch gates (8)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -134,6 +134,32 @@ Before adding the cron back to `vercel.json`:
 Get a real legal review before public launch. The liability, indemnification, and limitation-of-liability clauses in particular warrant professional sign-off given HWY61 LLC processes payments through Stripe.
 
 **Launch blocker if not reviewed.**
+
+---
+
+### /pricing not auth-aware — logged-in users see "Sign in" + get trapped on nav-back
+
+**Symptom:** A logged-in user clicking "View all plans" (`app/account/AccountClient.tsx:111`) or "VIEW PLANS" lands on `/pricing`, which shows logged-OUT chrome ("Sign in" nav link, "Start your free trial" CTA). Clicking the logo or "← Back" (both point to `/`) routes them through the COMING_SOON band-aid to `/coming-soon`, sealing the impression they've been logged out. They are NOT logged out — session is intact (cookie scoped to `.hwy61labs.com`, present on all subdomains). Confirmed via recon June 2: no code path clears the session; middleware does not touch `/pricing`; `/pricing` makes zero auth calls.
+
+**Fix (Pattern B — pure client, matches existing precedent in `login/page.tsx:33` and `PostHogProvider.tsx:33,47`):**
+In `app/pricing/page.tsx` (already `"use client"`):
+
+1. Add: `import { supabase } from "@/lib/supabaseClient";`
+2. Add state: `const [isLoggedIn, setIsLoggedIn] = useState(false);`
+3. Add effect:
+   ```tsx
+   useEffect(() => {
+     supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
+   }, []);
+   ```
+4. In the nav (lines ~174–183): when `isLoggedIn`, replace the "Sign in" link with an "Account" link → `/account`, and point the logo link to `/dashboard` instead of `/`. When logged out, leave nav exactly as-is (correct for prospects).
+5. The "← Back" link (line ~186): when `isLoggedIn`, point to `/dashboard` (or `/account`); when logged out, leave as `/`.
+
+**Explicitly OUT of scope:** Do NOT touch middleware, the COMING_SOON band-aid (`middleware.ts:104` unconditional `/` → `/coming-soon`), session handling, or convert to a server component. The `/` → `/coming-soon` trap self-resolves when COMING_SOON is lifted at launch; the only durable fix needed is making `/pricing`'s nav auth-aware so logged-in users see "Account" and have a sane path back.
+
+**Effort:** ~15 min. One file (`app/pricing/page.tsx`). `tsc` + build after.
+
+**Related latent issue (separate, lower priority):** `middleware.ts:104` — the unconditional `/` → `/coming-soon` redirect bounces authenticated users too. Self-resolves at launch when COMING_SOON lifts, but if any logged-in user needs `/` to work pre-launch, that's where to look. Not part of this fix.
 
 ---
 
