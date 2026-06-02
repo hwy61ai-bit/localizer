@@ -125,9 +125,9 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ✅ Highlight Pro as "most popular"
   - *Pro has `highlight: true`; crimson border + translateY lift + 6px crimson box-shadow + "Most Popular" badge + crimson CTA. Pro is the only highlighted tier.*
 - 🟡 "Start free trial" CTA per tier
-  - *Every tier has its own CTA and all paid tiers DO start a 7-day trial via Stripe (`subscription_data.trial_period_days` from Day 1). But button copy reads "Get Solo / Get Pro / Get Agency" not "Start free trial." Copy decision pending — likely Tim's call on positioning. Functionally complete; copy mismatch only.*
+  - *Every tier has its own CTA and all paid tiers DO start a 7-day trial via Stripe (`subscription_data.trial_period_days` from Day 1). But button copy reads "Get Solo / Get Pro / Get Agency" not "Start free trial." Functionally complete; copy mismatch only. CTA copy decision sent to Tim in the same June 2 doc (`TIM_PRICING_PAGE_DECISIONS_2026-06-02.md`) — recommended changing "Get [Tier]" → "Start free trial" for the no-card model. Awaiting his call.*
 - ⬜ FAQ section
-  - *BLOCKED-Tim — page has no FAQ section. The Q&A content is Tim's domain (positioning/voice). Shell can be built once Tim provides questions/answers.*
+  - *Sent Tim a decision doc June 2 (`TIM_PRICING_PAGE_DECISIONS_2026-06-02.md`) with 8 draft FAQ Q&As to edit/approve + 4 ⚠️ flags on unconfirmed policy (trial-expiry wording, tier feature differences, "switch plans anytime" claim pending Stripe Customer Portal, cancellation/data specifics). Awaiting Tim's marked-up reply, then build the FAQ shell. Cross-check answers against `docs/SUPPORT_CANNED_RESPONSES.md` for consistency.*
 
 ### Day 11 — Empty states + first-asset moment — **COMPLETE June 2**
 
@@ -329,6 +329,7 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 | FAQ positioning copy review | Tim | Voice/positioning pass on `/dashboard/support` FAQ answers (deferred during May 27 pricing-data fix) |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
 | Pre-launch — onboarding wizard per-user vs per-org mismatch | Tim | Decision on which of three fixes to take (see BACKLOG) |
+| Pricing FAQ content + CTA copy decision | Tim | Sent decision doc June 2 (`docs/TIM_PRICING_PAGE_DECISIONS_2026-06-02.md`); needs marked-up reply (FAQ answers for 8 draft Q&As + 4 ⚠️ policy flags + "Get Tier" vs "Start free trial" CTA call) |
 
 ---
 
