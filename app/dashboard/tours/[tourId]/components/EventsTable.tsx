@@ -454,7 +454,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
       <div style={{ overflowX: "auto" }}>
         <div style={{ padding: "12px 16px", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
-            {events.length === 0 ? "NO EVENTS YET" : `${events.length} EVENT${events.length !== 1 ? "S" : ""} · ${events.filter(e => !!e.sent_at).length} SENT`}
+            {events.length === 0 ? "" : `${events.length} EVENT${events.length !== 1 ? "S" : ""} · ${events.filter(e => !!e.sent_at).length} SENT`}
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {renderProgress && (
@@ -479,13 +479,17 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
           </div>
         </div>
 
-        <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", padding: "8px 0 4px 16px" }}>All info can be edited below.</div>
+        {events.length > 0 && (
+          <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", padding: "8px 0 4px 16px" }}>All info can be edited below.</div>
+        )}
 
-        <div style={{ display: "grid", gridTemplateColumns: COLS + " 80px", gap: 0, padding: "12px 16px", background: "var(--hw-bg-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#fff" }}>
-          <div>DATE</div><div>DAY</div><div>CITY, ST</div><div>VENUE</div>
-          <div>PROMOTER EMAIL</div>
-          <div>STATUS</div><div>LINK</div>
-        </div>
+        {events.length > 0 && (
+          <div style={{ display: "grid", gridTemplateColumns: COLS + " 80px", gap: 0, padding: "12px 16px", background: "var(--hw-bg-invert)", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#fff" }}>
+            <div>DATE</div><div>DAY</div><div>CITY, ST</div><div>VENUE</div>
+            <div>PROMOTER EMAIL</div>
+            <div>STATUS</div><div>LINK</div>
+          </div>
+        )}
 
         {events.length === 0 ? (
           <div style={{ padding: 32, textAlign: "center" }}>
