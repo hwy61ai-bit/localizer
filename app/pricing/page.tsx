@@ -19,6 +19,41 @@ type Plan = {
   isFree: boolean;
 };
 
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: "Do I need a credit card to start?",
+    a: "No card. Sign up with your email and you've got 7 days of everything — every feature, no commitment. If you want to keep going after that, you pick a plan. If you don't, you don't get charged, because we never had your card in the first place.",
+  },
+  {
+    q: "What happens when my trial ends?",
+    a: 'Nothing disappears. Your artists, tours, and every asset you\'ve generated stay right where they are. The one thing that pauses is your venue links — anyone you\'ve sent a link to will hit an "expired" screen until you\'re on a plan. Pick one and every link goes live again in seconds.',
+  },
+  {
+    q: "What's the difference between the tiers?",
+    a: "It comes down to how many artists you're running. Solo is built for one. Pro covers up to 5. Agency covers up to 12. Everything else is the same on every paid plan — every asset format, every platform, custom branding, your W-9 and stage plot and FOH docs riding along on the same venue link, unlimited shows. You're not paying more for features. You're paying for more artists.",
+  },
+  {
+    q: "Can I switch plans later?",
+    a: "Need to move up or down a tier? Reach out and we'll switch you over — quick, no hassle.",
+  },
+  {
+    q: "How does annual billing work?",
+    a: 'Pay yearly and you get two months free — works out to about 17% off the monthly price. Flip the "Annual" toggle up top to see the yearly number for each tier.',
+  },
+  {
+    q: 'What counts as an "artist"?',
+    a: "One artist is one act you're managing — a band, a solo performer, whoever you'd build a tour around. Your tier is just how many you've got on the account at once.",
+  },
+  {
+    q: "Can I cancel?",
+    a: "Anytime. And your data stays put — nothing gets wiped because you cancelled. Re-subscribe whenever and you pick up right where you left off.",
+  },
+  {
+    q: "Is my data safe?",
+    a: "Yes. Your tour data, your contacts, your assets — private to your account. We don't share it and we don't sell it. Full stop.",
+  },
+];
+
 const PLANS: Plan[] = [
   {
     name: "Free",
@@ -232,12 +267,25 @@ export default function PricingPage() {
                     onClick={() => priceId && handleCheckout(priceId, plan.name)}
                     disabled={isLoading || !priceId}
                   >
-                    {isLoading ? "Loading…" : `Get ${plan.name}`}
+                    {isLoading ? "Loading…" : "Start free trial"}
                   </button>
                 )}
               </div>
             );
           })}
+        </div>
+
+        {/* FAQ */}
+        <div style={{ marginTop: 80 }}>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, letterSpacing: "4px", textTransform: "uppercase", color: "var(--hw-blue)", marginBottom: 24, textAlign: "center" }}>FAQ</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 760, margin: "0 auto" }}>
+            {FAQS.map((faq) => (
+              <div key={faq.q} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: "24px 28px" }}>
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "1px", textTransform: "uppercase", color: "var(--hw-text)", marginBottom: 12, lineHeight: 1.3 }}>{faq.q}</div>
+                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 300, color: "var(--hw-text-secondary)", lineHeight: 1.6 }}>{faq.a}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
