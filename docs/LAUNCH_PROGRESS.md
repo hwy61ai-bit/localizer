@@ -7,7 +7,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending; Day 7 support workflow done — only the Notion tracking board left to build)
+- **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending; Day 7 complete (5/5) — customer support workflow fully defined)
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
 - **26 items added since the original plan was written** (see "Added since the original plan" section)
@@ -93,8 +93,8 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
   - *`support@` is a Google Workspace group (MX on Google, not ImprovMX as old notes implied). Both `drew@hwy61labs.com` and `tim@hwy61labs.com` are members; both inboxes are actively checked. Confirmed June 2.*
 - ✅ Decide ownership split (Tim replies, Drew handles bug escalations)
   - *Tim approved the split June 2: Tim replies to customers, Drew handles bug escalations.*
-- ⬜ Set up Linear or Notion board for tracking customer issues
-  - *Tool decided = Notion (simple board: Issue / Reported by / Type / Status / Assigned). Build pending — 15 min, non-blocking.*
+- ✅ Set up Linear or Notion board for tracking customer issues
+  - *Notion board created June 2 (columns: Issue / Reported by / Type / Status / Assigned), shared with Tim. Tool decision: Notion (free plan, sufficient for two-person support/bug queue).*
 - ✅ Smoke-test the support address end-to-end
   - *`support@` confirmed reaching both members' actively-checked inboxes (group delivery verified June 2).*
 - ✅ 5 canned responses finalized (`docs/SUPPORT_CANNED_RESPONSES.md`, commits 2a3ad0b + ab4cc16, May 28) — pricing, billing, "how do I do X", refund requests, "is my data safe"
