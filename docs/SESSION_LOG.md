@@ -3436,3 +3436,10 @@ NEXT SESSION:
 HOUSEKEEPING (non-urgent): Claude Code has dual install (npm-global + native) — auto-update fails. Fix with native install when not on a deadline.
 
 NOTE: docs commit 10ad7ab is local-only (not pushed). Push it next session or whenever.
+
+Log for June 2:
+
+Cron verified live (ran 9am, 200, zero sends — correct; testers outside Day 5 window until June 3). First real fire expected June 3 — check DB then.
+Day 7 closed 5/5: support@ confirmed as Google Workspace group (both members, both checked), ownership split approved, Notion tracker built + shared with Tim, smoke test confirmed.
+Correction for future sessions: email is Google Workspace groups, NOT ImprovMX — stale notes sent us to the wrong dashboard.
+Next session: confirm June 3 cron fire sent correctly; Tim's 2 remaining email Qs (welcome-body wiring, cancellation copy).
