@@ -3462,3 +3462,6 @@ NEXT SESSION:
 
 
 Established checkbox discipline: ⬜ = real pending work only; ✅ = done; 🚫 = cut/deferred (with reason). Audited full file June 2, fixed 4 mislabeled items (Day 3 migration, PKCE). Keep the file honest so deferred decisions don't get re-litigated.
+
+
+ Day 10 audit (page was already built, 3 items flipped, FAQ+CTA sent to Tim via decision doc); /pricing "logged out" scare diagnosed as a perception trap (session never actually lost — cookie scoped to .hwy61labs.com), fix spec'd in BACKLOG as ready-to-execute pre-launch; Day 11 + Day 20 closed; full launch-file checkbox audit. Then the standing next-session items: check the 9am cron tomorrow first, and Tim's replies (pricing FAQ/CTA + the 2 email questions).
