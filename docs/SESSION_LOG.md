@@ -3443,3 +3443,19 @@ Cron verified live (ran 9am, 200, zero sends — correct; testers outside Day 5 
 Day 7 closed 5/5: support@ confirmed as Google Workspace group (both members, both checked), ownership split approved, Notion tracker built + shared with Tim, smoke test confirmed.
 Correction for future sessions: email is Google Workspace groups, NOT ImprovMX — stale notes sent us to the wrong dashboard.
 Next session: confirm June 3 cron fire sent correctly; Tim's 2 remaining email Qs (welcome-body wiring, cancellation copy).
+
+
+## 2026-06-02 (continued) — Day 7, 11, 20 progress
+
+DONE (afternoon):
+- Day 11: fixed tour-page empty state (hid table header, helper line, duplicate "NO EVENTS YET" when zero events) + added first-asset success banner in EventsTable.tsx (fires on clean Generate All only, auto-dismisses 5s, --hw-green styling). Copy-link button CUT (per-show vs tour-level link ambiguity = low payoff). Commits in ebbf05e batch.
+- Day 20: replaced all 4 remaining alert() calls with toast.error() (TourTile delete, pricing checkout x2, print poster button). ToastProvider confirmed global. Commit 98199d9.
+- Launch doc reconciled: replaced misleading "X of 30" hard count with honest per-day status (drifts less). Day 7 = 5/5, Days 8-9/11/20 = partial.
+- All pushed to production.
+
+DREW-NOTE: kept getting reminded to work off LAUNCH_PROGRESS.md as source of truth — Claude drifted on a day number (called Day 20 "Day 14" from memory); the file corrected it. Keep referencing the file, not memory.
+
+NEXT SESSION:
+1. CHECK CRON FIRST: June 3 ~9am ET the first real trial nudges fire. Run the trial_nudge_emails query — expect day5 rows for testers.
+2. Tim's 2 email Qs (welcome-body wiring, cancellation copy).
+3. More unblocked launch-file items: signup smoke test (high value post-seed-change), Day 11 template empty state, remaining error-state next-steps.
