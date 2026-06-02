@@ -7,7 +7,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **Day status:** Days 1, 2, 4–5, 7, and 11 fully resolved; Day 3 moot (no customers to migrate); Days 8–9, 10, and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 10 mostly complete via existing `app/pricing/page.tsx` audit June 2 (3/5 shipped: 4-tier grid, monthly/annual toggle, "Most Popular" Pro highlight; 1 partial: per-tier CTAs functional but copy says "Get X" not "Start free trial" — Tim copy call; 1 blocked: FAQ section blocked on Tim's Q&A content), Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
+- **Day status:** Days 1, 2, 4–5, 7, 10, and 11 fully resolved; Day 3 moot (no customers to migrate); Days 8–9, 16, and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 10 closed out June 2 — all 5/5 items shipped (4-tier grid, monthly/annual toggle, "Most Popular" Pro highlight, "Start free trial" CTA copy, 8-Q&A FAQ in Tim's voice); 2 FAQ copy upgrades parked in BACKLOG ("Pricing FAQ copy upgrades") gated on the live-Stripe screen-share — switch-plans + cancel-at-period-end can be strengthened from soft-form to strong-form pending portal-config verification; Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 16 venue viewer (highest-priority mobile surface — promoters use phones) fixed June 2 (commit `d6b028c`), rest of mobile pass still open; Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
 - **26 items added since the original plan was written** (see "Added since the original plan" section)
@@ -117,17 +117,20 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ✅ Final dollar amounts in pricing tiers ($29 / $59 / $129, locked May 23, applied May 26)
 - ⬜ "Built by working music industry people" callout with Tim's bio + photo
 
-### Day 10 — Pricing page (`/pricing`)
+### Day 10 — Pricing page (`/pricing`) — **COMPLETE June 2**
+
+*All 5 items shipped. Two FAQ answers ship in SAFE/soft form pending Stripe Customer Portal config verification on the live-Stripe screen-share — copy upgrades parked in `docs/BACKLOG.md` ("Pricing FAQ copy upgrades") as a ~2-min follow-up.*
+
 - ✅ Standalone three-tier comparison table
   - *Built in `app/pricing/page.tsx` as a 4-tier card grid (Free / Solo / Pro / Agency), `PLANS` array + CSS grid. 4-tier instead of 3 — Free card added May 28; functionally equal-or-better than the source-plan spec.*
 - ✅ Monthly/Annual toggle (annual = 2 months free)
   - *Fully wired toggle (`const [annual, setAnnual] = useState(false)`): flips displayed price, period label, AND the Stripe price ID sent to checkout. Badge reads "SAVE ~17%" — the truthful figure ($290 vs $29×12=$348). Documented correction from the spec's "2 months free" — same number, more accurate language.*
 - ✅ Highlight Pro as "most popular"
   - *Pro has `highlight: true`; crimson border + translateY lift + 6px crimson box-shadow + "Most Popular" badge + crimson CTA. Pro is the only highlighted tier.*
-- 🟡 "Start free trial" CTA per tier
-  - *Every tier has its own CTA and all paid tiers DO start a 7-day trial via Stripe (`subscription_data.trial_period_days` from Day 1). But button copy reads "Get Solo / Get Pro / Get Agency" not "Start free trial." Functionally complete; copy mismatch only. CTA copy decision sent to Tim in the same June 2 doc (`TIM_PRICING_PAGE_DECISIONS_2026-06-02.md`) — recommended changing "Get [Tier]" → "Start free trial" for the no-card model. Awaiting his call.*
-- ⬜ FAQ section
-  - *Sent Tim a decision doc June 2 (`TIM_PRICING_PAGE_DECISIONS_2026-06-02.md`) with 8 draft FAQ Q&As to edit/approve + 4 ⚠️ flags on unconfirmed policy (trial-expiry wording, tier feature differences, "switch plans anytime" claim pending Stripe Customer Portal, cancellation/data specifics). Awaiting Tim's marked-up reply, then build the FAQ shell. Cross-check answers against `docs/SUPPORT_CANNED_RESPONSES.md` for consistency.*
+- ✅ "Start free trial" CTA per tier
+  - *Paid-tier CTA copy changed from "Get [Tier]" → "Start free trial" June 2 (commit `f8edd03`). Free tier "Start Free" → `/login` unchanged. Loading state "Loading…" unchanged. Functionally complete: all paid CTAs start the 7-day Stripe trial via `subscription_data.trial_period_days` from Day 1.*
+- ✅ FAQ section
+  - *8-Q&A FAQ section added to `app/pricing/page.tsx` June 2 (commit `f8edd03`) in Tim's voice from his marked-up decision doc. Topics: no credit card, trial-end behavior, tier differences, switch plans, annual billing, "what counts as an artist," cancel, data safety. No stale pricing numbers (tier answer states artist counts only, per Tim's warning). Two answers (switch-plans, cancel) ship in SAFE/soft form pending Stripe portal-config verification — see BACKLOG "Pricing FAQ copy upgrades" for the conditional copy upgrades after the live-Stripe screen-share.*
 
 ### Day 11 — Empty states + first-asset moment — **COMPLETE June 2**
 
@@ -179,7 +182,8 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ⬜ Onboarding wizard
 - ⬜ Dashboard / artist / tour pages
 - ⬜ Template editor (accept desktop-primary)
-- ⬜ Venue link viewer (highest priority — promoters use phones)
+- ✅ Venue link viewer (highest priority — promoters use phones)
+  - *Fixed two confirmed phone-width breaks in `app/v/e/[token]/page.tsx` June 2 (commit `d6b028c`): hero title/Download-All row now wraps (`flexWrap: "wrap"` + `gap: 16`) so the button drops below the title instead of overlapping; Advance Materials grid changed from hard `repeat(4, 1fr)` to `repeat(auto-fit, minmax(140px, 1fr))` so it collapses 4→2→1 columns instead of crushing W-9 against the edge. Pure inline-style intrinsic-sizing fix, no `<style>` block or CSS file. Verified live at narrow width.*
 - ⬜ Account/billing
 - ⬜ Help pages
 
@@ -333,7 +337,6 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 | FAQ positioning copy review | Tim | Voice/positioning pass on `/dashboard/support` FAQ answers (deferred during May 27 pricing-data fix) |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
 | Pre-launch — onboarding wizard per-user vs per-org mismatch | Tim | Decision on which of three fixes to take (see BACKLOG) |
-| Pricing FAQ content + CTA copy decision | Tim | Sent decision doc June 2 (`docs/TIM_PRICING_PAGE_DECISIONS_2026-06-02.md`); needs marked-up reply (FAQ answers for 8 draft Q&As + 4 ⚠️ policy flags + "Get Tier" vs "Start free trial" CTA call) |
 
 ---
 
