@@ -191,12 +191,16 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ⬜ Clean cancellation flow
 
 ### Day 18 — Print PDF / generation wait states
-- ⬜ "Why this takes a moment" explainer tooltip on print PDF
+- ✅ "Why this takes a moment" explainer tooltip on print PDF
+  - *Already shipped in `app/v/e/[token]/PrintDownloadButton.tsx`: "This can take up to 30 seconds. Please don't refresh." + animated striped progress bar + elapsed-time counter. Verified June 2.*
 - ⬜ Format-by-format checkmark progress on multi-format generation
+  - *Currently `EventsTable.tsx` shows a single aggregate `done/total` progress bar (not per-format checkmarks). Real work — would be a UX rebuild of the progress display.*
 
 ### Day 19 — Auth flow polish
-- ⬜ Magic link page branded with HWY61 wordmark
-- ⬜ Friendly recoverable error states
+- ✅ Magic link page branded with HWY61 wordmark
+  - *Already shipped in `app/login/page.tsx:170–183`: "HWY61" wordmark in display font, crimson, 36px, with 4px letter-spacing. Verified June 2.*
+- ✅ Friendly recoverable error states
+  - *Already shipped in `app/login/page.tsx`: three layered error states (`urlError` from `?error=` param, `inviteError` for beta password, `error` for OTP/OAuth failures), each rendered with a retry path. Verified June 2. Optional copy-polish pass noted but not required.*
 - 🚫 ~~PKCE migration~~ — deferred to post-launch (per source plan)
 
 ### Day 20 — Toast / error state audit
