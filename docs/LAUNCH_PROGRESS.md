@@ -7,7 +7,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **Day status:** Days 1, 2, 4–5, 7, and 11 fully resolved; Day 3 moot (no customers to migrate); Days 8–9 and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
+- **Day status:** Days 1, 2, 4–5, 7, and 11 fully resolved; Day 3 moot (no customers to migrate); Days 8–9, 10, and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 10 mostly complete via existing `app/pricing/page.tsx` audit June 2 (3/5 shipped: 4-tier grid, monthly/annual toggle, "Most Popular" Pro highlight; 1 partial: per-tier CTAs functional but copy says "Get X" not "Start free trial" — Tim copy call; 1 blocked: FAQ section blocked on Tim's Q&A content), Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
 - **26 items added since the original plan was written** (see "Added since the original plan" section)
@@ -118,12 +118,16 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ⬜ "Built by working music industry people" callout with Tim's bio + photo
 
 ### Day 10 — Pricing page (`/pricing`)
-- ⬜ Standalone three-tier comparison table
-- ⬜ Monthly/Annual toggle (annual = 2 months free)
-- ⬜ Highlight Pro as "most popular"
-- ⬜ "Start free trial" CTA per tier
+- ✅ Standalone three-tier comparison table
+  - *Built in `app/pricing/page.tsx` as a 4-tier card grid (Free / Solo / Pro / Agency), `PLANS` array + CSS grid. 4-tier instead of 3 — Free card added May 28; functionally equal-or-better than the source-plan spec.*
+- ✅ Monthly/Annual toggle (annual = 2 months free)
+  - *Fully wired toggle (`const [annual, setAnnual] = useState(false)`): flips displayed price, period label, AND the Stripe price ID sent to checkout. Badge reads "SAVE ~17%" — the truthful figure ($290 vs $29×12=$348). Documented correction from the spec's "2 months free" — same number, more accurate language.*
+- ✅ Highlight Pro as "most popular"
+  - *Pro has `highlight: true`; crimson border + translateY lift + 6px crimson box-shadow + "Most Popular" badge + crimson CTA. Pro is the only highlighted tier.*
+- 🟡 "Start free trial" CTA per tier
+  - *Every tier has its own CTA and all paid tiers DO start a 7-day trial via Stripe (`subscription_data.trial_period_days` from Day 1). But button copy reads "Get Solo / Get Pro / Get Agency" not "Start free trial." Copy decision pending — likely Tim's call on positioning. Functionally complete; copy mismatch only.*
 - ⬜ FAQ section
-  - *Pricing currently lives inside `/localizer` only; standalone `/pricing` not yet built*
+  - *BLOCKED-Tim — page has no FAQ section. The Q&A content is Tim's domain (positioning/voice). Shell can be built once Tim provides questions/answers.*
 
 ### Day 11 — Empty states + first-asset moment — **COMPLETE June 2**
 
