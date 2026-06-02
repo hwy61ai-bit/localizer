@@ -5,6 +5,7 @@ import posthog from "posthog-js";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LOCALIZER_PRICE_MAP } from "@/lib/stripe/localizerPrices";
+import { useToast } from "@/app/components/Toast";
 
 type Plan = {
   name: string;
@@ -69,6 +70,7 @@ export default function PricingPage() {
   const [annual, setAnnual] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
+  const toast = useToast();
   const [trialExpired, setTrialExpired] = useState(false);
   useEffect(() => {
     setTrialExpired(new URLSearchParams(window.location.search).get("reason") === "trial_expired");
@@ -87,10 +89,10 @@ export default function PricingPage() {
         posthog.capture("upgrade_clicked", { plan: planName });
         window.location.href = data.url;
       } else {
-        alert(data.error ?? "Something went wrong.");
+        toast.error(data.error ?? "Something went wrong.");
       }
     } catch {
-      alert("Network error. Please try again.");
+      toast.error("Network error. Please try again.");
     } finally {
       setLoading(null);
     }

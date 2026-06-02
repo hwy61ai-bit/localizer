@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { useToast } from "@/app/components/Toast";
 
 type Props = {
   tourId: string;
@@ -25,6 +26,7 @@ export default function TourTile({
   type = "tour",
 }: Props) {
   const router = useRouter();
+  const toast = useToast();
   const [hovered, setHovered] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [currentImage] = useState<string | null>(imageUrl);
@@ -93,7 +95,7 @@ export default function TourTile({
       window.location.href = "/dashboard";
     } catch (err) {
       console.error("Delete failed:", err);
-      alert("Delete failed. Please try again.");
+      toast.error("Delete failed. Please try again.");
       setDeleting(false);
     }
   }

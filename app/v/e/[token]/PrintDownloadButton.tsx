@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useToast } from "@/app/components/Toast";
 
 export default function PrintDownloadButton({ eventId, venueName, token }: { eventId: string; venueName: string; token: string }) {
+  const toast = useToast();
   const [generating, setGenerating] = useState(false);
   const [elapsed, setElapsed] = useState(0);
 
@@ -31,7 +33,7 @@ export default function PrintDownloadButton({ eventId, venueName, token }: { eve
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      alert("Failed to generate print poster");
+      toast.error("Failed to generate print poster");
     } finally {
       setGenerating(false);
     }
