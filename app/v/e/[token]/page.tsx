@@ -96,7 +96,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Hero */}
         <div style={{ marginBottom: 48, border: "3px solid var(--hw-border-strong)", padding: 28, background: "var(--hw-bg-surface)" }}>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 8 }}>Show Assets</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 20 }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 52, letterSpacing: "2px", lineHeight: 1, textTransform: "uppercase" }}>{bandName}</div>
             <a href={`/api/download-all?token=${token}`} download style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0, textTransform: "uppercase", transition: "var(--hw-ease)" }}>↓ DOWNLOAD ALL</a>
           </div>
@@ -196,7 +196,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Advance Materials */}
         <div style={{ marginBottom: 48 }}>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
             {advMaterials.map((mat) => (
               mat.url ? (
                 <a key={mat.label} href={mat.url} target="_blank" rel="noopener noreferrer"
