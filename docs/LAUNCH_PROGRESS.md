@@ -93,8 +93,8 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
   - *`support@` is a Google Workspace group (MX on Google, not ImprovMX as old notes implied). Both `drew@hwy61labs.com` and `tim@hwy61labs.com` are members; both inboxes are actively checked. Confirmed June 2.*
 - ✅ Decide ownership split (Tim replies, Drew handles bug escalations)
   - *Tim approved the split June 2: Tim replies to customers, Drew handles bug escalations.*
-- ✅ Set up Linear or Notion board for tracking customer issues
-  - *Notion board created June 2 (columns: Issue / Reported by / Type / Status / Assigned), shared with Tim. Tool decision: Notion (free plan, sufficient for two-person support/bug queue).*
+- ✅ Set up tracking board for customer issues
+  - *Google Sheet created June 2 in the shared Google Workspace (columns: Issue / Reported by / Type / Status / Assigned), shared with Tim. Switched from Notion June 2 — the team already lives in Google Workspace daily, so a Sheet is the tracker they'll actually maintain. Manual entry (no automation — appropriate for two-person launch volume).*
 - ✅ Smoke-test the support address end-to-end
   - *`support@` confirmed reaching both members' actively-checked inboxes (group delivery verified June 2).*
 - ✅ 5 canned responses finalized (`docs/SUPPORT_CANNED_RESPONSES.md`, commits 2a3ad0b + ab4cc16, May 28) — pricing, billing, "how do I do X", refund requests, "is my data safe"
