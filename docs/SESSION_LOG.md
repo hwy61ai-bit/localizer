@@ -3459,3 +3459,6 @@ NEXT SESSION:
 1. CHECK CRON FIRST: June 3 ~9am ET the first real trial nudges fire. Run the trial_nudge_emails query — expect day5 rows for testers.
 2. Tim's 2 email Qs (welcome-body wiring, cancellation copy).
 3. More unblocked launch-file items: signup smoke test (high value post-seed-change), Day 11 template empty state, remaining error-state next-steps.
+
+
+Established checkbox discipline: ⬜ = real pending work only; ✅ = done; 🚫 = cut/deferred (with reason). Audited full file June 2, fixed 4 mislabeled items (Day 3 migration, PKCE). Keep the file honest so deferred decisions don't get re-litigated.
