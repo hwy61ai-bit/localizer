@@ -7,7 +7,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **Day status:** Days 1, 2, 4–5, and 7 fully complete; Day 3 moot (no customers to migrate); Days 8–9 and 11 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 11 tour empty state + first-asset success banner shipped June 2 (template empty state pending; copy-link button cut).
+- **Day status:** Days 1, 2, 4–5, and 7 fully complete; Day 3 moot (no customers to migrate); Days 8–9, 11, and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 11 tour empty state + first-asset success banner shipped June 2 (template empty state pending; copy-link button cut), Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
 - **26 items added since the original plan was written** (see "Added since the original plan" section)
@@ -196,7 +196,8 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ⬜ ~~PKCE migration~~ — deferred to post-launch (per source plan)
 
 ### Day 20 — Toast / error state audit
-- ⬜ Replace remaining `alert()` calls with toasts
+- ✅ Replace remaining `alert()` calls with toasts
+  - *All 4 remaining `alert()` calls swapped to `toast.error()` June 2 (commit `98199d9`): `app/dashboard/TourTile.tsx` (delete failed), `app/pricing/page.tsx` (checkout error + network error), `app/v/e/[token]/PrintDownloadButton.tsx` (print poster failed). `ToastProvider` confirmed global in `app/layout.tsx:30` — wraps all routes, so the two public-route swaps (`/pricing`, `/v/e/[token]`) are safe.*
 - ⬜ Actionable next-steps on every error state
 
 ### Day 21 — Press kit + social assets
