@@ -64,9 +64,9 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 > **Why screen-share with Tim:** Tim owns the customer-experience side of billing/subscription flow. He should see the live checkout for the first time at the same moment Drew does — both for narrative-voice feedback on the experience and for shared knowledge of how it behaves.
 
 ### Day 3 (original) — Existing customer pricing migration
-- ⬜ ~~Identify existing Localizer customers via Stripe~~
-- ⬜ ~~Migrate each to corresponding new lower-priced subscription~~
-- ⬜ ~~Send friendly notification email via Resend~~
+- 🚫 ~~Identify existing Localizer customers via Stripe~~
+- 🚫 ~~Migrate each to corresponding new lower-priced subscription~~
+- 🚫 ~~Send friendly notification email via Resend~~
   - *Moot — discovered May 21 that all Stripe products created since March were in sandbox, not live. Live mode is a clean slate; no customers to migrate.*
 
 ### Day 4–5 — Onboarding flow build
@@ -193,7 +193,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 ### Day 19 — Auth flow polish
 - ⬜ Magic link page branded with HWY61 wordmark
 - ⬜ Friendly recoverable error states
-- ⬜ ~~PKCE migration~~ — deferred to post-launch (per source plan)
+- 🚫 ~~PKCE migration~~ — deferred to post-launch (per source plan)
 
 ### Day 20 — Toast / error state audit
 - ✅ Replace remaining `alert()` calls with toasts
