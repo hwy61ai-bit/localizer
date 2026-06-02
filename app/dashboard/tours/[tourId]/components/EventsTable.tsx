@@ -3,7 +3,7 @@
 import { renderPoster, formatDateForRender } from "@/lib/clientRender";
 import { useToast } from "@/app/components/Toast";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type React from "react";
 
 type EventRow = {
@@ -125,7 +125,14 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!showSuccess) return;
+    const t = setTimeout(() => setShowSuccess(false), 5000);
+    return () => clearTimeout(t);
+  }, [showSuccess]);
 
   function startEdit(e: EventRow, field: EditableField) {
     setEditing({ id: e.id, field });
@@ -395,6 +402,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
         setEvents(prev => prev.map(e => ({ ...e, render_status: "ready" })));
       } else {
         setEvents(prev => prev.map(e => ({ ...e, render_status: "ready" })));
+        setShowSuccess(true);
       }
 
       // Generate video render URLs via server-side Cloudinary (non-blocking).
@@ -452,6 +460,15 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
   return (
     <>
       <div style={{ overflowX: "auto" }}>
+        {showSuccess && (
+          <div style={{ margin: "12px 16px 0", padding: "14px 18px", border: "3px solid var(--hw-green)", background: "var(--hw-green-ghost)", display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ width: 32, height: 32, flexShrink: 0, border: "3px solid var(--hw-green)", background: "var(--hw-green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, lineHeight: 1 }}>✓</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 16, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>ASSETS READY</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-secondary)" }}>Your tour marketing assets are generated.</div>
+            </div>
+          </div>
+        )}
         <div style={{ padding: "12px 16px", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
             {events.length === 0 ? "" : `${events.length} EVENT${events.length !== 1 ? "S" : ""} · ${events.filter(e => !!e.sent_at).length} SENT`}
