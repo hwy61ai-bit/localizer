@@ -7,7 +7,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **4 of 30 day-items complete** (Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 8–9 mostly complete — video embed + bio callout still pending; Day 7 complete (5/5) — customer support workflow fully defined)
+- **Day status:** Days 1, 2, 4–5, and 7 fully complete; Day 3 moot (no customers to migrate); Days 8–9 and 11 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 11 tour empty state + first-asset success banner shipped June 2 (template empty state pending; copy-link button cut).
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
 - **26 items added since the original plan was written** (see "Added since the original plan" section)
@@ -126,12 +126,19 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
   - *Pricing currently lives inside `/localizer` only; standalone `/pricing` not yet built*
 
 ### Day 11 — Empty states + first-asset moment
+
+*Celebration deliberately scoped to a simple success banner — no confetti, no copy-venue-link button (descoped June 2, see items below).*
+
 - ⬜ Dashboard with zero artists empty state
+  - *Already exists as a custom inline block in `app/dashboard/page.tsx` ("NO ARTISTS YET" + "ADD ARTIST" form). Functional, left as-is per "don't over-invest" decision June 2.*
 - ⬜ Artist page with zero tours empty state
-- ⬜ Tour page with zero shows empty state
+  - *Already uses `HwEmptyState` in `ArtistToursClient.tsx` ("NO TOURS YET" + "CREATE TOUR" action). Functional, left as-is per "don't over-invest" decision June 2.*
+- ✅ Tour page with zero shows empty state
+  - *Fixed June 2 (commit `8b4a775`): hid the table column header, helper line ("All info can be edited below."), and duplicate "NO EVENTS YET" text when zero events. Single empty-state message in `EventsTable.tsx` is now the only source of that text.*
 - ⬜ Template editor empty state
-- ⬜ First-asset celebration moment (confetti or success screen)
-- ⬜ Prominent "Copy your venue link" button on first asset
+- ✅ First-asset celebration moment (confetti or success screen)
+  - *Shipped June 2 (commit `2976ec5`) as a success banner in `EventsTable.tsx`: appears on clean Generate All completion (success-path only, not on errors), auto-dismisses after 5s, `--hw-green` / `--hw-green-ghost` styling matching `/advance/[token]` and `/v/e/[token]` precedent. Scoped down from confetti/copy-link per decision June 2 — simple banner only.*
+- 🚫 ~~Prominent "Copy your venue link" button on first asset~~ — **CUT June 2.** Per-show vs tour-level link ambiguity made it low-payoff; success banner ships without it. Revisit post-launch if conversion data supports.
 
 ### Day 12 — Demo video / GIF
 - ✅ Onboarding video script drafted (`docs/LOCALIZER_ONBOARDING_VIDEO_SCRIPT.md`, ~2:30 narration)
