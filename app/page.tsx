@@ -314,7 +314,7 @@ export default function LocalizerProductPage() {
               <Link href="/pricing" className="btn btn-secondary">Start free trial</Link>
             </div>
           </div>
-          <p className="pricing-note">Annual billing saves ~17%. Free tier available &mdash; no credit card required.</p>
+          <p className="pricing-note">Annual billing saves ~17%. Start with a 7-day free trial &mdash; no credit card required.</p>
         </div>
       </section>
 
@@ -325,7 +325,7 @@ export default function LocalizerProductPage() {
         <div className="container">
           <div className="section-tag">Get Started</div>
           <h2 className="section-headline">Stop making show assets by hand.</h2>
-          <p className="sub-headline" style={{ color: "var(--hw-gray)" }}>Free during beta. Upload one image. Get every asset for every show on every platform.</p>
+          <p className="sub-headline" style={{ color: "var(--hw-gray)" }}>7 days free, no card required. Upload one image, get every asset for every show on every platform.</p>
           <Link href="/pricing" className="btn btn-invert">Start your free trial</Link>
         </div>
       </section>

@@ -124,7 +124,7 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip, ha
               margin: '0 0 24px 0',
               lineHeight: 1.1,
             }}>
-              WELCOMES YOU TO THE LOCALIZER BETA
+              WELCOME TO LOCALIZER
             </h1>
 
             <p style={{
@@ -136,7 +136,7 @@ export default function OnboardingWizard({ onStartWizard, onDemoTour, onSkip, ha
               lineHeight: 1.5,
               maxWidth: 520,
             }}>
-              You&rsquo;re one of a small group helping us shape what Localizer becomes. Thanks for being here.
+              Turn one promo image into a full set of branded, show-ready marketing assets. Let&rsquo;s make your first one.
             </p>
 
             <div style={{ maxWidth: 420, margin: '0 auto' }}>
