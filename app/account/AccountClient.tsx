@@ -164,6 +164,18 @@ export default function AccountClient({
           )}
         </div>
 
+        {/* Sign out */}
+        <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 28, marginBottom: 16 }}>
+          <form action="/auth/signout" method="POST" style={{ margin: 0 }}>
+            <button
+              type="submit"
+              style={{ padding: "14px 28px", border: "3px solid var(--hw-border-strong)", background: "transparent", color: "var(--hw-text-secondary)", fontFamily: "var(--hw-font-display)", fontWeight: 400, fontSize: 16, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+            >
+              SIGN OUT
+            </button>
+          </form>
+        </div>
+
       </div>
     </div>
   );
