@@ -1,7 +1,7 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: June 2, 2026*
+*Last updated: June 4, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
@@ -115,6 +115,8 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ✅ Hide `/tourrouter`, `/diy`, `/roadapp` via config-level redirects to `/coming-soon` (May 26)
 - ⬜ 90-second demo video embedded in hero
 - ✅ Final dollar amounts in pricing tiers ($29 / $59 / $129, locked May 23, applied May 26)
+- ✅ Stale "Free during beta" copy removed (June 4, commit `a7cadf8`)
+  - *Final-CTA subhead and pricing-note on `/` now reflect the 7-day trial model instead of "free during beta" / "free tier available." See "Added since the original plan" for the full beta-copy cleanup pass.*
 - ⬜ "Built by working music industry people" callout with Tim's bio + photo
 
 ### Day 10 — Pricing page (`/pricing`) — **COMPLETE June 2**
@@ -155,14 +157,9 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ⬜ Export MP4 + animated GIF version
 - ⬜ Self-host (no YouTube embed)
 
-### Day 13–14 — Help docs / FAQ
-- ⬜ "Getting Started with Localizer" (also Day 6)
-- ⬜ "How to upload templates and customize branding"
-- ⬜ "Understanding venue links — how to share with promoters"
-- ⬜ "Custom fonts and how to upload them"
-- ⬜ "Sponsor logos — what works and what doesn't"
-- ⬜ "Pricing, billing, and your subscription"
-- ⬜ "Troubleshooting common issues"
+### Day 13–14 — Help docs / FAQ — **LAUNCH-SUFFICIENT June 4**
+
+- 🟡 In-app FAQ at `/dashboard/support` rewritten Localizer-only June 4 (19 Q&As, commit `2298e82`): covers pricing, billing, trial model, venue links, custom fonts, troubleshooting. Replaced the stale suite/TourRouter FAQ (~40 Q&As, wrong pricing, fake $249 Full Suite, "beta is free"). Standalone how-to article system (getting-started, templates/branding, custom fonts, sponsor logos) deferred to post-launch — see BACKLOG. Not a launch blocker.
 
 ---
 
@@ -323,7 +320,9 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 - ✅ **Cron scheduled live (June 2).** `CRON_SECRET` added to Vercel project env; `vercel.json` populated with `{ "crons": [{ "path": "/api/billing/trial-nudge/cron", "schedule": "0 13 * * *" }] }` (13:00 UTC = 9am EDT). Commit `b4f8fd9`. First real fire June 3–4 when backfilled testers land in the Day 5 window.
 - ✅ **End-to-end signup smoke test passed (June 4).** Real fresh signup with a brand-new Supabase Auth user (`hwy61ai+testx@gmail.com`) against production: magic link → `/auth/callback` → `ensureOrgExists` correctly seeded a new trial org (`localizer_plan = null`, `localizer_plan_status = null`, `trial_ends_at ≈ now() + 7d`, `localizer_enabled = true`); user landed on the welcome page; clicked GET STARTED → `/dashboard`; added artist + show; generated an asset with NO paywall (trial gate granted access via the unexpired `trial_ends_at` branch). Test org cleaned up afterward. Verifies the post-May-28 trial-seed `ensureOrgExists` path (commit `67cf438`) which had never been exercised from the auth-callback before. Closes the BACKLOG pre-launch gate "Verify new-user signup works end-to-end before launch."
 
-  **Side observation that dismisses an earlier concern:** A fresh trial user DOES land on the onboarding welcome page — verified during the smoke test. An earlier code-recon read (same session) suggested fresh trial users would skip the welcome page because the redirect condition in `app/dashboard/page.tsx` checks `localizer_plan_status !== null`, which is null for trial users. That read was incorrect — `localizer_onboarding_completed = false` is what drives the welcome-page routing for fresh orgs, and the smoke test confirms the routing works as intended. No fix needed.
+  **Welcome-redirect mechanism — correction (June 4).** An earlier note in this section claimed the welcome-page routing for fresh trial users was a non-issue because `localizer_onboarding_completed = false` drove the routing. That note was wrong on the mechanism. The real story, traced June 4: fresh trial users do NOT reach `/dashboard/onboarding/localizer` (`LocalizerWelcome.tsx`) — its eligibility gate at `page.tsx:42–44` explicitly bounces them back to `/dashboard` when both `localizer_plan_status` and `bundle_plan_status` are null (which is the trial-seed state). On `/dashboard`, `OnboardingGate` then renders `OnboardingWizard` as a full-screen overlay because `artistCount === 0` — THAT is the welcome screen the smoke-test user saw. The original "redirect gap" code-recon was right; users just hit a different welcome surface (the overlay) that masks it. Not a launch blocker — fresh trial users do get a proper welcome screen, just via the overlay path, not the dedicated route. Recording the correct mechanism so future copy edits target the right file (`app/components/OnboardingWizard.tsx`, not `LocalizerWelcome.tsx`).
+- ✅ **In-app FAQ rewritten Localizer-only (June 4, commit `2298e82`).** `app/dashboard/support/page.tsx` `FAQ_DATA` constant replaced wholesale: 41 stale suite-positioned Q&As → 19 Localizer-only Q&As across 4 sections (Getting Started, Plans & Billing, Using Localizer, Troubleshooting). Drops $249 "Full HWY61 Suite" pricing (product doesn't exist), $49–$149 TourRouter pricing, "20% annual" claim (correct is ~17%), "during beta everything is free" copy, "@hwy61.io" domain (correct is `hwy61labs.com`), and the ~14 TourRouter-feature answers that aren't relevant to Localizer-only launch. Two answers (switch-plans, cancel) ship in SAFE/soft form pending Stripe Customer Portal config verification — copy upgrades parked in BACKLOG. Closes the LAUNCH_PROGRESS "FAQ positioning copy review | Tim" Active blockers row.
+- ✅ **Stale "beta" copy removed from live public surfaces (June 4, commit `a7cadf8`).** Three string swaps: (1) `app/components/OnboardingWizard.tsx:127` "WELCOMES YOU TO THE LOCALIZER BETA" → "WELCOME TO LOCALIZER"; (2) same file line 139, "You're one of a small group helping us shape what Localizer becomes" → "Turn one promo image into a full set of branded, show-ready marketing assets. Let's make your first one."; (3) `app/page.tsx:328` final-CTA subhead "Free during beta. Upload one image..." → "7 days free, no card required. Upload one image, get every asset for every show on every platform." Plus a fourth fix at `app/page.tsx:317`: pricing-note "Free tier available — no credit card required" → "Start with a 7-day free trial — no credit card required" (the "free tier" claim implied a permanent feature-complete free tier that the trial model doesn't actually provide). The OnboardingWizard overlay is the welcome screen fresh trial users see post-signup (see welcome-redirect correction above), so this fix lands on the highest-traffic post-signup surface.
 
 ---
 
@@ -337,7 +336,6 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 | Legal review of Privacy Policy + Terms of Service | Drew | Commission counsel review of `app/privacy/page.tsx` and `app/terms/page.tsx` — content finalized May 28 but not legally vetted |
 | Verify dmca@, privacy@, support@ hwy61labs.com inbox routing | Drew | DNS / forwarding setup; verify all three route to a real monitored inbox |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
-| FAQ positioning copy review | Tim | Voice/positioning pass on `/dashboard/support` FAQ answers (deferred during May 27 pricing-data fix) |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
 | Pre-launch — onboarding wizard per-user vs per-org mismatch | Tim | Decision on which of three fixes to take (see BACKLOG) |
 

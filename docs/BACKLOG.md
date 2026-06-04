@@ -149,7 +149,7 @@ Both are ~2-min copy swaps in `app/pricing/page.tsx` `FAQS` array. Gated on the 
 
 ---
 
-## 🟢 Ready to build (5)
+## 🟢 Ready to build (6)
 
 *Scoped, unblocked, just needs a session.*
 
@@ -226,6 +226,28 @@ Effort: ~1 hour including migration, writer update, reader update, and verifying
 **#3 — Wide horizontal stepper, not stacked vertical:** ❌ Declined 2026-05-14. Keeping the existing stacked vertical workflow nav. The workflow nav (1. IMPORT → 2. ARTIST → 3. GIGS → 4. ASSETS → 5. TEMPLATE) currently reads as a stacked vertical list. Kurt argues a horizontal stepper better communicates linear forward motion through a process, while stacked layouts read as a single-page outline. Trade-off: narrow laptop widths might truncate stepper labels or push content below the fold. Worth a sketch before committing to a redesign.
 
 **Effort estimate (remaining #1 only):** Half-day session for the template editor sidebar restructure.
+
+---
+
+### Welcome email — rewrite Localizer-focused (suite-positioning issue)
+
+The transactional welcome email at `app/api/welcome/route.ts` (Resend, fires from `lib/auth/ensureOrgExists.ts:71–78` on first signup) currently pitches the full HWY61 suite. The "flyer stack" centerpiece reads:
+
+- **Routing.** (TourRouter — gated under COMING_SOON, customer can't access)
+- **Marketing.** (Localizer — what they actually signed up for)
+- **Advancing.** (TourRouter — also gated)
+
+A Localizer-only customer gets promised three product surfaces, two of which they can't access. Same suite-positioning pattern as the `/dashboard/support` FAQ that was rewritten June 4 — this is the next surface in the same cleanup pass.
+
+Body copy ("HWY61 Labs builds tools for people who move music for a living. Everything autosaves. Everything drag & drop.") also reads suite-flavored — "tools" plural.
+
+**Scope:** rewrite the flyer-stack triplet + body paragraph to be Localizer-focused. Keep the visual treatment (display font, crimson middle line, dashboard CTA). Keep the "You're in." headline, sign-off, and reply note as-is.
+
+**Effort:** ~30 min, one file (`app/api/welcome/route.ts`), HTML email body only. No infrastructure changes.
+
+**Copy authority:** Drew per copy-approval authority (Tim coordination optional, since this is voice-aligned with the FAQ rewrite Drew just shipped from Tim's canonical sources). Cross-check final copy against `app/pricing/page.tsx` FAQS and `app/dashboard/support/page.tsx` FAQ_DATA for consistency.
+
+**Why not in the launch sprint:** Surfaces post-signup only — a Localizer-only customer who hasn't signed up doesn't see this email. Lower-traffic than landing/pricing/dashboard. Worth doing before broader marketing pushes but not a launch blocker.
 
 ---
 
@@ -333,7 +355,7 @@ Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three su
 
 ---
 
-## ⏳ Soak items (4)
+## ⏳ Soak items (5)
 
 *Waiting on production data or time to pass.*
 
@@ -429,6 +451,19 @@ Starting Oct 30, 2026, Supabase removes the default Data API grant on public-sch
 - Verify public viewer routes (/v/**, /advance/**, /report/**) still serve anonymous traffic correctly the day after the cutoff
 
 **Fail-loud safety net:** if a GRANT is forgotten post-Oct-30, PostgREST returns 42501 with the exact GRANT statement to paste.
+
+---
+
+### TourRouter landing page — stale "Free during beta" copy
+
+`app/tourrouter/page.tsx` has two stale beta lines that survived the June 4 cleanup pass on `/` and OnboardingWizard:
+
+- Line 702: `<p className="pricing-note">Annual billing saves 20%. Free during beta — no credit card required.</p>`
+- Line 721: `<p className="sub-headline">Free during beta. No credit card. No commitment. Just the tool the touring industry should have had 20 years ago.</p>`
+
+Both also use the wrong "20%" annual figure (correct is ~17%, as documented in the May 28 landing-page correction).
+
+**Why deferred:** `/tourrouter` is currently redirected to `/coming-soon` via `next.config` / middleware (per LAUNCH_PROGRESS Day 8–9 "Hide /tourrouter, /diy, /roadapp via config-level redirects"). No real customer sees this page at launch. **Trigger:** if/when TourRouter is un-gated as a public surface, do a copy pass first. Mirror the June 4 fixes on `/` (drop "Free during beta," replace with the actual trial model offer, correct the 20% → ~17%).
 
 ---
 
@@ -537,7 +572,7 @@ middleware.ts has two getSession() calls (lines 117, 156) that destructure data 
 
 ---
 
-## 💭 Future ideas (1)
+## 💭 Future ideas (2)
 
 *Speculative post-launch work.*
 
@@ -563,6 +598,29 @@ Artist's tour dashboard surfaces per-show delivery status: green for "downloaded
 **Why not in the 30-day Localizer launch:** Not on the contract. Worth revisiting post-launch once retention data exists and we know which artists are asking for visibility into their promo flow.
 
 **Originated:** May 20, 2026 brainstorm session.
+
+---
+
+### Localizer help-doc article system
+
+Standalone how-to articles (separate from the in-app FAQ at `/dashboard/support`, which is launch-sufficient as of June 4 — see LAUNCH_PROGRESS Day 13–14):
+
+- "Getting Started with Localizer" — first-asset walkthrough
+- "How to upload templates and customize branding" — fonts, colors, layouts
+- "Custom fonts and how to upload them" — `.ttf` / `.otf` workflow
+- "Sponsor logos — what works and what doesn't" — PNG transparency, sizing
+- Likely a few more discovered post-launch from real customer questions
+
+**Why not in the 30-day launch:** Original Day 13–14 spec (7 articles) was scoped under the assumption that a `/help` route + article rendering would exist. Neither exists today — `app/help/` and `app/dashboard/help/` are absent; there's no markdown pipeline, no DB article store. Building the surface itself plus 4–7 articles is a 1–2 day project. The June 4 in-app FAQ rewrite (19 Q&As, commit `2298e82`) covers launch-day customer questions about pricing, billing, the trial model, venue links, custom fonts, and troubleshooting — enough to ship.
+
+**Architecture decision deferred until rebuild:** three options to pick at build time —
+1. Extend `FAQ_DATA` in `app/dashboard/support/page.tsx` with longer answer fields acting as articles. Cheapest, but constrained to plain-string content.
+2. New `app/help/page.tsx` + `app/help/[slug]/page.tsx` with article content in a typed constant. Matches existing codebase patterns (hardcoded constants, inline styles).
+3. Add a markdown pipeline (`react-markdown` + `content/help/*.md`). Most flexible for long-form; introduces a dependency this codebase doesn't have.
+
+Option 2 is the closest fit to existing patterns. Decision made at build time.
+
+**Copy authority:** Partly Tim-voice-dependent (positioning of "Getting Started" especially). Drew can draft; Tim editorial pass before publish.
 
 ---
 
