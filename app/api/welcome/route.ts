@@ -52,19 +52,19 @@ export async function POST(req: NextRequest) {
 
             <!-- Body paragraph -->
             <p style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a1a; margin: 0 0 40px 0; text-align: center; max-width: 420px; margin-left: auto; margin-right: auto;">
-              HWY61 Labs builds tools for people who move music for a living. Everything autosaves. Everything drag &amp; drop.
+              Localizer turns one promo image into a full set of branded marketing assets &mdash; sized for every platform, ready for every show. Upload once, download everything.
             </p>
 
             <!-- Flyer stack: three display lines, middle one crimson -->
             <div style="margin: 0 0 44px 0;">
-              <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 36px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a; line-height: 1.15; text-align: center;">
-                Routing.
+              <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 32px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a; line-height: 1.15; text-align: center;">
+                One image.
               </div>
-              <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 36px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #c5535b; line-height: 1.15; text-align: center;">
-                Marketing.
+              <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 32px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a; line-height: 1.15; text-align: center;">
+                Every asset.
               </div>
-              <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 36px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #1a1a1a; line-height: 1.15; text-align: center;">
-                Advancing.
+              <div style="font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 32px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; color: #c5535b; line-height: 1.15; text-align: center;">
+                Every show.
               </div>
             </div>
 
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
   await resend.emails.send({
     from: "HWY61 Labs <noreply@hwy61labs.com>",
     to: email,
-    subject: "Welcome to HWY61 Labs",
+    subject: "Welcome to Localizer",
     html,
   });
 
