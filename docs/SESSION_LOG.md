@@ -3484,3 +3484,5 @@ In-app FAQ rewritten Localizer-only (2298e82) — closed the "FAQ positioning co
 Stale beta copy removed from live surfaces (a7cadf8)
 Day 13–14 marked launch-sufficient; help-article system deferred to post-launch
 Next session: legal review kickoff first (longest external clock, not started), then mobile pass surfaces. Tim's items when available: Stripe screen-share, 2 email answers, video script.
+
+corrected Localizer legal docs to Localizer-only scope (decision: TourRouter/DIY papered separately at their launch, not now); rewrote /privacy + /terms page components — Texas governing law, trial billing, termination + general provisions added, committed ca5b976 (note d78de22 from a prior session already did part of this — reconcile, don't redo); generated 3 matching .docx for Tim (Privacy, ToS, legal-review memo); confirmed no other code links to these pages with suite-wide assumptions. Next session: send docs to Tim, get his lawyer recipient, kick off legal review (still the long-pole launch item).
