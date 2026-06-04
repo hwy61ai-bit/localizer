@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { artistLimitForPlan } from "@/lib/localizer/artistLimits";
 import AccountClient from "./AccountClient";
 
 export default async function AccountPage() {
@@ -18,37 +19,33 @@ export default async function AccountPage() {
 
   const { data: org } = await supabase
     .from("orgs")
-    .select("id, name, plan, plan_status, stripe_customer_id")
+    .select("id, name, localizer_plan, localizer_plan_status, trial_ends_at, stripe_customer_id")
     .eq("id", membership.org_id)
     .single();
 
-  const { data: usage } = await supabase
-    .from("usage_monthly")
-    .select("renders_count")
+  const { count: artistCount } = await supabase
+    .from("artists")
+    .select("id", { count: "exact", head: true })
     .eq("org_id", membership.org_id)
-    .order("month", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .not("name", "is", null)
+    .neq("name", "");
 
-  const PLAN_LIMITS: Record<string, number> = {
-    starter: 100,
-    pro: 1000,
-    agency: 10000,
-  };
-
-  const plan = (org?.plan ?? "starter").toLowerCase();
-  const planLimit = PLAN_LIMITS[plan] ?? 100;
-  const rendersUsed = usage?.renders_count ?? 0;
+  const localizerPlan = org?.localizer_plan ?? null;
+  const localizerPlanStatus = org?.localizer_plan_status ?? null;
+  const trialEndsAt = org?.trial_ends_at ?? null;
+  const artistLimit = artistLimitForPlan(localizerPlan);
+  const artistsUsed = artistCount ?? 0;
 
   return (
     <AccountClient
       email={user.email ?? ""}
       orgName={org?.name ?? "My Workspace"}
-      plan={plan}
-      planStatus={org?.plan_status ?? "active"}
+      localizerPlan={localizerPlan}
+      localizerPlanStatus={localizerPlanStatus}
+      trialEndsAt={trialEndsAt}
       hasStripe={!!org?.stripe_customer_id}
-      rendersUsed={rendersUsed}
-      planLimit={planLimit}
+      artistsUsed={artistsUsed}
+      artistLimit={artistLimit}
     />
   );
 }

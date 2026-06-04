@@ -5,7 +5,9 @@ import { supabaseServer } from "@/lib/supabaseServer";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { isAdminEmail } from "@/lib/auth/adminEmails";
 import { ensureOrgExists } from "@/lib/auth/ensureOrgExists";
+import { artistLimitForPlan } from "@/lib/localizer/artistLimits";
 import TourTile from "./TourTile";
+import ArtistLimitToast from "./ArtistLimitToast";
 import NotificationBell from "@/app/components/NotificationBell";
 import OnboardingGate from "@/app/components/OnboardingGate";
 import { HwButton, HwPageHeader } from "@/app/components/hw";
@@ -17,7 +19,9 @@ type TourStat = {
   maxDate: string | null;
 };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const sp = await searchParams;
+  const limitError = sp?.error === "artist_limit";
   const headersList = await headers();
   const isDiy = headersList.get("x-hwy61-diy") === "1";
   const supabase = await supabaseServer();
@@ -42,7 +46,7 @@ export default async function DashboardPage() {
   // Fetch org plan + trial status
   const { data: org } = await admin
     .from("orgs")
-    .select("plan, plan_status, trial_ends_at, stripe_customer_id, tourrouter_enabled, localizer_onboarding_completed, localizer_plan_status, bundle_plan_status")
+    .select("plan, plan_status, trial_ends_at, stripe_customer_id, tourrouter_enabled, localizer_onboarding_completed, localizer_plan_status, bundle_plan_status, localizer_plan")
     .eq("id", orgId)
     .maybeSingle();
 
@@ -93,6 +97,22 @@ export default async function DashboardPage() {
   async function createArtist() {
     "use server";
     const supabase = await supabaseServer();
+
+    // Enforce artist limit (admins bypass). Count only non-blank artists so
+    // abandoned draft rows (name = "") don't falsely consume the cap.
+    if (!isAdminEmail(user?.email)) {
+      const { count } = await supabase
+        .from("artists")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId)
+        .not("name", "is", null)
+        .neq("name", "");
+      const limit = artistLimitForPlan(org?.localizer_plan ?? null);
+      if ((count ?? 0) >= limit) {
+        redirect("/dashboard?error=artist_limit");
+      }
+    }
+
     const newArtistId = randomUUID();
     const { error } = await supabase.from("artists").insert({
       id: newArtistId,
@@ -118,6 +138,7 @@ export default async function DashboardPage() {
 
   return (
     <OnboardingGate artistCount={artists.length} hasTourRouter={hasTourRouter}>
+    <ArtistLimitToast show={limitError} />
     <div className="dash-page" style={{ minHeight: "100vh", padding: "32px 24px 80px" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
