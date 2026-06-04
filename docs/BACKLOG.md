@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (9)
+## 🟡 Pre-launch gates (8)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -40,32 +40,6 @@ As of April 9, 2026, the orgs table has 12 rows all named "My Workspace" — lef
 Two of the three existing `custom_fonts` rows still point at Cloudinary assets that don't exist: BebasNeue-Regular and Pragmatica-Extended-Extra-Bold. They were uploaded under the old broken pipeline that never wrote to Cloudinary. The render code will silently fail on any tour that uses these two fonts on a video overlay.
 
 BullandRegular-d91g6 was already re-uploaded tonight and verified working on Uncle Lucius. The other two just need to be deleted via the UI and re-uploaded from their original font files (sources in Supabase storage URLs from the `custom_fonts.storage_url` column if Drew no longer has the local originals).
-
----
-
-### Verify new-user signup works end-to-end before launch
-
-Supabase email signups are currently DISABLED at the project
-level (Authentication → Providers → Email). No new user can sign
-up on production right now. This is deliberate during the Coming
-Soon gate.
-
-**Before flipping `COMING_SOON=false`:**
-1. Re-enable Supabase email signups
-2. Create a fresh test email (e.g. `yourname+test1@gmail.com`
-   via Gmail plus-addressing)
-3. Run through full signup → magic link → auth callback →
-   onboarding wizard flow
-4. Verify `ensureOrgExists` correctly provisions a new org and
-   `org_members` row (it has never been tested from this code
-   path — HWY 61 TEST CO. was created manually on March 10,
-   before `ensureOrgExists` was moved to the auth callback in
-   commit 9f88d03 on April 9)
-5. Verify the beta invite gate at app level correctly blocks
-   un-invited signups
-6. Verify Google OAuth also works for a fresh account
-
-**Launch blocker if untested.**
 
 ---
 
@@ -949,3 +923,21 @@ The May 23 Free tier spec (watermark renderer, 5-shows/mo counter, 3-format limi
 - Beta-org backfill in Supabase SQL Editor: 22 existing tester orgs reset to fresh June-5 trials; shared org `d38702d7` preserved as `active` with `owner_email = 'hwy61ai@gmail.com'`. Verified by SELECT.
 
 The Free cards on `/pricing` and `/` no longer constitute a "broken promise" — clicking "Start Free" lands a user in a 7-day trial of full access, then free/blocked until they pick a plan. The five sub-items in the original entry (watermark renderer, 5-shows/mo counter, feature gates, format limit, upgrade wall) are NOT happening. See `docs/LAUNCH_PROGRESS.md` "Trial model (locked May 28 — replaces the May 23 watermarked Free tier)" for current state. See `docs/SESSION_LOG.md` 2026-05-28 "No-card trial model locked" for the decision narrative.
+
+---
+
+### Verify new-user signup works end-to-end before launch — PASSED (2026-06-04)
+
+Pre-launch gate to verify the post-May-28 trial-seed `ensureOrgExists` path end-to-end on production. The new-user provisioning logic (commit `67cf438`, May 28) seeds new orgs with `localizer_plan = null`, `localizer_plan_status = null`, `trial_ends_at = now() + 7d`, replacing the prior beta-mode seed. This code path had **never been exercised from the auth-callback** before — `HWY 61 TEST CO.` was created manually on March 10, predating the move of `ensureOrgExists` into the auth callback (commit `9f88d03`, April 9).
+
+**Resolution (2026-06-04): PASSED.** Real fresh signup run end-to-end against production with `hwy61ai+testx@gmail.com`:
+
+- Magic-link signup → `/auth/callback` → `ensureOrgExists` correctly seeded a new trial org: `localizer_plan = null`, `localizer_plan_status = null`, `trial_ends_at ≈ now() + 7d`, `localizer_enabled = true`, `owner_email` set, `org_members` row created with `role = 'owner'`.
+- User landed on the onboarding welcome page (`/dashboard/onboarding/localizer`).
+- Clicked GET STARTED → `/dashboard`.
+- Added an artist, added a show, generated an asset — **NO paywall hit**; the trial gate granted access end-to-end (`getLocalizerAccessLevel` returned `"paid"` via the unexpired `trial_ends_at` branch).
+- Test org cleaned up afterward.
+
+**Correction to the original entry:** The claim "Supabase email signups are currently DISABLED at the project level" was stale at the time of the test. Email signups were already ENABLED in the Supabase Dashboard as of June 4 (confirmed during the test). Whoever wrote that line was working from out-of-date information; the actual project setting allowed the signup to proceed without a config change.
+
+**Items 5 + 6 from the original test plan not exercised in this pass:** the beta-invite gate block on un-invited signups, and the Google OAuth fresh-account path. Magic-link path is verified; the other two remain unverified but are LOW risk (beta gate already protects production, OAuth is similar enough auth flow that the same `ensureOrgExists` call site fires). Acceptable launch posture.
