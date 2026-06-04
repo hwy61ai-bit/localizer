@@ -3473,3 +3473,14 @@ Cron verified firing live (June 3, 9am ET — day5 nudge emails sent, confirmed 
 Landing hero confirmed + Tim-approved: "One image. Every asset. Every platform. Every show." The "10 minutes, not 10 hours" line was stale, never shipped.
 Signup smoke test PASSED (prod, hwy61ai+testx): trial-seed ensureOrgExists verified end-to-end, asset generated on trial, test org cleaned up. Welcome page DOES show for new users (recon's skip-prediction was wrong).
 Next: legal review kickoff; more mobile-pass surfaces; Tim's 2 email answers + Stripe screen-share when he's available.
+
+
+Add a June 4 entry covering:
+
+Cron verified firing live (June 3, 9am ET — day5 emails sent)
+Hero copy confirmed + Tim-approved ("One image. Every asset...")
+Signup smoke test PASSED end-to-end (trial-seed verified, asset generated, org cleaned up)
+In-app FAQ rewritten Localizer-only (2298e82) — closed the "FAQ positioning copy review" Tim-blocker
+Stale beta copy removed from live surfaces (a7cadf8)
+Day 13–14 marked launch-sufficient; help-article system deferred to post-launch
+Next session: legal review kickoff first (longest external clock, not started), then mobile pass surfaces. Tim's items when available: Stripe screen-share, 2 email answers, video script.
