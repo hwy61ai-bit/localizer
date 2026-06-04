@@ -7,8 +7,9 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **Day status:** Days 1, 2, 4–5, 7, 10, and 11 fully resolved; Day 3 moot (no customers to migrate); Days 8–9, 16, and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 10 closed out June 2 — all 5/5 items shipped (4-tier grid, monthly/annual toggle, "Most Popular" Pro highlight, "Start free trial" CTA copy, 8-Q&A FAQ in Tim's voice); 2 FAQ copy upgrades parked in BACKLOG ("Pricing FAQ copy upgrades") gated on the live-Stripe screen-share — switch-plans + cancel-at-period-end can be strengthened from soft-form to strong-form pending portal-config verification; Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 16 venue viewer (highest-priority mobile surface — promoters use phones) fixed June 2 (commit `d6b028c`), rest of mobile pass still open; Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
+- **Day status:** Days 1, 2, 4–5, 7, 10, and 11 fully resolved; Day 3 moot (no customers to migrate); Day 15 cut June 4 (viewer already substantially built — see "Day 15" section); Days 8–9, 16, and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 10 closed out June 2 — all 5/5 items shipped (4-tier grid, monthly/annual toggle, "Most Popular" Pro highlight, "Start free trial" CTA copy, 8-Q&A FAQ in Tim's voice); 2 FAQ copy upgrades parked in BACKLOG ("Pricing FAQ copy upgrades") gated on the live-Stripe screen-share — switch-plans + cancel-at-period-end can be strengthened from soft-form to strong-form pending portal-config verification; Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 16 venue viewer (highest-priority mobile surface — promoters use phones) fixed June 2 (commit `d6b028c`), rest of mobile pass still open; Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
+- **1 day-item cut** (Day 15 — viewer already substantially built; growth wedges parked as post-launch fast-follow, owner Tim)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
 - **27 items added since the original plan was written** (see "Added since the original plan" section)
 - **Trial model live in production (June 2)** — gate reads `trial_ends_at` (`8095476`), `ensureOrgExists` seeds trial-not-active (`67cf438`), 22-org beta backfill applied May 28. Both commits pushed and live; verified via access-bucket query (22 active trials, 1 shared org preserved, 14 correctly expired/blocked).
@@ -165,12 +166,8 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## Week 3 (Days 15–21)
 
-### Day 15 — Venue link viewer page redesign
-- ⬜ Cleaner asset grid with format labels
-- ⬜ Hover state for download options (PNG, JPG)
-- ⬜ "Made yours at localizer.hwy61labs.com" CTA (viral wedge)
-- ⬜ "Forward to your artist" button (lead-gen wedge)
-- ⬜ Mobile responsive
+### Day 15 — Venue link viewer page redesign — **CUT June 4**
+- 🚫 Day 15 — Venue link viewer page redesign — CUT. Recon (June 4) confirmed the viewer (`app/v/e/[token]/page.tsx`) is already substantially built: labeled multi-format asset grid with dimensions, download component, advance materials, Spotify embed. Current state judged good enough for launch. Growth wedges ("Made yours at..." CTA, "Forward to artist") not built — parked as post-launch fast-follow if desired, owner Tim.
 
 ### Day 16 — Mobile responsiveness pass
 - ⬜ Landing page
