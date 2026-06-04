@@ -3490,3 +3490,25 @@ corrected Localizer legal docs to Localizer-only scope (decision: TourRouter/DIY
 
 
 Capture for today: implemented artist-count tier enforcement (Solo 1 / Pro 5 / Agency 12, trial = Solo) — this gating did not exist before, tiers previously enforced nothing; fixed account page that was reading the dead plan column (showed STARTER + renders for everyone) → now reads localizer_plan/trial_ends_at, shows trial state + artist meter; added limit toast, fixed it firing repeatedly (fire-once ref + URL param strip). Commits: c4f5b4c (feature), 0d85b31 (toast loop fix). Decided against an upgrade button on the toast — toast is fine as-is. Next session: smoke-test enforcement on a fresh non-admin trial org; reconcile "unlimited artists" copy in labs/tourrouter pages; optional annual/monthly toggle on /pricing (live Stripe annual prices exist, unblocked).
+
+
+## June 4, 2026 — Legal docs, tier enforcement, account page, welcome email, sign-out
+
+DONE:
+- Legal docs: corrected ToS + Privacy to Localizer-only scope (entity HWY61 LLC, hwy61labs.com, Texas governing law, no-card trial billing, PostHog disclosed, dropped Mapbox/TourRouter). Live /privacy + /terms pages updated (ca5b976, building on prior d78de22). 3 matching .docx (Privacy, ToS, legal-review memo) generated and SENT TO TIM.
+- Day 15 venue viewer: CUT from launch plan — recon showed it's already substantially built (labeled multi-format grid, downloads, advance materials, Spotify). Good enough for launch (fec67a7).
+- Artist-count tier ENFORCEMENT: newly implemented — did not exist before, tiers gated nothing. Solo 1 / Pro 5 / Agency 12, trial=Solo. lib/localizer/artistLimits.ts (single source of truth), enforced in createArtist server action (counts non-blank artists, checks before insert, admins bypass), surfaced via toast (c4f5b4c). Fixed toast firing repeatedly — fire-once ref + URL param strip (0d85b31).
+- Account page: was reading DEAD plan column (showed STARTER + render meter for everyone). Now reads localizer_plan/trial_ends_at, shows trial state ("X days left") + artist-count meter. Replaced stale render meter (part of c4f5b4c).
+- Welcome email: rewritten Localizer-only — was pitching full suite (Routing/Marketing/Advancing), two of which a Localizer user can't access. Now "One image / Every asset / Every show." Trigger (after first login) was already correct (0c7df71). Resolves Q3.
+- Sign-out: was MISSING ENTIRELY — no signOut anywhere, users could only end session by clearing cookies. Added /auth/signout server route + SIGN OUT button on account page. Live-tested, session clears (8c11b03).
+
+NON-BUGS RULED OUT (don't re-chase):
+- Toast "loop" on first test = Vercel deploy/browser cache, not code. Hard-refresh after push.
+- Onboarding modal not showing on re-test = stale onboarding_dismissed in localStorage, NOT a bug. Use incognito for fresh-user tests. Per-browser dismissal accepted as fine for launch (touring users on own devices).
+
+OPEN / NEXT SESSION:
+- Q5 pre-upgrade cancellation copy — needs Tim (copy decision, not self-approvable).
+- Legal review — docs with Tim, waiting on him to name reviewing attorney. Long external clock, still the launch long-pole.
+- Smoke-test artist enforcement on a fresh non-admin trial org (incognito).
+- Reconcile "unlimited artists" copy in labs/page.tsx + tourrouter/page.tsx vs new limits (verify scope first).
+- Consider: end-to-end audit of core flows (signup→trial→generate→download→upgrade→cancel→logout) — today surfaced 2 unflagged gaps (tiers, sign-out) the checklist missed.
