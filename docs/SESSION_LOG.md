@@ -3465,3 +3465,11 @@ Established checkbox discipline: ⬜ = real pending work only; ✅ = done; 🚫 
 
 
  Day 10 audit (page was already built, 3 items flipped, FAQ+CTA sent to Tim via decision doc); /pricing "logged out" scare diagnosed as a perception trap (session never actually lost — cookie scoped to .hwy61labs.com), fix spec'd in BACKLOG as ready-to-execute pre-launch; Day 11 + Day 20 closed; full launch-file checkbox audit. Then the standing next-session items: check the 9am cron tomorrow first, and Tim's replies (pricing FAQ/CTA + the 2 email questions).
+
+
+June 4 entry:
+
+Cron verified firing live (June 3, 9am ET — day5 nudge emails sent, confirmed in trial_nudge_emails).
+Landing hero confirmed + Tim-approved: "One image. Every asset. Every platform. Every show." The "10 minutes, not 10 hours" line was stale, never shipped.
+Signup smoke test PASSED (prod, hwy61ai+testx): trial-seed ensureOrgExists verified end-to-end, asset generated on trial, test org cleaned up. Welcome page DOES show for new users (recon's skip-prediction was wrong).
+Next: legal review kickoff; more mobile-pass surfaces; Tim's 2 email answers + Stripe screen-share when he's available.
