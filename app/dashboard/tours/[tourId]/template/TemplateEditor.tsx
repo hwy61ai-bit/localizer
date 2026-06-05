@@ -331,11 +331,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ custom_text_1: customText1 || null }),
       })
-        .then(res => { if (!res.ok) toastError("Custom text 1 save failed."); })
+        .then(res => { if (!res.ok) { toastError("Custom text 1 save failed."); } else { router.refresh(); } })
         .catch(() => toastError("Custom text 1 save failed — network error."));
     }, 500);
     return () => clearTimeout(timer);
-  }, [customText1, tourId, toastError]);
+  }, [customText1, tourId, toastError, router]);
 
   useEffect(() => {
     if (customText2MountRef.current) {
@@ -348,11 +348,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ custom_text_2: customText2 || null }),
       })
-        .then(res => { if (!res.ok) toastError("Custom text 2 save failed."); })
+        .then(res => { if (!res.ok) { toastError("Custom text 2 save failed."); } else { router.refresh(); } })
         .catch(() => toastError("Custom text 2 save failed — network error."));
     }, 500);
     return () => clearTimeout(timer);
-  }, [customText2, tourId, toastError]);
+  }, [customText2, tourId, toastError, router]);
 
   useEffect(() => {
     if (bandFontFamilyMountRef.current) {
@@ -365,11 +365,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ band_font_family: bandFontFamily }),
       })
-        .then(res => { if (!res.ok) toastError("Band font save failed."); })
+        .then(res => { if (!res.ok) { toastError("Band font save failed."); } else { router.refresh(); } })
         .catch(() => toastError("Band font save failed — network error."));
     }, 500);
     return () => clearTimeout(timer);
-  }, [bandFontFamily, tourId, toastError]);
+  }, [bandFontFamily, tourId, toastError, router]);
 
   useEffect(() => {
     if (configsMountRef.current) {
@@ -382,11 +382,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ overlay_config: configs }),
       })
-        .then(res => { if (!res.ok) toastError("Layout save failed."); })
+        .then(res => { if (!res.ok) { toastError("Layout save failed."); } else { router.refresh(); } })
         .catch(() => toastError("Layout save failed — network error."));
     }, 500);
     return () => clearTimeout(timer);
-  }, [configs, tourId, toastError]);
+  }, [configs, tourId, toastError, router]);
 
   // Flush any pending debounced save on unmount. The per-field effects above
   // clearTimeout on unmount (cancelling in-flight saves if the user navigates
