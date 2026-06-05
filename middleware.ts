@@ -49,6 +49,7 @@ function isDiyHost(hostname: string): boolean {
 // Routes that redirect to /coming-soon when COMING_SOON=true
 const COMING_SOON_MARKETING_ROUTES = new Set([
   "/",
+  "/labs",
   "/tourrouter",
   "/localizer",
   "/diy",
