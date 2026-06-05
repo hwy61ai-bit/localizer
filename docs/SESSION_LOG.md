@@ -3514,3 +3514,13 @@ OPEN / NEXT SESSION:
 - Consider: end-to-end audit of core flows (signup→trial→generate→download→upgrade→cancel→logout) — today surfaced 2 unflagged gaps (tiers, sign-out) the checklist missed.
 
 June 5: Hid /labs via COMING_SOON_MARKETING_ROUTES (was fully public — no noindex, showing stale "Unlimited artists" TourRouter/suite pricing). ⚠️ LAUNCH-DAY DEPENDENCY: hiding is tied to COMING_SOON=true. Before flipping COMING_SOON=false at launch, either fix /labs copy or hide it permanently (noindex or standalone redirect) — otherwise it reappears with stale pricing.
+
+**Template editor stale-positions bug — FIXED (June 5).** Symptom: logo/text moves, font, and custom-text edits appeared lost after navigating away and back; "sometimes" worked; hard refresh always showed correct positions.
+
+Root cause (confirmed via recon, not guessed): returning to the template editor via the IMPORT page — which is a `"use client"` component — served a stale client-router-cache render with no server refetch. Returning via the GIGS page (a server component) forced a refetch, which is why that path always worked. The save itself was never broken — DB writes always succeeded.
+
+Fix: `router.refresh()` after each successful debounced save in TemplateEditor.tsx, which invalidates the client router cache so any return path shows fresh data. Also added a `navigator.sendBeacon` flush-on-unmount (+ a POST handler on /api/tours/[tourId]/overlay-config, since beacon can't send PATCH) to catch the separate edge where an edit is made within the 500ms debounce window and the user navigates before it fires.
+
+Diagnostic note: `force-dynamic` (template page) and `revalidatePath` (API route) were added earlier in diagnosis on wrong theories (server-side caching). Both are harmless and left in place. The actual culprit was the CLIENT router cache, fixed only by router.refresh(). Lesson: when a bug "works here but not there," chase the difference between the two paths directly rather than theorizing the mechanism — the import-vs-gigs asymmetry (client vs server component) was the whole answer.
+
+June 5: Comp'd don@nodooragency.com (org 1c39af62-96ec-4c70-a558-c92e134eece6) to permanent Agency access — beta tester/trusted confidant. Set localizer_plan='agency', localizer_plan_status='active', trial_ends_at='2099-12-31' via SQL (his trial had just expired). No Stripe customer (comp, not paying). NOT added to adminEmails — he's a comp'd customer, not staff.
