@@ -7,7 +7,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## At a glance
 
-- **Day status:** Days 1, 2, 4–5, 7, 10, 11, and 17 fully resolved; Day 3 moot (no customers to migrate); Day 15 cut June 4 (viewer already substantially built — see "Day 15" section); Days 8–9, 16, and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 10 closed out June 2 — all 5/5 items shipped (4-tier grid, monthly/annual toggle, "Most Popular" Pro highlight, "Start free trial" CTA copy, 8-Q&A FAQ in Tim's voice); 2 FAQ copy upgrades parked in BACKLOG ("Pricing FAQ copy upgrades") gated on the live-Stripe screen-share — switch-plans + cancel-at-period-end can be strengthened from soft-form to strong-form pending portal-config verification; Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 16 venue viewer (highest-priority mobile surface — promoters use phones) fixed June 2 (commit `d6b028c`), rest of mobile pass still open; Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
+- **Day status:** Days 1, 2, 4–5, 7, 10, 11, 16, and 17 fully resolved; Day 3 moot (no customers to migrate); Day 15 cut June 4 (viewer already substantially built — see "Day 15" section); Days 8–9 and 20 partially complete (highest-value items shipped, remainder open). Specifics: Day 1 wired May 26, Day 2 webhook consolidation May 27, Day 4–5 welcome page shipped, Day 7 (5/5) customer support workflow fully defined, Day 8–9 landing live (video embed + bio callout pending), Day 10 closed out June 2 — all 5/5 items shipped (4-tier grid, monthly/annual toggle, "Most Popular" Pro highlight, "Start free trial" CTA copy, 8-Q&A FAQ in Tim's voice); 2 FAQ copy upgrades parked in BACKLOG ("Pricing FAQ copy upgrades") gated on the live-Stripe screen-share — switch-plans + cancel-at-period-end can be strengthened from soft-form to strong-form pending portal-config verification; Day 11 closed out June 2 — 4 items shipped (3 empty states + first-asset success banner), 2 items deliberately cut (template page-level empty state, copy-venue-link button); Day 16 closed out June 4 — venue viewer fixed June 2 (commit `d6b028c`); remaining surfaces (landing, pricing, login, onboarding, dashboard, account) verified at 375px June 4 with no code changes needed; template editor accepted as desktop-primary per plan; `/help` pages dropped as moot (no `/help` route exists); Day 20 alert() → toast cleanup done June 2 (actionable error next-steps still open).
 - **1 day-item moot** (Day 3 — no live customers to migrate; all prior Stripe products were sandbox)
 - **1 day-item cut** (Day 15 — viewer already substantially built; growth wedges parked as post-launch fast-follow, owner Tim)
 - **Pricing locked May 23** (source record: `docs/LOCALIZER_PRICING_DECISION_2026-05-23.md`) — Solo $29/$290, Pro $59/$590, Agency $129/$1,290, plus a no-card 7-day trial of full access, then free/blocked until a plan is picked (replaces the May 23 watermarked Free tier — see "Trial model" section below)
@@ -169,17 +169,26 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 ### Day 15 — Venue link viewer page redesign — **CUT June 4**
 - 🚫 Day 15 — Venue link viewer page redesign — CUT. Recon (June 4) confirmed the viewer (`app/v/e/[token]/page.tsx`) is already substantially built: labeled multi-format asset grid with dimensions, download component, advance materials, Spotify embed. Current state judged good enough for launch. Growth wedges ("Made yours at..." CTA, "Forward to artist") not built — parked as post-launch fast-follow if desired, owner Tim.
 
-### Day 16 — Mobile responsiveness pass
-- ⬜ Landing page
-- ⬜ Pricing
-- ⬜ Login / magic link
-- ⬜ Onboarding wizard
-- ⬜ Dashboard / artist / tour pages
-- ⬜ Template editor (accept desktop-primary)
+### Day 16 — Mobile responsiveness pass — **COMPLETE June 4**
+
+*Verification pass. Most surfaces were already responsive from prior work (May 26 mobile polish pass, June 2 venue-viewer fix). This session confirmed login, account, dashboard, and onboarding all hold at 375px with no overflow or fixed-grid breaks. No code changes needed.*
+
+- ✅ Landing page
+  - *Already covered — `app/page.tsx` has a `@media (max-width: 768px)` block (line 200) plus the LOCALIZER wordmark scale-down shipped May 26. Verified at 375px June 4.*
+- ✅ Pricing
+  - *Already covered — May 26 mobile pass (`app/pricing/page.tsx` `@media (max-width: 768px)` block at line 194 hiding the redundant nav CTA, consolidated inline `<style>`, dropped `!important` flags). Verified at 375px June 4.*
+- ✅ Login / magic link
+  - *Verified at 375px June 4. `app/login/page.tsx` uses a 480px max-width container that collapses cleanly; no fixed widths or hardcoded large grids.*
+- ✅ Onboarding wizard
+  - *Verified at 375px June 4. `app/components/OnboardingWizard.tsx` overlay (the actual welcome surface fresh trial users hit per the June 4 redirect-mechanism correction) reads fine at narrow width.*
+- ✅ Dashboard / artist / tour pages
+  - *Verified at 375px June 4. The `repeat(auto-fill, minmax(280px, 1fr))` artist tile grid in `app/dashboard/page.tsx` already collapses to a single column. Artist + tour child pages inherit the same intrinsic-sizing pattern.*
+- 🚫 ~~Template editor~~ — **accept desktop-primary** per the source plan. Overlay editing on the Canvas renderer is inherently a desktop task (precise text positioning, multi-format preview). Not blocking launch; promoters/venues never touch this surface, only tour managers do.
 - ✅ Venue link viewer (highest priority — promoters use phones)
   - *Fixed two confirmed phone-width breaks in `app/v/e/[token]/page.tsx` June 2 (commit `d6b028c`): hero title/Download-All row now wraps (`flexWrap: "wrap"` + `gap: 16`) so the button drops below the title instead of overlapping; Advance Materials grid changed from hard `repeat(4, 1fr)` to `repeat(auto-fit, minmax(140px, 1fr))` so it collapses 4→2→1 columns instead of crushing W-9 against the edge. Pure inline-style intrinsic-sizing fix, no `<style>` block or CSS file. Verified live at narrow width.*
-- ⬜ Account/billing
-- ⬜ Help pages
+- ✅ Account/billing
+  - *Verified at 375px June 4. `AccountClient.tsx` uses a 640px max-width column wrapper that collapses cleanly; artist meter, plan badge, trial-days-left chip, billing portal button, and the new sign-out button all read fine at narrow width.*
+- 🚫 ~~Help pages~~ — **MOOT.** No `/help` route exists in `app/` (verified by glob June 4). Mobile item removed; revisit only if a help surface ships post-launch. The Day 6 / Day 13–14 "Getting Started with Localizer" help doc is the gating dependency for any future mobile work here, and itself remains ⬜.
 
 ### Day 17 — Account/billing page polish — **COMPLETE June 4**
 - ✅ Current plan + usage clearly displayed
