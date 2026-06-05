@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,10 @@ export async function PATCH(
   if (!data) {
     return NextResponse.json({ error: "update_failed" }, { status: 500 });
   }
+
+  // Invalidate the cached template editor render so the next navigation
+  // back to it loads the freshly-saved overlay_config (fixes stale-position bug).
+  revalidatePath(`/dashboard/tours/${tourId}/template`);
 
   return NextResponse.json({ ok: true });
 }
