@@ -355,35 +355,9 @@ Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three su
 
 ---
 
-## ⏳ Soak items (5)
+## ⏳ Soak items (4)
 
 *Waiting on production data or time to pass.*
-
-### April 28 middleware band-aid removal
-
-**Status:** Diagnosed 2026-05-06. Removal still pending — deferred to post-beta for safety.
-
-**Background:** On April 28 a TEMPORARY unconditional redirect was added to middleware.ts (lines 99-106) sending `/` to `/coming-soon` for public hosts, with `?dev=1` as the bypass. Comment said the env-var-gated COMING_SOON block below it wasn't firing in production.
-
-**Diagnosis (2026-05-06):** The env-var gate at lines 109-127 is working correctly. Confirmed by visiting `hwy61labs.com/?dev=1` in incognito — bypasses the band-aid via the dev query param, exercises the env-var gate directly, redirects to `/coming-soon` as expected.
-
-**Most likely cause of the original misdiagnosis:** the env-var gate has an authenticated-user bypass at line 117 — admins testing the marketing site shouldn't be redirected. Testing while logged into the hwy61ai@gmail.com admin account would have correctly let the request through, looking like the gate "wasn't firing." The band-aid was added without auth bypass, confirming "the marketing site is hidden" but with broader scope than intended (no admin preview, no preview tokens).
-
-Alternative explanation: `COMING_SOON=true` may not have been in Vercel env vars on April 28 and was added later without note. Either way, the gate is functional now.
-
-**Removal plan (execute on a quiet day, post-beta):**
-1. Delete lines 99-106 of middleware.ts (the 4-line comment block + the unconditional redirect)
-2. `git push` to deploy
-3. Verify in incognito: `hwy61labs.com/` → redirects to `/coming-soon` (env-var gate firing)
-4. Verify admin bypass: visit while logged into hwy61ai@gmail.com → marketing landing renders
-5. Verify preview bypass: `hwy61labs.com/?preview=true` in incognito → marketing landing renders
-6. If anything looks off, revert the commit and re-diagnose
-
-Total work: ~10 minutes. Zero new code, pure deletion. Low risk on a calm day with monitoring.
-
-**Verification of May 5 fix:** Log in fresh, check DevTools cookies — sb-* auth cookies should have Expires/Max-Age ~30 days out (around June 4 2026). If shorter than that, fix didn't take or there's another code path setting cookies.
-
----
 
 ### Delete `geocodeCity` / `cacheGeocode` and drop `geocode_cache` table
 
@@ -627,6 +601,18 @@ Option 2 is the closest fit to existing patterns. Decision made at build time.
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### April 28 middleware band-aid removal
+
+**Resolution (2026-06-05, commit `5b6a688`):** Band-aid removed. The COMING_SOON env gate was verified working alone in both directions — `COMING_SOON=true` correctly hides `/` (redirects to `/coming-soon`), `COMING_SOON=false` correctly releases it. The 9-line band-aid block (5-line explanatory comment + 4-line unconditional redirect) was deleted from `middleware.ts`; the env-gated `// --- Coming Soon gate ---` block that follows is untouched and remains the single point of control. If the band-aid had been left in place, flipping `COMING_SOON=false` at launch would not have released the homepage — `/` would have continued redirecting to `/coming-soon` regardless of env-var state.
+
+**Background:** On April 28 a TEMPORARY unconditional redirect was added to middleware.ts sending `/` to `/coming-soon` for public hosts, with `?dev=1` as the bypass. Comment said the env-var-gated COMING_SOON block below it wasn't firing in production.
+
+**Diagnosis (2026-05-06):** The env-var gate was working correctly. Confirmed by visiting `hwy61labs.com/?dev=1` in incognito — bypassed the band-aid via the dev query param, exercised the env-var gate directly, redirected to `/coming-soon` as expected.
+
+**Most likely cause of the original misdiagnosis:** the env-var gate has an authenticated-user bypass — admins testing the marketing site shouldn't be redirected. Testing while logged into the hwy61ai@gmail.com admin account would have correctly let the request through, looking like the gate "wasn't firing." The band-aid was added without auth bypass, confirming "the marketing site is hidden" but with broader scope than intended (no admin preview, no preview tokens). Alternative: `COMING_SOON=true` may not have been in Vercel env vars on April 28 and was added later without note.
+
+**Verification on removal (2026-06-05):** Set `COMING_SOON=false` locally; `/` rendered the Localizer landing page directly (no redirect). Set `COMING_SOON=true`; `/` redirected to `/coming-soon` as expected. Both directions confirmed before the band-aid removal was committed.
 
 ### BUG-E — `render_poster_url` dead column in venue_links
 

@@ -3512,3 +3512,5 @@ OPEN / NEXT SESSION:
 - Smoke-test artist enforcement on a fresh non-admin trial org (incognito).
 - Reconcile "unlimited artists" copy in labs/page.tsx + tourrouter/page.tsx vs new limits (verify scope first).
 - Consider: end-to-end audit of core flows (signup→trial→generate→download→upgrade→cancel→logout) — today surfaced 2 unflagged gaps (tiers, sign-out) the checklist missed.
+
+June 5: Hid /labs via COMING_SOON_MARKETING_ROUTES (was fully public — no noindex, showing stale "Unlimited artists" TourRouter/suite pricing). ⚠️ LAUNCH-DAY DEPENDENCY: hiding is tied to COMING_SOON=true. Before flipping COMING_SOON=false at launch, either fix /labs copy or hide it permanently (noindex or standalone redirect) — otherwise it reappears with stale pricing.
