@@ -79,3 +79,12 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true });
 }
+
+// navigator.sendBeacon can only POST, not PATCH. The template editor's
+// flush-on-unmount safety save uses sendBeacon, so POST must work identically.
+export async function POST(
+  req: NextRequest,
+  ctx: { params: { tourId: string } }
+) {
+  return PATCH(req, ctx);
+}

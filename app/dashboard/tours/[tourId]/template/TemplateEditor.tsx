@@ -248,6 +248,19 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const bandFontFamilyMountRef = useRef(true);
   const configsMountRef = useRef(true);
 
+  // Latest-value refs for flush-on-unmount (sendBeacon survives navigation; fetch does not)
+  const latestConfigs = useRef(configs);
+  const latestCustomText1 = useRef(customText1);
+  const latestCustomText2 = useRef(customText2);
+  const latestBandFontFamily = useRef(bandFontFamily);
+
+  useEffect(() => {
+    latestConfigs.current = configs;
+    latestCustomText1.current = customText1;
+    latestCustomText2.current = customText2;
+    latestBandFontFamily.current = bandFontFamily;
+  }, [configs, customText1, customText2, bandFontFamily]);
+
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const toast = useToast();
   const { error: toastError } = toast;
@@ -374,6 +387,27 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     }, 500);
     return () => clearTimeout(timer);
   }, [configs, tourId, toastError]);
+
+  // Flush any pending debounced save on unmount. The per-field effects above
+  // clearTimeout on unmount (cancelling in-flight saves if the user navigates
+  // within 500ms of an edit) — this beacons the latest values so nothing is lost.
+  // sendBeacon survives page teardown; a normal fetch would be cancelled.
+  useEffect(() => {
+    return () => {
+      const payload = JSON.stringify({
+        overlay_config: latestConfigs.current,
+        custom_text_1: latestCustomText1.current || null,
+        custom_text_2: latestCustomText2.current || null,
+        band_font_family: latestBandFontFamily.current,
+      });
+      try {
+        navigator.sendBeacon(
+          `/api/tours/${tourId}/overlay-config`,
+          new Blob([payload], { type: "application/json" })
+        );
+      } catch {}
+    };
+  }, [tourId]);
 
   const bandName = tour.band_name ?? tour.name ?? "Artist";
 
