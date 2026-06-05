@@ -351,7 +351,6 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 | ⚠️ `/labs` hidden only via `COMING_SOON_MARKETING_ROUTES` — no `noindex` | Drew | `/labs` is currently hidden because June 5 commit `a88a2fd` added it to `COMING_SOON_MARKETING_ROUTES` in `middleware.ts` — that hide is tied to `COMING_SOON=true`. When `COMING_SOON=false` is flipped at launch, `/labs` reappears publicly with stale "Unlimited artists" copy and the old TourRouter/suite pricing. Before the flip: either (a) fix the `/labs` copy to match the live Localizer + artist-count limits, or (b) hide `/labs` permanently (e.g. middleware redirect that's NOT gated on `COMING_SOON`). `/labs` has `noindex, nofollow` meta but no permanent hide — direct hits will still see the stale portfolio. |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
-| Pre-launch — onboarding wizard per-user vs per-org mismatch | Tim | Decision on which of three fixes to take (see BACKLOG) |
 
 ---
 

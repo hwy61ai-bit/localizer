@@ -10,24 +10,9 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (8)
+## 🟡 Pre-launch gates (7)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
-
-### Onboarding wizard — per-user vs per-org state mismatch
-
-`orgs.onboarding_completed` is org-level state, but `org_members.user_role` is per-user. When a new user joins an existing onboarded org, they skip the wizard entirely and never get a chance to set their role.
-
-**Example found April 9, 2026:** Drew completed the wizard on HWY 61 TEST CO. and got user_role = Tour Manager. Tim is also a member of the same org with user_role = null because the wizard only runs once per org, not once per user.
-
-**Possible fixes (need Tim's input):**
-1. Move onboarding state to org_members so each user onboards independently (org_members.onboarding_completed, org_members.onboarding_step)
-2. Keep onboarding_completed on orgs but add a lightweight "role picker" prompt that fires on first login for any member whose user_role is null, regardless of org-level state
-3. Accept the gap — assume Tim's beta invites will be sent to users who create their own orgs, not users joining existing orgs
-
-**Decision needed before beta launch** since Tim's beta users will be joining orgs Tim already created for them.
-
----
 
 ### Audit and clean up stale test workspaces
 
@@ -601,6 +586,21 @@ Option 2 is the closest fit to existing patterns. Decision made at build time.
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### Onboarding wizard — per-user vs per-org state mismatch — WON'T FIX
+
+**Resolution (2026-06-05): WON'T FIX.** Decided not to fix. A second user joining an existing org skips the onboarding wizard — accepted as fine; not worth addressing for launch or after.
+
+**Original problem:** `orgs.onboarding_completed` is org-level state, but `org_members.user_role` is per-user. When a new user joins an existing onboarded org, they skip the wizard entirely and never get a chance to set their role.
+
+**Example found April 9, 2026:** Drew completed the wizard on HWY 61 TEST CO. and got `user_role = Tour Manager`. Tim is also a member of the same org with `user_role = null` because the wizard only runs once per org, not once per user.
+
+**Possible fixes considered:**
+1. Move onboarding state to `org_members` so each user onboards independently (`org_members.onboarding_completed`, `org_members.onboarding_step`)
+2. Keep `onboarding_completed` on orgs but add a lightweight "role picker" prompt that fires on first login for any member whose `user_role` is null, regardless of org-level state
+3. Accept the gap — assume Tim's beta invites go to users who create their own orgs, not users joining existing orgs
+
+**Outcome:** Accept (option 3) as launch-day reality. `user_role` is per-user state but isn't load-bearing for any current product behavior — the gating model is the org-level plan/trial state, not per-user role. The "second user joins existing org" case is rare in the actual launch funnel (most users sign up and create their own org), and the worst-case symptom is a `null` user_role on a second member, which is benign. Not worth the schema migration or the role-picker prompt cost to fix. Removed from Active blockers in LAUNCH_PROGRESS June 5.
 
 ### April 28 middleware band-aid removal
 
