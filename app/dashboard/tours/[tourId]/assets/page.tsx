@@ -284,9 +284,18 @@ export default function AssetsPage() {
                 <div style={{ fontSize: 22, color: "var(--hw-text-muted)", marginBottom: 8, opacity: 0.4 }}>&#8593;</div>
                 <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, color: "var(--hw-text-muted)", textTransform: "uppercase", letterSpacing: "1.5px" }}>UPLOAD</div>
                 <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", marginTop: 4, letterSpacing: "1px" }}>or drag and drop</div>
-                {hint && (
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", marginTop: 6, opacity: 0.8 }}>{hint}</div>
-                )}
+                {hint && (() => {
+                  const [formats, ...rest] = hint.split(" · ");
+                  const sizeLimit = rest.join(" · ");
+                  return (
+                    <>
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", marginTop: 6, opacity: 0.8 }}>{formats}</div>
+                      {sizeLimit && (
+                        <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 4, letterSpacing: "0.5px" }}>{sizeLimit}</div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>
