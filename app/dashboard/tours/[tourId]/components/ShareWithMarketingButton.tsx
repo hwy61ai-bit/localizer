@@ -5,6 +5,7 @@ import HwModal from "@/app/components/hw/HwModal";
 import HwInput from "@/app/components/hw/HwInput";
 import HwSelect from "@/app/components/hw/HwSelect";
 import HwButton from "@/app/components/hw/HwButton";
+import { useToast } from "@/app/components/Toast";
 
 interface Token {
   token: string;
@@ -31,6 +32,8 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
   const [loadingTokens, setLoadingTokens] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
+  const [downloadingFormat, setDownloadingFormat] = useState<string | null>(null);
 
   const fetchTokens = useCallback(async () => {
     setLoadingTokens(true);
@@ -102,6 +105,43 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
       await fetchTokens();
     } catch {
       setError("Failed to revoke token");
+    }
+  }
+
+  async function handleDownloadFormat(format: string, label: string) {
+    if (downloadingFormat) return;
+    setDownloadingFormat(format);
+    try {
+      const res = await fetch(`/api/tours/${tourId}/download-format?format=${format}`);
+      if (!res.ok) {
+        let errKey = "";
+        try { errKey = (await res.json())?.error ?? ""; } catch {}
+        if (errKey === "no_rendered_assets") {
+          toast.error(`No ${label} assets generated yet. Generate assets for your shows first.`);
+        } else if (errKey === "no_events") {
+          toast.error("Add shows to this tour before downloading.");
+        } else if (errKey === "download_requires_paid") {
+          toast.error("Downloading assets requires an active Localizer plan.");
+        } else {
+          toast.error("Download failed. Please try again.");
+        }
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const disposition = res.headers.get("Content-Disposition") || "";
+      const match = disposition.match(/filename="(.+)"/);
+      a.download = match ? match[1] : `${label}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Download failed. Please try again.");
+    } finally {
+      setDownloadingFormat(null);
     }
   }
 
@@ -228,59 +268,59 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
           )}
         </div>
 
-        {/* Download All by format */}
+        {/* Download All by format — buttons shaped like the asset's aspect ratio */}
         <div style={{ marginTop: 32, paddingTop: 24, borderTop: "3px solid var(--hw-border-strong)" }}>
           <div style={{
-            fontFamily: "var(--hw-font-mono)",
-            fontSize: 13,
-            letterSpacing: "2px",
-            textTransform: "uppercase",
-            color: "var(--hw-text-muted)",
-            marginBottom: 4,
+            fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "2px",
+            textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 4,
           }}>
             Download All by Format
           </div>
           <div style={{
-            fontFamily: "var(--hw-font-body)",
-            fontSize: 13,
-            fontWeight: 300,
-            color: "var(--hw-text-secondary)",
-            marginBottom: 14,
+            fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300,
+            color: "var(--hw-text-secondary)", marginBottom: 16,
           }}>
             Download one format across every show in this tour as a single zip. Only shows with generated assets are included.
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-end" }}>
             {[
-              { format: "story", label: "IG Story" },
-              { format: "square", label: "IG Post" },
-              { format: "landscape", label: "FB Cover" },
-              { format: "tiktok", label: "TikTok / Reels" },
-              { format: "yt_shorts", label: "Square Video" },
-            ].map((f) => (
-              <a
-                key={f.format}
-                href={`/api/tours/${tourId}/download-format?format=${f.format}`}
-                download
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "10px 18px",
-                  border: "3px solid var(--hw-border-strong)",
-                  background: "var(--hw-bg-surface)",
-                  color: "var(--hw-text)",
-                  fontFamily: "var(--hw-font-mono)",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  letterSpacing: "1px",
-                  textTransform: "uppercase",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                &#8595; {f.label}
-              </a>
-            ))}
+              { format: "square",    label: "IG Post",        w: 90,  h: 90 },
+              { format: "story",     label: "IG Story",       w: 72,  h: 90 },
+              { format: "tiktok",    label: "TikTok / Reels", w: 56,  h: 100 },
+              { format: "landscape", label: "FB Cover",       w: 120, h: 56 },
+              { format: "yt_shorts", label: "Square Video",   w: 90,  h: 90 },
+            ].map((f) => {
+              const isLoading = downloadingFormat === f.format;
+              return (
+                <button
+                  key={f.format}
+                  onClick={() => handleDownloadFormat(f.format, f.label)}
+                  disabled={!!downloadingFormat}
+                  title={`Download all ${f.label} assets`}
+                  style={{
+                    width: f.w, height: f.h,
+                    border: "3px solid var(--hw-border-strong)",
+                    background: isLoading ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)",
+                    color: isLoading ? "#fff" : "var(--hw-text)",
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", justifyContent: "center", gap: 4,
+                    cursor: downloadingFormat ? "default" : "pointer",
+                    opacity: downloadingFormat && !isLoading ? 0.4 : 1,
+                    padding: 6, transition: "var(--hw-ease)",
+                  }}
+                  onMouseEnter={(e) => { if (!downloadingFormat) { e.currentTarget.style.background = "var(--hw-crimson)"; e.currentTarget.style.color = "#fff"; } }}
+                  onMouseLeave={(e) => { if (!isLoading) { e.currentTarget.style.background = "var(--hw-bg-surface)"; e.currentTarget.style.color = "var(--hw-text)"; } }}
+                >
+                  <span style={{ fontSize: 16, lineHeight: 1 }}>{isLoading ? "\u2026" : "\u2193"}</span>
+                  <span style={{
+                    fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
+                    letterSpacing: "0.5px", textTransform: "uppercase", textAlign: "center", lineHeight: 1.2,
+                  }}>
+                    {f.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </HwModal>
