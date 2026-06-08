@@ -270,6 +270,12 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
 
         {/* Download All by format — buttons shaped like the asset's aspect ratio */}
         <div style={{ marginTop: 32, paddingTop: 24, borderTop: "3px solid var(--hw-border-strong)" }}>
+          <style>{`
+            @keyframes dlBarSlide {
+              0% { transform: translateX(-100%); }
+              100% { transform: translateX(300%); }
+            }
+          `}</style>
           <div style={{
             fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "2px",
             textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 4,
@@ -286,7 +292,7 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
             {[
               { format: "square",    label: "IG Post",        w: 90,  h: 90 },
               { format: "story",     label: "IG Story",       w: 72,  h: 90 },
-              { format: "tiktok",    label: "TikTok / Reels", w: 56,  h: 100 },
+              { format: "tiktok",    label: "TikTok/Reels Video", w: 84,  h: 100 },
               { format: "landscape", label: "FB Cover",       w: 120, h: 56 },
               { format: "yt_shorts", label: "Square Video",   w: 90,  h: 90 },
             ].map((f) => {
@@ -311,13 +317,23 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
                   onMouseEnter={(e) => { if (!downloadingFormat) { e.currentTarget.style.background = "var(--hw-crimson)"; e.currentTarget.style.color = "#fff"; } }}
                   onMouseLeave={(e) => { if (!isLoading) { e.currentTarget.style.background = "var(--hw-bg-surface)"; e.currentTarget.style.color = "var(--hw-text)"; } }}
                 >
-                  <span style={{ fontSize: 16, lineHeight: 1 }}>{isLoading ? "\u2026" : "\u2193"}</span>
-                  <span style={{
-                    fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700,
-                    letterSpacing: "0.5px", textTransform: "uppercase", textAlign: "center", lineHeight: 1.2,
-                  }}>
-                    {f.label}
-                  </span>
+                  {isLoading ? (
+                    <>
+                      <div style={{ width: "70%", height: 6, border: "2px solid #fff", position: "relative", overflow: "hidden", marginBottom: 2 }}>
+                        <div style={{ position: "absolute", top: 0, bottom: 0, width: "40%", background: "#fff", animation: "dlBarSlide 0.9s linear infinite" }} />
+                      </div>
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase", textAlign: "center", lineHeight: 1.2 }}>
+                        Preparing
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 16, lineHeight: 1 }}>{"\u2193"}</span>
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase", textAlign: "center", lineHeight: 1.2 }}>
+                        {f.label}
+                      </span>
+                    </>
+                  )}
                 </button>
               );
             })}
