@@ -148,7 +148,7 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
   return (
     <>
       <HwButton variant="secondary" onClick={() => setOpen(true)}>
-        SHARE WITH MARKETING
+        SHARE & DOWNLOAD
       </HwButton>
 
       <HwModal open={open} onClose={() => setOpen(false)} title="Share with Marketing" wide>
