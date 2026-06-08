@@ -227,6 +227,62 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
             </div>
           )}
         </div>
+
+        {/* Download All by format */}
+        <div style={{ marginTop: 32, paddingTop: 24, borderTop: "3px solid var(--hw-border-strong)" }}>
+          <div style={{
+            fontFamily: "var(--hw-font-mono)",
+            fontSize: 13,
+            letterSpacing: "2px",
+            textTransform: "uppercase",
+            color: "var(--hw-text-muted)",
+            marginBottom: 4,
+          }}>
+            Download All by Format
+          </div>
+          <div style={{
+            fontFamily: "var(--hw-font-body)",
+            fontSize: 13,
+            fontWeight: 300,
+            color: "var(--hw-text-secondary)",
+            marginBottom: 14,
+          }}>
+            Download one format across every show in this tour as a single zip. Only shows with generated assets are included.
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {[
+              { format: "story", label: "IG Story" },
+              { format: "square", label: "IG Post" },
+              { format: "landscape", label: "FB Cover" },
+              { format: "tiktok", label: "TikTok / Reels" },
+              { format: "yt_shorts", label: "Square Video" },
+            ].map((f) => (
+              <a
+                key={f.format}
+                href={`/api/tours/${tourId}/download-format?format=${f.format}`}
+                download
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "10px 18px",
+                  border: "3px solid var(--hw-border-strong)",
+                  background: "var(--hw-bg-surface)",
+                  color: "var(--hw-text)",
+                  fontFamily: "var(--hw-font-mono)",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                &#8595; {f.label}
+              </a>
+            ))}
+          </div>
+        </div>
       </HwModal>
     </>
   );
