@@ -428,6 +428,12 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
   }
 
   async function sendEvent(eventId: string) {
+    const target = events.find(ev => ev.id === eventId);
+    const hasEmail = !!target?.promoter_email && target.promoter_email.trim() !== "";
+    if (!hasEmail) {
+      toast.error("Add a promoter email first.");
+      return;
+    }
     setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, render_status: "rendering" } : ev));
     const res = await fetch("/api/renders/approve", {
       method: "POST",

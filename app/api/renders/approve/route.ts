@@ -36,6 +36,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
+  if (!event.promoter_email || event.promoter_email.trim() === "") {
+    return NextResponse.json({ error: "no_promoter_email" }, { status: 400 });
+  }
+
   const { data: tour, error: tourError } = await supabase
     .from("tours")
     .select("id, name, band_name, band_tour_label")
