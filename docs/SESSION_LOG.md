@@ -3525,8 +3525,18 @@ Diagnostic note: `force-dynamic` (template page) and `revalidatePath` (API route
 
 June 5: Comp'd don@nodooragency.com (org 1c39af62-96ec-4c70-a558-c92e134eece6) to permanent Agency access — beta tester/trusted confidant. Set localizer_plan='agency', localizer_plan_status='active', trial_ends_at='2099-12-31' via SQL (his trial had just expired). No Stripe customer (comp, not paying). NOT added to adminEmails — he's a comp'd customer, not staff.
 
-**Tour-wide "Download All by format" — SHIPPED (June 8).** Beta-user request, Tim wanted pre-launch. In the Share with Marketing modal, a Download All section lets the user pick one format and download it across every show in the tour as one zip (instead of clicking download per-show).
-- New route: app/api/tours/[tourId]/download-format/route.ts — dashboard-authed (mirrors overlay-config auth), gathers the chosen render_*_url across all the tour's venue_links, zips with the existing JSZip engine from download-all/route.ts, streams. Excludes print poster (separate pdf-lib path). Commits fd53273 + follow-ups.
-- UI: aspect-ratio-shaped buttons (square IG Post, tall TikTok, wide FB Cover, etc.), JS click handler with object-URL download, toast on error/empty (no_rendered_assets → "No X assets generated yet"), animated "Preparing" loading state for slow video zips.
-- Deliberate scope choices: NO per-format count query (simple "only rendered shows included" note instead); NO real % progress bar (architecture builds zip server-side then streams, so true % isn't possible — used honest indeterminate "Preparing" bar instead); un-rendered shows silently skipped (expected, surfaced via the note + toast).
-- Known minor: zip filenames have some band-name redundancy (folder + filename) — cosmetic, left as-is, functional.
+**June 8 — Download All feature + SEND bug fix**
+
+SHIPPED — Tour-wide "Download All Full Tour":
+- New route app/api/tours/[tourId]/download-format/route.ts (dashboard-authed, gathers one render format across all the tour's venue_links, zips via the existing JSZip engine, streams; excludes print poster). Commit fd53273.
+- UI in ShareWithMarketingButton.tsx: aspect-ratio-shaped format buttons, JS download handler (object-URL), toast on empty/error (no_rendered_assets → friendly message), animated "Preparing" loading state for slow video zips.
+- Button renamed to "SHARE & DOWNLOAD FULL TOUR" (Tim + Don approved). Commits 1f812f5, e8d565b.
+- Tested on prod, all paths work. Deliberate scope choices: no per-format count query (simple note instead); no real % progress bar (architecture builds zip server-side then streams — % isn't possible — used honest indeterminate "Preparing" indicator); un-rendered shows silently skipped.
+
+FIXED — SEND marking events "sent" with no promoter email:
+- Root cause: /api/renders/approve stamped sent_at + returned ok even when no promoter_email (email send was correctly skipped, but sent_at was set anyway — UI showed "SENT" when nothing was emailed; persisted to DB).
+- Fix (commit b2c926f): frontend guard in EventsTable.sendEvent (toast "Add a promoter email first," no API call) + backend guard in approve route (reject no_promoter_email, so sent_at can never be set without an email). Venue link is created via the separate link button, so blocking SEND doesn't remove the manual-share path.
+
+NEXT SESSION (start here):
+1. Watermark fix — hero still says "1 artist, watermarked"; we no longer watermark. Change to "7-day free trial, full access." Stale-wrong copy on the live hero, ~5 min. Has been deferred multiple sessions — do it first.
+2. Add a "Share"/copy-link button to the venue link page (app/v/e/[token]/page.tsx) directly below the Download All button — copies the link to clipboard, shows "Copied" on click. Simple client-side copy, mirrors the existing copy pattern in ShareWithMarketingButton (handleCopy).
