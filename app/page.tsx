@@ -286,10 +286,10 @@ export default function LocalizerProductPage() {
           <h2 className="section-headline">Tour marketing that scales.</h2>
           <div className="pricing-grid">
             <div className="pricing-card">
-              <div className="plan-name">Free</div>
+              <div className="plan-name">Free Trial</div>
               <div className="plan-price">$0</div>
-              <div className="plan-period">Free forever</div>
-              <p className="plan-desc">1 artist, watermarked.</p>
+              <div className="plan-period">7 days</div>
+              <p className="plan-desc">Full access. No card required.</p>
               <Link href="/login" className="btn btn-secondary">Start Free</Link>
             </div>
             <div className="pricing-card">
