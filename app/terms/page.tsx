@@ -10,7 +10,8 @@ export default function TermsPage() {
         <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 40, letterSpacing: 3, textTransform: "uppercase" as const, marginBottom: 4, color: "var(--hw-text)" }}>LOCALIZER</div>
         <div style={{ width: 120, height: 3, background: "var(--hw-crimson)", marginBottom: 24 }} />
         <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, fontWeight: 400, letterSpacing: 2, textTransform: "uppercase" as const, marginBottom: 8, color: "var(--hw-text)" }}>Terms of Service</h1>
-        <p style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: 4, textTransform: "uppercase" as const, color: "var(--hw-blue)", marginBottom: 32 }}>Effective Date: [SET AT PUBLISH]</p>
+        <p style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: 4, textTransform: "uppercase" as const, color: "var(--hw-blue)", marginBottom: 4 }}>Effective Date: [SET AT PUBLISH]</p>
+        <p style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: 4, textTransform: "uppercase" as const, color: "var(--hw-blue)", marginBottom: 32 }}>Last Updated: June 4, 2026</p>
         <div style={{ background: "var(--hw-bg-surface)", borderRadius: 0, border: "3px solid var(--hw-border-strong)", padding: "32px 28px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, lineHeight: 1.7, color: "var(--hw-text-secondary)" }}>
 
           <p>These Terms of Service govern your access to and use of Localizer, a tour marketing asset platform operated by HWY61 LLC. By accessing or using the Service at hwy61labs.com, you agree to be bound by these Terms. If you do not agree, do not use the Service.</p>
