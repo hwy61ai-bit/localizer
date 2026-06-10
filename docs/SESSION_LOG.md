@@ -3560,3 +3560,5 @@ Import Assets page still says LANDSCAPE for the FB Cover format — rename to FB
 Confirm BETA_GATE_PASSWORD value in Vercel (what Don/Kurt actually type) — local and prod may have drifted
 
 Next session should start with: Tim's answers on the two items above, then back to launch-prep priorities (Localizer onboarding wizard Option B, Stripe business setup bundle, attorney contact).
+
+Venue link page growth pass — HWY61 logo at top now links to "/" (new tab), old footer row (wordmark + gray "Powered by HWY61 Labs") removed, replaced with Warhol-style "POWERED BY LOCALIZER" CTA card with crimson "TRY IT →" button linking to /?utm_source=venue_link (PostHog will attribute incoming traffic). Commit 607367f. For Tim: review the new CTA card + confirm OK removing the HWY61 LABS footer wordmark (screenshot him the page).
