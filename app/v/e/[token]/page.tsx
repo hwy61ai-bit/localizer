@@ -90,7 +90,9 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
         {/* Header */}
         <div style={{ padding: "24px 0 20px", borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 32, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px" }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span></span>
+          <a href="/" target="_blank" rel="noopener" style={{ textDecoration: "none" }}>
+            <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px" }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span></span>
+          </a>
           <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "4px", textTransform: "uppercase" }}>Official Asset Kit</span>
         </div>
 
@@ -233,9 +235,10 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         )}
 
         {/* Footer */}
-        <div style={{ borderTop: "3px solid var(--hw-border-strong)", paddingTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, letterSpacing: "3px" }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span></span>
-          <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>POWERED BY HWY61 LABS</span>
+        <div style={{ maxWidth: 480, margin: "48px auto 0", background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-md)", padding: 24, textAlign: "center" }}>
+          <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", lineHeight: 1.1 }}>POWERED BY LOCALIZER</div>
+          <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, color: "var(--hw-text)", marginTop: 10, lineHeight: 1.5 }}>Localizer makes show assets like these in minutes.</div>
+          <a href="/?utm_source=venue_link" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", marginTop: 16, padding: "8px 16px", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", textDecoration: "none", border: "3px solid var(--hw-crimson)", borderRadius: 0, lineHeight: 1 }}>TRY IT →</a>
         </div>
       </div>
     </div>
