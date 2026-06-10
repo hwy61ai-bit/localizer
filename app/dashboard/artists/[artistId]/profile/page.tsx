@@ -820,7 +820,7 @@ export default function ArtistProfilePage() {
                 )}
               </div>
               <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)", marginTop: 9, textAlign: "center", maxWidth: 141, letterSpacing: "0.5px", textTransform: "uppercase" }}>
-                PHOTO
+                Profile Photo
               </div>
             </div>
 
@@ -1059,6 +1059,9 @@ export default function ArtistProfilePage() {
                 background: "transparent",
               }}
             />
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: 6 }}>
+              Your Spotify profile will be embedded into your links sent to promoters.
+            </div>
           </div>
         </div>
 
