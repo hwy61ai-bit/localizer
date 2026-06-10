@@ -114,11 +114,11 @@ function defaultShowField(formatKey: FormatKey): boolean {
 }
 
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
-  { key: "square",    label: "IG Square",     w: 1080, h: 1080 },
-  { key: "story",     label: "IG Story",      w: 1080, h: 1350 },
+  { key: "square",    label: "Square",        w: 1080, h: 1080 },
+  { key: "story",     label: "Vertical",      w: 1080, h: 1350 },
   { key: "landscape", label: "FB Cover",      w: 820,  h: 312 },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: 3300, h: 5100 },
-  { key: "tiktok",    label: "TikTok, IG Reels, FB Stories,\nYouTube Shorts VIDEO",  w: 1080, h: 1920 },
+  { key: "tiktok",    label: "Vertical Video", w: 1080, h: 1920 },
   { key: "yt_shorts", label: "Square Video", w: 1080, h: 1080 },
 ];
 
