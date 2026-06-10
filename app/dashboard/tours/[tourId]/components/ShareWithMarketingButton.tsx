@@ -290,9 +290,9 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-end" }}>
             {[
-              { format: "square",    label: "IG Post",        w: 90,  h: 90 },
-              { format: "story",     label: "IG Story",       w: 72,  h: 90 },
-              { format: "tiktok",    label: "TikTok/Reels Video", w: 84,  h: 100 },
+              { format: "square",    label: "Square Image",   w: 90,  h: 90 },
+              { format: "story",     label: "Vertical Image", w: 72,  h: 90 },
+              { format: "tiktok",    label: "Vertical Video", w: 84,  h: 100 },
               { format: "landscape", label: "FB Cover",       w: 120, h: 56 },
               { format: "yt_shorts", label: "Square Video",   w: 90,  h: 90 },
             ].map((f) => {
