@@ -3542,3 +3542,21 @@ NEXT SESSION (start here):
 2. Add a "Share"/copy-link button to the venue link page (app/v/e/[token]/page.tsx) directly below the Download All button — copies the link to clipboard, shows "Copied" on click. Simple client-side copy, mirrors the existing copy pattern in ShareWithMarketingButton (handleCopy).
 
 fixed landing Free-tier tile → 7-day trial; added Share/copy button to venue page (stacked below Download All); verified venue + marketing token entropy (256/192-bit) and no email leak — legal-sheet item 8 closed; DMCA re-registered under HWY61 LLC (#DMCA-1073957) — item 7 closed; synced legal dates (Effective → [SET AT PUBLISH], Last Updated → June 4) and scoped Privacy Policy to Localizer-only, regenerated attorney .docx — item 9 closed; sent Tim the legal status + attorney-contact ask. Next session starts with: Tim's attorney answer (items 1–3), launch-day /labs copy fix, COMING_SOON flip checklist.
+
+June 10, 2026 — Label consistency sweep + artist profile copy (Tim/Don edits)
+What got done:
+
+Shape-first labels (SQUARE / VERTICAL / FB COVER / VERTICAL VIDEO / SQUARE VIDEO) now consistent across Import Assets, template editor tabs, gigs share modal (ShareWithMarketingButton.tsx), and venue link page
+Import Assets: label order swapped (shape/size on top), thin divider added, PORTRAIT → VERTICAL
+Venue link page: matched Import Assets label style (top line + divider + platform descriptor), Square Video descriptor → "Instagram Post / Facebook Post"
+Video download filenames decoupled from labels on venue page; vertical video filename changed to Vertical_Video.mp4 (was the long comma-derived name), Square_Video.mp4 preserved
+Artist profile: "Photo" → "Profile Photo", Spotify helper text added (lives in profile/page.tsx, not ArtistDetailClient)
+Local beta gate fixed: duplicate BETA_GATE_PASSWORD lines in .env.local — last one wins, active local password is hwy61-beta-2026; stale first line deleted
+
+Commits: 95480b6, 837eb45, 130f5b0, d4a8f8f, 932b19f (+ the assets label/divider commits). All deployed to prod.
+What didn't / open for Tim:
+
+Import Assets page still says LANDSCAPE for the FB Cover format — rename to FB COVER for full consistency?
+Confirm BETA_GATE_PASSWORD value in Vercel (what Don/Kurt actually type) — local and prod may have drifted
+
+Next session should start with: Tim's answers on the two items above, then back to launch-prep priorities (Localizer onboarding wizard Option B, Stripe business setup bundle, attorney contact).

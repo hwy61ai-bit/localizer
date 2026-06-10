@@ -1,7 +1,7 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: June 9, 2026*
+*Last updated: June 10, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
@@ -14,7 +14,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - **38 items added since the original plan was written** (see "Added since the original plan" section)
 - **Trial model live in production (June 2)** — gate reads `trial_ends_at` (`8095476`), `ensureOrgExists` seeds trial-not-active (`67cf438`), 22-org beta backfill applied May 28. Both commits pushed and live; verified via access-bucket query (22 active trials, 1 shared org preserved, 14 correctly expired/blocked).
 - **Blocked on:** Tim's video script review (Day 12), Tim's Day 3 live Stripe verification screen-share, Tim's 1 remaining trial-model email question (Q1, Q2, Q3, Q4 resolved; only Q5 cancellation copy remains), Tim's attorney contact / authorization to find a Texas SaaS attorney for ToS/Privacy items 1–3 (governing law/arbitration, liability cap floor, multi-state privacy thresholds); status email sent June 9.
-- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); legal review awaiting Tim's attorney answer (status email sent June 9 — nothing else legal in progress).
+- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); legal review awaiting Tim's attorney answer (status email sent June 9 — nothing else legal in progress). Tim/Don's June 10 label-consistency polish batch landed (Import Assets shape/dimensions reorder + 1px divider, Template Editor FORMATS tab rename, Share & Download modal labels, venue viewer label restyle + Square Video card label flip with filename decoupled, artist profile photo label + Spotify helper text) — copy/labels only, no ✅/⬜ state changes.
 
 ---
 
@@ -361,6 +361,8 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 | ⚠️ `/labs` hidden only via `COMING_SOON_MARKETING_ROUTES` — no `noindex` | Drew | `/labs` is currently hidden because June 5 commit `a88a2fd` added it to `COMING_SOON_MARKETING_ROUTES` in `middleware.ts` — that hide is tied to `COMING_SOON=true`. When `COMING_SOON=false` is flipped at launch, `/labs` reappears publicly with stale "Unlimited artists" copy and the old TourRouter/suite pricing. Before the flip: either (a) fix the `/labs` copy to match the live Localizer + artist-count limits, or (b) hide `/labs` permanently (e.g. middleware redirect that's NOT gated on `COMING_SOON`). `/labs` has `noindex, nofollow` meta but no permanent hide — direct hits will still see the stale portfolio. |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
+| Import Assets shape label: `LANDSCAPE` → `FB COVER` | Tim | Awaiting Tim's call on whether to switch the `sub: "LANDSCAPE"` source string in `app/dashboard/tours/[tourId]/assets/page.tsx` to `"FB COVER"` so it matches the venue viewer's shape convention adopted June 10. Cosmetic only — labels render uppercased via CSS either way; the venue page uses FB COVER, Import Assets still uses LANDSCAPE. |
+| Vercel `BETA_GATE_PASSWORD` confirmation | Drew + Tim | Confirm the env var is set in Vercel production and matches the value distributed to beta testers; decide whether it retires alongside the `COMING_SOON=false` flip at launch or persists as a separate gate. |
 
 ---
 
