@@ -12,7 +12,7 @@ const FORMATS = [
   { id: "ig_story",    label: "Instagram Story / Reels / Facebook Story",        w: 1080, h: 1350, aspect: "4 / 5",     section: "photo", sub: "PORTRAIT" },
   { id: "facebook",    label: "Facebook Cover Image",  w: 820,  h: 312,  aspect: "820 / 312", section: "photo", sub: "LANDSCAPE" },
   { id: "print", label: "Local Poster For Print (PDF)", w: 3300, h: 5100, aspect: "3300 / 5100", section: "photo", sub: "11×17 / 300 DPI" },
-  { id: "tiktok",      label: "TikTok, IG Reels, FB Stories, YouTube Shorts — 1080 × 1920",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL" },
+  { id: "tiktok",      label: "TikTok, IG Reels, FB Stories, YouTube Shorts — 1080 × 1920",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL VIDEO" },
   { id: "yt_shorts",   label: "Square Video — 1080 × 1080",  w: 1080, h: 1080, aspect: "1 / 1",   section: "video", sub: "SQUARE VIDEO" },
 ];
 
@@ -209,8 +209,8 @@ export default function AssetsPage() {
       return (
         <div key={fmt.id}>
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{fmt.label}</div>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{(fmt as any).sub} {fmt.w} × {fmt.h}</div>
+            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{(fmt as any).sub} {fmt.w} × {fmt.h}</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{fmt.label}</div>
             {fmt.id === "print" && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-amber)", marginTop: 3 }}>Recommended: 3300×5100px or higher resolution</div>}
           </div>
           <input
