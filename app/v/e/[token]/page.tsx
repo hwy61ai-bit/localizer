@@ -76,9 +76,9 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
   ].filter(Boolean).join("+");
 
   const photoAssets = [
-    { label: "Instagram Post / Facebook Post", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
-    { label: "Instagram Story / Reels / Facebook Story", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
-    { label: "Facebook Cover Image", dims: "820 × 312", aspect: "820/312", url: link.render_landscape_url },
+    { label: "Instagram Post / Facebook Post", shape: "SQUARE", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
+    { label: "Instagram Story / Reels / Facebook Story", shape: "VERTICAL", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
+    { label: "Facebook Cover Image", shape: "FB COVER", dims: "820 × 312", aspect: "820/312", url: link.render_landscape_url },
   ];
 
   const overlayConfig = t.overlay_config as Record<string, any> | null;
@@ -144,8 +144,9 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
               </div>
               <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid var(--hw-border-strong)", marginTop: "auto" }}>
                 <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 500, color: "var(--hw-text)", marginBottom: 2 }}>{asset.label}</div>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{asset.dims}</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{asset.shape} {asset.dims}</div>
+                  <div style={{ height: 1, background: "var(--hw-border-strong)", margin: "6px 0" }} />
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{asset.label}</div>
                 </div>
                 {asset.url && (
                   <a href={`/api/download?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(filenameSlug + "+" + asset.label.replace(/ /g,"_") + ".jpg")}&token=${token}`} download
@@ -174,8 +175,8 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
               {[
-                { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", dims: "1080 × 1920", url: (link as any).render_tiktok_url },
-                { label: "Square Video", dims: "1080 × 1080", url: (link as any).render_yt_shorts_url },
+                { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", shape: "VERTICAL VIDEO", dims: "1080 × 1920", filename: "Vertical_Video", url: (link as any).render_tiktok_url },
+                { label: "Instagram Post / Facebook Post", shape: "SQUARE VIDEO", dims: "1080 × 1080", filename: "Square_Video", url: (link as any).render_yt_shorts_url },
               ].filter(v => !!v.url).map((video) => (
                 <div key={video.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
                   <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -183,10 +184,11 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                   </div>
                   <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid var(--hw-border-strong)", marginTop: "auto" }}>
                     <div>
-                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 500, color: "var(--hw-text)", marginBottom: 2 }}>{video.label}</div>
-                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{video.dims}</div>
+                      <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{video.shape} {video.dims}</div>
+                      <div style={{ height: 1, background: "var(--hw-border-strong)", margin: "6px 0" }} />
+                      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{video.label}</div>
                     </div>
-                    <a href={`/api/download?url=${encodeURIComponent(video.url)}&filename=${encodeURIComponent(filenameSlug + "+" + video.label.replace(/ /g,"_") + ".mp4")}&token=${token}`} download
+                    <a href={`/api/download?url=${encodeURIComponent(video.url)}&filename=${encodeURIComponent(filenameSlug + "+" + video.filename + ".mp4")}&token=${token}`} download
                       style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16 }}>
                       ↓
                     </a>
