@@ -418,7 +418,7 @@ Both also use the wrong "20%" annual figure (correct is ~17%, as documented in t
 
 ---
 
-## 🧹 Code hygiene queue (8)
+## 🧹 Code hygiene queue (10)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -520,6 +520,24 @@ lib/supabaseClient.ts currently uses flowType: 'implicit' which is deprecated. P
 ### Graceful middleware error handling on getSession() failures
 
 middleware.ts has two getSession() calls (lines 117, 156) that destructure data without checking error. When 'Refresh Token Not Found' fires, the error is logged noisily by Supabase before being swallowed. Wrap in try/catch, treat as anonymous, log at debug level. Captured separately above.
+
+---
+
+### Magic-link email template hardcodes Site URL
+
+The Supabase auth email template builds magic links as `{{ .SiteURL }}/auth/callback?token_hash=...`, so ALL magic links land on production regardless of where the login was requested. Discovered June 11, 2026 during local testing — a `localhost:3000` login attempt received a magic link pointing at the production domain. Workaround until fix: hand-edit the link domain after receiving the email.
+
+**Post-launch fix:** change the template to honor the `redirect_to` the client sends — use `{{ .ConfirmationURL }}` or `{{ .RedirectTo }}` so the link routes back to whichever host initiated the login (production, preview, or localhost).
+
+**HIGH CAUTION:** this template serves every production login. A typo breaks auth for all users. Test on a throwaway flow (separate Supabase project or a dev email account) before saving to production. No code change in this repo; it's a Supabase dashboard config edit.
+
+**Related (June 11):** `localhost:3000/**` added to Supabase Redirect URLs allowlist as part of the same local-testing session.
+
+---
+
+### Artist page pings `/api/tourrouter/tours` (403) for Localizer-only orgs
+
+Pre-existing noise: on the artist page, a fetch hits `/api/tourrouter/tours` and returns 403 for Localizer-only orgs (correctly gated by `requireTourRouterAccess`), surfacing as console errors. First logged in `SESSION_LOG.md:3605`. Cosmetic only — no UX impact — but post-launch polish. Fix: gate the fetch client-side on `localizer_enabled && !hasTourRouter` (or its equivalent) before firing, so the network panel stays clean for Localizer-only customers.
 
 ---
 
