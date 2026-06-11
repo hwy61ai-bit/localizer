@@ -3591,3 +3591,6 @@ What didn't:
 Next session should start with:
 - Artist-limit smoke test completion, then Day 21 (press kit, @hwy61labs social accounts).
 - Chase Tim if no response: attorney (longest pole), video script, Stripe screen-share, Q5 — plus review of today's three visual changes.
+
+
+Evening addendum: trial-nudge cron verified (daily fires, both windows, idempotency holding — the 6 recent day5 nudges are all hwy61ai+test orgs). Test-org cleanup plan saved to docs/TEST_ORG_CLEANUP_PLAN.md; org-deletion routine spec'd in BACKLOG (4e381d0). Next session: build the org-deletion fix — read TEST_ORG_CLEANUP_PLAN.md + the BACKLOG entry first, run Step 0 schema queries before designing anything.* Then commit and push it.
