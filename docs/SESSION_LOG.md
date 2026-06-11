@@ -3594,3 +3594,12 @@ Next session should start with:
 
 
 Evening addendum: trial-nudge cron verified (daily fires, both windows, idempotency holding — the 6 recent day5 nudges are all hwy61ai+test orgs). Test-org cleanup plan saved to docs/TEST_ORG_CLEANUP_PLAN.md; org-deletion routine spec'd in BACKLOG (4e381d0). Next session: build the org-deletion fix — read TEST_ORG_CLEANUP_PLAN.md + the BACKLOG entry first, run Step 0 schema queries before designing anything.* Then commit and push it.
+
+
+## June 11, 2026 (evening) — Nav traps, pricing audit, tour limits
+
+- fix(nav) 0153b27: session-aware nav on / and /pricing — logged-in users get a crimson Dashboard CTA replacing "Start your free trial"; closes the account → pricing → landing trap.
+- Pricing page audit (recon only, awaiting Tim): Free card still carries the DEAD May spec (free forever / watermarks / 5 shows-month); Solo "3 tours" was unenforced; logged-in CTAs say "Start free trial"; Free card CTA sends logged-in users to /login. Four questions sent to Tim.
+- feat(localizer) 359b809: 3-tour limit on Solo/trial ENFORCED — lib/localizer/tourLimits.ts mirrors artistLimits, new createTourForArtist server action replaces the client-side insert in ArtistDetailClient, orphaned createTour deleted, push-to-localizer bypass documented. Verified on prod: fresh org created 3 tours, 4th blocked with toast.
+- Magic-link lesson: Supabase email template builds links from Site URL, so ALL magic links land on prod regardless of origin — local testing requires hand-editing the link domain. BACKLOG: fix template to honor redirect_to (post-launch, carefully). Also: localhost added to Supabase Redirect URLs.
+- Noise spotted: artist page pings /api/tourrouter/tours (403) for Localizer-only orgs — pre-existing, post-launch polish list.
