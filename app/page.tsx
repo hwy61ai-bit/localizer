@@ -149,30 +149,48 @@ export default function LocalizerProductPage() {
         .localizer-page .hero-headline span { color: var(--hw-crimson); }
         .localizer-page .btn-row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; animation: fadeUp .8s ease-out .7s both; }
 
-        /* ── MATH BLOCK ── */
-        .localizer-page .math-block {
-          background: var(--hw-bg-surface);
-          border: 3px solid var(--hw-border-strong);
-          padding: 40px;
-          margin-top: 40px;
-          max-width: 600px;
-          border-radius: 0;
-        }
-        .localizer-page .math-line {
-          font-family: var(--hw-font-mono);
-          font-size: 14px;
-          letter-spacing: 1px;
-          color: var(--hw-text-secondary);
-          padding: 8px 0;
-          border-bottom: 1px solid var(--hw-border);
+        /* ── MATH EQUATION (billboard) ── */
+        .localizer-page .math-equation {
           display: flex;
-          justify-content: space-between;
+          flex-wrap: wrap;
+          align-items: baseline;
+          justify-content: flex-start;
+          gap: 22px;
+          margin-top: 40px;
+          margin-left: 10%;
         }
-        .localizer-page .math-line:last-child { border-bottom: none; }
-        .localizer-page .math-line .math-label { color: var(--hw-text-muted); }
-        .localizer-page .math-line .math-value { color: var(--hw-text); font-weight: 700; }
-        .localizer-page .math-line.math-total { border-top: 3px solid var(--hw-border-strong); margin-top: 8px; padding-top: 16px; }
-        .localizer-page .math-line.math-total .math-value { color: var(--hw-crimson); font-size: 18px; }
+        .localizer-page .math-term {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .localizer-page .math-num {
+          font-family: var(--hw-font-display);
+          font-size: 84px;
+          line-height: 0.9;
+          color: var(--hw-text-invert);
+        }
+        .localizer-page .math-num--total {
+          background: var(--hw-crimson);
+          color: var(--hw-bg-invert);
+          padding: 6px 20px 2px;
+          box-shadow: 6px 6px 0 var(--hw-bg);
+        }
+        .localizer-page .math-op {
+          font-family: var(--hw-font-display);
+          font-size: 54px;
+          line-height: 0.9;
+          color: var(--hw-crimson);
+        }
+        .localizer-page .math-label {
+          font-family: var(--hw-font-mono);
+          font-size: 12px;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: var(--hw-gray);
+          margin-top: 12px;
+        }
 
         /* ── PRICING ── */
         .localizer-page .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
@@ -212,6 +230,11 @@ export default function LocalizerProductPage() {
           .localizer-page nav .nav-links { display: none; }
           .localizer-page .btn-row { flex-direction: column; }
           .localizer-page .btn-row .btn { text-align: center; }
+          .localizer-page .math-equation { gap: 16px; }
+          .localizer-page .math-equation { margin-left: 0; }
+          .localizer-page .math-num { font-size: 48px; }
+          .localizer-page .math-num--total { box-shadow: 4px 4px 0 var(--hw-bg); padding: 4px 14px 2px; }
+          .localizer-page .math-op { font-size: 32px; }
         }
       ` }} />
 
@@ -255,10 +278,21 @@ export default function LocalizerProductPage() {
           <p className="problem-text">An artist announces a 20-date tour. That means 20 Instagram stories, 20 Facebook event images, 20 X posts, 20 posters for the venues, 20 web graphics. Each platform has different dimensions. Each venue has a different logo to include. Each promoter needs files in a different format.</p>
           <p className="problem-text">So someone on the team opens Photoshop or Canva and starts duplicating files. Changing dates. Changing city names. Changing venue names. Resizing for every platform. Exporting. Uploading. <span className="problem-highlight">Emailing individual files to individual promoters who email back asking for a different size.</span></p>
 
-          <div className="math-block">
-            <div className="math-line"><span className="math-label">Shows</span><span className="math-value">20</span></div>
-            <div className="math-line"><span className="math-label">&times; Platforms</span><span className="math-value">5</span></div>
-            <div className="math-line math-total"><span className="math-label">Assets created by hand</span><span className="math-value">100+</span></div>
+          <div className="math-equation">
+            <div className="math-term">
+              <div className="math-num">20</div>
+              <div className="math-label">Shows</div>
+            </div>
+            <div className="math-op">&times;</div>
+            <div className="math-term">
+              <div className="math-num">5</div>
+              <div className="math-label">Platforms</div>
+            </div>
+            <div className="math-op">=</div>
+            <div className="math-term">
+              <div className="math-num math-num--total">100+</div>
+              <div className="math-label">Assets by hand</div>
+            </div>
           </div>
 
           <p className="problem-text" style={{ marginTop: 28 }}>And then three more shows get added, and you do it again.</p>
