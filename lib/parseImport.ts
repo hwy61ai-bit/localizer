@@ -85,6 +85,8 @@ Return ONLY a valid JSON object in this exact shape, no explanation, no markdown
 
 Only add to the "warnings" array if something is genuinely ambiguous or missing — for example, a date you couldn't parse, a city with no state/country, or conflicting information. Do NOT add warnings about date gaps or missing dates between shows. Do NOT add warnings to confirm that correct data is correct.
 
+CRITICAL: Your entire response must be a single JSON object. No text before it, no text after it, no markdown fences, no explanation outside the JSON.
+
 Here is the raw tour schedule:
 ---
 ${rawText}
@@ -101,8 +103,14 @@ ${rawText}
     .map((b) => (b as { type: "text"; text: string }).text)
     .join("");
 
-  // Strip markdown fences if present
-  const clean = raw.replace(/```json|```/g, "").trim();
+  // Strip markdown fences, then slice between the first { and last } so any
+  // preamble/postamble the model emits outside the JSON object is dropped.
+  const stripped = raw.replace(/```json|```/g, "").trim();
+  const firstBrace = stripped.indexOf("{");
+  const lastBrace = stripped.lastIndexOf("}");
+  const clean = firstBrace !== -1 && lastBrace > firstBrace
+    ? stripped.slice(firstBrace, lastBrace + 1)
+    : stripped;
 
   let parsed: ParseImportResult;
   try {
