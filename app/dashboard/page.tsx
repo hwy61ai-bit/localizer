@@ -143,17 +143,20 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
         <div className="dash-header" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
-          <div>
+          <div style={{ width: "100%" }}>
             <div className="dash-header-nav" style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}>
               <a href="/dashboard/support" style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, color: "#000", textDecoration: "none" }}>SUPPORT</a>
               <NotificationBell />
               <a href="/account" style={{ fontFamily: "var(--hw-font-display)", fontSize: 12, fontWeight: 400, letterSpacing: "3px", textTransform: "uppercase", color: "#fff", textDecoration: "none", background: "var(--hw-bg-invert)", padding: "8px 16px", border: "3px solid var(--hw-border-strong)" }}>Account</a>
             </div>
-            <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8, borderBottom: "3px solid var(--hw-border-strong)" }}>HWY61</h1>
-            <HwPageHeader title="YOUR ARTISTS" />
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginTop: 4 }}>
-              {artists.length} artist{artists.length !== 1 ? "s" : ""}
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "3px", color: "var(--hw-text-muted)" }}>HWY61 LABS</div>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", borderBottom: "3px solid var(--hw-border-strong)", paddingBottom: 3, width: "100%", maxWidth: 520, marginTop: 36, gap: 12 }}>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", color: "var(--hw-crimson)", lineHeight: 0.9 }}>LOCALIZER</div>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", color: "var(--hw-text-muted)", textTransform: "uppercase" as const, paddingBottom: 4 }}>
+                {artists.length} artist{artists.length !== 1 ? "s" : ""}
+              </div>
             </div>
+            <HwPageHeader title="YOUR ARTISTS" />
           </div>
         </div>
 

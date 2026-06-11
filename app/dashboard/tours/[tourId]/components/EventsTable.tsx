@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { renderPoster, formatDateForRender } from "@/lib/clientRender";
 import { useToast } from "@/app/components/Toast";
 
@@ -476,8 +477,11 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
           </div>
         )}
         <div style={{ padding: "12px 16px", borderBottom: "3px solid var(--hw-border-strong)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
-            {events.length === 0 ? "" : `${events.length} EVENT${events.length !== 1 ? "S" : ""} · ${events.filter(e => !!e.sent_at).length} SENT`}
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <Link href={`/dashboard/tours/${tourId}/events/new`} style={{ padding: "8px 16px", border: "3px solid var(--hw-action-primary)", background: "var(--hw-action-primary)", color: "#fff", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 12, letterSpacing: "3px", textTransform: "uppercase" }}>+ NEW EVENT</Link>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)" }}>
+              {events.length === 0 ? "" : `${events.length} EVENT${events.length !== 1 ? "S" : ""} · ${events.filter(e => !!e.sent_at).length} SENT`}
+            </div>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {renderProgress && (
