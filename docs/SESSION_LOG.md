@@ -3565,3 +3565,5 @@ Venue link page growth pass — HWY61 logo at top now links to "/" (new tab), ol
 
 
 Addendum 2: Permanent /labs → / redirect (308) shipped in middleware.ts, untied from COMING_SOON — removes a silent launch-day risk. Verified both gate states incognito. LAUNCH_PROGRESS cleaned: 3 blockers resolved (LANDSCAPE stays per Tim, beta password confirmed, /labs), stale next-session items pruned.
+
+Add: Addendum 3: Import year-inference fix (031cd7c) initially broke parsing — model narrated its reasoning before the JSON, parser choked on preamble. Fixed with brace-slice extraction + hardened JSON-only instruction (3a6263a). Verified by Don, 17-event tour imported clean as 2026. Lesson reinforced: test AI-prompt changes against real input before shipping.
