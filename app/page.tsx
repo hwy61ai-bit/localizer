@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 // TODO: Drew uploaded the v1 onboarding video. Set LANDING_VIDEO_URL
 // when it's hosted (Cloudinary URL or YouTube embed URL).
@@ -50,6 +51,13 @@ export default function LocalizerProductPage() {
       hero.removeEventListener('mouseleave', handleMouseLeave);
       if (frameId !== null) cancelAnimationFrame(frameId);
     };
+  }, []);
+
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session);
+    });
   }, []);
 
   return (
@@ -244,8 +252,8 @@ export default function LocalizerProductPage() {
           <Link href="/" className="logo">HWY<span>61</span> Labs</Link>
           <ul className="nav-links">
             <li><a href="#pricing">Pricing</a></li>
-            <li><Link href="/login">Sign in</Link></li>
-            <li><Link href="/pricing" className="nav-cta">Start your free trial</Link></li>
+            {!hasSession && <li><Link href="/login">Sign in</Link></li>}
+            <li>{hasSession ? <Link href="/dashboard" className="nav-cta nav-cta-dashboard">Dashboard</Link> : <Link href="/pricing" className="nav-cta">Start your free trial</Link>}</li>
           </ul>
         </div>
       </nav>

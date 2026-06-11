@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LOCALIZER_PRICE_MAP } from "@/lib/stripe/localizerPrices";
 import { useToast } from "@/app/components/Toast";
+import { supabase } from "@/lib/supabaseClient";
 
 type Plan = {
   name: string;
@@ -107,8 +108,14 @@ export default function PricingPage() {
   const router = useRouter();
   const toast = useToast();
   const [trialExpired, setTrialExpired] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
   useEffect(() => {
     setTrialExpired(new URLSearchParams(window.location.search).get("reason") === "trial_expired");
+  }, []);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session);
+    });
   }, []);
 
   async function handleCheckout(priceId: string, planName: string) {
@@ -202,6 +209,7 @@ export default function PricingPage() {
           .pricing-page .pricing-cta { padding: 14px; font-size: 14px; }
           .pricing-page .pricing-trial-banner { padding: 14px 18px; font-size: 13px; }
           .pricing-page .nav-cta { display: none; }
+          .pricing-page .nav-cta.nav-cta-dashboard { display: inline-flex; }
         }
       ` }} />
 
@@ -211,8 +219,8 @@ export default function PricingPage() {
           <Link href="/" className="logo">HWY<span>61</span> Labs</Link>
           <ul className="nav-links">
             <li><Link href="/pricing">Pricing</Link></li>
-            <li><Link href="/login">Sign in</Link></li>
-            <li><a href="#plans" className="nav-cta">Start your free trial</a></li>
+            {!hasSession && <li><Link href="/login">Sign in</Link></li>}
+            <li>{hasSession ? <Link href="/dashboard" className="nav-cta nav-cta-dashboard">Dashboard</Link> : <a href="#plans" className="nav-cta">Start your free trial</a>}</li>
           </ul>
         </div>
       </nav>
