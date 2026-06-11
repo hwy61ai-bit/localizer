@@ -21,7 +21,17 @@ const client = new Anthropic();
 export async function parseTourSchedule(
   rawText: string
 ): Promise<ParseImportResult> {
+  const todayFormatted = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "America/New_York",
+  });
+
   const prompt = `You are a tour schedule parser for a music industry tool called Localizer.
+
+Today's date is ${todayFormatted}. Use this as the reference for inferring years when the source data has no year.
 
 Your job is to extract every show/event from the raw tour schedule text below and return structured JSON.
 
@@ -29,7 +39,11 @@ Rules:
 - Extract every date/show you find, even if some fields are missing
 - date_iso must be YYYY-MM-DD format. Always return dates in this format regardless of input format
 - INTERNATIONAL DATE FORMATS: European dates use day/month/year (DD/MM/YYYY, DD.MM.YYYY, DD-MM-YYYY, "15 March 2026", "Sa 15.03.2026"). American dates use month/day/year. Determine which format is being used based on context clues (country names, venue names, language, whether dates exceed 12 for the first number) and parse accordingly
-- If you only have a partial date (e.g. "May 3"), use the most likely year based on context or leave null
+- If the source data has no year (e.g. "May 3", "Wed Sep 23"), infer the year using these rules:
+  - Tour schedules being imported are for UPCOMING shows. Never assume a year in the past.
+  - Default to the current year, or the next year if the dates have already passed in the current year.
+  - If the source includes day-of-week labels (e.g. "Wednesday, Sep 23"), use them to disambiguate: pick the nearest current-or-future year in which those dates fall on the listed weekdays.
+  - Add a warning to the warnings array stating which year was chosen and why (e.g. "No year provided; assumed 2026 because Sep 23 falls on a Wednesday in 2026 and the date is in the future").
 - day should be the day of week ("Monday", "Tuesday", etc.) — derive it from the date if not explicitly given
 - venue_name is the name of the venue or club. Preserve special characters in venue names (accents, umlauts: ü, ö, é, ñ, ß, etc.)
 - city: the city name. Preserve special characters (München, Zürich, São Paulo, etc.)
