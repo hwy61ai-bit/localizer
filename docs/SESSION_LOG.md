@@ -3567,3 +3567,27 @@ Venue link page growth pass — HWY61 logo at top now links to "/" (new tab), ol
 Addendum 2: Permanent /labs → / redirect (308) shipped in middleware.ts, untied from COMING_SOON — removes a silent launch-day risk. Verified both gate states incognito. LAUNCH_PROGRESS cleaned: 3 blockers resolved (LANDSCAPE stays per Tim, beta password confirmed, /labs), stale next-session items pruned.
 
 Add: Addendum 3: Import year-inference fix (031cd7c) initially broke parsing — model narrated its reasoning before the JSON, parser choked on preamble. Fixed with brace-slice extraction + hardened JSON-only instruction (3a6263a). Verified by Don, 17-event tour imported clean as 2026. Lesson reinforced: test AI-prompt changes against real input before shipping.
+
+
+## June 11, 2026 — Blocker sweep + visual polish day
+
+What got done:
+- Three launch blockers closed before noon:
+  - Inbox routing verified: support@ is a Workspace group (Drew + Tim), dmca@ and privacy@ are aliases on Tim's account, all three confirmed by external test emails. Tim-only on dmca/privacy is accepted.
+  - Advance cron: recon confirmed no trigger exists anywhere. Tim's call — out-of-scope for Localizer launch, schedule at TourRouter launch. BACKLOG note added.
+  - /tourrouter, /diy, /roadapp verified safe from launch-flip exposure — unconditional redirects independent of COMING_SOON, tested locally with gate off (/ rendered, all three bounced).
+- Import parser fixes (from Don's failed import):
+  - 031cd7c — inject current date (Eastern), forward-only year inference using weekday labels
+  - 3a6263a — brace-slice JSON extraction + hardened JSON-only instruction, after the model's preamble narration broke JSON.parse
+  - Verified by Don: 17-event tour imported clean as 2026.
+- Dashboard masthead redesigned: HWY61 LABS eyebrow → crimson LOCALIZER → baseline rule (with artist count on the rule) → YOUR ARTISTS. NOTE: committed inside 42e85ee ("fix(gigs)...") via git add . — that's why a gigs commit touches app/dashboard/page.tsx.
+- Gigs page: + NEW EVENT moved into the counter row, SHARE & DOWNLOAD centered (42e85ee); helper text moved left of RE-GENERATE ALL (7c6590a).
+- Landing page: stat card replaced with billboard equation (20 × 5 = 100+ in crimson block), left-aligned with 10% indent (eb6de0c).
+- URL-import feature investigated and REJECTED: artist sites (tested kurtvile.com, yourunclelucius.com) serve tour dates via JS widgets — raw HTML contains zero dates, server-side fetch gets nothing. Copy-paste from browser into text import is the answer; worth mentioning in FAQ/onboarding video. Not backlogged per Drew.
+
+What didn't:
+- Artist-limit smoke test deferred (started, gave the toast; refresh/re-fire check + test-org cleanup still pending).
+
+Next session should start with:
+- Artist-limit smoke test completion, then Day 21 (press kit, @hwy61labs social accounts).
+- Chase Tim if no response: attorney (longest pole), video script, Stripe screen-share, Q5 — plus review of today's three visual changes.
