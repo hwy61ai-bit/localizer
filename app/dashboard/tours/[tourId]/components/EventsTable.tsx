@@ -495,6 +495,7 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             {generateError && (
               <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)", fontWeight: 700 }}>{generateError}</span>
             )}
+            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", textAlign: "right" }}>Hit Generate to create all localized assets.</div>
             <button
               onClick={generateAll}
               disabled={generating || events.length === 0}
@@ -502,7 +503,6 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
             >
               {generating ? "GENERATING..." : allReady ? "RE-GENERATE ALL" : "GENERATE ALL"}
             </button>
-            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 4, textAlign: "right" }}>Hit Generate to create all localized assets.</div>
           </div>
         </div>
 
