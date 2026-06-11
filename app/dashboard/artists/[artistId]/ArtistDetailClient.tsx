@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/app/components/Toast";
+import { createTourForArtist } from "./actions";
 
 type Tour = { id: string; name: string; band_tour_label: string | null; image_url: string | null; };
 
@@ -32,13 +33,21 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
 
   async function handleCreateTour() {
     setCreatingTour(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast.error("Not logged in."); setCreatingTour(false); return; }
-    const { data: memberData } = await supabase.from("org_members").select("org_id").eq("user_id", user.id).maybeSingle();
-    if (!memberData?.org_id) { toast.error("Could not find org."); setCreatingTour(false); return; }
-    const { data, error } = await supabase.from("tours").insert({ name: "New Tour", artist_id: artistId, band_name: artistName, org_id: memberData.org_id }).select("id").single();
-    if (error || !data) { toast.error("Failed to create tour."); setCreatingTour(false); return; }
-    router.push("/dashboard/tours/" + data.id + "/import");
+    const result = await createTourForArtist(artistId, artistName);
+    if (!result.ok) {
+      if (result.error === "tour_limit") {
+        toast.error("Your plan includes 3 tours — upgrade for unlimited.");
+      } else if (result.error === "unauthenticated") {
+        toast.error("Not logged in.");
+      } else if (result.error === "no_org") {
+        toast.error("Could not find org.");
+      } else {
+        toast.error("Failed to create tour.");
+      }
+      setCreatingTour(false);
+      return;
+    }
+    router.push("/dashboard/tours/" + result.tourId + "/import");
   }
 
   async function handleDeleteTour(e: React.MouseEvent, tourId: string) {

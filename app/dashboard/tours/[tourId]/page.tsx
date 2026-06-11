@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { randomUUID } from "crypto";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { createVenueLink } from "./events/actions";
 import EventsTable from "./components/EventsTable";
@@ -49,15 +48,6 @@ export default async function TourPage({ params, searchParams }: { params: Promi
   if (eventsError) throw new Error(eventsError.message);
 
   const eventRows = (eventsData ?? []) as EventRow[];
-
-  async function createTour() {
-    "use server";
-    const supabase = await supabaseServer();
-    const newTourId = randomUUID();
-    const { error } = await supabase.from("tours").insert({ id: newTourId, org_id: orgId, name: "New Tour" });
-    if (error) throw new Error(error.message);
-    redirect(`/dashboard/tours/${newTourId}`);
-  }
 
   async function saveBandTourLabel(formData: FormData) {
     "use server";

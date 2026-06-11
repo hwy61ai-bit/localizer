@@ -81,6 +81,10 @@ export async function POST(
     status = "created";
     localizerTourId = randomUUID();
 
+    // Deliberate: this path bypasses TOUR_LIMITS (lib/localizer/tourLimits.ts).
+    // TourRouter is out of Localizer launch scope; if push-to-localizer ever
+    // ships to real customers, route this insert through the same enforcement
+    // pattern as createTourForArtist (app/dashboard/artists/[artistId]/actions.ts).
     const { error: tourError } = await supabase
       .from("tours")
       .insert({
