@@ -1,7 +1,7 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: June 10, 2026*
+*Last updated: June 11, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
@@ -14,7 +14,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - **38 items added since the original plan was written** (see "Added since the original plan" section)
 - **Trial model live in production (June 2)** — gate reads `trial_ends_at` (`8095476`), `ensureOrgExists` seeds trial-not-active (`67cf438`), 22-org beta backfill applied May 28. Both commits pushed and live; verified via access-bucket query (22 active trials, 1 shared org preserved, 14 correctly expired/blocked).
 - **Blocked on:** Tim's video script review (Day 12), Tim's Day 3 live Stripe verification screen-share, Tim's 1 remaining trial-model email question (Q1, Q2, Q3, Q4 resolved; only Q5 cancellation copy remains), Tim's attorney contact / authorization to find a Texas SaaS attorney for ToS/Privacy items 1–3 (governing law/arbitration, liability cap floor, multi-state privacy thresholds); status email sent June 9.
-- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); legal review awaiting Tim's attorney answer (status email sent June 9 — nothing else legal in progress). Tim/Don's June 10 label-consistency polish batch landed (Import Assets shape/dimensions reorder + 1px divider, Template Editor FORMATS tab rename, Share & Download modal labels, venue viewer label restyle + Square Video card label flip with filename decoupled, artist profile photo label + Spotify helper text) — copy/labels only, no ✅/⬜ state changes.
+- **Currently in flight:** Stripe Day 3 live verification (awaiting Tim screen-share); legal review awaiting Tim's attorney answer (status email sent June 9 — nothing else legal in progress). Tim/Don's June 10 label-consistency polish batch landed (Import Assets shape/dimensions reorder + 1px divider, Template Editor FORMATS tab rename, Share & Download modal labels, venue viewer label restyle + Square Video card label flip with filename decoupled, artist profile photo label + Spotify helper text) — copy/labels only, no ✅/⬜ state changes. `/tourrouter`, `/diy`, `/roadapp` verified June 11 as hidden by unconditional redirects independent of `COMING_SOON` — no `/labs`-style launch-flip exposure (tested locally with gate off).
 
 ---
 
@@ -354,10 +354,8 @@ Real work shipped that wasn't in the 30-day plan as written. Most of this came o
 | Blocker | Owner | What unblocks it |
 |---|---|---|
 | Tim's 1 remaining trial-model email question | Tim | Answer to: (5) cancellation copy — confirm pre-upgrade users see no "cancel" action. (Q1 resolved May 28 by trial-gate work; Q2 cron home + Q4 idempotency resolved June 2 by the trial-nudge cron build — Vercel cron at `0 13 * * *`, idempotency via `trial_nudge_emails` log table; Q3 welcome-body wiring resolved June 4 by `0c7df71` — Localizer-only rewrite of `/api/welcome` route body + subject.) |
-| Advance cron has no external trigger | Drew → Tim | TourRouter's `app/api/tourrouter/advance/cron` route has no `vercel.json` entry, no GitHub Action, no other scheduler — advance follow-up emails are likely not auto-firing in production. Drew to raise with Tim: confirm whether this is intentional, then either add to `vercel.json` or document as out-of-scope for Localizer launch. |
 | Live Stripe verification end-to-end | Drew + Tim | Schedule screen-share session, run the 9-step test plan above |
 | Attorney review of ToS/Privacy items 1–3 | Tim | Waiting on Tim to name an attorney contact or authorize finding a Texas SaaS attorney. Items 1–3 are governing law/arbitration, liability cap floor, multi-state privacy thresholds. Status email sent to Tim June 9. This is the longest-pole launch item. |
-| Verify dmca@, privacy@, support@ hwy61labs.com inbox routing | Drew | DNS / forwarding setup; verify all three route to a real monitored inbox |
 | Day 12 video recording | Tim | Voice/copy review of the script draft |
 | Landing hero copy diff (informational) | Tim | Heads-up on `/` sub-headline rewrite shipped May 27 — no approval needed to launch |
 

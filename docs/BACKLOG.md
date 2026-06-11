@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (7)
+## 🟡 Pre-launch gates (6)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -74,15 +74,7 @@ Before adding the cron back to `vercel.json`:
 - [ ] Verify `advance_emails` log matches Resend delivery confirmations
 - [ ] Status transitions verified with `.select().maybeSingle()` and surface any RLS errors
 
----
-
-### Verify dmca@, privacy@, support@ hwy61labs.com inbox routing
-
-`dmca@hwy61labs.com`, `privacy@hwy61labs.com`, and `support@hwy61labs.com` are referenced as official contact channels in the finalized Privacy Policy (`app/privacy/page.tsx`) and Terms of Service (`app/terms/page.tsx`). Before public launch, verify all three route to a real, monitored inbox.
-
-`dmca@` is the legal DMCA agent channel — copyright notices must actually be received for HWY61 LLC to maintain safe-harbor status. Setup/DNS verification work, not code.
-
-**Launch blocker if any of the three bounce or silently drop.**
+**Trigger / scheduling (decided June 11, 2026):** Register the advance cron in `vercel.json` (one line + verify `CRON_SECRET`) when TourRouter launches. Automation deliberately left dormant for the Localizer-only launch — recon June 11 confirmed `vercel.json` carries only the trial-nudge cron and nothing in-app fires `/api/tourrouter/advance/cron`. Route is fully built at `app/api/tourrouter/advance/cron/route.ts`; manual sends via `app/api/tourrouter/advance/send/route.ts` continue to work for testers in the meantime.
 
 ---
 
@@ -586,6 +578,12 @@ Option 2 is the closest fit to existing patterns. Decision made at build time.
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### Verify dmca@, privacy@, support@ hwy61labs.com inbox routing
+
+**Resolution (2026-06-11):** Verified. `support@hwy61labs.com` is a Google Workspace group with both `drew@hwy61labs.com` and `tim@hwy61labs.com` as actively-checked members. `dmca@hwy61labs.com` and `privacy@hwy61labs.com` are aliases on Tim's account. All three confirmed by external test emails reaching the monitored inboxes. Removed from LAUNCH_PROGRESS Active blockers June 11.
+
+**Original problem:** `dmca@`, `privacy@`, and `support@hwy61labs.com` are referenced as official contact channels in the finalized Privacy Policy (`app/privacy/page.tsx`) and Terms of Service (`app/terms/page.tsx`). Launch blocker if any of the three bounced or silently dropped. `dmca@` in particular is the legal DMCA agent channel — copyright notices must actually be received for HWY61 LLC to maintain safe-harbor status.
 
 ### Onboarding wizard — per-user vs per-org state mismatch — WON'T FIX
 
