@@ -523,7 +523,7 @@ middleware.ts has two getSession() calls (lines 117, 156) that destructure data 
 
 ---
 
-## 💭 Future ideas (2)
+## 💭 Future ideas (3)
 
 *Speculative post-launch work.*
 
@@ -572,6 +572,28 @@ Standalone how-to articles (separate from the in-app FAQ at `/dashboard/support`
 Option 2 is the closest fit to existing patterns. Decision made at build time.
 
 **Copy authority:** Partly Tim-voice-dependent (positioning of "Getting Started" especially). Drew can draft; Tim editorial pass before publish.
+
+---
+
+### Org / account deletion routine
+
+Currently NO deletion path exists for an org or its user. Code recon (June 11, 2026) confirmed: no `auth.admin.deleteUser` calls anywhere in the codebase, no `deleteOrg` admin function, no FK cascade behavior visible from migrations. Manual multi-layer DELETEs in the Supabase SQL Editor are the only option today — documented for the 6 test-org cleanup in `docs/TEST_ORG_CLEANUP_PLAN.md`, which doubles as the spec for the real routine.
+
+**Two parts:**
+
+1. **Migration: `ON DELETE CASCADE` on all org-descendant FKs.** Collapses the current manual 6-layer DELETE chain (guest_list → venue_links → tour_shows → tours_routing children → events → tours → org-direct tables → org_members → orgs) into a single `DELETE FROM orgs WHERE id IN (...)`. Per Step 0 of the cleanup plan, actual cascade behavior must be enumerated against `information_schema` first; some FKs may already cascade and only the gaps need to be added.
+2. **`deleteOrg(orgId)` admin function.** Wraps: (a) Cloudinary asset cleanup using the captured `image_*_id` / `video_*_id` / `render_*_url` / `sponsor_*_url` IDs from the tours and venue_links rows, (b) Supabase Storage cleanup for `artists.image_url` / `logo_url` / `adv_*_url` and any `intake_documents` storage paths, (c) the cascading DB delete, (d) `supabase.auth.admin.deleteUser(userId)` for each `org_members.user_id` in the org. Idempotent; transactional where possible.
+
+**Why this matters:**
+
+- **Privacy-law deletion requests (CCPA, GDPR, etc.)** — flag to attorney as part of the ToS / Privacy review currently in flight (LAUNCH_PROGRESS "Attorney review of ToS/Privacy items 1–3"). A real customer asking for their account + data to be deleted has no automated path today.
+- **Routine customer-account deletion** — needed the moment a paying customer churns and wants out. No self-serve "delete account" UI exists either; that's a follow-on once the backend routine exists.
+
+**Why not in the 30-day launch:** No customers had deletion requests pre-launch (all current orgs are testers). The current testing workflow tolerates manual SQL Editor cleanup; production customers don't. Becomes load-bearing the moment the first deletion request lands.
+
+**Spec source:** `docs/TEST_ORG_CLEANUP_PLAN.md` — its Step 0 verification query, Step 2 asset-capture query, and Step 3 layered DELETE translate directly into the migration's CASCADE additions plus the `deleteOrg` function body.
+
+**Related leak:** the same gap applies to ALL delete/replace paths today — deleting an artist or tour, or replacing an uploaded image, orphans the old Cloudinary/Storage files. Only `custom_fonts` cleans up after itself (`app/api/fonts/delete/route.ts` — use as the template). Post-launch follow-on: sweep every delete/replace path to remove associated files.
 
 ---
 
