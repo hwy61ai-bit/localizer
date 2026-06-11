@@ -49,7 +49,6 @@ function isDiyHost(hostname: string): boolean {
 // Routes that redirect to /coming-soon when COMING_SOON=true
 const COMING_SOON_MARKETING_ROUTES = new Set([
   "/",
-  "/labs",
   "/tourrouter",
   "/localizer",
   "/diy",
@@ -96,6 +95,15 @@ export async function middleware(req: NextRequest) {
       },
     }
   );
+
+  // --- Permanent /labs redirect (always fires, regardless of COMING_SOON or auth) ---
+  if (url.pathname === "/labs" || url.pathname.startsWith("/labs/")) {
+    const redirectRes = NextResponse.redirect(new URL("/", req.url), 308);
+    res.cookies.getAll().forEach((cookie) => {
+      redirectRes.cookies.set(cookie);
+    });
+    return redirectRes;
+  }
 
   // --- Coming Soon gate ---
   if (process.env.COMING_SOON === "true") {
