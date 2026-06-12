@@ -34,6 +34,12 @@ type ArtistData = {
   adv_w9_url: string | null;
   adv_custom_materials: Array<{ id: string; label: string; url: string }> | null;
   key_contacts: unknown[] | null;
+  social_facebook: string | null;
+  social_instagram: string | null;
+  social_tiktok: string | null;
+  social_x: string | null;
+  social_threads: string | null;
+  social_youtube: string | null;
   [key: string]: unknown;
 };
 
@@ -1271,6 +1277,47 @@ export default function ArtistProfilePage() {
           >
             + ADD CUSTOM MATERIAL
           </button>
+        </div>
+
+        {/* ══════ Socials ══════ */}
+        <div style={{
+          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
+          padding: 28, marginBottom: 20,
+        }}>
+          <SectionLabel>Socials</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {[
+              { id: "social_facebook",  label: "Facebook URL",  placeholder: "https://facebook.com/yourband" },
+              { id: "social_instagram", label: "Instagram URL", placeholder: "https://instagram.com/yourband" },
+              { id: "social_tiktok",    label: "TikTok URL",    placeholder: "https://tiktok.com/@yourband" },
+              { id: "social_x",         label: "X URL",         placeholder: "https://x.com/yourband" },
+              { id: "social_threads",   label: "Threads URL",   placeholder: "https://threads.net/@yourband" },
+              { id: "social_youtube",   label: "YouTube URL",   placeholder: "https://youtube.com/@yourband" },
+            ].map((field) => (
+              <div key={field.id} style={{
+                padding: "16px 18px",
+                background: "var(--hw-bg-surface)",
+                border: "3px solid var(--hw-border-strong)",
+              }}>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", letterSpacing: "1.5px", textTransform: "uppercase" as const, marginBottom: 6 }}>
+                  {field.label}
+                </div>
+                <input
+                  value={((artist as any)[field.id] as string | null) || ""}
+                  onChange={(e) => updateField(field.id, e.target.value)}
+                  placeholder={field.placeholder}
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    padding: "6px 10px",
+                    fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "0.5px",
+                    color: "var(--hw-text-secondary)",
+                    border: "1px solid var(--hw-border)", outline: "none",
+                    background: "var(--hw-bg-surface)",
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         {hasTourRouterAccess && (
