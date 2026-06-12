@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import PrintDownloadButton from "./PrintDownloadButton";
 import ShareLinkButton from "./ShareLinkButton";
+import { ArtistSocialLinks } from "./SocialIcons";
 
 export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -33,7 +34,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube")
     .eq("id", (tour as any).artist_id)
     .single();
 
@@ -223,6 +224,17 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             ))}
           </div>
         </div>
+
+        {/* Socials — section header text "Follow the Artist" awaiting Tim sign-off */}
+        <ArtistSocialLinks
+          label="Follow the Artist"
+          facebook={a?.social_facebook ?? null}
+          instagram={a?.social_instagram ?? null}
+          tiktok={a?.social_tiktok ?? null}
+          x={a?.social_x ?? null}
+          threads={a?.social_threads ?? null}
+          youtube={a?.social_youtube ?? null}
+        />
 
         {/* Spotify */}
         {spotifyEmbedUrl && (
