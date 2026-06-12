@@ -3606,3 +3606,5 @@ Evening addendum: trial-nudge cron verified (daily fires, both windows, idempote
 
 
 Tim approved all four pricing calls same evening. Shipped b43ad7a: Free card replaced with trial copy (no bullets, mirrors landing), card hidden entirely for logged-in users (3-col grid), paid CTAs read "Select plan" when signed in, "3 tours" bullet kept — now enforced. All four states verified on prod. Pricing page truthful end to end; the watermark ghost is gone.
+
+June 12, 2026 — Artist socials feature. Six social_* columns added to artists (migration run + verified). Profile page: SOCIALS section under Advance Materials, bordered field cards matching the section style, saves via existing pipeline (57a31ab + styling fix). Venue page: "Follow the Artist" icon row below Advance Materials — 88px centered glyphs via simple-icons npm package (CC0, pixel-accurate), crimson hover, strict https-only URL guard, auto-hides when empty (4b2c295). Verified on prod. For Tim: "Follow the Artist" header text — bless or rename (grep-flagged, one-line swap).
