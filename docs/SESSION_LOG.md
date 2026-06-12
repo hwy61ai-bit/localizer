@@ -3603,3 +3603,6 @@ Evening addendum: trial-nudge cron verified (daily fires, both windows, idempote
 - feat(localizer) 359b809: 3-tour limit on Solo/trial ENFORCED — lib/localizer/tourLimits.ts mirrors artistLimits, new createTourForArtist server action replaces the client-side insert in ArtistDetailClient, orphaned createTour deleted, push-to-localizer bypass documented. Verified on prod: fresh org created 3 tours, 4th blocked with toast.
 - Magic-link lesson: Supabase email template builds links from Site URL, so ALL magic links land on prod regardless of origin — local testing requires hand-editing the link domain. BACKLOG: fix template to honor redirect_to (post-launch, carefully). Also: localhost added to Supabase Redirect URLs.
 - Noise spotted: artist page pings /api/tourrouter/tours (403) for Localizer-only orgs — pre-existing, post-launch polish list.
+
+
+Tim approved all four pricing calls same evening. Shipped b43ad7a: Free card replaced with trial copy (no bullets, mirrors landing), card hidden entirely for logged-in users (3-col grid), paid CTAs read "Select plan" when signed in, "3 tours" bullet kept — now enforced. All four states verified on prod. Pricing page truthful end to end; the watermark ghost is gone.
