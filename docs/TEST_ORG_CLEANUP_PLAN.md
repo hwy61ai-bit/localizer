@@ -1,50 +1,64 @@
 # Test Org Cleanup Plan
 
 **Created:** June 11, 2026
+**Status update (June 12, 2026):** Step 0 verification queries ran; real schema mapped; CASCADE migration designed and ready for SQL Editor pass. Once Phase 1 migration runs, the destructive deletion step collapses from a 60-line layered transaction to a single `DELETE FROM orgs WHERE id IN (...)`.
 **Targets:** 6 test orgs owned by `hwy61ai+test*@gmail.com` accounts.
 **Execution window:** Week 4 QA prep.
 **Retention option:** consider retaining `hwy61ai+test2026@gmail.com`'s org as the designated non-admin QA org and deleting only the other 5. Decide at execution time.
 
-This plan was produced from code-only recon on June 11, 2026. The authoritative schema lives in production Postgres; the partial migration files in `supabase/migrations/` are NOT a complete picture. Step 0 must be run before any destructive SQL.
+This plan was produced from code-only recon on June 11, 2026, then refined June 12 against `information_schema` output from production Postgres.
 
 ---
 
-## Summary findings
+## Summary findings (refreshed June 12 against real schema)
 
-### A. Tables with `org_id` directly (deletion targets)
+### A. Tables with `org_id` (or equivalent) — real FK behavior
 
-Inferred from code references and (where available) migration SQL:
+23 tables hold `org_id` or an org-ref variant (`created_by_org`). Pre-migration FK delete behavior, with the Phase 1 action:
 
-| Table | Source of evidence | FK behavior |
-|---|---|---|
-| `org_members` | `lib/auth/ensureOrgExists.ts:59-61` | unknown |
-| `tours_routing` (TourRouter) | `app/api/tourrouter/tours/route.ts:14-16` | unknown |
-| `tours` (Localizer marketing) | `app/dashboard/tours/[tourId]/page.tsx:27` | unknown |
-| `artists` | `app/api/tourrouter/artists/route.ts:11-14` | unknown |
-| `advance_emails` | `supabase/migrations/20260326_create_advance_emails.sql:3` | **`REFERENCES orgs(id)` with NO `ON DELETE` clause → default `NO ACTION` (RESTRICT). Will block `DELETE FROM orgs` if any row exists.** |
-| `trial_nudge_emails` | `app/api/billing/trial-nudge/cron/route.ts` | unknown |
-| `notifications` | `lib/notifications.ts:49` | unknown |
-| `custom_fonts` | `app/api/fonts/upload/route.ts:115` | unknown |
-| `marketing_tokens` | `app/api/marketing-tokens/create/route.ts:52` | unknown |
-| `beta_invites` | `app/api/beta/claim/route.ts:16,28` | unknown |
-| `field_aliases` | `lib/tourrouter/aliasLibrary.ts` | unknown |
-| `shared_venues`, `shared_contacts`, `account_contacts` | CLAUDE.md only — no app code hits | unknown |
+| Table | FK to orgs | Delete rule (pre-migration) | Phase 1 action |
+|---|---|---|---|
+| account_contacts | yes (`org_id`) | NO ACTION | → **CASCADE** |
+| advance_emails | yes (`org_id`) | NO ACTION | → **CASCADE** |
+| artists | yes (`org_id`) | CASCADE | none |
+| custom_fonts | yes (`org_id`) | CASCADE | none |
+| event_assets | yes (`org_id`) | CASCADE | none |
+| events | yes (`org_id`) | CASCADE | none |
+| field_aliases | yes (`org_id`) | NO ACTION | → **CASCADE** |
+| imports | yes (`org_id`) | CASCADE | none |
+| intake_documents | yes (`org_id`) | NO ACTION | → **CASCADE** |
+| jobs | yes (`org_id`) | CASCADE | none |
+| marketing_tokens | **no FK** (column only) | n/a | → **ADD CASCADE FK** (belt-and-suspenders; `tour_id` is nullable, so the `tour_id → tours` CASCADE alone doesn't guarantee cleanup) |
+| notifications | yes (`org_id`) | CASCADE | none |
+| org_members | yes (`org_id`) | CASCADE | none |
+| shared_contacts | yes (`created_by_org`) | NO ACTION | → **SET NULL** (preserve shared library on org delete) |
+| shared_venues | yes (`created_by_org`) | NO ACTION | → **SET NULL** (preserve shared library on org delete) |
+| template_layouts | yes (`org_id`) | CASCADE | none |
+| templates | yes (`org_id`) | CASCADE | none |
+| tour_expenses | yes (`org_id`) | NO ACTION | → **CASCADE** |
+| tour_shows | yes (`org_id`) | NO ACTION | → **CASCADE** |
+| tour_shows_crew | **no FK** (column only) | n/a | → **ADD CASCADE FK** |
+| tours | yes (`org_id`) | CASCADE | none |
+| tours_routing | yes (`org_id`) | NO ACTION | → **CASCADE** |
+| trial_nudge_emails | yes (`org_id`) | CASCADE | none |
+| usage_monthly | yes (`org_id`) | CASCADE | none |
+| venue_links | yes (`org_id`) | CASCADE | none |
 
-### B. Indirect children (via `tour_id` / `event_id` / `show_id` chains)
+**Corrections to the June 11 draft:** `beta_invites` does NOT have an `org_id` column (Q1 confirms); the June 11 plan listed it in error and is dropped. The 8 tables newly surfaced by Q1 (`event_assets`, `imports`, `jobs`, `marketing_tokens`, `template_layouts`, `templates`, `tour_shows_crew`, `usage_monthly`) are added to the inventory above.
 
-| Child | Parent | Existing app deletion path |
-|---|---|---|
-| `tour_shows` | `tours_routing` | `app/dashboard/TourTile.tsx:51-61` |
-| `guest_list` | `tour_shows.show_id` | `TourTile.tsx:54` |
-| `tour_expenses` | `tours_routing.tour_id` | `TourTile.tsx:63` |
-| `intake_documents` | `tours_routing.tour_id` | `TourTile.tsx:66` |
-| `finance_report_links` | `tours_routing.tour_id` | `TourTile.tsx:69` |
-| `events` | `tours.tour_id` (Localizer) | `TourTile.tsx:80` |
-| `venue_links` | `events.event_id` | `docs/VENUE_LINKS_DELETION_AUDIT.md:34-37` |
+### B. Indirect children — no application-layer deletion code needed after Phase 1
 
-### C. Storage / Cloudinary orphans
+All chains below already CASCADE or are covered by the Phase 1 migration. After migration, a single `DELETE FROM orgs WHERE id IN (...)` walks the whole tree:
 
-None of the tour / artist / venue_links rows trigger storage deletion when the row goes. If the orgs are deleted without first capturing asset IDs, the Cloudinary uploads and Supabase Storage files become unreachable but billable.
+- org → tours_routing → tour_shows → guest_list (all CASCADE)
+- org → tours_routing → tour_expenses (CASCADE via both `tour_id` and the new `org_id` CASCADE)
+- org → tours_routing → intake_documents (CASCADE via new `org_id`; the `tour_id NO ACTION` is satisfied at end-of-statement because rows are already gone)
+- org → tours → events → venue_links + event_assets (all CASCADE)
+- org → org_members → finance_report_links: `created_by → org_members` is **NO ACTION** pre-migration. Phase 1 converts to SET NULL (preserve audit trail). Without this, org_members CASCADE would block on org delete when any finance_report_links row references a deleted member.
+
+### C. Storage / Cloudinary orphans (unchanged from June 11)
+
+The DB cascade handles row deletion, but Cloudinary uploads and Supabase Storage objects are NOT touched by FK cascades. Phase 2 Step 2 below captures the asset IDs before delete so they can be cleaned up out-of-band. The planned `deleteOrg()` admin function (see sketch at the bottom) will automate this in app code.
 
 | Table | Storage columns | Cleans up on row delete? |
 |---|---|---|
@@ -54,124 +68,223 @@ None of the tour / artist / venue_links rows trigger storage deletion when the r
 | `custom_fonts` | `storage_url`, `cloudinary_public_id` | **Yes** — `app/api/fonts/delete/route.ts:44-52` deletes both |
 | `intake_documents` | Supabase Storage `/tour-documents/` | Unknown — deletion code not found |
 
-### D. `auth.users` coupling
+### D. `auth.users` coupling (unchanged from June 11)
 
-- `ensureOrgExists` (`lib/auth/ensureOrgExists.ts`) creates the org + `org_members` row on first login; uses `supabaseAdmin()` so it's idempotent and RLS-bypassing.
-- Crons resolve `org_members.user_id → auth.users` via `supabase.auth.admin.getUserById()` — `app/api/billing/trial-nudge/cron/route.ts:38` and `app/api/tourrouter/advance/cron/route.ts:285`. **If the auth user is deleted but `org_members` still references it, `getUserById` returns null and the digest email silently fails to send.** Not a deletion blocker, but a cleanup-correctness issue.
-- No `auth.admin.deleteUser` calls anywhere in the codebase. Deleting an org does NOT delete the auth user. Delete `auth.users` rows separately via the Supabase dashboard (or `auth.admin.deleteUser`) for user-side cleanup.
-- RLS policies use `auth.uid() IN (SELECT org_id FROM org_members WHERE user_id = auth.uid())` (CLAUDE.md:77). Deleting the org row first means the user's RLS lookups return zero rows for that org — they're effectively locked out even if their `auth.users` row survives. Safe.
+- `ensureOrgExists` creates org + org_members row on first login via `supabaseAdmin()` (idempotent, RLS-bypassing).
+- Crons resolve `org_members.user_id → auth.users` via `supabase.auth.admin.getUserById()`. If org_members survives but auth.users is gone, `getUserById` returns null and digest sends fail silently.
+- No `auth.admin.deleteUser` calls anywhere in the codebase. Org delete does NOT delete the auth user unless the `deleteOrg()` routine (sketch below) is invoked.
+- RLS via `auth.uid() IN (SELECT org_id FROM org_members WHERE user_id = auth.uid())` — once org_members row is gone, the user is RLS-locked-out even if auth.users survives.
 
-### E. Notable gotchas
+### E. Notable gotchas (refreshed June 12)
 
-1. **`advance_emails` will RESTRICT the org deletion** if any row exists. Must be deleted first regardless of what `information_schema` shows for other tables.
-2. **Two `tours` tables exist** — `tours_routing` (TourRouter) and `tours` (Localizer). Both have `org_id`. CLAUDE.md flagged this; don't conflate them.
-3. **Migration files are NOT authoritative** — only 7 partial files in `supabase/migrations/`. CLAUDE.md rule 5 explicitly says "never assume schema state; verify with `information_schema`."
-4. **`shared_venues`, `shared_contacts`, `account_contacts`** — referenced in CLAUDE.md but zero app-code hits. They likely exist with `org_id` columns (per CLAUDE.md they're "critical tables") but their cascade behavior is invisible from here.
+1. **`finance_report_links.created_by` was the hidden blocker.** Q3 surfaced a `created_by → org_members` FK with NO ACTION; the June 11 draft missed it. Without the Phase 1 SET NULL conversion, `DELETE FROM orgs` would have failed when `org_members CASCADE` tried to remove a member referenced by a finance_report_link.
+2. **Two tables had `org_id` columns with NO FK at all** — `tour_shows_crew` and `marketing_tokens`. Phase 1 adds CASCADE FKs to both. Pre-migration, `tour_shows_crew` rows would have been silent orphans on org delete; `marketing_tokens` rows are usually cleaned via `tour_id → tours CASCADE`, but `tour_id` is nullable so a null-tour token would have been a stuck orphan.
+3. **Cross-org references** — edge case worth pre-checking before running test-org deletes. Any `tours_routing` row in org A referencing an artist in org B, or any `intake_documents` row in org A referencing a `tours_routing` in org B, would survive cross-org NO ACTION check failure. In practice these shouldn't exist; sanity query:
+   ```sql
+   SELECT count(*) FROM tours_routing tr JOIN artists a ON tr.artist_id = a.id WHERE tr.org_id <> a.org_id;
+   ```
+   (And similar for intake_documents.)
+4. **Migration files are NOT authoritative** — confirmed by Step 0 results. The `supabase/migrations/` folder shows only 7 partial files; the real schema diverged significantly. Per CLAUDE.md rule 5, always `information_schema` first.
 
 ---
 
-## Step 0 — Run this verification query FIRST (read-only)
+## Phase 1 — Schema migration (run once in SQL Editor)
 
-This is the authoritative source for what's actually in production. Run it and refine the deletion SQL against the real schema before running anything destructive.
+Verification queries below ran June 12; results inline. The 13 migration statements that follow are ready to paste one at a time in the SQL Editor.
+
+### Verification queries — June 12 results
+
+**(a) `finance_report_links` structure** — confirmed: `tour_id uuid NULLABLE` with FK CASCADE to `tours_routing`; `created_by uuid NULLABLE` with FK NO ACTION to `org_members`. **Decision: SET NULL on `created_by`** — `tour_id` nullable means a null-tour report link would survive the `tour_id` CASCADE path and its `created_by` reference would block org delete. SET NULL preserves audit rows.
+
+**(b) Nullability of SET NULL targets** — confirmed all three nullable: `shared_venues.created_by_org`, `shared_contacts.created_by_org`, `tours_routing.localizer_tour_id`. No `ALTER COLUMN ... DROP NOT NULL` prerequisite needed.
+
+**(c) `tour_shows_crew` orphan count** — confirmed 0 orphans. Single `ADD CONSTRAINT` (Path A) suffices.
+
+**(d) `marketing_tokens` orphan count** — run this read-only check BEFORE statement 13:
 
 ```sql
--- All tables with an org_id column
-SELECT table_name, column_name, data_type, is_nullable
-FROM information_schema.columns
-WHERE table_schema = 'public' AND column_name = 'org_id'
-ORDER BY table_name;
+SELECT count(*) AS orphan_count
+FROM marketing_tokens
+WHERE org_id IS NOT NULL
+  AND org_id NOT IN (SELECT id FROM orgs);
+```
 
--- All FK constraints pointing at orgs.id, with cascade behavior
+If `0` → use statement 13 Path A (single ADD). If `> 0` → use Path B (NOT VALID + DELETE orphans + VALIDATE).
+
+### Migration statements (paste one at a time)
+
+Order is non-critical at the FK level (all are independent); listed in logical groups: org_id CASCADE conversions first, then SET NULL conversions, then new FKs.
+
+**1.** `account_contacts.org_id` → CASCADE
+```sql
+ALTER TABLE public.account_contacts
+  DROP CONSTRAINT account_contacts_org_id_fkey,
+  ADD  CONSTRAINT account_contacts_org_id_fkey
+       FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**2.** `advance_emails.org_id` → CASCADE
+```sql
+ALTER TABLE public.advance_emails
+  DROP CONSTRAINT advance_emails_org_id_fkey,
+  ADD  CONSTRAINT advance_emails_org_id_fkey
+       FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**3.** `field_aliases.org_id` → CASCADE
+```sql
+ALTER TABLE public.field_aliases
+  DROP CONSTRAINT field_aliases_org_id_fkey,
+  ADD  CONSTRAINT field_aliases_org_id_fkey
+       FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**4.** `intake_documents.org_id` → CASCADE
+```sql
+ALTER TABLE public.intake_documents
+  DROP CONSTRAINT intake_documents_org_id_fkey,
+  ADD  CONSTRAINT intake_documents_org_id_fkey
+       FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**5.** `tour_expenses.org_id` → CASCADE
+```sql
+ALTER TABLE public.tour_expenses
+  DROP CONSTRAINT tour_expenses_org_id_fkey,
+  ADD  CONSTRAINT tour_expenses_org_id_fkey
+       FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**6.** `tour_shows.org_id` → CASCADE
+```sql
+ALTER TABLE public.tour_shows
+  DROP CONSTRAINT tour_shows_org_id_fkey,
+  ADD  CONSTRAINT tour_shows_org_id_fkey
+       FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**7.** `tours_routing.org_id` → CASCADE
+```sql
+ALTER TABLE public.tours_routing
+  DROP CONSTRAINT tours_routing_org_id_fkey,
+  ADD  CONSTRAINT tours_routing_org_id_fkey
+       FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**8.** `shared_contacts.created_by_org` → SET NULL
+```sql
+ALTER TABLE public.shared_contacts
+  DROP CONSTRAINT shared_contacts_created_by_org_fkey,
+  ADD  CONSTRAINT shared_contacts_created_by_org_fkey
+       FOREIGN KEY (created_by_org) REFERENCES public.orgs(id) ON DELETE SET NULL;
+```
+
+**9.** `shared_venues.created_by_org` → SET NULL
+```sql
+ALTER TABLE public.shared_venues
+  DROP CONSTRAINT shared_venues_created_by_org_fkey,
+  ADD  CONSTRAINT shared_venues_created_by_org_fkey
+       FOREIGN KEY (created_by_org) REFERENCES public.orgs(id) ON DELETE SET NULL;
+```
+
+**10.** `tours_routing.localizer_tour_id` → SET NULL
+
+(If the actual constraint name differs from the `_fkey` convention, substitute the real name from `\d tours_routing`.)
+```sql
+ALTER TABLE public.tours_routing
+  DROP CONSTRAINT tours_routing_localizer_tour_id_fkey,
+  ADD  CONSTRAINT tours_routing_localizer_tour_id_fkey
+       FOREIGN KEY (localizer_tour_id) REFERENCES public.tours(id) ON DELETE SET NULL;
+```
+
+**11.** `tour_shows_crew.org_id` → new FK with CASCADE (Path A — verification (c) confirmed zero orphans)
+```sql
+ALTER TABLE public.tour_shows_crew
+  ADD CONSTRAINT tour_shows_crew_org_id_fkey
+      FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**12.** `finance_report_links.created_by` → SET NULL
+```sql
+ALTER TABLE public.finance_report_links
+  DROP CONSTRAINT finance_report_links_created_by_fkey,
+  ADD  CONSTRAINT finance_report_links_created_by_fkey
+       FOREIGN KEY (created_by) REFERENCES public.org_members(id) ON DELETE SET NULL;
+```
+
+**13.** `marketing_tokens.org_id` → new FK with CASCADE — **run verification query (d) first.**
+
+**Path A** (orphan_count = 0):
+```sql
+ALTER TABLE public.marketing_tokens
+  ADD CONSTRAINT marketing_tokens_org_id_fkey
+      FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
+```
+
+**Path B** (orphan_count > 0) — three sub-statements:
+```sql
+-- 13.B.1: add unvalidated FK so future writes are constrained but existing orphans don't block
+ALTER TABLE public.marketing_tokens
+  ADD CONSTRAINT marketing_tokens_org_id_fkey
+      FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE NOT VALID;
+```
+```sql
+-- 13.B.2: clean the orphans (decide whether to delete vs. otherwise repair based on what they represent)
+DELETE FROM public.marketing_tokens
+WHERE org_id IS NOT NULL AND org_id NOT IN (SELECT id FROM public.orgs);
+```
+```sql
+-- 13.B.3: promote to fully-validated
+ALTER TABLE public.marketing_tokens VALIDATE CONSTRAINT marketing_tokens_org_id_fkey;
+```
+
+### Post-migration verification
+
+After all 13 statements run, re-execute the Q2 query from the original Step 0 to confirm the new state:
+
+```sql
 SELECT
   tc.table_name AS child_table,
   kcu.column_name AS child_column,
-  tc.constraint_name,
-  rc.delete_rule,
-  rc.update_rule
+  rc.delete_rule
 FROM information_schema.table_constraints tc
-JOIN information_schema.key_column_usage kcu
-  ON tc.constraint_name = kcu.constraint_name AND tc.constraint_schema = kcu.constraint_schema
-JOIN information_schema.referential_constraints rc
-  ON tc.constraint_name = rc.constraint_name AND tc.constraint_schema = rc.constraint_schema
-JOIN information_schema.constraint_column_usage ccu
-  ON rc.unique_constraint_name = ccu.constraint_name
+JOIN information_schema.key_column_usage kcu USING (constraint_name, constraint_schema)
+JOIN information_schema.referential_constraints rc USING (constraint_name, constraint_schema)
+JOIN information_schema.constraint_column_usage ccu ON rc.unique_constraint_name = ccu.constraint_name
 WHERE tc.constraint_type = 'FOREIGN KEY'
   AND ccu.table_name = 'orgs'
   AND ccu.column_name = 'id'
 ORDER BY child_table;
-
--- All FK constraints inside the public schema (so we can see the tour / event / show chains too)
-SELECT
-  tc.table_name AS child_table,
-  kcu.column_name AS child_column,
-  ccu.table_name AS parent_table,
-  ccu.column_name AS parent_column,
-  rc.delete_rule
-FROM information_schema.table_constraints tc
-JOIN information_schema.key_column_usage kcu
-  ON tc.constraint_name = kcu.constraint_name
-JOIN information_schema.referential_constraints rc
-  ON tc.constraint_name = rc.constraint_name
-JOIN information_schema.constraint_column_usage ccu
-  ON rc.unique_constraint_name = ccu.constraint_name
-WHERE tc.constraint_type = 'FOREIGN KEY'
-  AND tc.constraint_schema = 'public'
-ORDER BY parent_table, child_table;
 ```
+
+Expected: the 7 previously-NO ACTION rows now show CASCADE; `shared_contacts` and `shared_venues` show SET NULL; new rows for `tour_shows_crew` (CASCADE) and `marketing_tokens` (CASCADE).
 
 ---
 
-## Step 1 — Pre-flight row-count audit (read-only)
+## Phase 2 — Test-org deletion (when executing)
 
-Per-table impact count. Replace the placeholder UUIDs with the real 6 (or 5, if retaining `hwy61ai+test2026`). If any of the optional tables don't exist in the schema, the query errors on that line — strike the missing ones based on Step 0 results.
+Phase 1 already handled the schema. The original June 11 layered-DELETE transaction collapses to a single statement.
+
+### Step 1 — Identify target UUIDs
 
 ```sql
-WITH target_orgs AS (
-  SELECT id::uuid FROM (VALUES
-    ('00000000-0000-0000-0000-000000000001'::uuid),
-    ('00000000-0000-0000-0000-000000000002'::uuid),
-    ('00000000-0000-0000-0000-000000000003'::uuid),
-    ('00000000-0000-0000-0000-000000000004'::uuid),
-    ('00000000-0000-0000-0000-000000000005'::uuid),
-    ('00000000-0000-0000-0000-000000000006'::uuid)
-  ) AS t(id)
-)
-SELECT 'orgs'              AS table_name, count(*) FROM orgs               WHERE id     IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'org_members',          count(*) FROM org_members         WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'tours_routing',        count(*) FROM tours_routing       WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'tour_shows',           count(*) FROM tour_shows          WHERE tour_id IN (SELECT id FROM tours_routing WHERE org_id IN (SELECT id FROM target_orgs))
-UNION ALL SELECT 'guest_list',           count(*) FROM guest_list          WHERE show_id IN (SELECT id FROM tour_shows WHERE tour_id IN (SELECT id FROM tours_routing WHERE org_id IN (SELECT id FROM target_orgs)))
-UNION ALL SELECT 'tour_expenses',        count(*) FROM tour_expenses       WHERE tour_id IN (SELECT id FROM tours_routing WHERE org_id IN (SELECT id FROM target_orgs))
-UNION ALL SELECT 'intake_documents',     count(*) FROM intake_documents    WHERE tour_id IN (SELECT id FROM tours_routing WHERE org_id IN (SELECT id FROM target_orgs))
-UNION ALL SELECT 'finance_report_links', count(*) FROM finance_report_links WHERE tour_id IN (SELECT id FROM tours_routing WHERE org_id IN (SELECT id FROM target_orgs))
-UNION ALL SELECT 'tours',                count(*) FROM tours               WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'events',               count(*) FROM events              WHERE tour_id IN (SELECT id FROM tours WHERE org_id IN (SELECT id FROM target_orgs))
-UNION ALL SELECT 'venue_links',          count(*) FROM venue_links         WHERE event_id IN (SELECT id FROM events WHERE tour_id IN (SELECT id FROM tours WHERE org_id IN (SELECT id FROM target_orgs)))
-UNION ALL SELECT 'artists',              count(*) FROM artists             WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'advance_emails',       count(*) FROM advance_emails      WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'trial_nudge_emails',   count(*) FROM trial_nudge_emails  WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'notifications',        count(*) FROM notifications       WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'custom_fonts',         count(*) FROM custom_fonts        WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'marketing_tokens',     count(*) FROM marketing_tokens    WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'beta_invites',         count(*) FROM beta_invites        WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'field_aliases',        count(*) FROM field_aliases       WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'shared_venues',        count(*) FROM shared_venues       WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'shared_contacts',      count(*) FROM shared_contacts     WHERE org_id IN (SELECT id FROM target_orgs)
-UNION ALL SELECT 'account_contacts',     count(*) FROM account_contacts    WHERE org_id IN (SELECT id FROM target_orgs)
-ORDER BY table_name;
+SELECT id, owner_email, created_at
+FROM orgs
+WHERE owner_email LIKE 'hwy61ai+test%@gmail.com'
+ORDER BY created_at;
 ```
 
----
+Confirm 6 rows (or 5 if retaining `hwy61ai+test2026@gmail.com` as QA org).
 
-## Step 2 — Capture Cloudinary + storage IDs BEFORE deletion (read-only)
+### Step 2 — Capture Cloudinary + Storage IDs BEFORE delete
 
-Save the output (CSV from the SQL Editor) for manual Cloudinary / Supabase Storage cleanup post-delete. Nothing in app code does this cleanup automatically.
+Save CSV from the SQL Editor for out-of-band cleanup. Nothing in DB cascades touches storage:
 
 ```sql
 WITH target_orgs AS (
   SELECT id::uuid FROM (VALUES
     ('00000000-0000-0000-0000-000000000001'::uuid)
-    -- (paste the other 5 here)
+    -- (paste the other UUIDs here)
   ) AS t(id)
 )
 SELECT 'tour_cloudinary' AS asset_kind, t.id AS row_id,
@@ -196,103 +309,107 @@ FROM venue_links vl WHERE vl.event_id IN (
 );
 ```
 
-Column counts may need adjusting once the actual `tours.video_*` / `tours.sponsor_*` columns are confirmed. Per the venue page code at `app/v/e/[token]/page.tsx:12` they exist but the inventory may have grown.
+### Step 3 — Sanity row-count audit (read-only, optional but recommended)
 
----
+Confirms expected fan-out before the destructive step:
 
-## Step 3 — Draft deletion SQL (DO NOT RUN until Steps 0–2 are reviewed)
+```sql
+WITH target_orgs AS (
+  SELECT id::uuid FROM (VALUES
+    ('00000000-0000-0000-0000-000000000001'::uuid)
+    -- ... paste the rest
+  ) AS t(id)
+)
+SELECT 'orgs'            AS table_name, count(*) FROM orgs            WHERE id     IN (SELECT id FROM target_orgs)
+UNION ALL SELECT 'org_members',    count(*) FROM org_members     WHERE org_id IN (SELECT id FROM target_orgs)
+UNION ALL SELECT 'tours_routing',  count(*) FROM tours_routing   WHERE org_id IN (SELECT id FROM target_orgs)
+UNION ALL SELECT 'tours',          count(*) FROM tours           WHERE org_id IN (SELECT id FROM target_orgs)
+UNION ALL SELECT 'artists',        count(*) FROM artists         WHERE org_id IN (SELECT id FROM target_orgs)
+ORDER BY 1;
+```
 
-Wrapped in a transaction so any FK violation aborts the whole thing cleanly. The final `COMMIT` / `ROLLBACK` is left commented — type one of them consciously at the end.
+### Step 4 — Single-statement DELETE
+
+After Phase 1 ran, this is the entire destructive step:
 
 ```sql
 BEGIN;
 
-CREATE TEMP TABLE _target_orgs (id uuid PRIMARY KEY);
-INSERT INTO _target_orgs(id) VALUES
-  ('00000000-0000-0000-0000-000000000001'),
-  ('00000000-0000-0000-0000-000000000002'),
-  ('00000000-0000-0000-0000-000000000003'),
-  ('00000000-0000-0000-0000-000000000004'),
-  ('00000000-0000-0000-0000-000000000005'),
-  ('00000000-0000-0000-0000-000000000006');
+DELETE FROM public.orgs
+WHERE id IN (
+  '00000000-0000-0000-0000-000000000001',
+  '00000000-0000-0000-0000-000000000002',
+  '00000000-0000-0000-0000-000000000003',
+  '00000000-0000-0000-0000-000000000004',
+  '00000000-0000-0000-0000-000000000005',
+  '00000000-0000-0000-0000-000000000006'
+);
 
--- Convenience temp tables for the cascade chains
-CREATE TEMP TABLE _target_routing_tours AS
-  SELECT id FROM tours_routing WHERE org_id IN (SELECT id FROM _target_orgs);
-
-CREATE TEMP TABLE _target_localizer_tours AS
-  SELECT id FROM tours WHERE org_id IN (SELECT id FROM _target_orgs);
-
-CREATE TEMP TABLE _target_tour_shows AS
-  SELECT id FROM tour_shows WHERE tour_id IN (SELECT id FROM _target_routing_tours);
-
-CREATE TEMP TABLE _target_events AS
-  SELECT id FROM events WHERE tour_id IN (SELECT id FROM _target_localizer_tours);
-
--- ── Layer 1: leaves (children of children) ──
-DELETE FROM guest_list           WHERE show_id  IN (SELECT id FROM _target_tour_shows);
-DELETE FROM venue_links          WHERE event_id IN (SELECT id FROM _target_events);
-
--- ── Layer 2: direct children of tours_routing / tours ──
-DELETE FROM tour_shows           WHERE tour_id  IN (SELECT id FROM _target_routing_tours);
-DELETE FROM tour_expenses        WHERE tour_id  IN (SELECT id FROM _target_routing_tours);
-DELETE FROM intake_documents     WHERE tour_id  IN (SELECT id FROM _target_routing_tours);
-DELETE FROM finance_report_links WHERE tour_id  IN (SELECT id FROM _target_routing_tours);
-DELETE FROM events               WHERE tour_id  IN (SELECT id FROM _target_localizer_tours);
-
--- ── Layer 3: parent tours tables ──
-DELETE FROM tours_routing        WHERE id IN (SELECT id FROM _target_routing_tours);
-DELETE FROM tours                WHERE id IN (SELECT id FROM _target_localizer_tours);
-
--- ── Layer 4: other tables with org_id ── (advance_emails MUST be deleted before orgs)
-DELETE FROM advance_emails       WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM trial_nudge_emails   WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM notifications        WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM custom_fonts         WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM marketing_tokens     WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM beta_invites         WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM field_aliases        WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM artists              WHERE org_id IN (SELECT id FROM _target_orgs);
-
--- These three only if they exist in your schema (per Step 0 verification):
-DELETE FROM shared_venues        WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM shared_contacts      WHERE org_id IN (SELECT id FROM _target_orgs);
-DELETE FROM account_contacts     WHERE org_id IN (SELECT id FROM _target_orgs);
-
--- ── Layer 5: junction ──
-DELETE FROM org_members          WHERE org_id IN (SELECT id FROM _target_orgs);
-
--- ── Layer 6: root ──
-DELETE FROM orgs                 WHERE id     IN (SELECT id FROM _target_orgs);
-
--- ★ VERIFY before committing ★
--- Run the Step 1 audit query again inside the same transaction; every count should be 0.
--- If anything looks wrong, ROLLBACK instead of COMMIT.
+-- Verify: should return 0
+SELECT count(*) FROM public.orgs WHERE id IN (
+  '00000000-0000-0000-0000-000000000001'
+  -- (etc.)
+);
 
 -- COMMIT;       -- uncomment to commit
--- ROLLBACK;     -- run this if anything looks wrong
+-- ROLLBACK;     -- if anything looks wrong
 ```
 
-**Notes:**
+The Phase 1 migration handles every dependent table. No layered DELETE needed; no temp tables, no per-layer FK ordering. Single transaction wrapping a single statement.
 
-- After the `DELETE`s run, re-run the Step 1 audit query (still inside the transaction) — every count should be 0. If anything's non-zero, `ROLLBACK`.
-- If any of the optional tables (`shared_venues` / `shared_contacts` / `account_contacts` / `finance_report_links`) don't exist, that `DELETE` will error and roll the whole transaction. Use Step 0 results to strike the lines before running.
-- If Step 0 reveals some FKs already have `ON DELETE CASCADE`, the corresponding `DELETE` lines become no-ops — still safe to leave in for explicitness.
+### Step 5 — Post-deletion checklist (manual, unchanged from June 11)
 
----
-
-## Step 4 — Post-deletion checklist (manual)
-
-1. **Cloudinary cleanup.** Use the captured CSV from Step 2 to bulk-delete the `image_*_id` / `video_*_id` public IDs in Cloudinary, plus the `render_*_url` URL paths (they're hosted on the same Cloudinary account — the URL ends with a public_id you can extract).
-2. **Supabase Storage cleanup.** Same CSV for `image_url` / `logo_url` / `adv_*_url` on artists, plus `intake_documents` storage paths if any were found.
-3. **`auth.users` cleanup (optional).** For each deleted org's `owner_email`, find the matching `auth.users` row and delete it via the Supabase dashboard or `supabase.auth.admin.deleteUser(userId)`. Not strictly required — the user is already locked out via the deleted `org_members` row — but cleaner. Skip for the retained QA org (`hwy61ai+test2026`).
-4. **Confirm crons don't barf.** Next morning's trial-nudge cron at 13:00 UTC: check Vercel Functions logs that it ran cleanly with no `getUserById returned null` warnings.
+1. **Cloudinary cleanup.** Use the CSV from Step 2 to bulk-delete the `image_*_id` / `video_*_id` public IDs in Cloudinary, plus the `render_*_url` URL paths.
+2. **Supabase Storage cleanup.** Same CSV for `image_url` / `logo_url` / `adv_*_url` on artists, plus any `intake_documents` storage paths.
+3. **`auth.users` cleanup (optional).** For each deleted org's `owner_email`, find the matching `auth.users` row and delete it via Supabase dashboard or `supabase.auth.admin.deleteUser(userId)`. Skip for the retained QA org if applicable.
+4. **Confirm crons don't barf.** Next trial-nudge cron at 13:00 UTC: check Vercel Functions logs for `getUserById returned null` warnings.
 
 ---
 
-## Open questions / decisions to make at execution
+## `deleteOrg(orgId)` admin function — design sketch
 
-- **Confirm the 6 org UUIDs.** Query `SELECT id, owner_email, created_at FROM orgs WHERE owner_email LIKE 'hwy61ai+test%@gmail.com' ORDER BY created_at;` before running Steps 1–3.
-- **Retain `hwy61ai+test2026@gmail.com` as the QA org?** If yes, drop its UUID from the lists in Steps 1, 2, and 3 — delete only 5.
-- **Run Step 0 first.** Use its output to (a) strike `DELETE` lines for tables that don't exist and (b) annotate which FKs already cascade so the plan reads accurately.
-- **Decide who runs it.** This file is meant for Drew. The Supabase SQL Editor session must be the production project, not a staging clone.
+Post-launch admin function that wraps Phase 2 into one call. Same scope as the `BACKLOG.md` "Org / account deletion routine" entry; this section is the technical body for when it's picked up.
+
+**Signature:**
+```ts
+deleteOrg(orgId: string, opts?: { deleteAuthUsers?: boolean }): Promise<Result>
+```
+
+**Phases (in order):**
+
+1. **Capture asset manifest** — single SQL query returning every Cloudinary public_id and Supabase Storage path tied to the org (`tours.image_*_id`, `video_*_id`, `sponsor_*_url`; `artists.image_url`, `logo_url`, `adv_*_url`, `adv_custom_materials` JSON; `venue_links.render_*_url`; `intake_documents` storage paths).
+2. **Capture user_id list** — `SELECT user_id FROM org_members WHERE org_id = $1`. Phase 4 needs these after Phase 3 deletes the org_members rows.
+3. **Single-statement DB delete** — `DELETE FROM orgs WHERE id = $1`. Wrapped in a transaction with a post-check `SELECT count(*) FROM orgs WHERE id = $1` that throws on non-zero.
+4. **External cleanup (best-effort, post-commit)** — sequential, no rollback:
+   - Cloudinary: `cloudinary.api.delete_resources(ids, { resource_type })` batched by 100, per-batch error capture.
+   - Supabase Storage: `supabase.storage.from(bucket).remove([...])` batched per bucket.
+   - `auth.users`: `supabase.auth.admin.deleteUser(userId)` per captured user, gated by `opts.deleteAuthUsers ?? true`.
+
+**Return:**
+```ts
+{
+  ok: true,
+  dbDeletedAt: string,
+  cloudinary: { deleted: number; failed: Array<{ id: string; error: string }> },
+  storage:    { deleted: number; failed: Array<{ path: string; error: string }> },
+  authUsers:  { deleted: number; failed: Array<{ userId: string; error: string }> }
+}
+```
+
+**External-cleanup failures do NOT roll back the DB delete.** DB is authoritative; external orphans are harmless billing/storage waste, sweepable later.
+
+**Use cases this single function serves:**
+
+1. **CCPA / GDPR deletion requests** — call with `deleteAuthUsers: true`.
+2. **Test-org cleanup (this plan)** — call with `deleteAuthUsers: false` if retaining auth.users for QA, else `true`.
+3. **Future self-serve "delete account" UI** — call with `deleteAuthUsers: true`.
+
+---
+
+## Open questions / decisions to make at execution (refreshed June 12)
+
+- **Confirm the 6 target UUIDs at execution time.** Phase 2 Step 1 query above.
+- **Retain `hwy61ai+test2026@gmail.com` as the QA org?** If yes, drop its UUID from Step 4 — delete only 5. Skip the auth.users cleanup for that one in Step 5.
+- **Cross-org reference sanity check** before running deletes — the gotcha #3 query in Summary E.
+- **Phase 1 timing.** Migration is independent of Phase 2 execution timing — can run any time before Week 4. Lower-risk window: when there are no active writes (off-hours). The 13 statements are individually fast; each is a metadata-level constraint change, not a table rewrite.
+- **Decide who runs Phase 2.** This file is for Drew. The Supabase SQL Editor session must be the production project, not a staging clone.
