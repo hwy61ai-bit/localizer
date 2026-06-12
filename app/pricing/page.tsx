@@ -57,13 +57,13 @@ const FAQS: { q: string; a: string }[] = [
 
 const PLANS: Plan[] = [
   {
-    name: "Free",
-    desc: "Try the full workflow at no cost.",
+    name: "Free Trial",
+    desc: "Full access. No card required.",
     monthlyPrice: 0,
     annualPrice: 0,
     monthlyPriceId: null,
     annualPriceId: null,
-    features: ["1 band", "5 shows per month", "3 asset formats", "Watermarked assets"],
+    features: [],
     highlight: false,
     isFree: true,
   },
@@ -176,6 +176,7 @@ export default function PricingPage() {
 
         /* Pricing grid */
         .pricing-page .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
+        .pricing-page .pricing-grid--3cols { grid-template-columns: repeat(3, 1fr); }
         .pricing-page .pricing-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 40px 32px; text-align: center; transition: all 0.15s ease; border-radius: 0; position: relative; display: flex; flex-direction: column; }
         .pricing-page .pricing-card.featured { border-color: var(--hw-crimson); transform: translateY(-8px); box-shadow: 6px 6px 0 var(--hw-crimson); }
         .pricing-page .featured-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--hw-crimson); border: 3px solid var(--hw-border-strong); color: #fff; font-family: var(--hw-font-mono); font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 4px 14px; border-radius: 0; text-transform: uppercase; }
@@ -250,8 +251,8 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <div id="plans" className="pricing-grid">
-          {PLANS.map((plan) => {
+        <div id="plans" className={`pricing-grid${hasSession ? " pricing-grid--3cols" : ""}`}>
+          {PLANS.filter((plan) => !(hasSession && plan.isFree)).map((plan) => {
             const priceId = annual ? plan.annualPriceId : plan.monthlyPriceId;
             const price = annual ? plan.annualPrice : plan.monthlyPrice;
             const isLoading = loading === plan.name;
@@ -260,7 +261,7 @@ export default function PricingPage() {
                 {plan.highlight && <div className="featured-badge">Most Popular</div>}
                 <div className="plan-name">{plan.name}</div>
                 <div className="plan-price">{plan.isFree ? "$0" : `$${price}`}</div>
-                <div className="plan-period">{plan.isFree ? "Free forever" : (annual ? "Per Year" : "Per Month")}</div>
+                <div className="plan-period">{plan.isFree ? "7 days" : (annual ? "Per Year" : "Per Month")}</div>
                 <div className="plan-desc">{plan.desc}</div>
                 <div className="plan-features">
                   {plan.features.map((f) => (
@@ -275,7 +276,7 @@ export default function PricingPage() {
                     onClick={() => priceId && handleCheckout(priceId, plan.name)}
                     disabled={isLoading || !priceId}
                   >
-                    {isLoading ? "Loading…" : "Start free trial"}
+                    {isLoading ? "Loading…" : (hasSession ? "Select plan" : "Start free trial")}
                   </button>
                 )}
               </div>
