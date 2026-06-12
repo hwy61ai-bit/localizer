@@ -2,6 +2,7 @@
 
 **Created:** June 11, 2026
 **MIGRATION APPLIED June 12, 2026** — all 12 statements run in production, verified via `information_schema` (7 org FKs → CASCADE, 2 `shared_*` → SET NULL, `localizer_tour_id` → SET NULL, `finance_report_links.created_by` → SET NULL, `marketing_tokens` FK added). The destructive deletion step now collapses to a single `DELETE FROM orgs WHERE id IN (...)`.
+**deleteOrg ROUTINE SHIPPED June 12, 2026** — `lib/admin/deleteOrg.ts` + `POST /api/admin/delete-org` + `deleted_orgs_audit` table live. Proven on `testicles` and `testx` end-to-end (dryRun manifest review → real run → Cloudinary asset deletion verified out-of-band). Replaces the manual SQL-Editor Phase 2 protocol below for all future test-org and customer-account deletions.
 **Targets:** 6 test orgs owned by `hwy61ai+test*@gmail.com` accounts.
 **Execution window:** Week 4 QA prep.
 **Retention option:** consider retaining `hwy61ai+test2026@gmail.com`'s org as the designated non-admin QA org and deleting only the other 5. Decide at execution time.
@@ -258,12 +259,12 @@ Expected (confirmed June 12): the 7 previously-NO ACTION rows now show CASCADE; 
 
 ## Phase 2 — Test-org deletion (when executing)
 
-**Status (June 12, 2026):** `testsign` org (`b7f777a6...`) deleted as the proving run — asset capture ran first, then a single `DELETE FROM orgs WHERE id = '...'`, all-zeros verification across `orgs`, `org_members`, `artists`, `tours`, `trial_nudge_emails`. Cascade behavior validated end-to-end against the Phase 1 schema.
+**Status (June 12, 2026):** Three proving runs done — `testsign` via direct SQL (asset capture + single `DELETE FROM orgs`; all-zeros verification across `orgs`, `org_members`, `artists`, `tours`, `trial_nudge_emails`); then `testicles` and `testx` via the newly-shipped `POST /api/admin/delete-org` (dryRun first to inspect the manifest, then real run with audit row + auth.users delete + Cloudinary asset deletion verified out-of-band). The routine validated end-to-end on real cross-system deletions.
 
 **Remaining work:**
-- 4 test orgs to delete in Week 4 (`+test2026` retention decision still stands; same protocol — asset capture first, then single-statement DELETE).
-- `auth.users` cleanup for the deleted accounts via Supabase dashboard.
-- `deleteOrg()` admin function build (BACKLOG "Org / account deletion routine" — sketch below).
+- `testcorkys` and `testalex` — one `curl` each via `/api/admin/delete-org`. No more SQL Editor needed for the destructive step.
+- `+test2026` retention decision (still stands as the candidate non-admin QA org).
+- `auth.users` cleanup happens inside `deleteOrg` now (gated by the `deleteAuthUsers` flag, default true).
 
 Phase 1 already handled the schema. The original June 11 layered-DELETE transaction collapses to a single statement.
 
@@ -368,9 +369,16 @@ The Phase 1 migration handles every dependent table. No layered DELETE needed; n
 
 ---
 
-## `deleteOrg(orgId)` admin function — design sketch
+## `deleteOrg(orgId)` admin function — SHIPPED June 12, 2026
 
-Post-launch admin function that wraps Phase 2 into one call. Same scope as the `BACKLOG.md` "Org / account deletion routine" entry; this section is the technical body for when it's picked up.
+**Implementation files:**
+- `lib/admin/deleteOrg.ts` — core routine (refusal checks → manifest capture → audit insert → DB delete → external cleanup).
+- `app/api/admin/delete-org/route.ts` — `POST /api/admin/delete-org` dual-gated (admin session + `ADMIN_DELETE_ORG_SECRET` bearer; Layer 1 bypassed in dev for local testing).
+- `deleted_orgs_audit` table — created June 12 (service-role only, RLS-enabled, no `authenticated` / `anon` grants).
+
+**Proven on:** `testicles` and `testx` (June 12). Cloudinary asset deletion verified out-of-band.
+
+The design that was built is captured in the sections below.
 
 **Signature:**
 ```ts

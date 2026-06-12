@@ -3611,3 +3611,6 @@ June 12, 2026 — Artist socials feature. Six social_* columns added to artists 
 
 
 Deletion solved (DB layer). Step 0 schema ground-truth run; 12-statement CASCADE migration designed, applied to prod, and verified. tour_shows_crew turned out to be a view (no FK needed). Proving run: testsign org deleted with a single DELETE FROM orgs — all-zeros verification. Remaining for Week 4: 4 test orgs + deleteOrg routine (Cloudinary/Storage/auth cleanup). Per-entity file-cleanup sweep stays post-launch.
+
+
+June 12, addendum — deleteOrg routine BUILT AND PROVEN. lib/admin/deleteOrg.ts + /api/admin/delete-org (dual-gated: admin session + bearer secret; dev allows bearer-only, fcdf96a). Phases: protected-org refusal → owner-email confirm → manifest capture → audit insert → single cascade DELETE → Cloudinary/Storage/auth cleanup with per-item error capture. dryRun defaults true. deleted_orgs_audit table live. Proven end to end on testicles org: 1 Cloudinary asset deleted + verified gone from Media Library, DB zeros, auth user removed, audit row written. testx also deleted (DB+auth; no files remained). Key recon win: venue_links render URLs are derived — no separate cleanup needed. Remaining test orgs: testcorkys, testalex (delete anytime via routine); test2026 retained for QA.

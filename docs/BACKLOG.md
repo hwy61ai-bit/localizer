@@ -593,31 +593,30 @@ Option 2 is the closest fit to existing patterns. Decision made at build time.
 
 ---
 
-### Org / account deletion routine
+### Cloudinary / Storage orphan-file sweep across delete and replace paths
 
-Currently NO deletion path exists for an org or its user. Code recon (June 11, 2026) confirmed: no `auth.admin.deleteUser` calls anywhere in the codebase, no `deleteOrg` admin function, no FK cascade behavior visible from migrations. Manual multi-layer DELETEs in the Supabase SQL Editor are the only option today — documented for the 6 test-org cleanup in `docs/TEST_ORG_CLEANUP_PLAN.md`, which doubles as the spec for the real routine.
+The same gap that motivated the (now-shipped) `deleteOrg` work applies to ALL per-entity delete and replace paths today — deleting an artist or a tour, or replacing an uploaded image, orphans the old Cloudinary/Storage files. Only `custom_fonts` cleans up after itself (`app/api/fonts/delete/route.ts` — use as the template).
 
-**Two parts:**
+Post-launch follow-on: sweep every delete/replace path to remove associated files. Scope is probably every `app/api/` route that does `.delete()` on artists / tours / venue_links / etc. or `.update({ ..._url: ... })` on artists / tours columns that hold Cloudinary public_ids or Storage URLs.
 
-1. **Migration: `ON DELETE CASCADE` on all org-descendant FKs.** Collapses the current manual 6-layer DELETE chain (guest_list → venue_links → tour_shows → tours_routing children → events → tours → org-direct tables → org_members → orgs) into a single `DELETE FROM orgs WHERE id IN (...)`. Per Step 0 of the cleanup plan, actual cascade behavior must be enumerated against `information_schema` first; some FKs may already cascade and only the gaps need to be added.
-2. **`deleteOrg(orgId)` admin function.** Wraps: (a) Cloudinary asset cleanup using the captured `image_*_id` / `video_*_id` / `render_*_url` / `sponsor_*_url` IDs from the tours and venue_links rows, (b) Supabase Storage cleanup for `artists.image_url` / `logo_url` / `adv_*_url` and any `intake_documents` storage paths, (c) the cascading DB delete, (d) `supabase.auth.admin.deleteUser(userId)` for each `org_members.user_id` in the org. Idempotent; transactional where possible.
+**Why this still matters after `deleteOrg` shipped:** `deleteOrg` solves the org-wide orphan problem (CCPA/GDPR + churn cleanup). This entry tracks the per-entity orphan problem that's still live during normal app use — a user deleting one artist out of three, or swapping a logo, still leaves files behind in Cloudinary / Supabase Storage. Long-tail billing waste.
 
-**Why this matters:**
-
-- **Privacy-law deletion requests (CCPA, GDPR, etc.)** — flag to attorney as part of the ToS / Privacy review currently in flight (LAUNCH_PROGRESS "Attorney review of ToS/Privacy items 1–3"). A real customer asking for their account + data to be deleted has no automated path today.
-- **Routine customer-account deletion** — needed the moment a paying customer churns and wants out. No self-serve "delete account" UI exists either; that's a follow-on once the backend routine exists.
-
-**Why not in the 30-day launch:** No customers had deletion requests pre-launch (all current orgs are testers). The current testing workflow tolerates manual SQL Editor cleanup; production customers don't. Becomes load-bearing the moment the first deletion request lands.
-
-**Spec source:** `docs/TEST_ORG_CLEANUP_PLAN.md` — its Step 0 verification query, Step 2 asset-capture query, and Step 3 layered DELETE translate directly into the migration's CASCADE additions plus the `deleteOrg` function body.
-
-**Related leak:** the same gap applies to ALL delete/replace paths today — deleting an artist or tour, or replacing an uploaded image, orphans the old Cloudinary/Storage files. Only `custom_fonts` cleans up after itself (`app/api/fonts/delete/route.ts` — use as the template). Post-launch follow-on: sweep every delete/replace path to remove associated files.
+**Originated:** June 11, 2026, as part of the `Org / account deletion routine` BACKLOG entry (now in `## Resolved`, shipped June 12). Carved out as its own item per the user's note that it shouldn't ride along into Resolved with the parent work.
 
 ---
 
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### Org / account deletion routine
+
+**Resolution (2026-06-12):** Shipped. Two-day arc from BACKLOG entry to production-ready feature. Two parts, both live:
+
+1. **CASCADE migration applied (June 12)** — 12 SQL Editor statements converting all org-descendant FKs to CASCADE (7) or SET NULL (3) and adding a missing CASCADE FK on `marketing_tokens` (1). Statement 11 was originally drafted to add an FK to `tour_shows_crew` but skipped post-hoc when that turned out to be a view. After the migration, `DELETE FROM orgs WHERE id IN (...)` walks every dependent table in a single transaction.
+2. **`deleteOrg` admin function shipped (June 12)** — `lib/admin/deleteOrg.ts` (manifest capture → audit-row insert → DB delete → batched Cloudinary `delete_resources` + Supabase Storage `.remove()` + `auth.admin.deleteUser` cleanup) wrapped by `POST /api/admin/delete-org` (dual-gated: admin session via `isAdminEmail` + `ADMIN_DELETE_ORG_SECRET` bearer; Layer 1 bypassed in dev for local testing). Audit table `deleted_orgs_audit` (service-role only, RLS-enabled, no `authenticated`/`anon` grants). Proven end-to-end on `testicles` and `testx` (June 12) with Cloudinary asset deletion verified out-of-band. Spec doc: `docs/TEST_ORG_CLEANUP_PLAN.md` (Phase 1 migration + Phase 2 deletion + as-built spec).
+
+**Original problem:** NO deletion path existed for an org or its user. Code recon (June 11) confirmed: no `auth.admin.deleteUser` calls anywhere in the codebase, no `deleteOrg` admin function, no FK cascade behavior visible from migrations. Manual multi-layer DELETEs in the Supabase SQL Editor were the only option. Privacy-law deletion requests (CCPA, GDPR) had no automated path; routine customer-account churn had no path either. The per-entity file-cleanup gap that was bundled into the original BACKLOG entry has been carved out as its own open item in `💭 Future ideas` ("Cloudinary / Storage orphan-file sweep across delete and replace paths") — that work still rides post-launch and is intentionally not closed with this entry.
 
 ### Verify dmca@, privacy@, support@ hwy61labs.com inbox routing
 
