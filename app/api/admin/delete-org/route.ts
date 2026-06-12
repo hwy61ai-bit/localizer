@@ -1,6 +1,9 @@
 /**
  * Admin endpoint for org deletion. Dual-gated:
  *   Layer 1: caller's session belongs to an admin email (isAdminEmail).
+ *     Skipped in development (NODE_ENV !== "production") — bearer secret alone
+ *     authorizes, mirroring the cron routes' dev pattern. Production behavior
+ *     unchanged: both layers required.
  *   Layer 2: bearer secret in Authorization header (ADMIN_DELETE_ORG_SECRET env).
  * Plus belt-and-suspenders body requirement: confirmOwnerEmail must match orgs.owner_email.
  *
@@ -18,13 +21,18 @@ import { deleteOrg } from "@/lib/admin/deleteOrg";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  const isDev = process.env.NODE_ENV !== "production";
+
   // Layer 1: caller must have an authenticated session AND be on the admin allowlist
+  // (production-only; dev bypasses to let the bearer secret alone authorize).
   const sb = await supabaseServer();
   const {
     data: { user },
   } = await sb.auth.getUser();
-  if (!user || !isAdminEmail(user.email)) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!isDev) {
+    if (!user || !isAdminEmail(user.email)) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
   }
 
   // Layer 2: bearer secret must match env var (defends against compromised admin session)
@@ -57,7 +65,9 @@ export async function POST(req: NextRequest) {
     confirmOwnerEmail,
     dryRun: dryRun ?? true,
     deleteAuthUsers: deleteAuthUsers ?? true,
-    deletedByEmail: user.email ?? undefined,
+    // In dev with Layer 1 bypassed, the bearer alone authorized this request —
+    // record that honestly in the audit row instead of an incidental session email.
+    deletedByEmail: isDev ? "dev-bearer" : user?.email ?? undefined,
   });
 
   // Map refusals to appropriate HTTP statuses so callers can distinguish
