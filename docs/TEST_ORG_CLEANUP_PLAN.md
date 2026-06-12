@@ -1,7 +1,7 @@
 # Test Org Cleanup Plan
 
 **Created:** June 11, 2026
-**Status update (June 12, 2026):** Step 0 verification queries ran; real schema mapped; CASCADE migration designed and ready for SQL Editor pass. Once Phase 1 migration runs, the destructive deletion step collapses from a 60-line layered transaction to a single `DELETE FROM orgs WHERE id IN (...)`.
+**MIGRATION APPLIED June 12, 2026** — all 12 statements run in production, verified via `information_schema` (7 org FKs → CASCADE, 2 `shared_*` → SET NULL, `localizer_tour_id` → SET NULL, `finance_report_links.created_by` → SET NULL, `marketing_tokens` FK added). The destructive deletion step now collapses to a single `DELETE FROM orgs WHERE id IN (...)`.
 **Targets:** 6 test orgs owned by `hwy61ai+test*@gmail.com` accounts.
 **Execution window:** Week 4 QA prep.
 **Retention option:** consider retaining `hwy61ai+test2026@gmail.com`'s org as the designated non-admin QA org and deleting only the other 5. Decide at execution time.
@@ -90,7 +90,7 @@ The DB cascade handles row deletion, but Cloudinary uploads and Supabase Storage
 
 ## Phase 1 — Schema migration (run once in SQL Editor)
 
-Verification queries below ran June 12; results inline. The 13 migration statements that follow are ready to paste one at a time in the SQL Editor.
+Verification queries below ran June 12; results inline. The 12 effective migration statements that follow were run in production June 12. Statement 11 was originally drafted to add an FK to `tour_shows_crew` but was dropped post-hoc when that turned out to be a view (annotation kept inline below for the historical record).
 
 ### Verification queries — June 12 results
 
@@ -98,7 +98,7 @@ Verification queries below ran June 12; results inline. The 13 migration stateme
 
 **(b) Nullability of SET NULL targets** — confirmed all three nullable: `shared_venues.created_by_org`, `shared_contacts.created_by_org`, `tours_routing.localizer_tour_id`. No `ALTER COLUMN ... DROP NOT NULL` prerequisite needed.
 
-**(c) `tour_shows_crew` orphan count** — confirmed 0 orphans. Single `ADD CONSTRAINT` (Path A) suffices.
+**(c) `tour_shows_crew`** — turned out to be a **VIEW**, not a table. Statement 11 was dropped (constraint impossible and unnecessary; views hold no rows, underlying tables already cascade). See annotation at statement 11.
 
 **(d) `marketing_tokens` orphan count** — run this read-only check BEFORE statement 13:
 
@@ -197,12 +197,7 @@ ALTER TABLE public.tours_routing
        FOREIGN KEY (localizer_tour_id) REFERENCES public.tours(id) ON DELETE SET NULL;
 ```
 
-**11.** `tour_shows_crew.org_id` → new FK with CASCADE (Path A — verification (c) confirmed zero orphans)
-```sql
-ALTER TABLE public.tour_shows_crew
-  ADD CONSTRAINT tour_shows_crew_org_id_fkey
-      FOREIGN KEY (org_id) REFERENCES public.orgs(id) ON DELETE CASCADE;
-```
+**11.** ~~`tour_shows_crew.org_id` → new FK with CASCADE~~ — **SKIPPED.** `tour_shows_crew` turned out to be a **VIEW**, not a table — `ADD CONSTRAINT` on a view is invalid Postgres syntax and would have errored. Views hold no rows; the underlying tables (`tour_shows`, etc.) already cascade. No action needed. Statement number kept for stable cross-reference; effective migration count is 12.
 
 **12.** `finance_report_links.created_by` → SET NULL
 ```sql
@@ -257,11 +252,18 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 ORDER BY child_table;
 ```
 
-Expected: the 7 previously-NO ACTION rows now show CASCADE; `shared_contacts` and `shared_venues` show SET NULL; new rows for `tour_shows_crew` (CASCADE) and `marketing_tokens` (CASCADE).
+Expected (confirmed June 12): the 7 previously-NO ACTION rows now show CASCADE; `shared_contacts` and `shared_venues` show SET NULL; new row for `marketing_tokens` (CASCADE). No row for `tour_shows_crew` — it's a view.
 
 ---
 
 ## Phase 2 — Test-org deletion (when executing)
+
+**Status (June 12, 2026):** `testsign` org (`b7f777a6...`) deleted as the proving run — asset capture ran first, then a single `DELETE FROM orgs WHERE id = '...'`, all-zeros verification across `orgs`, `org_members`, `artists`, `tours`, `trial_nudge_emails`. Cascade behavior validated end-to-end against the Phase 1 schema.
+
+**Remaining work:**
+- 4 test orgs to delete in Week 4 (`+test2026` retention decision still stands; same protocol — asset capture first, then single-statement DELETE).
+- `auth.users` cleanup for the deleted accounts via Supabase dashboard.
+- `deleteOrg()` admin function build (BACKLOG "Org / account deletion routine" — sketch below).
 
 Phase 1 already handled the schema. The original June 11 layered-DELETE transaction collapses to a single statement.
 
