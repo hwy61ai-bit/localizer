@@ -231,13 +231,40 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {a?.meta_business_id && (
           <div style={{ marginBottom: 48 }}>
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Marketing</div>
-            <div style={{ padding: 16, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)" }}>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 12 }}>
-                Meta Business Manager ID
+            <style dangerouslySetInnerHTML={{ __html: `
+              .venue-marketing-link { transition: color 0.15s ease; }
+              .venue-marketing-link:hover { color: var(--hw-crimson-dark); text-decoration: underline; }
+            ` }} />
+            <div style={{ padding: 24, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)" }}>
+              {/* Zone 1 — the data */}
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 10 }}>
+                Artist Meta Business Manager ID
               </div>
-              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, lineHeight: 1.1, color: "var(--hw-text)", letterSpacing: "1.5px" }}>
-                {a.meta_business_id}
+              <div style={{ padding: "12px 14px", background: "var(--hw-bg)", border: "2px solid var(--hw-border)", display: "inline-block" }}>
+                <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 32, lineHeight: 1.1, color: "var(--hw-text)", letterSpacing: "2px" }}>
+                  {a.meta_business_id}
+                </div>
               </div>
+
+              {/* Zone 2 — the action */}
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, letterSpacing: "1.5px", color: "var(--hw-text-muted)", textTransform: "uppercase", marginTop: 12 }}>
+                To Request Ad Access to Artist Socials
+              </div>
+              <div style={{ height: 1, background: "var(--hw-border)", margin: "12px 0" }} />
+              <a
+                href="https://www.facebook.com/business/help/915885887059947"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="venue-marketing-link"
+                style={{
+                  display: "inline-block",
+                  fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700,
+                  letterSpacing: "1.5px", color: "var(--hw-crimson)",
+                  textTransform: "uppercase" as const, textDecoration: "none",
+                }}
+              >
+                Instructions for requesting Meta ad account access →
+              </a>
             </div>
           </div>
         )}
