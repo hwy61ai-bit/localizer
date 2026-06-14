@@ -4,6 +4,7 @@ import PrintDownloadButton from "./PrintDownloadButton";
 import ShareLinkButton from "./ShareLinkButton";
 import { ArtistSocialLinks } from "./SocialIcons";
 import { PressPlaylists } from "./PressPlaylists";
+import { TeamContacts } from "./TeamContacts";
 
 export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -35,7 +36,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists, manager_name, manager_email, manager_phone, tour_manager_name, tour_manager_email, tour_manager_phone, booking_agent_name, booking_agent_email, booking_agent_phone, publicist_name, publicist_email, publicist_phone, team_extra")
     .eq("id", (tour as any).artist_id)
     .single();
 
@@ -225,6 +226,9 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             ))}
           </div>
         </div>
+
+        {/* Team — label "Team" awaiting Tim sign-off */}
+        <TeamContacts label="Team" artist={a} />
 
         {/* Press & Playlists — label "Press & Playlists" awaiting Tim sign-off */}
         <PressPlaylists
