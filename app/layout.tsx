@@ -8,6 +8,7 @@ import { PostHogProvider } from "./components/PostHogProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://hwy61labs.com"),
   title: "Localizer",
   description: "Event asset rendering",
 };
