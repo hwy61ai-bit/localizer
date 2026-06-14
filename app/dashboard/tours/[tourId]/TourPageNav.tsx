@@ -1,11 +1,16 @@
-// Shared tour-page navigation: GIGS DASHBOARD standalone (left) + numbered
-// step box (right). Used by the tour root, import, assets, and template pages.
-// No "use client" directive — uses only next/link + inline styles, so this
-// component renders fine inside both server (tour root) and client (import,
-// assets, template) pages.
+// Shared tour-page navigation: GIGS DASHBOARD standalone Link + numbered
+// step box. Used by the tour root, import, assets, and template pages.
 //
-// Previously this nav was copy-pasted inline across the 4 surfaces. Extracted
-// June 2026 so step/active-state changes hit one file instead of four.
+// LAYOUT CONTRACT: this component returns TWO sibling elements as a Fragment
+// (the GIGS DASHBOARD Link and the 3-step box). It MUST be rendered inside a
+// flex container with three direct children — typically `[title block]
+// <TourPageNav /> [auto-resolves to GIGS link + box]`. The parent should set
+// `display: flex, justifyContent: "space-between"` so the title pins left,
+// the box pins right, and GIGS DASHBOARD floats at the midpoint. Add
+// `flexWrap: "wrap"` for narrow-width safety. Returning a Fragment couples
+// this component to its parent's row contract by design — the alternative
+// (centering both nav elements together) creates the bunched cluster we
+// explicitly moved away from.
 
 import Link from "next/link";
 
@@ -43,8 +48,8 @@ function itemStyle(isActive: boolean): React.CSSProperties {
 
 export function TourPageNav({ tourId, active }: Props) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-      <Link href={`/dashboard/tours/${tourId}`} style={itemStyle(active === "gigs")}>
+    <>
+      <Link href={`/dashboard/tours/${tourId}`} style={{ ...itemStyle(active === "gigs"), border: "3px solid var(--hw-border-strong)" }}>
         GIGS DASHBOARD
       </Link>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
@@ -58,6 +63,6 @@ export function TourPageNav({ tourId, active }: Props) {
           3. DESIGN TEMPLATE
         </Link>
       </div>
-    </div>
+    </>
   );
 }
