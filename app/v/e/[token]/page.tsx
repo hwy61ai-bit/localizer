@@ -36,7 +36,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists, manager_name, manager_email, manager_phone, tour_manager_name, tour_manager_email, tour_manager_phone, booking_agent_name, booking_agent_email, booking_agent_phone, publicist_name, publicist_email, publicist_phone, team_extra")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists, manager_name, manager_email, manager_phone, tour_manager_name, tour_manager_email, tour_manager_phone, booking_agent_name, booking_agent_email, booking_agent_phone, publicist_name, publicist_email, publicist_phone, team_extra, meta_business_id")
     .eq("id", (tour as any).artist_id)
     .single();
 
@@ -226,6 +226,21 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             ))}
           </div>
         </div>
+
+        {/* Marketing — only renders when an artist has set a Meta Business Manager ID */}
+        {a?.meta_business_id && (
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Marketing</div>
+            <div style={{ padding: 16, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)" }}>
+              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", color: "var(--hw-text-muted)", textTransform: "uppercase", marginBottom: 12 }}>
+                Meta Business Manager ID
+              </div>
+              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, lineHeight: 1.1, color: "var(--hw-text)", letterSpacing: "1.5px" }}>
+                {a.meta_business_id}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Team — label "Team" awaiting Tim sign-off */}
         <TeamContacts label="Team" artist={a} />

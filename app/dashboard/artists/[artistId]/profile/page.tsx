@@ -14,6 +14,7 @@ type ArtistData = {
   name: string;
   bio: string | null;
   spotify_url: string | null;
+  meta_business_id: string | null;
   logo_url: string | null;
   image_url: string | null;
   manager_name: string | null;
@@ -1497,6 +1498,62 @@ export default function ArtistProfilePage() {
           >
             + ADD LINK
           </button>
+        </div>
+
+        {/* ══════ Marketing ══════ */}
+        <div style={{
+          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
+          padding: 28, marginBottom: 20,
+        }}>
+          <style dangerouslySetInnerHTML={{ __html: `
+            .marketing-help-link { transition: color 0.15s ease; }
+            .marketing-help-link:hover { color: var(--hw-crimson); }
+          ` }} />
+          <SectionLabel>Marketing</SectionLabel>
+          <div style={{ maxWidth: 480 }}>
+            <input
+              value={artist.meta_business_id || ""}
+              onChange={(e) => updateField("meta_business_id", e.target.value)}
+              placeholder="Paste your Meta Business Manager ID"
+              style={{
+                fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "0.5px",
+                color: "var(--hw-text-secondary)", width: "100%", padding: "8px 0",
+                border: "none", borderBottom: "1px solid var(--hw-border)", outline: "none",
+                background: "transparent",
+              }}
+            />
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: 6 }}>
+              Used to connect your ad campaigns to your venue links and promo assets.
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 18 }}>
+              <a
+                href="https://www.facebook.com/business/help/1181250022022158?id=180505742745347"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="marketing-help-link"
+                style={{
+                  fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700,
+                  letterSpacing: "1.5px", color: "var(--hw-text-muted)",
+                  textTransform: "uppercase" as const, textDecoration: "none",
+                }}
+              >
+                How to find your Meta Business Manager ID →
+              </a>
+              <a
+                href="https://www.facebook.com/business/help/915885887059947"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="marketing-help-link"
+                style={{
+                  fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700,
+                  letterSpacing: "1.5px", color: "var(--hw-text-muted)",
+                  textTransform: "uppercase" as const, textDecoration: "none",
+                }}
+              >
+                Instructions for requesting Meta ad account access →
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* ══════ Socials ══════ */}
