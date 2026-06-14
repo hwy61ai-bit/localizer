@@ -82,7 +82,7 @@ function buildTextLayer(font: string, size: number, text: string, color: string,
   
   // Custom fonts (with colons) don't support weight modifiers like _bold
   const isCustomFont = font.includes(":");
-  const cleanFont = font.replace(/ /g, "_");
+  const cleanFont = font.replace(/ /g, "%20");
   
   if (isCustomFont) {
     // Custom fonts: no _bold modifier (the font file IS the weight)
@@ -132,7 +132,7 @@ function buildCloudinaryUrl(
   // Check if it's a custom font, otherwise use standard font with underscores
   const font = customFontsMap.has(fontFamily) 
     ? customFontsMap.get(fontFamily)! 
-    : fontFamily.replace(/ /g, "_");
+    : fontFamily.replace(/ /g, "%20");
   const color = cfg.textColor ?? "ffffff";
 
   // Scale font sizes for landscape (820x312 vs 1920x1080 reference)
@@ -170,7 +170,7 @@ function buildCloudinaryUrl(
   const resolvedBandFontFamily = bandFontFamily ?? fontFamily;
   const bandFont = customFontsMap.has(resolvedBandFontFamily)
     ? customFontsMap.get(resolvedBandFontFamily)!
-    : resolvedBandFontFamily.replace(/ /g, "_");
+    : resolvedBandFontFamily.replace(/ /g, "%20");
   const bandColor = cfg.bandTextColor ?? color;
   const venueColor = cfg.venueColor ?? color;
   const cityColor = cfg.cityColor ?? color;
@@ -256,7 +256,7 @@ function buildCloudinaryVideoUrl(
   const fontFamily = cfg.fontFamily ?? "Oswald";
   const font = customFontsMap.has(fontFamily) 
     ? customFontsMap.get(fontFamily)! 
-    : fontFamily.replace(/ /g, "_");
+    : fontFamily.replace(/ /g, "%20");
   const color = cfg.textColor ?? "ffffff";
 
   const venueSizeMax = cfg.venue?.size ?? 36;
@@ -291,7 +291,7 @@ function buildCloudinaryVideoUrl(
   const resolvedBandFontFamily = bandFontFamily ?? fontFamily;
   const bandFont = customFontsMap.has(resolvedBandFontFamily)
     ? customFontsMap.get(resolvedBandFontFamily)!
-    : resolvedBandFontFamily.replace(/ /g, "_");
+    : resolvedBandFontFamily.replace(/ /g, "%20");
   const bandColor = cfg.bandTextColor ?? color;
   const venueColor = cfg.venueColor ?? color;
   const cityColor = cfg.cityColor ?? color;
