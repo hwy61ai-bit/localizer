@@ -109,6 +109,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
               <ShareLinkButton />
             </div>
           </div>
+          <div style={{ height: 2, background: "var(--hw-text)", marginBottom: 20 }} />
           <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
             {formattedDate && (
               <div>
