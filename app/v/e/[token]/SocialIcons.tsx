@@ -47,7 +47,7 @@ export function ArtistSocialLinks(props: Props) {
         .artist-social-icon { transition: color 0.15s ease; }
         .artist-social-icon:hover { color: var(--hw-crimson); }
       ` }} />
-      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>
+      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", paddingBottom: 10, borderBottom: "2px solid var(--hw-text)", marginBottom: 20 }}>
         {props.label}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "center", justifyContent: "center" }}>

@@ -37,7 +37,7 @@ export function PressPlaylists(props: Props) {
         .press-playlist-pill { transition: color 0.15s ease, border-color 0.15s ease; }
         .press-playlist-pill:hover { color: var(--hw-crimson); border-color: var(--hw-crimson); }
       ` }} />
-      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>
+      <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", paddingBottom: 10, borderBottom: "2px solid var(--hw-text)", marginBottom: 20 }}>
         {props.label}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
