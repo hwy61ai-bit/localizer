@@ -103,7 +103,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 20 }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 52, letterSpacing: "2px", lineHeight: 1, textTransform: "uppercase" }}>{bandName}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
-              <a href={`/api/download-all?token=${token}`} download style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 24px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textDecoration: "none", whiteSpace: "nowrap", textTransform: "uppercase", transition: "var(--hw-ease)" }}>↓ DOWNLOAD ALL</a>
+              <a href={`/api/download-all?token=${token}`} download style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "16px 32px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-display)", fontSize: 16, letterSpacing: "3px", textDecoration: "none", whiteSpace: "nowrap", textTransform: "uppercase", transition: "var(--hw-ease)" }}>↓ DOWNLOAD ALL</a>
               <ShareLinkButton />
             </div>
           </div>
