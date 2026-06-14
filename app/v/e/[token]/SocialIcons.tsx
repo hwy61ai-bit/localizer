@@ -50,7 +50,7 @@ export function ArtistSocialLinks(props: Props) {
       <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>
         {props.label}
       </div>
-      <div style={{ display: "flex", gap: 32, alignItems: "center", justifyContent: "center" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "center", justifyContent: "center" }}>
         {items.map(({ url, label, path }) => (
           <a
             key={label}
