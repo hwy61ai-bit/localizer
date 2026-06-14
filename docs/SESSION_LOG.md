@@ -3629,3 +3629,6 @@ For Tim: "Press & Playlists" venue header text — bless or rename (grep-flagged
 
 
 June 14 (cont.) — Team feature, end to end. Added custom team members: new team_extra jsonb column on artists (nullable, matches press_playlists), profile UI with "+ ADD TEAM MEMBER" in the Team panel (custom cards in same 2-col grid as fixed roles). Venue page TeamContacts.tsx renders fixed four roles + custom members as uniform contact cards (mailto/tel links, crimson hover), placed below Advance Materials. Venue order now: Advance Materials → Team → Press & Playlists → Follow the Artist → Listen. For Tim: "Team" venue header text — grep-flagged with the other venue headers for rename.
+
+
+June 14 (cont.) — Marketing section (final profile→venue field). New meta_business_id text column on artists. Profile: "Marketing" section below Advance Materials — Meta Business Manager ID input (debounced saveFields pipeline) + helper text + two real Meta help links (find-your-ID, request-ad-access). Venue: inline Marketing card shows the ID below Advance Materials, hides when blank. Final venue order: Advance Materials → Marketing → Team → Press & Playlists → Follow the Artist → Listen. This completes the artist profile→venue pipeline. For Tim: "Marketing" venue header — grep-flagged with the others.
