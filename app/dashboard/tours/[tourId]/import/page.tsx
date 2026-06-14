@@ -211,7 +211,7 @@ export default function ImportPage() {
         {/* Header */}
         <div style={{ marginBottom: 28, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
           <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
             <div>
               <div style={{ display: "inline-block" }}>
                 <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</h1>
@@ -223,9 +223,7 @@ export default function ImportPage() {
                 date, venue, city, and email automatically.
               </div>
             </div>
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <TourPageNav tourId={tourId} active="import" />
-            </div>
+            <TourPageNav tourId={tourId} active="import" />
           </div>
         </div>
 

@@ -833,7 +833,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
           <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
             <div>
               <div style={{ display: "inline-block" }}>
                 <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", lineHeight: 1, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</div>
@@ -841,9 +841,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </div>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>DESIGN TEMPLATE</div>
             </div>
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <TourPageNav tourId={tourId} active="template" />
-            </div>
+            <TourPageNav tourId={tourId} active="template" />
           </div>
         </div>
 

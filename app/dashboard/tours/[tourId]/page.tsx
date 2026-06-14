@@ -70,15 +70,13 @@ export default async function TourPage({ params, searchParams }: { params: Promi
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
           <Link href={tour.artist_id ? `/dashboard/artists/${tour.artist_id}?tab=localizer` : "/dashboard"} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK</Link>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
             <div>
               <h1 style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", margin: 0, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</h1>
               <div style={{ borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 6 }} />
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)", margin: 0 }}>GIGS</div>
             </div>
-            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-              <TourPageNav tourId={tourId} active="gigs" />
-            </div>
+            <TourPageNav tourId={tourId} active="gigs" />
           </div>
         </div>
 

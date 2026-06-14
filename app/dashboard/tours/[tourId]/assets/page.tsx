@@ -310,7 +310,7 @@ export default function AssetsPage() {
     <div className="fade-in" style={{ minHeight: "100vh", color: "var(--hw-text)" }}>
       <div className="assets-page-header" style={{ padding: "24px 28px", borderBottom: "3px solid var(--hw-border-strong)", maxWidth: 1100, margin: "0 auto" }}>
         <Link href={`/dashboard/tours/${tourId}`} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", textDecoration: "none", display: "inline-block", marginBottom: 8 }}>&larr; BACK TO TOUR</Link>
-        <div className="assets-page-header-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="assets-page-header-inner" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
           <div>
             <div style={{ display: "inline-block" }}>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px", color: "var(--hw-crimson)", lineHeight: 1, marginBottom: 4, paddingBottom: 8 }}>LOCALIZER</div>
@@ -318,9 +318,7 @@ export default function AssetsPage() {
             </div>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text)" }}>IMPORT ASSETS</div>
           </div>
-          <div className="assets-page-nav" style={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <TourPageNav tourId={tourId} active="assets" />
-          </div>
+          <TourPageNav tourId={tourId} active="assets" />
         </div>
       </div>
       <div className="assets-page-body" style={{ padding: "36px 28px", maxWidth: 1100, margin: "0 auto" }}>
