@@ -40,6 +40,7 @@ type ArtistData = {
   social_x: string | null;
   social_threads: string | null;
   social_youtube: string | null;
+  press_playlists: Array<{ id: string; label: string; url: string }> | null;
   [key: string]: unknown;
 };
 
@@ -704,6 +705,44 @@ export default function ArtistProfilePage() {
     }
   }
 
+  // ── Press & Playlists ────────────────────────────────────────
+
+  async function savePressPlaylists(arr: Array<{ id: string; label: string; url: string }>) {
+    setArtist((prev) => prev ? { ...prev, press_playlists: arr } : prev);
+    const { data, error } = await supabase
+      .from("artists")
+      .update({ press_playlists: arr })
+      .eq("id", artistId)
+      .select()
+      .maybeSingle();
+    if (error || !data) {
+      console.error("savePressPlaylists failed — RLS or validation rejected write:", error);
+      throw error || new Error("Write returned no row");
+    }
+  }
+
+  function addPressPlaylist() {
+    const current = (artist?.press_playlists as Array<{ id: string; label: string; url: string }> | null) || [];
+    const newEntry = { id: crypto.randomUUID(), label: "", url: "" };
+    void savePressPlaylists([...current, newEntry]);
+  }
+
+  function updatePressPlaylistLabel(id: string, value: string) {
+    const current = (artist?.press_playlists as Array<{ id: string; label: string; url: string }> | null) || [];
+    void savePressPlaylists(current.map((p) => p.id === id ? { ...p, label: value } : p));
+  }
+
+  function updatePressPlaylistUrl(id: string, value: string) {
+    const current = (artist?.press_playlists as Array<{ id: string; label: string; url: string }> | null) || [];
+    void savePressPlaylists(current.map((p) => p.id === id ? { ...p, url: value } : p));
+  }
+
+  async function removePressPlaylist(id: string) {
+    if (!confirm("Delete this link?")) return;
+    const current = (artist?.press_playlists as Array<{ id: string; label: string; url: string }> | null) || [];
+    await savePressPlaylists(current.filter((p) => p.id !== id));
+  }
+
   // ── Loading ──────────────────────────────────────────────────
 
   if (loading || !artist) {
@@ -1276,6 +1315,73 @@ export default function ArtistProfilePage() {
             }}
           >
             + ADD CUSTOM MATERIAL
+          </button>
+        </div>
+
+        {/* ══════ Press & Playlists ══════ */}
+        <div style={{
+          background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)",
+          padding: 28, marginBottom: 20,
+        }}>
+          <SectionLabel>Press & Playlists</SectionLabel>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {((artist.press_playlists as Array<{ id: string; label: string; url: string }> | null) || []).map((item) => (
+              <div key={item.id} style={{
+                position: "relative",
+                padding: "16px 18px",
+                background: "var(--hw-bg-surface)",
+                border: "3px solid var(--hw-border-strong)",
+              }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); void removePressPlaylist(item.id); }}
+                  style={{ position: "absolute", top: 6, right: 6, zIndex: 2, background: "var(--hw-bg-surface)", border: "2px solid var(--hw-border-strong)", color: "var(--hw-text-muted)", fontSize: 12, lineHeight: 1, width: 20, height: 20, cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-crimson)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--hw-crimson)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-text-muted)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--hw-border-strong)"; }}
+                  title="Delete this link"
+                >
+                  &times;
+                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <input
+                    value={item.label}
+                    onChange={(e) => updatePressPlaylistLabel(item.id, e.target.value)}
+                    placeholder="Label, e.g. Spotify Playlist / Pitchfork Review"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      padding: "6px 10px",
+                      fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "0.5px",
+                      color: "var(--hw-text-secondary)",
+                      border: "1px solid var(--hw-border)", outline: "none",
+                      background: "var(--hw-bg-surface)",
+                      textTransform: "uppercase" as const,
+                    }}
+                  />
+                  <input
+                    value={item.url}
+                    onChange={(e) => updatePressPlaylistUrl(item.id, e.target.value)}
+                    placeholder="Paste URL"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      padding: "6px 10px",
+                      fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "0.5px",
+                      color: "var(--hw-text-secondary)",
+                      border: "1px solid var(--hw-border)", outline: "none",
+                      background: "var(--hw-bg-surface)",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={addPressPlaylist}
+            style={{
+              width: "100%", padding: "12px", marginTop: 12,
+              border: "3px dashed var(--hw-border-light)", background: "transparent",
+              fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer",
+            }}
+          >
+            + ADD LINK
           </button>
         </div>
 
