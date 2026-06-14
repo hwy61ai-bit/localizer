@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import PrintDownloadButton from "./PrintDownloadButton";
 import ShareLinkButton from "./ShareLinkButton";
 import { ArtistSocialLinks } from "./SocialIcons";
+import { PressPlaylists } from "./PressPlaylists";
 
 export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -34,7 +35,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists")
     .eq("id", (tour as any).artist_id)
     .single();
 
@@ -99,7 +100,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
         {/* Hero */}
         <div style={{ marginBottom: 48, border: "3px solid var(--hw-border-strong)", padding: 28, background: "var(--hw-bg-surface)" }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 8 }}>Show Assets</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 8 }}>Show Assets</div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 20 }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 52, letterSpacing: "2px", lineHeight: 1, textTransform: "uppercase" }}>{bandName}</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
@@ -132,7 +133,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Photos */}
         {photoAssets.some(a => a.url) && (
           <>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Photos</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 48 }}>
           {photoAssets.map((asset) => (
             <div key={asset.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
@@ -167,7 +168,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Video */}
         {((link as any).render_tiktok_url || (link as any).render_yt_shorts_url) && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Video</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
               {[
                 { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", shape: "VERTICAL VIDEO", dims: "1080 × 1920", filename: "Vertical_Video", url: (link as any).render_tiktok_url },
@@ -197,14 +198,14 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Print Poster PDF */}
         {hasPrintPoster && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
             <PrintDownloadButton eventId={event.id} venueName={venueName} token={token} />
           </div>
         )}
 
         {/* Advance Materials */}
         <div style={{ marginBottom: 48 }}>
-          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Advance Materials</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
             {advMaterials.map((mat) => (
               mat.url ? (
@@ -225,6 +226,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           </div>
         </div>
 
+        {/* Press & Playlists — label "Press & Playlists" awaiting Tim sign-off */}
+        <PressPlaylists
+          label="Press & Playlists"
+          items={(a?.press_playlists as Array<{ id: string; label: string; url: string }> | null) ?? null}
+        />
+
         {/* Socials — section header text "Follow the Artist" awaiting Tim sign-off */}
         <ArtistSocialLinks
           label="Follow the Artist"
@@ -239,7 +246,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Spotify */}
         {spotifyEmbedUrl && (
           <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Listen</div>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Listen</div>
             <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy" style={{ border: "3px solid var(--hw-border-strong)" }} />
