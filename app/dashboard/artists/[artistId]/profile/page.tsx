@@ -1190,6 +1190,9 @@ export default function ArtistProfilePage() {
           }}
         >
           <SectionLabel>Team</SectionLabel>
+          <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: -6, marginBottom: 16 }}>
+            Include all team members you want shared with promoters.
+          </div>
           {teamImportMsg && (
             <div style={{ marginBottom: 10, padding: "8px 14px", background: teamImportMsg.startsWith("Updated") ? "var(--hw-green-ghost)" : teamImportMsg.startsWith("Reading") ? "var(--hw-bg)" : "var(--hw-red-ghost)", border: teamImportMsg.startsWith("Updated") ? "2px solid var(--hw-green-border)" : teamImportMsg.startsWith("Reading") ? "2px solid var(--hw-border-strong)" : "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: teamImportMsg.startsWith("Updated") ? "var(--hw-green)" : teamImportMsg.startsWith("Reading") ? "var(--hw-text-muted)" : "var(--hw-crimson)" }}>
               {teamImportMsg}
