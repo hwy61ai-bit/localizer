@@ -3614,3 +3614,18 @@ Deletion solved (DB layer). Step 0 schema ground-truth run; 12-statement CASCADE
 
 
 June 12, addendum — deleteOrg routine BUILT AND PROVEN. lib/admin/deleteOrg.ts + /api/admin/delete-org (dual-gated: admin session + bearer secret; dev allows bearer-only, fcdf96a). Phases: protected-org refusal → owner-email confirm → manifest capture → audit insert → single cascade DELETE → Cloudinary/Storage/auth cleanup with per-item error capture. dryRun defaults true. deleted_orgs_audit table live. Proven end to end on testicles org: 1 Cloudinary asset deleted + verified gone from Media Library, DB zeros, auth user removed, audit row written. testx also deleted (DB+auth; no files remained). Key recon win: venue_links render URLs are derived — no separate cleanup needed. Remaining test orgs: testcorkys, testalex (delete anytime via routine); test2026 retained for QA.
+
+
+June 14 — Venue page polish + Press & Playlists feature. Venue link page: reordered sections (Photo → Video → Print Poster); added HWY61 LABS / LOCALIZER masthead wordmark to header; fixed social icons overflow at 375px (flexWrap); enlarged hero buttons + centered Share label (was left-aligned bug). New feature — Press & Playlists: new press_playlists jsonb column on artists (flexible {id,label,url} array, mirrors adv_custom_materials); profile UI section below Advance Materials with +ADD LINK; venue-page hybrid display (PressPlaylists.tsx) — Spotify URLs embed as live players, other links render as crimson-hover pills with simple-icons glyphs. Placed below Advance Materials, above Follow the Artist. Bumped all 8 blue section headers 13→16px. All verified on prod. For Tim: "Press & Playlists" venue header text (grep-flagged, same as "Follow the Artist") — bless or rename.
+
+
+June 14 — Venue page overhaul, Press & Playlists feature, link-preview branding.
+
+Comps: rick@ninemilerecords.com set to Agency/active (done); Tony runbook saved at docs/COMP_TONY_RUNBOOK.md for when he signs in.
+Venue link page polish: section reorder (Photo→Video→Print Poster); HWY61 LABS / LOCALIZER masthead wordmark in header; social icons 375px overflow fixed (flexWrap); hero buttons enlarged + Share label centered (was left-aligned bug); all 8 blue section headers bumped 13→16px.
+NEW FEATURE — Press & Playlists: press_playlists jsonb column on artists (flexible {id,label,url} array); profile UI section below Advance Materials with +ADD LINK; venue hybrid display (PressPlaylists.tsx) — Spotify URLs embed as live players, other links render as crimson-hover pills (simple-icons glyphs). Placed below Advance Materials, above Follow the Artist.
+Link previews: favicon.ico replaced with app/icon.tsx; app/opengraph-image.tsx renders Warhol card (Bebas Neue via Satori font-fetch, halftone dot field, HWY61 LABS + LOCALIZER lockup) so shared links show brand not Vercel triangle; metadataBase set in layout.tsx.
+For Tim: "Press & Playlists" venue header text — bless or rename (grep-flagged like "Follow the Artist").
+
+
+June 14 (cont.) — Team feature, end to end. Added custom team members: new team_extra jsonb column on artists (nullable, matches press_playlists), profile UI with "+ ADD TEAM MEMBER" in the Team panel (custom cards in same 2-col grid as fixed roles). Venue page TeamContacts.tsx renders fixed four roles + custom members as uniform contact cards (mailto/tel links, crimson hover), placed below Advance Materials. Venue order now: Advance Materials → Team → Press & Playlists → Follow the Artist → Listen. For Tim: "Team" venue header text — grep-flagged with the other venue headers for rename.
