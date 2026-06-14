@@ -3632,3 +3632,37 @@ June 14 (cont.) — Team feature, end to end. Added custom team members: new tea
 
 
 June 14 (cont.) — Marketing section (final profile→venue field). New meta_business_id text column on artists. Profile: "Marketing" section below Advance Materials — Meta Business Manager ID input (debounced saveFields pipeline) + helper text + two real Meta help links (find-your-ID, request-ad-access). Venue: inline Marketing card shows the ID below Advance Materials, hides when blank. Final venue order: Advance Materials → Marketing → Team → Press & Playlists → Follow the Artist → Listen. This completes the artist profile→venue pipeline. For Tim: "Marketing" venue header — grep-flagged with the others.
+
+
+## June 14, 2026 — Profile→venue pipeline complete + video font bug fixed
+
+### Comps (per Tim)
+- rick@ninemilerecords.com → Agency/active (done). tony@keeledscales.com runbook saved at docs/COMP_TONY_RUNBOOK.md, run when he first logs in.
+
+### Venue link page — major polish + 4 new sections
+- Section reorder: Photo → Video → Print Poster.
+- HWY61 LABS / LOCALIZER masthead wordmark in header (48px, clickable).
+- Social icons 375px overflow fixed (flexWrap).
+- Hero buttons enlarged + Share label centered (was left-aligned bug).
+- All 8 blue section headers bumped 13→16px.
+- NEW: Press & Playlists — press_playlists jsonb column on artists ({id,label,url} array); profile UI below Advance Materials with +ADD LINK; venue hybrid display (PressPlaylists.tsx) — Spotify URLs embed as live players, others render as crimson-hover pills.
+- NEW: Team — team_extra jsonb column for custom members; profile "+ ADD TEAM MEMBER" (custom cards match fixed-role grid size); venue TeamContacts.tsx renders 4 fixed roles + custom members as contact cards (mailto/tel links).
+- NEW: Marketing — meta_business_id text column; profile section (Meta BMID input + 2 Meta help links: find-ID = facebook.com/business/help/1181250022022158, request-access = facebook.com/business/help/915885887059947); venue shows the ID below Advance Materials, hides if blank.
+- Final venue order: Advance Materials → Marketing → Team → Press & Playlists → Follow the Artist → Listen.
+
+### Link previews (OG image + favicon)
+- Replaced favicon.ico with app/icon.tsx; app/opengraph-image.tsx renders Warhol card (Bebas Neue via Satori font-fetch, halftone dot field, HWY61 LABS + LOCALIZER lockup). metadataBase set in layout.tsx. Shared links now show brand, not Vercel triangle.
+
+### Video font bug — LAUNCH BLOCKER, fixed (918947e)
+- Symptom: venue-link videos failed (502, black player) for tours using a multi-word built-in font on the band/text line.
+- Root cause: buildTextLayer + 4 caller sites replaced spaces in font names with "_", but Cloudinary parses "_" as the font/size/weight delimiter — "Fjalla_One_128_bold" 400'd the entire transformation.
+- Fix: replace spaces with "%20" in all 5 sites. Confirmed by direct Cloudinary URL tests (underscore 400s, %20 works) for Fjalla One AND Barlow Condensed — not font-specific.
+- Why latent: single-word fonts (Oswald default) and custom-uploaded fonts (colon public IDs) were always unaffected, so the bug only surfaced when an artist picked a multi-word built-in font.
+- Affected tours need RE-RENDER (broken URLs are baked into venue_links.render_*_url): 2b187e5c (Hollow Forks) done/verified; 7cb2596f (Kurt, Barlow Condensed) — emailed Kurt to re-render.
+- BACKLOG: centralize font-name URL encoding inside buildTextLayer (currently duplicated across 5 sites — that duplication is how this bug class recurs).
+
+### Still open / next
+- press@hwy61labs.com alias (5 min, never created).
+- Delete remaining test orgs testcorkys + testalex via deleteOrg (one curl each); +test2026 retained.
+- Re-upload current LAUNCH_PROGRESS/SESSION_LOG/BACKLOG to the Project so the snapshot stops lagging.
+- Tim batch: "Press & Playlists" / "Team" / "Marketing" venue header text (grep-flagged for rename).
