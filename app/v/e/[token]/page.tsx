@@ -164,14 +164,6 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           </>
         )}
 
-        {/* Print Poster PDF */}
-        {hasPrintPoster && (
-          <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
-            <PrintDownloadButton eventId={event.id} venueName={venueName} token={token} />
-          </div>
-        )}
-
         {/* Video */}
         {((link as any).render_tiktok_url || (link as any).render_yt_shorts_url) && (
           <div style={{ marginBottom: 48 }}>
@@ -199,6 +191,14 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Print Poster PDF */}
+        {hasPrintPoster && (
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Print Poster (PDF)</div>
+            <PrintDownloadButton eventId={event.id} venueName={venueName} token={token} />
           </div>
         )}
 
