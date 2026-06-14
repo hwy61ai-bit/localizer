@@ -92,7 +92,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         {/* Header */}
         <div style={{ padding: "24px 0 20px", borderBottom: "3px solid var(--hw-border-strong)", marginBottom: 32, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <a href="/" target="_blank" rel="noopener" style={{ textDecoration: "none" }}>
-            <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 28, letterSpacing: "4px" }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span></span>
+            <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 48, letterSpacing: "2px", lineHeight: 0.9 }}><span style={{ color: "var(--hw-crimson)" }}>HWY61</span><span style={{ color: "#111111" }}> LABS</span><span style={{ color: "var(--hw-text-muted)" }}> / </span><span style={{ color: "var(--hw-crimson)" }}>LOCALIZER</span></span>
           </a>
           <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-text-muted)", letterSpacing: "4px", textTransform: "uppercase" }}>Official Asset Kit</span>
         </div>
