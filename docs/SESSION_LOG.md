@@ -3666,3 +3666,44 @@ June 14 (cont.) — Marketing section (final profile→venue field). New meta_bu
 - Delete remaining test orgs testcorkys + testalex via deleteOrg (one curl each); +test2026 retained.
 - Re-upload current LAUNCH_PROGRESS/SESSION_LOG/BACKLOG to the Project so the snapshot stops lagging.
 - Tim batch: "Press & Playlists" / "Team" / "Marketing" venue header text (grep-flagged for rename).
+
+
+## June 14, 2026 (cont.) — Venue polish, Marketing fixes, tour-nav refactor, video bug
+
+### Marketing section (venue card)
+- Label → "Artist Meta Business Manager ID". ID in its own bordered box; caption "To Request Ad Access to Artist Socials"; gray divider; crimson link "Instructions for requesting Meta ad account access →" (facebook.com/business/help/915885887059947).
+- Fixed 375px overflow: long Meta ID wraps inside box (wordBreak break-all, box fills width, font 32→28).
+
+### Venue page editorial polish
+- Black 2px ink rule under all 9 section headers (excluded "Show Assets" hero eyebrow).
+- Black rule in hero between band name and date/venue/location.
+
+### Profile: Team helper text
+- Added "Include All Team Members You Want Shared With Promoters" under the TEAM section rule.
+
+### Tour nav — extracted + restructured (TourPageNav)
+- Per Tim/Don: "4. GIGS" was confusing (accessed out of order). Relabeled "GIGS DASHBOARD", pulled OUT of the numbered box.
+- EXTRACTED app/dashboard/tours/[tourId]/TourPageNav.tsx — was copy-pasted inline across 4 files (page.tsx, import, assets, template/TemplateEditor.tsx). Now one component, active prop drives highlight.
+- Layout: returns a Fragment so the outer row has 3 direct children — title (left) / GIGS DASHBOARD (center) / numbered 3-step box (right), justify-content space-between + flexWrap. Component is now layout-coupled to its parent (documented in a comment at top of file).
+- Inactive GIGS DASHBOARD button now has a black outline (3px border-strong) so it stands out; active stays inverted/filled. Box items unchanged.
+
+### Video font bug (LAUNCH BLOCKER, fixed — commit 918947e)
+- Multi-word built-in fonts (Fjalla One, Barlow Condensed) emitted with "_" instead of "%20"; Cloudinary parses "_" as delimiter → 400'd the whole video transformation. Fixed across 5 sites in app/api/renders/generate/route.ts. Hollow Forks (2b187e5c) re-rendered/verified; Kurt (7cb2596f) emailed to re-render himself.
+
+### ⚠️ Git discipline lesson (cost time 3× today)
+- zsh treats [tourId] brackets as a glob → `git add "...[tourId]/file.tsx"` can silently fail to stage. ALSO: committing one named file while other changes are pending leaves siblings uncommitted. RULE going forward: git status → git add -A → commit → push → git status (confirm clean). The trailing git status caught uncommitted files three times today.
+
+### Still open / next
+- press@hwy61labs.com alias (5 min).
+- Delete test orgs testcorkys + testalex via deleteOrg (test2026 retained).
+- Re-upload LAUNCH_PROGRESS / SESSION_LOG / BACKLOG to the Project (snapshot lagging).
+- Confirm Kurt re-rendered his tour.
+- Tim batch: bless/rename venue headers (Marketing, Team, Press & Playlists, Follow the Artist); attorney items 1-3.
+
+### BACKLOG (post-launch tech debt flagged today)
+- Extract VenueSectionHeader component (9 headers inline across 4 files).
+- Extract shared hero-button style (page.tsx + ShareLinkButton.tsx duplicate).
+- Centralize font-name URL encoding inside buildTextLayer (5 sites — caused the video bug).
+- Per-field "show on venue page" privacy toggle for Team contacts.
+- Per-show OG images via next/og.
+- TourPageNav is now layout-coupled to parent (Fragment contract) — acceptable, but note if it causes friction later.

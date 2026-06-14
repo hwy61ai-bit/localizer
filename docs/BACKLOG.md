@@ -418,7 +418,7 @@ Both also use the wrong "20%" annual figure (correct is ~17%, as documented in t
 
 ---
 
-## 🧹 Code hygiene queue (11)
+## 🧹 Code hygiene queue (14)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -544,6 +544,42 @@ Pre-existing noise: on the artist page, a fetch hits `/api/tourrouter/tours` and
 ### Venue hero buttons — duplicate inline style objects across two files
 
 Venue hero buttons (DOWNLOAD ALL in `app/v/e/[token]/page.tsx` + `ShareLinkButton.tsx`) carry duplicate inline style objects across two files — they drifted-risk on any future size/style change. Extract a shared `lib/ui/heroButtonStyle.ts` constant. Low priority, cosmetic-debt only.
+
+---
+
+### Extract VenueSectionHeader component — 9 inline headers across 4 files
+
+Every section header on the venue link page (Photos, Video, Print Poster, Advance Materials, Marketing, Listen in `app/v/e/[token]/page.tsx`; Team in `TeamContacts.tsx`; Press & Playlists in `PressPlaylists.tsx`; Follow the Artist in `SocialIcons.tsx`) uses an identical inline `<div>` carrying the same 6-property style block (mono 16px / 4px letterSpacing / `var(--hw-blue)` / uppercase / `paddingBottom: 10` / `borderBottom: 2px solid var(--hw-text)` / `marginBottom: 20`). Drift risk: every future tuning pass — size bump, color tweak, rule-thickness change — has to find all 9 sites and apply identically. The bumped fontSize 13 → 16 batch and the 2px ink-rule batch were both shipped this way (replace_all on a unique substring), which worked but won't scale.
+
+**Fix:** create `app/v/e/[token]/VenueSectionHeader.tsx` exporting a `<VenueSectionHeader label="Photos" />` component. Replace each of the 9 inline divs with the component. Bonus: the hero "Show Assets" eyebrow at `page.tsx:104` (different `marginBottom: 8`, no rule) stays inline because it's a different visual role — don't conflate it. Low priority, cosmetic-debt only.
+
+**Originated:** June 14, 2026, after a second consecutive launch-week batch tuned all 9 headers in lockstep.
+
+---
+
+### Centralize font-name encoding inside buildTextLayer — 5-site duplication
+
+In `app/api/renders/generate/route.ts`, the space-to-`%20` conversion for non-custom font names runs at **5 sites**: the central encoder inside `buildTextLayer` (line 85, applied to every text layer) AND four caller-side pre-encodes (lines 135 / 173 / 259 / 294, where image/video URL builders pre-encode the font before passing it to `buildTextLayer`). The caller-side replaces are redundant — buildTextLayer's own line-85 replace would handle the encoding if the callers passed raw names. They exist for historical reasons (pre-existing pattern).
+
+**Why it matters:** the Fjalla One launch-blocker bug lived latent because the encoding logic was distributed across 5 sites — fixing it required a careful `replace_all` substring + visual check to ensure no other space-to-underscore conversion was missed. With one canonical encoder, any future Cloudinary URL grammar change (or a switch from `%20` to something else) is a single-line edit.
+
+**Fix:** remove the 4 caller-side `.replace(/ /g, "%20")` calls. Let `customFontsMap.get(name)` fall through to `buildTextLayer` with the raw font name. `buildTextLayer` already handles encoding via line 85 and the `isCustomFont` colon-detection branch. tsc + a re-render smoke test confirms parity. Low priority — the bug is fixed, this is hygiene.
+
+**Originated:** June 14, 2026, alongside the Fjalla One fix.
+
+---
+
+### TourPageNav layout-coupling — Fragment return contract
+
+`app/dashboard/tours/[tourId]/TourPageNav.tsx` returns a Fragment with two siblings (GIGS DASHBOARD link + 3-step box), documented in a 6-line top-of-file LAYOUT CONTRACT comment. Its layout is owned by the parent flex row in each of the 4 calling pages — TourPageNav doesn't render a wrapping `<div>`, so its children participate directly in the parent's `display: flex, justifyContent: "space-between"` distribution.
+
+**Why it's acceptable today:** delivers the title-left / GIGS-DASHBOARD-center / box-right distribution Tim + Don requested without bunching. The single-place-to-change benefit of the extraction is preserved. Coupling is mild — the parent contract is one CSS property (`space-between`) and one set of siblings (title block adjacent).
+
+**Why it might bite later:** if a new layout context surfaces (e.g. rendering this nav in a vertical sidebar, or with a different parent row shape), Fragment return won't fit. The component is no longer self-contained as a layout primitive.
+
+**Refactor path (when triggered):** split into two named exports — `<TourGigsLink tourId={} active={} />` and `<TourStepsBox tourId={} active={} />` — and let each page compose them in whatever layout it wants. Each page picks up two imports instead of one, but layout decisions live at the call site where they belong. Document the new contract in TourPageNav's docstring as "deprecated, prefer the two-component path for new contexts."
+
+**Originated:** June 14, 2026, when extraction + restructure shipped.
 
 ---
 
