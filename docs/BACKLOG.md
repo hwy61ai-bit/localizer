@@ -418,7 +418,7 @@ Both also use the wrong "20%" annual figure (correct is ~17%, as documented in t
 
 ---
 
-## 🧹 Code hygiene queue (10)
+## 🧹 Code hygiene queue (11)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -541,7 +541,13 @@ Pre-existing noise: on the artist page, a fetch hits `/api/tourrouter/tours` and
 
 ---
 
-## 💭 Future ideas (3)
+### Venue hero buttons — duplicate inline style objects across two files
+
+Venue hero buttons (DOWNLOAD ALL in `app/v/e/[token]/page.tsx` + `ShareLinkButton.tsx`) carry duplicate inline style objects across two files — they drifted-risk on any future size/style change. Extract a shared `lib/ui/heroButtonStyle.ts` constant. Low priority, cosmetic-debt only.
+
+---
+
+## 💭 Future ideas (5)
 
 *Speculative post-launch work.*
 
@@ -602,6 +608,37 @@ Post-launch follow-on: sweep every delete/replace path to remove associated file
 **Why this still matters after `deleteOrg` shipped:** `deleteOrg` solves the org-wide orphan problem (CCPA/GDPR + churn cleanup). This entry tracks the per-entity orphan problem that's still live during normal app use — a user deleting one artist out of three, or swapping a logo, still leaves files behind in Cloudinary / Supabase Storage. Long-tail billing waste.
 
 **Originated:** June 11, 2026, as part of the `Org / account deletion routine` BACKLOG entry (now in `## Resolved`, shipped June 12). Carved out as its own item per the user's note that it shouldn't ride along into Resolved with the parent work.
+
+---
+
+### Per-show OG images via next/og generateMetadata on venue page
+
+Currently every venue link unfurls with the same root Warhol card from `app/opengraph-image.tsx` (HWY61 LABS / LOCALIZER lockup, OFFICIAL ASSET KIT eyebrow). Could render a per-link Open Graph image with "Band Name — Venue, City" baked into the card so an unfurled link in iMessage/Slack/Twitter shows the actual show context instead of generic brand frame.
+
+**Approach:** add `generateMetadata` to `app/v/e/[token]/page.tsx` returning `openGraph.images` pointing at a per-token dynamic OG route (e.g. `app/v/e/[token]/opengraph-image.tsx` — the Next.js per-segment convention). Route renders via `ImageResponse` with the same Bebas/cream/crimson treatment as the root card, plus band name and venue+city pulled from the token's `tour` and `event` rows (look up via `supabaseAdmin` keyed on `token`, same pattern as `page.tsx`).
+
+**Why not in the 30-day launch:** root OG already lands the brand visually; per-show personalization is a polish-tier conversion lever, not a launch gate. Edge runtime + Bebas font fetching are already proven in the root OG file — incremental work is just the per-token data fetch + a slightly busier layout. Revisit post-launch once link-share traffic exists and we can A/B whether the personalization moves promoter open rate.
+
+Post-launch nice-to-have.
+
+---
+
+### Per-field privacy control on venue Team contacts
+
+The venue page Team section (shipped June 14 — `app/v/e/[token]/TeamContacts.tsx`) surfaces every populated contact field — name, email, phone — for every fixed role (Manager, Tour Manager, Booking Agent, Publicist) and every custom `team_extra` row. There is no per-field "show on venue page" toggle. The artist's only hiding mechanism today is to leave a field blank in the profile editor.
+
+This is intentional for launch (CLAUDE.md rule 9 covers financial fields, not contact fields; promoters need to reach humans), but worth flagging: an artist who wants their Manager's email visible to promoters but their phone hidden has no way to express that — they have to either show both or hide both. Same with Manager-vs-Tour-Manager visibility: an artist who treats their Manager as internal-only must leave the entire Manager card blank in the profile, which loses the TourRouter-side visibility too.
+
+**Possible refinements (pick at build time):**
+1. Per-field `visible_on_venue: boolean` toggles next to each input in the profile editor — most flexible, most UI clutter.
+2. Per-role `show_on_venue: boolean` toggle (one switch per card) — coarser, but covers the most common case of "Manager stays internal."
+3. A separate "internal notes" field per role for stuff the artist wants stored but not shared — sidesteps the toggle UI entirely.
+
+**Why deferred:** speculative. Real beta usage will tell us whether artists feel comfortable with the all-or-blank model or whether they want finer control. Per-field toggles also fragment the Team data model — worth waiting for actual demand before adding.
+
+**Originated:** June 14, 2026, as the Team venue display shipped.
+
+Post-launch refinement.
 
 ---
 
