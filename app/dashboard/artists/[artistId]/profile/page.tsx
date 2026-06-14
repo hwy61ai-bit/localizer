@@ -41,6 +41,7 @@ type ArtistData = {
   social_threads: string | null;
   social_youtube: string | null;
   press_playlists: Array<{ id: string; label: string; url: string }> | null;
+  team_extra: Array<{ id: string; role: string; name: string; email: string; phone: string }> | null;
   [key: string]: unknown;
 };
 
@@ -743,6 +744,39 @@ export default function ArtistProfilePage() {
     await savePressPlaylists(current.filter((p) => p.id !== id));
   }
 
+  // ── Team Extras ──────────────────────────────────────────────
+
+  async function saveTeamExtra(arr: Array<{ id: string; role: string; name: string; email: string; phone: string }>) {
+    setArtist((prev) => prev ? { ...prev, team_extra: arr } : prev);
+    const { data, error } = await supabase
+      .from("artists")
+      .update({ team_extra: arr })
+      .eq("id", artistId)
+      .select()
+      .maybeSingle();
+    if (error || !data) {
+      console.error("saveTeamExtra failed — RLS or validation rejected write:", error);
+      throw error || new Error("Write returned no row");
+    }
+  }
+
+  function addTeamMember() {
+    const current = (artist?.team_extra as Array<{ id: string; role: string; name: string; email: string; phone: string }> | null) || [];
+    const newEntry = { id: crypto.randomUUID(), role: "", name: "", email: "", phone: "" };
+    void saveTeamExtra([...current, newEntry]);
+  }
+
+  function updateTeamMemberField(id: string, field: "role" | "name" | "email" | "phone", value: string) {
+    const current = (artist?.team_extra as Array<{ id: string; role: string; name: string; email: string; phone: string }> | null) || [];
+    void saveTeamExtra(current.map((m) => m.id === id ? { ...m, [field]: value } : m));
+  }
+
+  async function removeTeamMember(id: string) {
+    if (!confirm("Delete this team member?")) return;
+    const current = (artist?.team_extra as Array<{ id: string; role: string; name: string; email: string; phone: string }> | null) || [];
+    await saveTeamExtra(current.filter((m) => m.id !== id));
+  }
+
   // ── Loading ──────────────────────────────────────────────────
 
   if (loading || !artist) {
@@ -1173,7 +1207,87 @@ export default function ArtistProfilePage() {
                 onChangePhone={(v) => updateField(`${role.key}_phone`, v)}
               />
             ))}
+            {((artist.team_extra as Array<{ id: string; role: string; name: string; email: string; phone: string }> | null) || []).map((member) => (
+              <div key={member.id} style={{
+                position: "relative",
+                padding: "14px 16px",
+                background: "var(--hw-bg-surface)",
+                border: "3px solid var(--hw-border-strong)",
+              }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); void removeTeamMember(member.id); }}
+                  style={{ position: "absolute", top: 6, right: 6, zIndex: 2, background: "var(--hw-bg-surface)", border: "2px solid var(--hw-border-strong)", color: "var(--hw-text-muted)", fontSize: 12, lineHeight: 1, width: 20, height: 20, cursor: "pointer", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-crimson)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--hw-crimson)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--hw-text-muted)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--hw-border-strong)"; }}
+                  title="Delete this team member"
+                >
+                  &times;
+                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <input
+                    value={member.role}
+                    onChange={(e) => updateTeamMemberField(member.id, "role", e.target.value)}
+                    placeholder="Role, e.g. Production Manager"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      padding: "8px 10px",
+                      fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700,
+                      letterSpacing: "1.5px", color: "var(--hw-text-muted)",
+                      textTransform: "uppercase" as const,
+                      background: "var(--hw-bg-surface)",
+                      border: "3px solid var(--hw-border-strong)", outline: "none",
+                      marginBottom: 4,
+                    }}
+                  />
+                  <input
+                    value={member.name}
+                    onChange={(e) => updateTeamMemberField(member.id, "name", e.target.value)}
+                    placeholder="Name"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      padding: "8px 10px", border: "3px solid var(--hw-border-strong)",
+                      fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text)",
+                      background: "var(--hw-bg-surface)", outline: "none",
+                    }}
+                  />
+                  <input
+                    value={member.email}
+                    onChange={(e) => updateTeamMemberField(member.id, "email", e.target.value)}
+                    placeholder="Email"
+                    type="email"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      padding: "8px 10px", border: "3px solid var(--hw-border-strong)",
+                      fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text)",
+                      background: "var(--hw-bg-surface)", outline: "none",
+                    }}
+                  />
+                  <input
+                    value={member.phone}
+                    onChange={(e) => updateTeamMemberField(member.id, "phone", e.target.value)}
+                    placeholder="Phone"
+                    type="tel"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      padding: "8px 10px", border: "3px solid var(--hw-border-strong)",
+                      fontFamily: "var(--hw-font-body)", fontSize: 13, color: "var(--hw-text)",
+                      background: "var(--hw-bg-surface)", outline: "none",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
+          <button
+            onClick={addTeamMember}
+            style={{
+              width: "100%", padding: "12px", marginTop: 12,
+              border: "3px dashed var(--hw-border-light)", background: "transparent",
+              fontFamily: "var(--hw-font-display)", fontSize: 14, fontWeight: 400, letterSpacing: "2px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", cursor: "pointer",
+            }}
+          >
+            + ADD TEAM MEMBER
+          </button>
         </div>
 
         {/* ══════ Advance Materials ══════ */}
