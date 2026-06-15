@@ -3707,3 +3707,12 @@ June 14 (cont.) — Marketing section (final profile→venue field). New meta_bu
 - Per-field "show on venue page" privacy toggle for Team contacts.
 - Per-show OG images via next/og.
 - TourPageNav is now layout-coupled to parent (Fragment contract) — acceptable, but note if it causes friction later.
+
+
+## June 15, 2026 — Pre-launch legal review doc for Erin (attorney)
+- Built a pre-launch legal review PDF for Erin (Tim's attorney contact): docs/legal/Localizer_Legal_Review_for_Erin.pdf. Sent to Tim to forward to Erin.
+- 7 findings, ranked. ONE genuine pre-launch blocker: 2.1 — Privacy Policy §3 understates Venue Link exposure (says "no personal info" but as of June 14 venue pages expose team contact names/emails/phones, Meta Business Manager ID, W-9/advance-material download links — third-party PII on public URLs). Proposed fix: rewrite §3 (mandatory) + tighten user rep/indemnity + per-field "show on venue page" opt-in toggle (fast-follow; asked Erin to set the pre-launch bar). This is the item that could move the June 19 date.
+- Resolved during prep: entity-name consistency. Confirmed registered entity is HWY61 LLC (per formation/EIN). Fixed all 5 copyright footers (app/page, labs, diy, tourrouter, roadapp) from "HWY61 Labs" → "HWY61 LLC" (commit d5640e0). Stripe verified correct as-is (legal name matches EIN; "HWY61 Labs" is proper brand use in display fields — no change needed).
+- DMCA: decided to ADD a §512(g) counter-notice procedure — asked Erin to supply standard language + confirm repeat-infringer policy preserves safe harbor.
+- Other flagged-for-Erin: no arbitration clause, liability-cap $0 floor for trial users, multi-state/GDPR thresholds, font/logo IP reps, "every"/data-safety marketing claims, cookie banner, indemnity carve-out.
+- NOTE for Drew: the venue-page third-party PII exposure (2.1) is a real privacy issue created by the June 14 Team/Marketing build — the per-field privacy toggle is already in BACKLOG; Erin's answer determines if it's pre-launch.
