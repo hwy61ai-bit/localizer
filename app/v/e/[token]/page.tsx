@@ -175,10 +175,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
               {[
                 { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", shape: "VERTICAL VIDEO", dims: "1080 × 1920", filename: "Vertical_Video", url: (link as any).render_tiktok_url },
                 { label: "Instagram Post / Facebook Post", shape: "SQUARE VIDEO", dims: "1080 × 1080", filename: "Square_Video", url: (link as any).render_yt_shorts_url },
-              ].filter(v => !!v.url).map((video) => (
+              ].filter(v => !!v.url).map((video) => {
+                const posterUrl = video.url.replace('/video/upload/', '/video/upload/so_0,f_jpg/');
+                return (
                 <div key={video.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
                   <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                    <video src={video.url} controls playsInline style={{ width: "100%", display: "block" }} />
+                    <video src={video.url} poster={posterUrl} controls playsInline preload="metadata" style={{ width: "100%", display: "block" }} />
                   </div>
                   <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid var(--hw-border-strong)", marginTop: "auto" }}>
                     <div>
@@ -192,7 +194,8 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                     </a>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
