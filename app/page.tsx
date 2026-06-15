@@ -375,7 +375,7 @@ export default function LocalizerProductPage() {
       {/* FOOTER */}
       <footer>
         <div className="container">
-          <p>&copy; 2026 HWY61 Labs &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link> &nbsp;&middot;&nbsp; <a href="mailto:support@hwy61labs.com">support@hwy61labs.com</a></p>
+          <p>&copy; 2026 HWY61 LLC &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link> &nbsp;&middot;&nbsp; <a href="mailto:support@hwy61labs.com">support@hwy61labs.com</a></p>
         </div>
       </footer>
     </div>

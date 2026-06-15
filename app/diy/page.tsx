@@ -388,7 +388,7 @@ export default function DIYPage() {
       {/* FOOTER */}
       <footer>
         <div className="container">
-          <p>&copy; 2026 HWY61 Labs &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link> &nbsp;&middot;&nbsp; <a href="mailto:hello@hwy61labs.com">Contact</a></p>
+          <p>&copy; 2026 HWY61 LLC &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link> &nbsp;&middot;&nbsp; <a href="mailto:hello@hwy61labs.com">Contact</a></p>
         </div>
       </footer>
     </div>

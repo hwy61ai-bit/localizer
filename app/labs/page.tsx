@@ -555,7 +555,7 @@ function Footer() {
   return (
     <footer>
       <div className="container">
-        <p>HWY61 Labs &copy; 2026 &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link></p>
+        <p>&copy; 2026 HWY61 LLC &nbsp;&middot;&nbsp; <Link href="/terms">Terms</Link> &nbsp;&middot;&nbsp; <Link href="/privacy">Privacy</Link></p>
       </div>
     </footer>
   );
