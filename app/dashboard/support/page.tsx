@@ -61,7 +61,7 @@ const FAQ_DATA: Section[] = [
       },
       {
         q: "How do I cancel?",
-        a: "You can cancel anytime from your account settings. Your data stays put \u2014 your artists, shows, and assets are all still there if you come back, and you can re-subscribe whenever you like.",
+        a: "Once you\u2019re on a paid plan, you can cancel anytime through the billing portal \u2014 go to your account page and click Manage Billing & Invoices to open it. While you\u2019re on the free trial there\u2019s nothing to cancel; it simply ends after 7 days unless you choose a plan. Either way your data stays put \u2014 your artists, shows, and assets are all still there if you come back, and you can re-subscribe whenever you like.",
       },
       {
         q: "What payment methods do you take?",
