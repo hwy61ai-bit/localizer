@@ -418,7 +418,7 @@ Both also use the wrong "20%" annual figure (correct is ~17%, as documented in t
 
 ---
 
-## 🧹 Code hygiene queue (14)
+## 🧹 Code hygiene queue (15)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -580,6 +580,18 @@ In `app/api/renders/generate/route.ts`, the space-to-`%20` conversion for non-cu
 **Refactor path (when triggered):** split into two named exports — `<TourGigsLink tourId={} active={} />` and `<TourStepsBox tourId={} active={} />` — and let each page compose them in whatever layout it wants. Each page picks up two imports instead of one, but layout decisions live at the call site where they belong. Document the new contract in TourPageNav's docstring as "deprecated, prefer the two-component path for new contexts."
 
 **Originated:** June 14, 2026, when extraction + restructure shipped.
+
+---
+
+### Remove dead RETRY / `reRenderEvent` path in EventsTable (logo-stripping latent trap)
+
+Priority: low (hygiene). Not user-reachable today.
+
+`app/dashboard/tours/[tourId]/components/EventsTable.tsx` contains a `reRenderEvent` function (~lines 451-463) and a RETRY button (~line 569) that are not currently rendered in the per-show row UI (rows show only SEND/SENT and the link button). The RETRY path hits `/api/renders/generate` with `eventId` only (no `videosOnly`), which routes image columns through the server-side `buildCloudinaryUrl` — that path has NO logo layers and overwrites the canvas-rendered URLs. If this button is ever re-exposed, it would silently strip band + sponsor logos from a show's photo assets (square/story/landscape) while the editor preview still shows the logo — a silent, promoter-facing divergence.
+
+**Action:** delete the dead RETRY button + `reRenderEvent` function, OR if RETRY is wanted back, route it through the same canvas path as Generate All (`renderPoster` → upload → `save-urls`) so logos are preserved. Do NOT simply re-expose the existing button.
+
+**Context:** the server-side `buildCloudinaryUrl` image path is "effectively dead code" per `docs/SESSION_LOG.md` (it's immediately overwritten by the canvas path in normal Generate All flow). This backlog item is the cleanup that makes that true permanently.
 
 ---
 
