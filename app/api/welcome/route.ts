@@ -4,6 +4,14 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
+  // Internal-only relay — fail closed. Require Bearer ${WELCOME_INTERNAL_SECRET};
+  // a missing env var (or empty string) treats as failure to avoid trivial undefined-match.
+  const authHeader = req.headers.get("authorization");
+  const welcomeSecret = process.env.WELCOME_INTERNAL_SECRET;
+  if (!welcomeSecret || authHeader !== `Bearer ${welcomeSecret}`) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
   const { email } = await req.json();
   if (!email) return NextResponse.json({ error: "Missing email" }, { status: 400 });
 

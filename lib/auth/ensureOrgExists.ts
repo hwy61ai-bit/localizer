@@ -70,7 +70,10 @@ export async function ensureOrgExists(supabase: SupabaseClient) {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/welcome`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.WELCOME_INTERNAL_SECRET}`,
+        },
         body: JSON.stringify({ email: user.email }),
       });
     } catch {
