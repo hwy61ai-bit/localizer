@@ -36,7 +36,7 @@ export default function ArtistDetailClient({ artistId }: { artistId: string }) {
     const result = await createTourForArtist(artistId, artistName);
     if (!result.ok) {
       if (result.error === "tour_limit") {
-        toast.error("Your plan includes 3 tours — upgrade for unlimited.");
+        toast.error("Your plan includes 5 tours — upgrade for unlimited.");
       } else if (result.error === "unauthenticated") {
         toast.error("Not logged in.");
       } else if (result.error === "no_org") {

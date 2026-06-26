@@ -15,7 +15,7 @@ type Props = {
 };
 
 const PLAN_LABELS: Record<string, string> = {
-  solo: "Solo",
+  indie: "Indie",
   pro: "Pro",
   agency: "Agency",
 };

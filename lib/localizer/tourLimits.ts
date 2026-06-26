@@ -3,15 +3,15 @@ import type { LocalizerTier } from "@/lib/stripe/localizerPrices";
 /**
  * Per-tier tour-count limits. Single source of truth.
  * null = unlimited.
- * Trial users get the Solo limit.
+ * Trial users get the Indie limit.
  */
 export const TOUR_LIMITS: Record<LocalizerTier, number | null> = {
-  solo: 3,
+  indie: 5,
   pro: null,
   agency: null,
 };
 
-export const TRIAL_TOUR_LIMIT = TOUR_LIMITS.solo; // trial = Solo (3)
+export const TRIAL_TOUR_LIMIT = TOUR_LIMITS.indie; // trial = Indie (5)
 
 /**
  * Resolve the tour limit for an org given its Localizer plan.

@@ -335,7 +335,7 @@ export default function LocalizerProductPage() {
               <Link href="/login" className="btn btn-secondary">Start Free</Link>
             </div>
             <div className="pricing-card">
-              <div className="plan-name">Solo</div>
+              <div className="plan-name">Indie</div>
               <div className="plan-price">$19</div>
               <div className="plan-period">Per Month</div>
               <p className="plan-desc">1 artist.</p>

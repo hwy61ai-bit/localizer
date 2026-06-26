@@ -3,13 +3,13 @@
  * Captured from Stripe live mode on June 26, 2026 per Tim's pricing
  * decision, replacing the May 23 set. See
  * docs/LOCALIZER_PRICING_DECISION_2026-05-23.md for the prior context.
- * Outer keys ("solo"/"pro"/"agency") remain unchanged; the entry tier
- * is now displayed as "Indie" externally — internal rename is a
- * separate follow-up.
+ * Outer keys ("indie"/"pro"/"agency") match the customer-facing tier
+ * names. The entry tier was previously keyed "solo" internally — that
+ * rename landed alongside this price set.
  */
 
 export const LOCALIZER_PRICE_MAP = {
-  solo: {
+  indie: {
     monthly: "price_1TmcFfC5CrGA8Ee0L4YFfEF7",
     annual: "price_1TmcFsC5CrGA8Ee0O66rJ4ID",
   },
@@ -23,7 +23,7 @@ export const LOCALIZER_PRICE_MAP = {
   },
 } as const;
 
-export type LocalizerTier = "solo" | "pro" | "agency";
+export type LocalizerTier = "indie" | "pro" | "agency";
 export type BillingPeriod = "monthly" | "annual";
 
 /**
@@ -40,7 +40,7 @@ export function isLocalizerPriceId(priceId: string): boolean {
 }
 
 /**
- * Given a Stripe price ID, return the tier name ("solo"|"pro"|"agency")
+ * Given a Stripe price ID, return the tier name ("indie"|"pro"|"agency")
  * or null if unknown. For Day 2 webhook handler use.
  */
 export function tierFromPriceId(priceId: string): LocalizerTier | null {
