@@ -9,6 +9,10 @@ import { useToast } from "@/app/components/Toast";
 import { renderPoster, formatDateForRender } from "@/lib/clientRender";
 import "./template-editor.css";
 import CropModal from "./CropModal";
+import {
+  FORMATS as FORMAT_CATALOG,
+  type FormatKey as CatalogFormatKey,
+} from "@/lib/localizer/formats";
 
 const FONTS = [
   { label: "Oswald", value: "Oswald" },
@@ -31,8 +35,8 @@ const FONTS = [
 
 type FieldKey = "date" | "venue" | "city" | "customText1" | "customText2";
 type BaseFieldKey = "date" | "venue" | "city";
-type FormatKey = "square" | "story" | "landscape" | "print" | "tiktok" | "yt_shorts";
-type CropFormatKey = "square" | "story" | "landscape" | "print";
+type FormatKey = CatalogFormatKey;
+type CropFormatKey = Extract<FormatKey, "square" | "story" | "landscape" | "print">;
 type Align = "left" | "center" | "right";
 
 type FieldConfig = { x: number; y: number; size: number; align?: Align };
@@ -115,12 +119,12 @@ function defaultShowField(formatKey: FormatKey): boolean {
 }
 
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
-  { key: "square",    label: "Square",        w: 1080, h: 1080 },
-  { key: "story",     label: "Vertical",      w: 1080, h: 1350 },
-  { key: "landscape", label: "FB Cover",      w: 820,  h: 312 },
-  { key: "print",     label: "LOCAL POSTER FOR PRINT", w: 3300, h: 5100 },
-  { key: "tiktok",    label: "Vertical Video", w: 1080, h: 1920 },
-  { key: "yt_shorts", label: "Square Video", w: 1080, h: 1080 },
+  { key: "square",    label: "Square",        w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
+  { key: "story",     label: "Vertical",      w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
+  { key: "landscape", label: "FB Cover",      w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
+  { key: "print",     label: "LOCAL POSTER FOR PRINT", w: FORMAT_CATALOG.print.w, h: FORMAT_CATALOG.print.h },
+  { key: "tiktok",    label: "Vertical Video", w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
+  { key: "yt_shorts", label: "Square Video",  w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
 ];
 
 const FIELD_LABELS: Record<FieldKey, string> = {
@@ -912,8 +916,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     const pid = formatImageIds[activeFormat];
                     if (!pid) { toast.error('No image uploaded for this format.'); return; }
                     const fd: Record<string, { w: number; h: number }> = {
-                      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 },
-                      landscape: { w: 820, h: 312 }, tiktok: { w: 1080, h: 1920 }, yt_shorts: { w: 1080, h: 1080 },
+                      square:    { w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
+                      story:     { w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
+                      landscape: { w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
+                      tiktok:    { w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
+                      yt_shorts: { w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
                     };
                     const dims = fd[activeFormat] ?? fd.square;
                     const renderCrop = getFormatCrop(cropConfig, activeFormat);
