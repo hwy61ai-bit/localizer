@@ -1,7 +1,7 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: June 14, 2026*
+*Last updated: June 26, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
@@ -107,7 +107,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ✅ `/localizer` rewritten and trimmed (376 → 319 lines)
 - ✅ Six-section structure (hero, problem, solution, pricing, final CTA, footer)
 - ✅ LOCALIZER wordmark with cursor-responsive crimson shadows
-- ✅ Pricing tier names: Solo / Pro / Agency at 1 / 5 / 12 artists
+- ✅ Pricing tier names: Solo / Pro / Agency at 1 / 5 / 15 artists
 - ✅ Primary CTAs unified to "Start your free trial"
 - ✅ Nav reduced to Pricing / Sign in / Start your free trial
 - ✅ Footer contact updated to `support@hwy61labs.com`
@@ -299,6 +299,61 @@ The May 23 Free tier spec (watermark, 5-shows/mo counter, 3-format limit, custom
 
 ---
 
+## Pricing reshape (in progress — June 26)
+
+Four-phase rework of the Localizer pricing model: format-data consolidated to one source of truth, Stripe prices restructured, internal `solo` key renamed to `indie` everywhere, artist caps changed, Indie tour cap bumped. Phases 1, 2, and the tier rename shipped this session; remaining phases decided but not built.
+
+### Complete (committed + pushed June 26)
+
+- ✅ **Phase 1 — format source-of-truth consolidation.** New `lib/localizer/formats.ts` is the single canonical declaration of the six render formats (square/story/landscape/print/tiktok/yt_shorts), carrying `mediaType`, `category: "static" | "rich"`, dimensions, source column, and render column per format. Two consumers wired through: `app/api/renders/generate/route.ts` sources `RenderFormat`/`VideoFormat` types and dim records from the catalog; `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx` sources `FormatKey`, `CropFormatKey`, and dims from the catalog (labels deliberately kept local pending the copy sweep, so the catalog never reaches the UI in this phase). Commits `088f1af`, `d6ba2df`, `baa71ad`. ~18 more format-key declaration / DB-column-list sites remain unconsolidated — each future consumer migration is a one-file diff against the catalog.
+- ✅ **Phase 2 — new live Stripe prices.** Six new live-mode Stripe prices captured into `LOCALIZER_PRICE_MAP`, replacing the May 23 set. Displayed dollar amounts updated on `/pricing` and `/` to the new monthly figures (19/39/199) and matching 10× annuals (190/390/1990). Tier names and feature-bullet copy left untouched — that's the copy-sweep phase. Commit `3b93144`. Checkout, webhook, and `tierFromPriceId` continue to work tier-blind through the map; no logic changes required.
+- ✅ **Tier rename solo → indie + limit changes.** Internal entry-tier key renamed across the codebase: `LOCALIZER_PRICE_MAP` outer key, `LocalizerTier` union, `ARTIST_LIMITS`, `TOUR_LIMITS`, `TRIAL_ARTIST_LIMIT`, `TRIAL_TOUR_LIMIT`, `PLAN_LABELS`, pricing-page card name, landing-page card name. Artist caps adjusted to Indie 1, Pro 5, Agency 15 (Agency bumped from 12). Indie tour cap bumped 3 → 5; the hard-coded "3 tours" toast string in `ArtistDetailClient.tsx` updated to match. The `"3 tours"` feature bullet on the Indie pricing card is deliberately left for the copy sweep. Commit `de6dec0`. **No DB migration:** verified zero `localizer_plan = 'solo'` rows in production and no CHECK constraint on `localizer_plan` would reject the new value — code-only change, build green is the consistency proof.
+
+### Remaining (decided, not built)
+
+- ⬜ **Phase 3 — static-only gate + grayed-out-clickable upgrade UX.** Indie tier blocks video (both formats), print poster, and custom fonts. Band and sponsor logos remain ungated for all tiers; there is no transparent-PNG gate (not a feature). UI shows the gated controls present but disabled with an inline "upgrade to Pro" affordance — not hidden — so prospects see what they'd unlock. Generation path + venue page consume the `category: "static" | "rich"` predicate from `lib/localizer/formats.ts` for the tier gate. Forward-only continuity verified this session: sent venue links keep video for previously-paid orgs that downgrade; only NEW generations after a downgrade go static-only.
+- ⬜ **Copy sweep.** Mops up the strings deliberately deferred across Phases 2 and the rename: `app/pricing/page.tsx:34` FAQ body ("Solo / Pro / Agency / up to 12"), `app/pricing/page.tsx:77` `"3 tours"` feature bullet (now displays 3 even though the gate allows 5), `app/dashboard/support/page.tsx:48,52` support FAQ (Solo + 12 + old prices), `app/api/billing/trial-nudge/cron/route.ts:139` trial-nudge email HTML (Solo $29/mo). Single coordinated pass.
+- ⬜ **Agency Pro card.** Fifth tier — custom-priced, uncapped artists + tours, "contact `support@`" CTA instead of Stripe checkout. Both pricing pages currently use `repeat(4, 1fr)` grid (3 when signed in); 5-card variant needs a grid-CSS pass on `/pricing` and `/`.
+- ⬜ **Trial 7 → 14 day change.** `lib/auth/ensureOrgExists.ts:47` currently seeds `trial_ends_at = now() + 7d`. Change to 14d. One-line code change; new orgs only — existing trials run their original clock.
+
+### Tier model (final, locked June 26)
+
+| Tier | Price | Artists | Tours | Asset access |
+|---|---|---|---|---|
+| Trial | $0 · 14d | 1 | unlimited | Full (everything) |
+| Indie | $19/mo · $190/yr | 1 | 5 | Static only — 3 JPEG formats (square/story/landscape) + band/sponsor logos. No video, print poster, or custom fonts. |
+| Pro | $39/mo · $390/yr | 5 | unlimited | Everything |
+| Agency | $199/mo · $1,990/yr | 15 | unlimited | Everything (+5 seats sold now, built later) |
+| Agency Pro | custom (contact `support@`) | uncapped | unlimited | Everything |
+
+No show cap on any tier. Indie is deliberately light — asset-type gating carries the Indie-vs-Pro differentiation, not a count meter.
+
+### Tour / show limits decision (Tim, June 26)
+
+**Decision B — artists + tours, no show cap.** Indie capped at 5 tours; Pro and Agency unlimited. Shows-per-tour remains uncapped at every tier (matches the May 28 "no per-month counter" trial-model decision). Show counting was considered and rejected: it adds a meter shape that doesn't exist anywhere else in the data model, and the asset-type gate (Phase 3) already does the Indie-vs-Pro economic work. Indie tour cap bumped from 3 to 5 in the same session — three felt too pinched for one-artist managers running a spring + summer + fall + winter pattern.
+
+### Abuse-surface hardening (scoped June 26, ~3–4 hrs, awaiting Tim's go on the launch-critical tier)
+
+No rate limiting exists anywhere in code. Recon confirmed: zero `@upstash/ratelimit` import, zero `429` returns, no middleware throttle. The `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` env-var slots exist in `.env.example` (reserved during the April 9 "Unit D" spec) but the package was never installed and the wiring never written. Backlog item still open; Upstash is the natural fit given Vercel hosting.
+
+**Launch-critical (~1.25 hrs total):**
+- `/api/welcome` is an unauthenticated open email relay — accepts any `{ email }` POST and fires a Resend send from `noreply@hwy61labs.com`. Mirror the existing `CRON_SECRET` Bearer pattern → `WELCOME_INTERNAL_SECRET`, passed by `ensureOrgExists` on its server-side fetch. **~15 min.** Two file edits + one env var. Should ship before launch regardless of the rate-limit decision.
+- Rate-limit `/api/renders/approve` (1 Resend send per call, no cap today) and `/api/renders/generate` (~9 Cloudinary ops per event per call) — shared `lib/rateLimit.ts` with `orgRateLimit` / `ipRateLimit` / `tokenRateLimit` wrappers, applied at the auth-preamble seam both routes share. **~1 hr** once the helper exists (helper ~30–45 min, application ~10 min × 2).
+
+**Bonus during the same session (~10 min):**
+- `/api/tours/[tourId]/upload-image` does not verify tour ownership before the Cloudinary upload — anyone with a session can run up Cloudinary storage cost against any `tourId`. Move the `supabaseServer()` ownership check above the `cloudinary.uploader.upload_stream` call. Separate bug from rate limiting; cheap to bundle.
+
+**Fast-follow (post-launch acceptable):**
+- Rate-limit `/api/import/extract` and `/api/import/parse-w9` (Anthropic completions, authenticated). ~10 min × 2 once the helper is in place.
+- Rate-limit `/api/renders/print-pdf` (token-gated, but tokens are reusable forever — caps the high-res Cloudinary fetch + pdf-lib cost). Token + IP keying. ~15 min.
+- Signup friction: magic-link signup creates a full-access trial in one click — no captcha, no domain check, no throwaway-domain blocklist. Separate hardening pass; not bundled with rate limiting.
+
+**Notes on prior spec drift:**
+- Trial currently seeds 7 days, not 14. Will land with the Phase 3 / 14-day trial change above, not as a separate item.
+- The "~10 send" trial cap from the May 23 free-tier spec **never existed in code** — it was cut along with watermarking / per-month counter / 3-format limit when the May 28 trial model replaced the May 23 spec (already documented in the Trial model section above). Mentioning it here so future readers don't go looking for a counter that was killed before it shipped.
+
+---
+
 ## Added since the original plan
 
 Real work shipped that wasn't in the 30-day plan as written. Most of this came out of testing the original specs and finding gaps.
@@ -367,7 +422,7 @@ Deliberately deferred — not blocking launch, revisit on the timeline indicated
 
 - **Pro price review at 60 days post-launch.** Most likely change: $59 → $79 if conversion data supports it.
 - **Annual conversion prompt motion for Free users at 60–90 days.** Separate from the upgrade wall — more of a "you've been with us a while" email nudge inviting annual upgrade.
-- **Reconcile "unlimited artists" marketing copy against the new artist-count limits.** With Solo/Pro/Agency now hard-capped at 1/5/12 artists (enforced in `createArtist` as of June 4, commit `c4f5b4c`), any surviving "unlimited artists" copy in `app/labs/page.tsx` or `app/tourrouter/page.tsx` is now wrong. Verify scope first — `/labs` is the preserved portfolio (`noindex, nofollow`) and `/tourrouter` redirects to `/coming-soon` per the May 26 config — so this may be fully out-of-funnel and not block launch. If either page is reachable from the funnel, swap the copy to match the artist-count tiers.
+- **Reconcile "unlimited artists" marketing copy against the new artist-count limits.** With Indie/Pro/Agency now hard-capped at 1/5/15 artists (enforcement landed June 4 at 1/5/12, Agency bumped to 15 June 26 — see Pricing reshape section), any surviving "unlimited artists" copy in `app/labs/page.tsx` or `app/tourrouter/page.tsx` is now wrong. Verify scope first — `/labs` is the preserved portfolio (`noindex, nofollow`) and `/tourrouter` redirects to `/coming-soon` per the May 26 config — so this may be fully out-of-funnel and not block launch. If either page is reachable from the funnel, swap the copy to match the artist-count tiers.
 - **Smoke-test artist-limit enforcement on a fresh non-admin trial org.** The full path (`createArtist` server action → non-blank count → `artistLimitForPlan(null)` returns 1 → second-artist insert redirects to `/dashboard?error=artist_limit` → `ArtistLimitToast` fires the toast once and strips the param) has only been verified by build + type check, not exercised against live Supabase + Stripe. Run on a fresh signup: create artist 1 (succeeds), attempt artist 2 (blocks + toasts), confirm toast doesn't re-fire on refresh / back-nav.
 
 ---

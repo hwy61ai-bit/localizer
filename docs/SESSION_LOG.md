@@ -3716,3 +3716,43 @@ June 14 (cont.) — Marketing section (final profile→venue field). New meta_bu
 - DMCA: decided to ADD a §512(g) counter-notice procedure — asked Erin to supply standard language + confirm repeat-infringer policy preserves safe harbor.
 - Other flagged-for-Erin: no arbitration clause, liability-cap $0 floor for trial users, multi-state/GDPR thresholds, font/logo IP reps, "every"/data-safety marketing claims, cookie banner, indemnity carve-out.
 - NOTE for Drew: the venue-page third-party PII exposure (2.1) is a real privacy issue created by the June 14 Team/Marketing build — the per-field privacy toggle is already in BACKLOG; Erin's answer determines if it's pre-launch.
+
+
+## Session June 26, 2026 — Pricing reshape Phases 1-2 + tier rename; abuse surface scoped
+
+### Completed (committed + pushed)
+- [x] PHASE 1 — Format source-of-truth consolidation (3 commits: 088f1af, d6ba2df, baa71ad)
+  - Created lib/localizer/formats.ts: canonical FORMATS record keyed square/story/landscape/print/tiktok/yt_shorts, carrying label/dims/mediaType/category(static|rich)/sourceColumn/renderColumn + formatFromUploadId() + convenience arrays. NO tier vocabulary in it (rename-proof) — category is the durable pricing axis.
+  - Wired generate/route.ts to source format keys + dims from the catalog (sourcing only, behavior identical).
+  - Wired TemplateEditor.tsx format set + dims to the catalog (labels held LOCAL — no visible change; yt_shorts "YouTube Shorts"→"Square Video" label correction deliberately deferred).
+  - yt_shorts documented as legacy key = the SQUARE video (not vertical Shorts); key load-bearing, not renamed.
+- [x] PHASE 2 — Stripe price swap (commit 3b93144). New live price IDs created in Stripe (Indie/Pro/Agency, 6 new Prices, old 6 archived, Solo product renamed to Indie). Swapped IDs into localizerPrices.ts + displayed prices to 19/39/199. Confirmed Localizer price IDs are hardcoded (NOT env vars) — Vercel untouched. Old Mar env vars (BASIC/PRO/AGENCY) are abandoned-scheme dead weight; TourRouter env-var prices are separate + live.
+- [x] TIER RENAME (commit de6dec0). solo→indie everywhere (price map key, LocalizerTier, artistLimits, tourLimits, PLAN_LABELS, pricing + landing card names). Artist limits → 1/5/15. Indie tour cap 3→5 (limit + toast string). NO DB component — verified zero 'solo' rows + no CHECK constraint on localizer_plan.
+- [x] Q5 closed earlier + support FAQ cancellation copy fixed (e31b9d2); dead RETRY/reRenderEvent backlogged (133e72e).
+
+### Decisions locked this session
+- Tour/show limits (Tim, Part 1): Decision B (artists + tours). Indie = 5 tours, Pro/Agency unlimited. NO show cap any tier. Indie stays light (asset-type gating carries Indie-vs-Pro separation). DONE.
+- Indie gating: static-only = 3 JPEG formats (square/story/landscape) + logos. Blocked from video×2, print, custom fonts. NO transparent-PNG gate, NO logo gate (logos ungated all tiers).
+- Gated options to render grayed-out-but-clickable → upgrade prompt (Phase 3 build).
+
+### Abuse surface SCOPED (Tim Part 2 — needs his blocker call)
+- CORRECTION: the "~10 send" trial cap Tim believed in DOES NOT EXIST. Trial is purely time-based (currently seeds 7 days; should be 14). No send/link/render counter anywhere.
+- NO rate limiting exists anywhere in code. Upstash env slots reserved in .env.example but never wired.
+- Effort scoped: launch-critical tier = ~3-4 hrs (one session). Shared helper applies to 4 routes that share auth-preamble shape.
+- LAUNCH-BLOCKING: (1) /api/welcome is unauthenticated open email relay — 15-min fix (CRON_SECRET pattern). (2) rate-limit /api/renders/approve (email/call) + /api/renders/generate (~9 Cloudinary ops/event). ~1hr once helper written.
+- BONUS BUG: /api/tours/[tourId]/upload-image doesn't verify tour ownership before Cloudinary upload — ~10 min, bundle in.
+- FAST-FOLLOW: rate-limit import/extract + parse-w9 (Anthropic), cheaper render routes; signup friction.
+- Reply drafted to Tim with the tiered breakdown + correction. Awaiting his go on the launch-critical tier.
+
+### Not done / next session starts with
+- DECIDE next: Phase 3 (static-only gate — the real feature work) OR the abuse-surface launch-critical block (pending Tim's go).
+- Remaining decided-but-unbuilt: Phase 3 static gate, copy sweep (mops up stale "3 tours" bullet + FAQ + support page + trial-nudge email all at once), Agency Pro card, trial 7→14 day fix.
+- Two worksheets delivered to Tim this session: pricing build plan PDF, tour/show limits worksheet PDF (Part 1 answered).
+
+### Still blocked (Tim-gated, unchanged)
+- Live Stripe end-to-end verification (screen-share) — now also validates the rename writes 'indie' to DB.
+- Attorney review of ToS/Privacy items 1-3.
+- Day 12 demo video script review.
+
+### Known cosmetic mismatch (until copy sweep)
+- Indie pricing card feature bullet still says "3 tours" while gate allows 5. Invisible behind coming-soon gate. Fixed in copy sweep.
