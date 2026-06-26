@@ -330,7 +330,7 @@ export default function LocalizerProductPage() {
             <div className="pricing-card">
               <div className="plan-name">Free Trial</div>
               <div className="plan-price">$0</div>
-              <div className="plan-period">7 days</div>
+              <div className="plan-period">14 days</div>
               <p className="plan-desc">Full access. No card required.</p>
               <Link href="/login" className="btn btn-secondary">Start Free</Link>
             </div>
@@ -356,7 +356,7 @@ export default function LocalizerProductPage() {
               <Link href="/pricing" className="btn btn-secondary">Start free trial</Link>
             </div>
           </div>
-          <p className="pricing-note">Annual billing saves ~17%. Start with a 7-day free trial &mdash; no credit card required.</p>
+          <p className="pricing-note">Annual billing saves ~17%. Start with a 14-day free trial &mdash; no credit card required.</p>
         </div>
       </section>
 
@@ -367,7 +367,7 @@ export default function LocalizerProductPage() {
         <div className="container">
           <div className="section-tag">Get Started</div>
           <h2 className="section-headline">Stop making show assets by hand.</h2>
-          <p className="sub-headline" style={{ color: "var(--hw-gray)" }}>7 days free, no card required. Upload one image, get every asset for every show on every platform.</p>
+          <p className="sub-headline" style={{ color: "var(--hw-gray)" }}>14 days free, no card required. Upload one image, get every asset for every show on every platform.</p>
           <Link href="/pricing" className="btn btn-invert">Start your free trial</Link>
         </div>
       </section>

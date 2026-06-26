@@ -13,7 +13,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
  *   where the access_token arrives in the URL fragment that the
  *   server route can't see)
  *
- * New orgs start on a 7-day no-card Localizer trial via trial_ends_at
+ * New orgs start on a 14-day no-card Localizer trial via trial_ends_at
  * (now + 7d). No active localizer_plan_status is seeded — the billing
  * gate treats an unexpired trial_ends_at as paid-equivalent access, then
  * falls through to "free" after expiry. The Stripe webhook flips
@@ -44,7 +44,7 @@ export async function ensureOrgExists(supabase: SupabaseClient) {
       owner_email: user.email ?? null,
       plan: "pro",
       localizer_plan: null,
-      trial_ends_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
       localizer_enabled: true,
     })
     .select()

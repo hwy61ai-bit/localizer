@@ -23,7 +23,7 @@ type Plan = {
 const FAQS: { q: string; a: string }[] = [
   {
     q: "Do I need a credit card to start?",
-    a: "No card. Sign up with your email and you've got 7 days of everything — every feature, no commitment. If you want to keep going after that, you pick a plan. If you don't, you don't get charged, because we never had your card in the first place.",
+    a: "No card. Sign up with your email and you've got 14 days of everything — every feature, no commitment. If you want to keep going after that, you pick a plan. If you don't, you don't get charged, because we never had your card in the first place.",
   },
   {
     q: "What happens when my trial ends?",
@@ -231,7 +231,7 @@ export default function PricingPage() {
 
         {trialExpired && (
           <div className="pricing-trial-banner">
-            Your 7-day trial has ended. Choose a plan to keep access to your tours and assets.
+            Your 14-day trial has ended. Choose a plan to keep access to your tours and assets.
           </div>
         )}
 
@@ -261,7 +261,7 @@ export default function PricingPage() {
                 {plan.highlight && <div className="featured-badge">Most Popular</div>}
                 <div className="plan-name">{plan.name}</div>
                 <div className="plan-price">{plan.isFree ? "$0" : `$${price}`}</div>
-                <div className="plan-period">{plan.isFree ? "7 days" : (annual ? "Per Year" : "Per Month")}</div>
+                <div className="plan-period">{plan.isFree ? "14 days" : (annual ? "Per Year" : "Per Month")}</div>
                 <div className="plan-desc">{plan.desc}</div>
                 <div className="plan-features">
                   {plan.features.map((f) => (

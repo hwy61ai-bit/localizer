@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       subscription_data: {
-        trial_period_days: 7,
+        trial_period_days: 14,
       },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?subscribed=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,

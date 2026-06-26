@@ -41,7 +41,7 @@ const FAQ_DATA: Section[] = [
     items: [
       {
         q: "Is there a free trial?",
-        a: "Yes \u2014 and you don\u2019t need a credit card. When you sign up you get 7 days of full Localizer access, completely free. Generate as many assets as you want. When the trial ends, you pick a plan to keep going. No card up front, no surprise charge.",
+        a: "Yes \u2014 and you don\u2019t need a credit card. When you sign up you get 14 days of full Localizer access, completely free. Generate as many assets as you want. When the trial ends, you pick a plan to keep going. No card up front, no surprise charge.",
       },
       {
         q: "How much does Localizer cost?",
@@ -61,7 +61,7 @@ const FAQ_DATA: Section[] = [
       },
       {
         q: "How do I cancel?",
-        a: "Once you\u2019re on a paid plan, you can cancel anytime through the billing portal \u2014 go to your account page and click Manage Billing & Invoices to open it. While you\u2019re on the free trial there\u2019s nothing to cancel; it simply ends after 7 days unless you choose a plan. Either way your data stays put \u2014 your artists, shows, and assets are all still there if you come back, and you can re-subscribe whenever you like.",
+        a: "Once you\u2019re on a paid plan, you can cancel anytime through the billing portal \u2014 go to your account page and click Manage Billing & Invoices to open it. While you\u2019re on the free trial there\u2019s nothing to cancel; it simply ends after 14 days unless you choose a plan. Either way your data stays put \u2014 your artists, shows, and assets are all still there if you come back, and you can re-subscribe whenever you like.",
       },
       {
         q: "What payment methods do you take?",
