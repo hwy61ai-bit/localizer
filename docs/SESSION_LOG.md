@@ -3756,3 +3756,9 @@ June 14 (cont.) — Marketing section (final profile→venue field). New meta_bu
 
 ### Known cosmetic mismatch (until copy sweep)
 - Indie pricing card feature bullet still says "3 tours" while gate allows 5. Invisible behind coming-soon gate. Fixed in copy sweep.
+
+
+### June 26 (evening, post-dinner) — two more shipped
+- [x] Trial 7→14 days (commit a83d215). Both clocks changed: no-card seed (ensureOrgExists.ts:47) + Stripe checkout trial_period_days (checkout/route.ts:24). 8 copy strings updated. Cron nudge timing left untouched — windows compute relative to trial_ends_at so they auto-adjust to the 14-day clock. Forward-looking only; existing trials keep their clocks. Build clean, zero "7 day" stragglers.
+- [x] Closed /api/welcome open email relay (commit f33678e). Added WELCOME_INTERNAL_SECRET Bearer check, fail-CLOSED (missing env var → 403, no undefined-match short-circuit). Header added to the sole caller (ensureOrgExists.ts:71). Env var added to Vercel (all envs) + .env.local. VERIFIED in production: fresh signup → welcome email received, so secret matches both sides. First launch-critical abuse-surface item done.
+- Abuse-surface remaining (launch-critical, awaiting Tim's go): rate-limit helper + /renders/approve + /renders/generate limits + upload-image ownership fix.
