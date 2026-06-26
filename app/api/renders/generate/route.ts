@@ -1,23 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
+import {
+  FORMATS as FORMAT_CATALOG,
+  IMAGE_FORMATS,
+  VIDEO_FORMATS as CATALOG_VIDEO_FORMATS,
+  type FormatKey,
+} from "@/lib/localizer/formats";
 
-type RenderFormat = "square" | "story" | "landscape";
+type RenderFormat = Extract<FormatKey, "square" | "story" | "landscape">;
 
 const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
-  square:    { w: 1080, h: 1080 },
-  story:     { w: 1080, h: 1350 },
-  landscape: { w: 820, h: 312 },
+  square:    { w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
+  story:     { w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
+  landscape: { w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
 };
 
-const FORMATS: RenderFormat[] = ["square", "story", "landscape"];
+const FORMATS: RenderFormat[] = IMAGE_FORMATS as RenderFormat[];
 
-type VideoFormat = "tiktok" | "yt_shorts";
+type VideoFormat = Extract<FormatKey, "tiktok" | "yt_shorts">;
 const VIDEO_DIMS: Record<VideoFormat, { w: number; h: number }> = {
-  tiktok:    { w: 1080, h: 1920 },
-  yt_shorts: { w: 1080, h: 1080 },
+  tiktok:    { w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
+  yt_shorts: { w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
 };
-const VIDEO_FORMATS: VideoFormat[] = ["tiktok", "yt_shorts"];
+const VIDEO_FORMATS: VideoFormat[] = CATALOG_VIDEO_FORMATS as VideoFormat[];
 
 function ordinal(n: number): string {
   if (n >= 11 && n <= 13) return "TH";
