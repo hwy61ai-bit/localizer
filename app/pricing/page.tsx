@@ -70,8 +70,8 @@ const PLANS: Plan[] = [
   {
     name: "Solo",
     desc: "Perfect for a single artist or band.",
-    monthlyPrice: 29,
-    annualPrice: 290,
+    monthlyPrice: 19,
+    annualPrice: 190,
     monthlyPriceId: LOCALIZER_PRICE_MAP.solo.monthly,
     annualPriceId: LOCALIZER_PRICE_MAP.solo.annual,
     features: ["1 band", "3 tours", "AI import parser", "Venue share links", "All asset formats"],
@@ -81,8 +81,8 @@ const PLANS: Plan[] = [
   {
     name: "Pro",
     desc: "For managers handling multiple artists.",
-    monthlyPrice: 59,
-    annualPrice: 590,
+    monthlyPrice: 39,
+    annualPrice: 390,
     monthlyPriceId: LOCALIZER_PRICE_MAP.pro.monthly,
     annualPriceId: LOCALIZER_PRICE_MAP.pro.annual,
     features: ["Up to 5 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support"],
@@ -92,8 +92,8 @@ const PLANS: Plan[] = [
   {
     name: "Agency",
     desc: "For agencies and large rosters.",
-    monthlyPrice: 129,
-    annualPrice: 1290,
+    monthlyPrice: 199,
+    annualPrice: 1990,
     monthlyPriceId: LOCALIZER_PRICE_MAP.agency.monthly,
     annualPriceId: LOCALIZER_PRICE_MAP.agency.annual,
     features: ["Up to 12 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support", "Dedicated onboarding"],

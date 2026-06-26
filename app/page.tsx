@@ -336,21 +336,21 @@ export default function LocalizerProductPage() {
             </div>
             <div className="pricing-card">
               <div className="plan-name">Solo</div>
-              <div className="plan-price">$29</div>
+              <div className="plan-price">$19</div>
               <div className="plan-period">Per Month</div>
               <p className="plan-desc">1 artist.</p>
               <Link href="/pricing" className="btn btn-secondary">Start free trial</Link>
             </div>
             <div className="pricing-card featured">
               <div className="plan-name">Pro</div>
-              <div className="plan-price">$59</div>
+              <div className="plan-price">$39</div>
               <div className="plan-period">Per Month</div>
               <p className="plan-desc">Up to 5 artists.</p>
               <Link href="/pricing" className="btn btn-primary">Start free trial</Link>
             </div>
             <div className="pricing-card">
               <div className="plan-name">Agency</div>
-              <div className="plan-price">$129</div>
+              <div className="plan-price">$199</div>
               <div className="plan-period">Per Month</div>
               <p className="plan-desc">Up to 12 artists.</p>
               <Link href="/pricing" className="btn btn-secondary">Start free trial</Link>

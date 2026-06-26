@@ -1,21 +1,25 @@
 /**
  * Localizer pricing — single source of truth for Stripe price IDs.
- * Captured from Stripe live mode on May 23, 2026 per Tim's pricing
- * decision. See docs/LOCALIZER_PRICING_DECISION_2026-05-23.md.
+ * Captured from Stripe live mode on June 26, 2026 per Tim's pricing
+ * decision, replacing the May 23 set. See
+ * docs/LOCALIZER_PRICING_DECISION_2026-05-23.md for the prior context.
+ * Outer keys ("solo"/"pro"/"agency") remain unchanged; the entry tier
+ * is now displayed as "Indie" externally — internal rename is a
+ * separate follow-up.
  */
 
 export const LOCALIZER_PRICE_MAP = {
   solo: {
-    monthly: "price_1TbMyZC5CrGA8Ee0KcQmeIcH",
-    annual: "price_1TbN25C5CrGA8Ee0HidMfeeX",
+    monthly: "price_1TmcFfC5CrGA8Ee0L4YFfEF7",
+    annual: "price_1TmcFsC5CrGA8Ee0O66rJ4ID",
   },
   pro: {
-    monthly: "price_1TbN3XC5CrGA8Ee08uNktCgE",
-    annual: "price_1TbN3vC5CrGA8Ee08DBzDCHd",
+    monthly: "price_1TmcGVC5CrGA8Ee0pzBN9411",
+    annual: "price_1TmcGfC5CrGA8Ee0N81fIcd6",
   },
   agency: {
-    monthly: "price_1TbN52C5CrGA8Ee0J7geA9d6",
-    annual: "price_1TbN5RC5CrGA8Ee05RpKSBk5",
+    monthly: "price_1TmcH1C5CrGA8Ee01z9xrgJC",
+    annual: "price_1TmcHFC5CrGA8Ee0zZhVxp0n",
   },
 } as const;
 
