@@ -13,6 +13,7 @@ import {
   FORMATS as FORMAT_CATALOG,
   type FormatKey as CatalogFormatKey,
 } from "@/lib/localizer/formats";
+import { type FeatureTier } from "@/lib/localizer/tierGate";
 
 const FONTS = [
   { label: "Oswald", value: "Oswald" },
@@ -176,7 +177,7 @@ function getTransform(align: Align): string {
 
 type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string } | null;
 
-export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, orgId }: { tour: Tour; tourId: string; firstEvent: FirstEvent; allEvents: NonNullable<FirstEvent>[]; orgId: string }) {
+export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, orgId, tier }: { tour: Tour; tourId: string; firstEvent: FirstEvent; allEvents: NonNullable<FirstEvent>[]; orgId: string; tier: FeatureTier }) {
   const saved0 = (tour.overlay_config ?? {}) as Partial<Record<FormatKey, FormatConfig>>;
 
   const longestVenue = allEvents.reduce((max, e) => e.venue.length > max.length ? e.venue : max, firstEvent?.venue ?? "");

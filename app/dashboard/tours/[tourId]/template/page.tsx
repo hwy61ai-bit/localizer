@@ -1,6 +1,7 @@
 import { supabaseServer } from "@/lib/supabaseServer";
 import { notFound } from "next/navigation";
 import TemplateEditor from "./TemplateEditor";
+import { effectiveTierForFeatures } from "@/lib/localizer/tierGate";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,17 @@ export default async function TemplatePage({ params }: { params: Promise<{ tourI
 
   if (error || !tour) notFound();
 
+  const { data: orgRow } = await supabase
+    .from("orgs")
+    .select("localizer_plan, localizer_plan_status, trial_ends_at")
+    .eq("id", tour.org_id)
+    .maybeSingle();
+  const tier = effectiveTierForFeatures({
+    localizer_plan: orgRow?.localizer_plan ?? null,
+    localizer_plan_status: orgRow?.localizer_plan_status ?? null,
+    trial_ends_at: orgRow?.trial_ends_at ?? null,
+  });
+
   const { data: events } = await supabase
     .from("events")
     .select("date_iso, city, state, venue")
@@ -25,5 +37,5 @@ export default async function TemplatePage({ params }: { params: Promise<{ tourI
   const allEvents = events ?? [];
   const firstEvent = allEvents[0] ?? null;
 
-  return <TemplateEditor tour={tour} tourId={tourId} firstEvent={firstEvent} allEvents={allEvents} orgId={tour.org_id} />;
+  return <TemplateEditor tour={tour} tourId={tourId} firstEvent={firstEvent} allEvents={allEvents} orgId={tour.org_id} tier={tier} />;
 }
