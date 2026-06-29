@@ -690,7 +690,7 @@ Post-launch refinement.
 
 ---
 
-## 🧭 Decisions / deliberate non-actions (1)
+## 🧭 Decisions / deliberate non-actions (2)
 
 *Records of decisions to NOT do something. The reason matters more than the title — these are the items future readers will be tempted to "fix" without knowing why.*
 
@@ -707,6 +707,24 @@ The Indie static-only gate does NOT block the print-pdf route, by deliberate cho
 **Net:** a downgraded org's already-sent print links keep working (forward-only preserved); a never-paid Indie org never had print to set up in the first place. **Do NOT add a current-tier gate to this route** — it would break forward-only. If print cost-abuse becomes a problem, the fix is rate limiting, not tier gating.
 
 **Originated:** June 29, 2026, during the Indie static-only Phase 3 backend gate work. Forward-only behavior was an emergent property of video URL storage; print's regenerate-on-demand shape was discovered by recon to break that property if gated naïvely.
+
+---
+
+### Download routes — deliberately NOT tier-gated (Phase 3 decision, June 29)
+
+None of the five download routes get an Indie static-only tier gate. They keep their existing paid/free check (`getLocalizerAccessLevel` → 402), but no current-tier format gate is added.
+
+**Routes:** `/api/download`, `/api/download/marketing`, `/api/download-all`, `/api/download-all/marketing`, `/api/tours/[tourId]/download-format`.
+
+**Reasoning:** all five serve STORED assets (`render_*_url` columns), never regenerate. Forward-only applies:
+- Four are promoter-facing (reached via a sent venue/marketing token). A promoter has no say in the org's tier; gating would degrade a link the org already sent them. Clear forward-only — do not gate.
+- The fifth (`download-format`, the tour-wide "SHARE & DOWNLOAD FULL TOUR" action) is TM-facing and ambiguous, but resolves the same way: an Indie org that never paid has NULL rich-format columns (nothing to download), so the ONLY org that can download video here is one that generated it while Pro and later downgraded — exactly the case forward-only protects. Gating it would add zero protection (never-paid Indie has no rich assets) and only punish the downgrade case (a TM retrieving their own prior paid work).
+
+**The "Indie dashboard shouldn't show working video-download buttons" concern** is handled in the Phase 3 FRONTEND (gray out the rich-format buttons in `ShareWithMarketingButton` for Indie — same grayed-out-clickable pattern as the editor tabs), NOT by a backend gate. Frontend communicates current tier; backend honors prior paid work.
+
+**The real rich-asset enforcement** lives at generation time (`/api/renders/generate` tier gate, shipped Phase 3 step 2) and the editor gate (Phase 3 frontend) — Indie can't MAKE new rich assets. Anything downloadable already passed the generation gate when it was created. **Do NOT add current-tier gates to the download routes.**
+
+**Originated:** June 29, 2026, Phase 3 backend gate work. Same forward-only reasoning as the print-pdf non-gating decision above.
 
 ---
 
