@@ -1,7 +1,7 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: June 26, 2026*
+*Last updated: June 29, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
@@ -285,7 +285,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 
 ## Trial model (locked May 28 — replaces the May 23 watermarked Free tier)
 
-The May 23 Free tier spec (watermark, 5-shows/mo counter, 3-format limit, custom-font / video / PDF blocks, upgrade-wall modal) is **DEAD**. Replaced by a no-card 7-day trial of full Localizer access. After expiry, access falls through to "free" — downloads return 402, signed-in dashboard surfaces remain usable until the user picks a plan. The watermark, shows-per-month counter, feature gates, and upgrade-wall items below are CUT — none of them ship.
+The May 23 Free tier spec (watermark, 5-shows/mo counter, 3-format limit, custom-font / video / PDF blocks, upgrade-wall modal) is **DEAD**. Replaced by a no-card 14-day trial of full Localizer access. After expiry, access falls through to "free" — downloads return 402, signed-in dashboard surfaces remain usable until the user picks a plan. The watermark, shows-per-month counter, feature gates, and upgrade-wall items below are CUT — none of them ship.
 
 - ✅ **Trial gate reads `trial_ends_at`** — `lib/localizer/billingGate.ts` treats an unexpired `trial_ends_at` as paid-equivalent access, evaluated before the existing `paidStatuses` check (commit `8095476`, May 28).
 - ✅ **`ensureOrgExists` seeds trial-not-active** — new orgs created with `localizer_plan: null`, `localizer_plan_status: null`, `trial_ends_at = now() + 7d` (commit `67cf438`, May 28). Docstring updated.
@@ -299,22 +299,22 @@ The May 23 Free tier spec (watermark, 5-shows/mo counter, 3-format limit, custom
 
 ---
 
-## Pricing reshape (in progress — June 26)
+## Pricing reshape (Phases 1–3 complete — June 29)
 
-Four-phase rework of the Localizer pricing model: format-data consolidated to one source of truth, Stripe prices restructured, internal `solo` key renamed to `indie` everywhere, artist caps changed, Indie tour cap bumped. Phases 1, 2, and the tier rename shipped this session; remaining phases decided but not built.
+Four-phase rework of the Localizer pricing model: format-data consolidated to one source of truth, Stripe prices restructured, internal `solo` key renamed to `indie` everywhere, artist caps changed, Indie tour cap bumped. Phases 1, 2, the tier rename, and Phase 3 (the Indie static-only gate) have shipped; remaining work is the copy sweep and the Agency Pro card.
 
-### Complete (committed + pushed June 26)
+### Complete (committed + pushed, June 26–29)
 
 - ✅ **Phase 1 — format source-of-truth consolidation.** New `lib/localizer/formats.ts` is the single canonical declaration of the six render formats (square/story/landscape/print/tiktok/yt_shorts), carrying `mediaType`, `category: "static" | "rich"`, dimensions, source column, and render column per format. Two consumers wired through: `app/api/renders/generate/route.ts` sources `RenderFormat`/`VideoFormat` types and dim records from the catalog; `app/dashboard/tours/[tourId]/template/TemplateEditor.tsx` sources `FormatKey`, `CropFormatKey`, and dims from the catalog (labels deliberately kept local pending the copy sweep, so the catalog never reaches the UI in this phase). Commits `088f1af`, `d6ba2df`, `baa71ad`. ~18 more format-key declaration / DB-column-list sites remain unconsolidated — each future consumer migration is a one-file diff against the catalog.
 - ✅ **Phase 2 — new live Stripe prices.** Six new live-mode Stripe prices captured into `LOCALIZER_PRICE_MAP`, replacing the May 23 set. Displayed dollar amounts updated on `/pricing` and `/` to the new monthly figures (19/39/199) and matching 10× annuals (190/390/1990). Tier names and feature-bullet copy left untouched — that's the copy-sweep phase. Commit `3b93144`. Checkout, webhook, and `tierFromPriceId` continue to work tier-blind through the map; no logic changes required.
 - ✅ **Tier rename solo → indie + limit changes.** Internal entry-tier key renamed across the codebase: `LOCALIZER_PRICE_MAP` outer key, `LocalizerTier` union, `ARTIST_LIMITS`, `TOUR_LIMITS`, `TRIAL_ARTIST_LIMIT`, `TRIAL_TOUR_LIMIT`, `PLAN_LABELS`, pricing-page card name, landing-page card name. Artist caps adjusted to Indie 1, Pro 5, Agency 15 (Agency bumped from 12). Indie tour cap bumped 3 → 5; the hard-coded "3 tours" toast string in `ArtistDetailClient.tsx` updated to match. The `"3 tours"` feature bullet on the Indie pricing card is deliberately left for the copy sweep. Commit `de6dec0`. **No DB migration:** verified zero `localizer_plan = 'solo'` rows in production and no CHECK constraint on `localizer_plan` would reject the new value — code-only change, build green is the consistency proof.
+- ✅ **Phase 3 — Indie static-only gate + upgrade UX.** Indie tier is now enforced static-only: the three image formats (square/story/landscape) + band/sponsor logos are allowed; video (tiktok/yt_shorts), and custom fonts are blocked. **Backend enforcement** (the real protection): `lib/localizer/tierGate.ts` resolves an effective feature-tier (trial = full access; `effectiveTierForFeatures` / `isFormatAllowedForTier` / `isCustomFontAllowedForTier`); `app/api/renders/generate/route.ts` filters formats by tier with a 403 defense-in-depth; `app/api/fonts/upload/route.ts` blocks custom-font upload for Indie. Print-pdf and the download routes are **deliberately NOT gated at the route level** (documented in `docs/BACKLOG.md` decisions) — print regenerates fresh per request so route-gating would break forward-only for already-sent links; it's protected instead by the editor gate (Indie can't configure a print asset) plus rate-limiting. **Frontend UX** (grayed-but-visible, not hidden, so prospects see what they'd unlock): video-gen POST skipped client-side for Indie in `EventsTable.tsx`; locked rich-format tabs in the template editor (grayed + crimson "PRO" badge) that open a bold solid-crimson upgrade banner on click; grayed rich-format download buttons in `ShareWithMarketingButton.tsx` (PRO badge + upgrade toast); custom fonts filtered from both font pickers with the "+ Upload Custom Font" button locked (PRO badge + a font-specific crimson upgrade banner). **Forward-only preserved throughout**: already-applied custom fonts still render in preview, sent venue links keep working, and downgraded orgs are never retroactively broken — only NEW actions after a downgrade are gated. Commits `363d82c`, `4cc3af2`, `2bc82c2`, `a041f80`, `66acd2a`, `5111a87`, `129a0c9`, `73be5d0`, `17dff87`, `72b59dc`, `825311c`, `1b715bd`, `6d96b59`.
+- ✅ **Trial 7 → 14 day change.** Both trial clocks bumped to 14 days: the no-card seed (`lib/auth/ensureOrgExists.ts:47` + docstring at :16) and the Stripe checkout trial (`app/api/stripe/checkout/route.ts:24` `trial_period_days: 14`), plus 8 user-facing copy strings across the landing/pricing/support surfaces. The cron nudge timing auto-adjusts (it's relative to `trial_ends_at`). Commit `a83d215`.
 
 ### Remaining (decided, not built)
 
-- ⬜ **Phase 3 — static-only gate + grayed-out-clickable upgrade UX.** Indie tier blocks video (both formats), print poster, and custom fonts. Band and sponsor logos remain ungated for all tiers; there is no transparent-PNG gate (not a feature). UI shows the gated controls present but disabled with an inline "upgrade to Pro" affordance — not hidden — so prospects see what they'd unlock. Generation path + venue page consume the `category: "static" | "rich"` predicate from `lib/localizer/formats.ts` for the tier gate. Forward-only continuity verified this session: sent venue links keep video for previously-paid orgs that downgrade; only NEW generations after a downgrade go static-only.
 - ⬜ **Copy sweep.** Mops up the strings deliberately deferred across Phases 2 and the rename: `app/pricing/page.tsx:34` FAQ body ("Solo / Pro / Agency / up to 12"), `app/pricing/page.tsx:77` `"3 tours"` feature bullet (now displays 3 even though the gate allows 5), `app/dashboard/support/page.tsx:48,52` support FAQ (Solo + 12 + old prices), `app/api/billing/trial-nudge/cron/route.ts:139` trial-nudge email HTML (Solo $29/mo). Single coordinated pass.
 - ⬜ **Agency Pro card.** Fifth tier — custom-priced, uncapped artists + tours, "contact `support@`" CTA instead of Stripe checkout. Both pricing pages currently use `repeat(4, 1fr)` grid (3 when signed in); 5-card variant needs a grid-CSS pass on `/pricing` and `/`.
-- ⬜ **Trial 7 → 14 day change.** `lib/auth/ensureOrgExists.ts:47` currently seeds `trial_ends_at = now() + 7d`. Change to 14d. One-line code change; new orgs only — existing trials run their original clock.
 
 ### Tier model (final, locked June 26)
 
@@ -337,7 +337,7 @@ No show cap on any tier. Indie is deliberately light — asset-type gating carri
 No rate limiting exists anywhere in code. Recon confirmed: zero `@upstash/ratelimit` import, zero `429` returns, no middleware throttle. The `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` env-var slots exist in `.env.example` (reserved during the April 9 "Unit D" spec) but the package was never installed and the wiring never written. Backlog item still open; Upstash is the natural fit given Vercel hosting.
 
 **Launch-critical (~1.25 hrs total):**
-- `/api/welcome` is an unauthenticated open email relay — accepts any `{ email }` POST and fires a Resend send from `noreply@hwy61labs.com`. Mirror the existing `CRON_SECRET` Bearer pattern → `WELCOME_INTERNAL_SECRET`, passed by `ensureOrgExists` on its server-side fetch. **~15 min.** Two file edits + one env var. Should ship before launch regardless of the rate-limit decision.
+- ✅ **`/api/welcome` open email relay — CLOSED** (commit `f33688e`). Now requires a `WELCOME_INTERNAL_SECRET` Bearer token (fail-closed — missing env var returns 403), passed by `ensureOrgExists` on its server-side fetch. Smoke-tested in production.
 - Rate-limit `/api/renders/approve` (1 Resend send per call, no cap today) and `/api/renders/generate` (~9 Cloudinary ops per event per call) — shared `lib/rateLimit.ts` with `orgRateLimit` / `ipRateLimit` / `tokenRateLimit` wrappers, applied at the auth-preamble seam both routes share. **~1 hr** once the helper exists (helper ~30–45 min, application ~10 min × 2).
 
 **Bonus during the same session (~10 min):**
@@ -349,7 +349,7 @@ No rate limiting exists anywhere in code. Recon confirmed: zero `@upstash/rateli
 - Signup friction: magic-link signup creates a full-access trial in one click — no captcha, no domain check, no throwaway-domain blocklist. Separate hardening pass; not bundled with rate limiting.
 
 **Notes on prior spec drift:**
-- Trial currently seeds 7 days, not 14. Will land with the Phase 3 / 14-day trial change above, not as a separate item.
+- Trial seed bumped to 14 days on June 27 (commit `a83d215`) — see the Pricing reshape "Complete" section above. (This note previously flagged it as pending; it's now done.)
 - The "~10 send" trial cap from the May 23 free-tier spec **never existed in code** — it was cut along with watermarking / per-month counter / 3-format limit when the May 28 trial model replaced the May 23 spec (already documented in the Trial model section above). Mentioning it here so future readers don't go looking for a counter that was killed before it shipped.
 
 ---
