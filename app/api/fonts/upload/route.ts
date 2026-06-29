@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { v2 as cloudinary } from "cloudinary";
+import { effectiveTierForFeatures, isCustomFontAllowedForTier } from "@/lib/localizer/tierGate";
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -40,21 +42,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Not a member of this org" }, { status: 403 });
     }
 
-    // Check plan - custom fonts are Pro/Agency only (admin bypass)
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    const isAdmin = authUser?.email === "hwy61ai@gmail.com" || authUser?.email === "tentenpm@gmail.com";
+    // Check plan — custom fonts are Pro/Agency only. Admin bypass via shared
+    // isAdminEmail helper. Active trial resolves to "pro" via tierGate, so
+    // trial users keep upload access (intentional — trial = full access).
+    const isAdmin = isAdminEmail(user.email);
 
     if (!isAdmin) {
-      const { data: org } = await supabase
+      const { data: orgRow } = await supabase
         .from("orgs")
-        .select("plan")
+        .select("localizer_plan, localizer_plan_status, trial_ends_at")
         .eq("id", orgId)
-        .single();
+        .maybeSingle();
 
-      if (org?.plan !== "pro" && org?.plan !== "agency") {
-        return NextResponse.json({
-          error: "Custom fonts require Pro or Agency plan. Upgrade at /pricing"
-        }, { status: 403 });
+      const tier = effectiveTierForFeatures({
+        localizer_plan: orgRow?.localizer_plan ?? null,
+        localizer_plan_status: orgRow?.localizer_plan_status ?? null,
+        trial_ends_at: orgRow?.trial_ends_at ?? null,
+      });
+
+      if (!isCustomFontAllowedForTier(tier)) {
+        return NextResponse.json(
+          { error: "Custom fonts require Pro or Agency plan. Upgrade at /pricing" },
+          { status: 403 },
+        );
       }
     }
 
