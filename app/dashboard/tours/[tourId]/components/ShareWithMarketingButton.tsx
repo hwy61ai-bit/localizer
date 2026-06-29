@@ -6,6 +6,7 @@ import HwInput from "@/app/components/hw/HwInput";
 import HwSelect from "@/app/components/hw/HwSelect";
 import HwButton from "@/app/components/hw/HwButton";
 import { useToast } from "@/app/components/Toast";
+import { type FeatureTier } from "@/lib/localizer/tierGate";
 
 interface Token {
   token: string;
@@ -23,7 +24,7 @@ function formatDate(iso: string): string {
   }
 }
 
-export default function ShareWithMarketingButton({ tourId }: { tourId: string }) {
+export default function ShareWithMarketingButton({ tourId, tier }: { tourId: string; tier: FeatureTier }) {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState("");
   const [expiration, setExpiration] = useState("never");
@@ -109,6 +110,10 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
   }
 
   async function handleDownloadFormat(format: string, label: string) {
+    if ((tier === "indie" || tier === "none") && (format === "tiktok" || format === "yt_shorts")) {
+      toast.error("Video assets require Pro. Upgrade to unlock.");
+      return;
+    }
     if (downloadingFormat) return;
     setDownloadingFormat(format);
     try {
@@ -297,6 +302,7 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
               { format: "yt_shorts", label: "Square Video",   w: 90,  h: 90 },
             ].map((f) => {
               const isLoading = downloadingFormat === f.format;
+              const locked = (tier === "indie" || tier === "none") && (f.format === "tiktok" || f.format === "yt_shorts");
               return (
                 <button
                   key={f.format}
@@ -311,11 +317,11 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
                     display: "flex", flexDirection: "column",
                     alignItems: "center", justifyContent: "center", gap: 4,
                     cursor: downloadingFormat ? "default" : "pointer",
-                    opacity: downloadingFormat && !isLoading ? 0.4 : 1,
+                    opacity: locked ? 0.4 : (downloadingFormat && !isLoading ? 0.4 : 1),
                     padding: 6, transition: "var(--hw-ease)",
                   }}
-                  onMouseEnter={(e) => { if (!downloadingFormat) { e.currentTarget.style.background = "var(--hw-crimson)"; e.currentTarget.style.color = "#fff"; } }}
-                  onMouseLeave={(e) => { if (!isLoading) { e.currentTarget.style.background = "var(--hw-bg-surface)"; e.currentTarget.style.color = "var(--hw-text)"; } }}
+                  onMouseEnter={(e) => { if (!downloadingFormat && !locked) { e.currentTarget.style.background = "var(--hw-crimson)"; e.currentTarget.style.color = "#fff"; } }}
+                  onMouseLeave={(e) => { if (!isLoading && !locked) { e.currentTarget.style.background = "var(--hw-bg-surface)"; e.currentTarget.style.color = "var(--hw-text)"; } }}
                 >
                   {isLoading ? (
                     <>
@@ -332,6 +338,17 @@ export default function ShareWithMarketingButton({ tourId }: { tourId: string })
                       <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 9, fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase", textAlign: "center", lineHeight: 1.2 }}>
                         {f.label}
                       </span>
+                      {locked && (
+                        <span style={{
+                          fontFamily: "var(--hw-font-mono)",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          letterSpacing: "0.5px",
+                          textTransform: "uppercase",
+                          color: "var(--hw-crimson)",
+                          lineHeight: 1,
+                        }}>PRO</span>
+                      )}
                     </>
                   )}
                 </button>

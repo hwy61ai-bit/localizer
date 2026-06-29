@@ -111,7 +111,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
         <div style={{ border: "3px solid var(--hw-border-strong)", overflow: "hidden", background: "var(--hw-bg-surface)" }}>
           <div style={{ padding: 16, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 12, borderBottom: "3px solid var(--hw-border-strong)" }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>EVENTS</div>
-            <ShareWithMarketingButton tourId={tourId} />
+            <ShareWithMarketingButton tourId={tourId} tier={tier} />
             <div />
           </div>
 
