@@ -5,6 +5,7 @@ import { createVenueLink } from "./events/actions";
 import EventsTable from "./components/EventsTable";
 import ShareWithMarketingButton from "./components/ShareWithMarketingButton";
 import { TourPageNav } from "./TourPageNav";
+import { effectiveTierForFeatures } from "@/lib/localizer/tierGate";
 
 type TourRow = {
   id: string; org_id: string; name: string;
@@ -42,6 +43,17 @@ export default async function TourPage({ params, searchParams }: { params: Promi
 
   const tours = (toursData ?? []) as TourRow[];
   const pinnedTabs = tours.slice(0, 4);
+
+  const { data: orgRow } = await supabase
+    .from("orgs")
+    .select("localizer_plan, localizer_plan_status, trial_ends_at")
+    .eq("id", orgId)
+    .maybeSingle();
+  const tier = effectiveTierForFeatures({
+    localizer_plan: orgRow?.localizer_plan ?? null,
+    localizer_plan_status: orgRow?.localizer_plan_status ?? null,
+    trial_ends_at: orgRow?.trial_ends_at ?? null,
+  });
 
   const { data: eventsData, error: eventsError } = await supabase
     .from("events").select("id, tour_id, date_iso, day, city, state, venue, promoter_email, manager_email, sent_at, event_index, render_status")
@@ -103,7 +115,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
             <div />
           </div>
 
-          <EventsTable events={eventRows} tourId={tourId} orgId={orgId} />
+          <EventsTable events={eventRows} tourId={tourId} orgId={orgId} tier={tier} />
 
         </div>
       </div>

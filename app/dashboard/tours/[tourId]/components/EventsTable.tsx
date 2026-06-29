@@ -6,6 +6,7 @@ import { useToast } from "@/app/components/Toast";
 
 import { useState, useRef, useEffect } from "react";
 import type React from "react";
+import { type FeatureTier } from "@/lib/localizer/tierGate";
 
 type EventRow = {
   id: string; tour_id: string; date_iso: string; day: string | null;
@@ -19,6 +20,7 @@ type Props = {
   events: EventRow[];
   tourId: string;
   orgId: string;
+  tier: FeatureTier;
 };
 
 const EDITABLE_FIELDS = ["date_iso","day","city","state","venue","promoter_email"] as const;
@@ -115,7 +117,7 @@ function Cell({ event, field, display, editing, saving, draft, inputRef, onStart
   );
 }
 
-export default function EventsTable({ events: initial, tourId, orgId }: Props) {
+export default function EventsTable({ events: initial, tourId, orgId, tier }: Props) {
   const toast = useToast();
   const [events, setEvents] = useState<EventRow[]>(initial);
   const [editing, setEditing] = useState<{ id: string; field: EditableField } | null>(null);
@@ -409,14 +411,19 @@ export default function EventsTable({ events: initial, tourId, orgId }: Props) {
       // Generate video render URLs via server-side Cloudinary (non-blocking).
       // Runs after all image renders and venue_links writes have completed so
       // the videosOnly upsert only touches video columns on existing rows.
-      try {
-        await fetch("/api/renders/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tourId, orgId, videosOnly: true }),
-        });
-      } catch (e) {
-        console.warn("Video render pass failed (non-blocking):", e);
+      // Skip for tiers that can't generate video (Indie / none). Trial resolves
+      // to "pro" via tierGate so trial users still fire it. Backend gate is the
+      // actual protection; this just stops the client firing a doomed request.
+      if (tier === "pro" || tier === "agency") {
+        try {
+          await fetch("/api/renders/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tourId, orgId, videosOnly: true }),
+          });
+        } catch (e) {
+          console.warn("Video render pass failed (non-blocking):", e);
+        }
       }
 
     } catch (err: any) {
