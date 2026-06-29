@@ -9,6 +9,7 @@ import { useToast } from "@/app/components/Toast";
 import { renderPoster, formatDateForRender } from "@/lib/clientRender";
 import "./template-editor.css";
 import CropModal from "./CropModal";
+import HwAlert from "@/app/components/hw/HwAlert";
 import {
   FORMATS as FORMAT_CATALOG,
   type FormatKey as CatalogFormatKey,
@@ -234,6 +235,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [cropConfig, setCropConfig] = useState<CropConfig | null>(tour.crop_config);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropModalFormat, setCropModalFormat] = useState<CropFormatKey>("square");
+  const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
   const [previewLongest, setPreviewLongest] = useState(false);
   const [dragging, setDragging] = useState<FieldKey | "band" | "logo" | "sponsorLogo1" | "sponsorLogo2" | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -850,6 +852,37 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           </div>
         </div>
 
+        {showUpgradeBanner && (
+          <div style={{ marginBottom: 16 }}>
+            <HwAlert
+              variant="warning"
+              title="PRO FEATURE"
+              onDismiss={() => setShowUpgradeBanner(false)}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                <span>Video and print formats are part of Pro.</span>
+                <Link href="/pricing" style={{
+                  display: "inline-block",
+                  padding: "10px 20px",
+                  border: "3px solid var(--hw-crimson)",
+                  background: "var(--hw-crimson)",
+                  color: "#fff",
+                  fontFamily: "var(--hw-font-display)",
+                  fontWeight: 400,
+                  fontSize: 14,
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                  transition: "var(--hw-ease)",
+                  whiteSpace: "nowrap",
+                }}>
+                  UPGRADE
+                </Link>
+              </div>
+            </HwAlert>
+          </div>
+        )}
+
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {FORMATS.map(f => {
@@ -857,7 +890,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               return (
                 <button key={f.key} onClick={() => {
                   if (locked) {
-                    toast.error("Video and print formats are a Pro feature. Upgrade to unlock.");
+                    setShowUpgradeBanner(true);
                     return;
                   }
                   setActiveFormat(f.key);
