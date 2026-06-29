@@ -7,6 +7,7 @@ import {
   VIDEO_FORMATS as CATALOG_VIDEO_FORMATS,
   type FormatKey,
 } from "@/lib/localizer/formats";
+import { effectiveTierForFeatures, isFormatAllowedForTier } from "@/lib/localizer/tierGate";
 
 type RenderFormat = Extract<FormatKey, "square" | "story" | "landscape">;
 
@@ -400,6 +401,37 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (tourError || !tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
+
+  // Indie static-only tier gate. orgId is verified safe past the 404 above
+  // (tour query requires .eq("org_id", orgId) — a spoofed orgId would have 404'd).
+  // No admin bypass on this route — admins test on real-tier orgs.
+  const { data: orgRow } = await supabase
+    .from("orgs")
+    .select("localizer_plan, localizer_plan_status, trial_ends_at")
+    .eq("id", orgId)
+    .maybeSingle();
+
+  const tier = effectiveTierForFeatures({
+    localizer_plan: orgRow?.localizer_plan ?? null,
+    localizer_plan_status: orgRow?.localizer_plan_status ?? null,
+    trial_ends_at: orgRow?.trial_ends_at ?? null,
+  });
+
+  // Computed once, before the per-event loop — not recomputed per event.
+  // Missing org row -> tier "none" -> both arrays empty (fail closed).
+  const allowedImageFormats = FORMATS.filter((f) => isFormatAllowedForTier(f, tier));
+  const allowedVideoFormats = VIDEO_FORMATS.filter((f) => isFormatAllowedForTier(f, tier));
+
+  // Defense-in-depth: an Indie client should never send videosOnly:true, but
+  // if it does, refuse before any expensive work. Reads as "this tier can't
+  // do any video" — robust to future tier-model changes.
+  if (videosOnly && allowedVideoFormats.length === 0) {
+    return NextResponse.json(
+      { error: "Video assets require a Pro or Agency plan." },
+      { status: 403 },
+    );
+  }
+
   if (videosOnly) {
     if (!(tour as any).video_tiktok_id && !(tour as any).video_yt_shorts_id) {
       return NextResponse.json({ ok: true, count: 0 });
@@ -454,7 +486,7 @@ export async function POST(req: NextRequest) {
 
       const renderUrls: Record<string, string | null> = {};
       if (!videosOnly) {
-        for (const format of FORMATS) {
+        for (const format of allowedImageFormats) {
           const pid = formatPublicIds[format];
           if (!pid) {
             renderUrls[`render_${format}_url`] = null;
@@ -472,7 +504,7 @@ export async function POST(req: NextRequest) {
         yt_shorts: (tour as any).video_yt_shorts_id ?? null,
       };
 
-      for (const vformat of VIDEO_FORMATS) {
+      for (const vformat of allowedVideoFormats) {
         const pid = videoPublicIds[vformat];
         if (!pid) {
           if (!videosOnly) renderUrls[`render_${vformat}_url`] = null;
