@@ -852,13 +852,23 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {FORMATS.map(f => (
-              <button key={f.key} onClick={() => { setActiveFormat(f.key); }}
-                style={{ padding: "8px 16px", whiteSpace: "pre-line", border: activeFormat === f.key ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)", background: activeFormat === f.key ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: activeFormat === f.key ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: activeFormat === f.key ? 700 : 400, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>
-                {f.label}
-                {getFormatCrop(cropConfig, f.key) ? <span style={{ color: "var(--hw-crimson)", marginLeft: 6 }}>•</span> : null}
-              </button>
-            ))}
+            {FORMATS.map(f => {
+              const locked = (tier === "indie" || tier === "none") && FORMAT_CATALOG[f.key].category === "rich";
+              return (
+                <button key={f.key} onClick={() => {
+                  if (locked) {
+                    toast.error("Video and print formats are a Pro feature. Upgrade to unlock.");
+                    return;
+                  }
+                  setActiveFormat(f.key);
+                }}
+                  style={{ padding: "8px 16px", whiteSpace: "pre-line", border: activeFormat === f.key ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)", background: activeFormat === f.key ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: activeFormat === f.key ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: activeFormat === f.key ? 700 : 400, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", opacity: locked ? 0.4 : 1, transition: "var(--hw-ease)" }}>
+                  {f.label}
+                  {locked ? <span style={{ color: "var(--hw-crimson)", marginLeft: 6, fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 10 }}>PRO</span> : null}
+                  {getFormatCrop(cropConfig, f.key) ? <span style={{ color: "var(--hw-crimson)", marginLeft: 6 }}>•</span> : null}
+                </button>
+              );
+            })}
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
             <div style={{ padding: "3px 10px", border: "1.5px solid var(--hw-crimson)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px" }}>
