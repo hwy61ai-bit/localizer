@@ -235,6 +235,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropModalFormat, setCropModalFormat] = useState<CropFormatKey>("square");
   const [showUpgradeBanner, setShowUpgradeBanner] = useState(false);
+  const [showFontUpgradeBanner, setShowFontUpgradeBanner] = useState(false);
   const [previewLongest, setPreviewLongest] = useState(false);
   const [dragging, setDragging] = useState<FieldKey | "band" | "logo" | "sponsorLogo1" | "sponsorLogo2" | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -459,6 +460,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const cfg = configs[activeFormat];
   const publicId = formatImageIds[activeFormat];
   const fmtDims = FORMATS.find(f => f.key === activeFormat)!;
+  const showCustomFonts = customFonts.length > 0 && tier !== "indie" && tier !== "none";
+  const fontUploadLocked = tier === "indie" || tier === "none";
+
   const isVideoFormat = activeFormat === "tiktok" || activeFormat === "yt_shorts";
   const isPrintFormat = activeFormat === "print";
   const previewCrop = getFormatCrop(cropConfig, activeFormat);
@@ -690,6 +694,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   }
 
   async function processFontFile(file: File) {
+    if (tier === "indie" || tier === "none") { setShowFontUpgradeBanner(true); return; }
     if (!file.name.endsWith(".ttf") && !file.name.endsWith(".otf")) {
       toast.error("Only .ttf and .otf font files are supported");
       return;
@@ -918,6 +923,97 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               lineHeight: 1.4,
             }}>
               Vertical video for TikTok &amp; Reels, square video, and print-ready tour posters — all yours with Pro.
+            </span>
+
+            {/* inverted upgrade button — white bg, crimson text */}
+            <Link href="/pricing" style={{
+              display: "inline-block",
+              marginTop: 6,
+              padding: "12px 28px",
+              border: "3px solid #fff",
+              background: "#fff",
+              color: "var(--hw-crimson)",
+              fontFamily: "var(--hw-font-display)",
+              fontWeight: 400,
+              fontSize: 18,
+              letterSpacing: "3px",
+              textTransform: "uppercase",
+              textDecoration: "none",
+              transition: "var(--hw-ease)",
+              whiteSpace: "nowrap",
+            }}>
+              Upgrade to Pro
+            </Link>
+          </div>
+        )}
+
+        {showFontUpgradeBanner && (
+          <div style={{
+            position: "relative",
+            background: "var(--hw-crimson)",
+            padding: "28px 24px",
+            marginBottom: 16,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            gap: 10,
+          }}>
+            {/* dismiss × — top-right, white */}
+            <button
+              type="button"
+              onClick={() => setShowFontUpgradeBanner(false)}
+              aria-label="Dismiss"
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 14,
+                background: "none",
+                border: "none",
+                color: "rgba(255,255,255,0.8)",
+                fontSize: 22,
+                lineHeight: 1,
+                cursor: "pointer",
+                padding: 4,
+              }}
+            >
+              ×
+            </button>
+
+            {/* headline */}
+            <span style={{
+              fontFamily: "var(--hw-font-display)",
+              fontSize: 34,
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              color: "#fff",
+              lineHeight: 1.05,
+            }}>
+              Pro Feature
+            </span>
+
+            {/* supporting line */}
+            <span style={{
+              fontFamily: "var(--hw-font-display)",
+              fontSize: 18,
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.9)",
+              lineHeight: 1.1,
+            }}>
+              Unlock Custom Fonts
+            </span>
+
+            {/* benefit line */}
+            <span style={{
+              fontFamily: "var(--hw-font-body)",
+              fontSize: 15,
+              fontWeight: 400,
+              color: "rgba(255,255,255,0.92)",
+              maxWidth: 520,
+              lineHeight: 1.4,
+            }}>
+              Upload your own typefaces and put your brand&rsquo;s exact look on every tour asset — with Pro.
             </span>
 
             {/* inverted upgrade button — white bg, crimson text */}
@@ -1373,16 +1469,23 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 onChange={handleFontUpload}
               />
               <button
-                onClick={() => fontFileRef.current?.click()}
-                onDragEnter={(e) => { e.preventDefault(); if (!uploadingFont) setIsDraggingFont(true); }}
+                onClick={() => {
+                  if (fontUploadLocked) { setShowFontUpgradeBanner(true); return; }
+                  fontFileRef.current?.click();
+                }}
+                onDragEnter={(e) => { e.preventDefault(); if (!uploadingFont && !fontUploadLocked) setIsDraggingFont(true); }}
                 onDragOver={(e) => { e.preventDefault(); }}
                 onDragLeave={() => setIsDraggingFont(false)}
-                onDrop={handleFontDrop}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (fontUploadLocked) { setShowFontUpgradeBanner(true); setIsDraggingFont(false); return; }
+                  handleFontDrop(e);
+                }}
                 disabled={uploadingFont}
                 style={{
                   width: "100%",
                   padding: "8px 12px",
-                  border: isDraggingFont ? "2px dashed var(--hw-crimson)" : "2px dashed var(--hw-border-light)",
+                  border: fontUploadLocked ? "2px dashed var(--hw-border-light)" : (isDraggingFont ? "2px dashed var(--hw-crimson)" : "2px dashed var(--hw-border-light)"),
                   background: "var(--hw-bg-surface)",
                   color: "var(--hw-crimson)",
                   fontFamily: "var(--hw-font-mono)",
@@ -1391,14 +1494,20 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   letterSpacing: "1.5px",
                   textTransform: "uppercase" as const,
                   cursor: uploadingFont ? "not-allowed" : "pointer",
+                  opacity: fontUploadLocked ? 0.4 : 1,
                   textAlign: "center" as const,
                   marginBottom: 8,
                 }}
               >
-                {uploadingFont ? "Uploading..." : isDraggingFont ? "Drop font here" : "+ Upload Custom Font (.ttf / .otf)"}
+                {uploadingFont ? "Uploading..." : isDraggingFont ? "Drop font here" : (
+                  <>
+                    + Upload Custom Font (.ttf / .otf)
+                    {fontUploadLocked && <span style={{ color: "var(--hw-crimson)", marginLeft: 6, fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 10 }}>PRO</span>}
+                  </>
+                )}
               </button>
               <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 240, overflowY: "auto" }}>
-                {customFonts.length > 0 && (
+                {showCustomFonts && (
                   <>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                       <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text)" }}>CUSTOM FONTS</div>
@@ -1576,7 +1685,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           <option key={f.value} value={f.value}>{f.label}</option>
                         ))}
                       </optgroup>
-                      {customFonts.length > 0 && (
+                      {showCustomFonts && (
                         <optgroup label="Custom">
                           {customFonts.map(f => (
                             <option key={f.value} value={f.value}>{f.label}</option>
