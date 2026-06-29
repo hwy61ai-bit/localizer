@@ -690,6 +690,26 @@ Post-launch refinement.
 
 ---
 
+## 🧭 Decisions / deliberate non-actions (1)
+
+*Records of decisions to NOT do something. The reason matters more than the title — these are the items future readers will be tempted to "fix" without knowing why.*
+
+### Print PDF route (/api/renders/print-pdf) — deliberately NOT tier-gated (Phase 3 decision, June 29)
+
+The Indie static-only gate does NOT block the print-pdf route, by deliberate choice.
+
+**Reasoning:** the route regenerates the PDF fresh on every request (no stored asset). Gating by current tier would 403 a promoter's already-sent venue link the moment the org downgraded — breaking the forward-only principle we hold everywhere else (sent links never degrade). The video gate on `/api/renders/generate` does not have this problem because video URLs are stored on `venue_links.render_tiktok_url` / `render_yt_shorts_url` at generation time; print has no stored equivalent.
+
+**Print is protected instead by:**
+1. **The editor tier gate (Phase 3 frontend).** An Indie org cannot set up a print poster (`image_print_id` + `overlay_config.print`) in the template editor, so a never-paid Indie org has no print config and the route 404s naturally at `print-pdf/route.ts:145` (`if (!tour.image_print_id || !printConfig)`).
+2. **Rate limiting (abuse-surface track).** The cost-abuse angle — high-res Cloudinary fetch (`w_3300,h_5100` at `:154`) + pdf-lib serialization per token hit — is a rate-limit concern, already on the fast-follow rate-limit list, NOT a tier-gate concern.
+
+**Net:** a downgraded org's already-sent print links keep working (forward-only preserved); a never-paid Indie org never had print to set up in the first place. **Do NOT add a current-tier gate to this route** — it would break forward-only. If print cost-abuse becomes a problem, the fix is rate limiting, not tier gating.
+
+**Originated:** June 29, 2026, during the Indie static-only Phase 3 backend gate work. Forward-only behavior was an emergent property of video URL storage; print's regenerate-on-demand shape was discovered by recon to break that property if gated naïvely.
+
+---
+
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
