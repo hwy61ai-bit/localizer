@@ -884,18 +884,6 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               ×
             </button>
 
-            {/* eyebrow */}
-            <span style={{
-              fontFamily: "var(--hw-font-mono)",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.85)",
-            }}>
-              Pro Feature
-            </span>
-
             {/* headline */}
             <span style={{
               fontFamily: "var(--hw-font-display)",
@@ -904,6 +892,18 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               textTransform: "uppercase",
               color: "#fff",
               lineHeight: 1.05,
+            }}>
+              Pro Feature
+            </span>
+
+            {/* supporting line */}
+            <span style={{
+              fontFamily: "var(--hw-font-display)",
+              fontSize: 18,
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.9)",
+              lineHeight: 1.1,
             }}>
               Unlock Every Format
             </span>
