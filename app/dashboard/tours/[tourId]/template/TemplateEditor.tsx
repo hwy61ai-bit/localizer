@@ -9,7 +9,6 @@ import { useToast } from "@/app/components/Toast";
 import { renderPoster, formatDateForRender } from "@/lib/clientRender";
 import "./template-editor.css";
 import CropModal from "./CropModal";
-import HwAlert from "@/app/components/hw/HwAlert";
 import {
   FORMATS as FORMAT_CATALOG,
   type FormatKey as CatalogFormatKey,
@@ -853,33 +852,93 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         </div>
 
         {showUpgradeBanner && (
-          <div style={{ marginBottom: 16 }}>
-            <HwAlert
-              variant="warning"
-              title="PRO FEATURE"
-              onDismiss={() => setShowUpgradeBanner(false)}
+          <div style={{
+            position: "relative",
+            background: "var(--hw-crimson)",
+            padding: "28px 24px",
+            marginBottom: 16,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            gap: 10,
+          }}>
+            {/* dismiss × — top-right, white */}
+            <button
+              type="button"
+              onClick={() => setShowUpgradeBanner(false)}
+              aria-label="Dismiss"
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 14,
+                background: "none",
+                border: "none",
+                color: "rgba(255,255,255,0.8)",
+                fontSize: 22,
+                lineHeight: 1,
+                cursor: "pointer",
+                padding: 4,
+              }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-                <span>Video and print formats are part of Pro.</span>
-                <Link href="/pricing" style={{
-                  display: "inline-block",
-                  padding: "10px 20px",
-                  border: "3px solid var(--hw-crimson)",
-                  background: "var(--hw-crimson)",
-                  color: "#fff",
-                  fontFamily: "var(--hw-font-display)",
-                  fontWeight: 400,
-                  fontSize: 14,
-                  letterSpacing: "3px",
-                  textTransform: "uppercase",
-                  textDecoration: "none",
-                  transition: "var(--hw-ease)",
-                  whiteSpace: "nowrap",
-                }}>
-                  UPGRADE
-                </Link>
-              </div>
-            </HwAlert>
+              ×
+            </button>
+
+            {/* eyebrow */}
+            <span style={{
+              fontFamily: "var(--hw-font-mono)",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.85)",
+            }}>
+              Pro Feature
+            </span>
+
+            {/* headline */}
+            <span style={{
+              fontFamily: "var(--hw-font-display)",
+              fontSize: 34,
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              color: "#fff",
+              lineHeight: 1.05,
+            }}>
+              Unlock Every Format
+            </span>
+
+            {/* benefit line */}
+            <span style={{
+              fontFamily: "var(--hw-font-body)",
+              fontSize: 15,
+              fontWeight: 400,
+              color: "rgba(255,255,255,0.92)",
+              maxWidth: 520,
+              lineHeight: 1.4,
+            }}>
+              Vertical video for TikTok &amp; Reels, square video, and print-ready tour posters — all yours with Pro.
+            </span>
+
+            {/* inverted upgrade button — white bg, crimson text */}
+            <Link href="/pricing" style={{
+              display: "inline-block",
+              marginTop: 6,
+              padding: "12px 28px",
+              border: "3px solid #fff",
+              background: "#fff",
+              color: "var(--hw-crimson)",
+              fontFamily: "var(--hw-font-display)",
+              fontWeight: 400,
+              fontSize: 18,
+              letterSpacing: "3px",
+              textTransform: "uppercase",
+              textDecoration: "none",
+              transition: "var(--hw-ease)",
+              whiteSpace: "nowrap",
+            }}>
+              Upgrade to Pro
+            </Link>
           </div>
         )}
 
