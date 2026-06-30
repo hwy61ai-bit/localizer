@@ -31,7 +31,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "What's the difference between the tiers?",
-    a: "It comes down to how many artists you're running. Solo is built for one. Pro covers up to 5. Agency covers up to 12. Everything else is the same on every paid plan — every asset format, every platform, custom branding, your W-9 and stage plot and FOH docs riding along on the same venue link, unlimited shows. You're not paying more for features. You're paying for more artists.",
+    a: "It comes down to how many artists you're running. Indie is built for one. Pro covers up to 5. Agency covers up to 15. Everything else is the same on every paid plan — every asset format, every platform, custom branding, your W-9 and stage plot and FOH docs riding along on the same venue link, unlimited shows. You're not paying more for features. You're paying for more artists.",
   },
   {
     q: "Can I switch plans later?",
@@ -74,7 +74,7 @@ const PLANS: Plan[] = [
     annualPrice: 190,
     monthlyPriceId: LOCALIZER_PRICE_MAP.indie.monthly,
     annualPriceId: LOCALIZER_PRICE_MAP.indie.annual,
-    features: ["1 band", "3 tours", "AI import parser", "Venue share links", "All asset formats"],
+    features: ["1 band", "5 tours", "AI import parser", "Venue share links", "All asset formats"],
     highlight: false,
     isFree: false,
   },
@@ -96,7 +96,7 @@ const PLANS: Plan[] = [
     annualPrice: 1990,
     monthlyPriceId: LOCALIZER_PRICE_MAP.agency.monthly,
     annualPriceId: LOCALIZER_PRICE_MAP.agency.annual,
-    features: ["Up to 12 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support", "Dedicated onboarding"],
+    features: ["Up to 15 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support", "Dedicated onboarding"],
     highlight: false,
     isFree: false,
   },

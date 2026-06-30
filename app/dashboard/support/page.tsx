@@ -45,11 +45,11 @@ const FAQ_DATA: Section[] = [
       },
       {
         q: "How much does Localizer cost?",
-        a: "Three plans, billed monthly or annually:\n\u2022 Solo \u2014 $29/mo ($290/yr) \u2014 1 artist\n\u2022 Pro \u2014 $59/mo ($590/yr) \u2014 up to 5 artists\n\u2022 Agency \u2014 $129/mo ($1,290/yr) \u2014 up to 12 artists\n\nAnnual billing saves you about 17% versus paying monthly.",
+        a: "Three plans, billed monthly or annually:\n\u2022 Indie \u2014 $19/mo ($190/yr) \u2014 1 artist\n\u2022 Pro \u2014 $39/mo ($390/yr) \u2014 up to 5 artists\n\u2022 Agency \u2014 $199/mo ($1,990/yr) \u2014 up to 15 artists\n\nAnnual billing saves you about 17% versus paying monthly.",
       },
       {
         q: "What\u2019s the difference between the plans?",
-        a: "Just the number of artists you can manage. Every plan gets the full Localizer feature set \u2014 all platforms, all asset types, custom branding, promoter links. Solo is one artist, Pro is up to five, Agency is up to twelve.",
+        a: "Just the number of artists you can manage. Every plan gets the full Localizer feature set \u2014 all platforms, all asset types, custom branding, promoter links. Indie is one artist, Pro is up to five, Agency is up to fifteen.",
       },
       {
         q: 'What counts as an "artist"?',

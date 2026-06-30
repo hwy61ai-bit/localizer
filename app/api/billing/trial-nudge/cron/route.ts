@@ -136,17 +136,17 @@ function buildNudgeHtml(nudgeType: NudgeType, appUrl: string): string {
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 36px 0;">
               <tr>
                 <td style="padding: 6px 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 16px; color: #1a1a1a; text-align: left;">
-                  &bull; <strong style="font-weight: 900;">Solo</strong> <span style="color: #c5535b; font-weight: 700;">$29/mo</span> <span style="color: #666;">&mdash; 1 artist</span>
+                  &bull; <strong style="font-weight: 900;">Indie</strong> <span style="color: #c5535b; font-weight: 700;">$19/mo</span> <span style="color: #666;">&mdash; 1 artist</span>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 6px 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 16px; color: #1a1a1a; text-align: left;">
-                  &bull; <strong style="font-weight: 900;">Pro</strong> <span style="color: #c5535b; font-weight: 700;">$59/mo</span> <span style="color: #666;">&mdash; up to 5 artists</span>
+                  &bull; <strong style="font-weight: 900;">Pro</strong> <span style="color: #c5535b; font-weight: 700;">$39/mo</span> <span style="color: #666;">&mdash; up to 5 artists</span>
                 </td>
               </tr>
               <tr>
                 <td style="padding: 6px 0; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 16px; color: #1a1a1a; text-align: left;">
-                  &bull; <strong style="font-weight: 900;">Agency</strong> <span style="color: #c5535b; font-weight: 700;">$129/mo</span> <span style="color: #666;">&mdash; up to 12 artists</span>
+                  &bull; <strong style="font-weight: 900;">Agency</strong> <span style="color: #c5535b; font-weight: 700;">$199/mo</span> <span style="color: #666;">&mdash; up to 15 artists</span>
                 </td>
               </tr>
             </table>
