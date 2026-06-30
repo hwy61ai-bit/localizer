@@ -8,6 +8,7 @@ import {
   type FormatKey,
 } from "@/lib/localizer/formats";
 import { effectiveTierForFeatures, isFormatAllowedForTier } from "@/lib/localizer/tierGate";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 type RenderFormat = Extract<FormatKey, "square" | "story" | "landscape">;
 
@@ -401,6 +402,19 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (tourError || !tour) return NextResponse.json({ error: "Tour not found" }, { status: 404 });
+
+  const rl = await checkRateLimit(`generate:${orgId}`);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment and try again." },
+      {
+        status: 429,
+        headers: rl.reset
+          ? { "Retry-After": String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))) }
+          : undefined,
+      }
+    );
+  }
 
   // Indie static-only tier gate. orgId is verified safe past the 404 above
   // (tour query requires .eq("org_id", orgId) — a spoofed orgId would have 404'd).
