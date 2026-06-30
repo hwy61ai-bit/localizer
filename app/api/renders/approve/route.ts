@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
 import { Resend } from "resend";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -34,6 +35,19 @@ export async function POST(req: NextRequest) {
 
   if (eventError || !event) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
+
+  const rl = await checkRateLimit(`approve:${orgId}`);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment and try again." },
+      {
+        status: 429,
+        headers: rl.reset
+          ? { "Retry-After": String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))) }
+          : undefined,
+      }
+    );
   }
 
   if (!event.promoter_email || event.promoter_email.trim() === "") {
