@@ -357,6 +357,9 @@ export default function LocalizerProductPage() {
             </div>
           </div>
           <p className="pricing-note">Annual billing saves ~17%. Start with a 14-day free trial &mdash; no credit card required.</p>
+          <p className="pricing-note">
+            Need more? We also offer <span style={{ color: "var(--hw-crimson)", fontWeight: 700 }}>Agency Pro</span> — custom pricing for roster operations beyond Agency. <a href="mailto:support@hwy61labs.com?subject=Agency Pro inquiry" style={{ color: "var(--hw-crimson)", textDecoration: "none", fontWeight: 700 }}>Contact us &rarr;</a>
+          </p>
         </div>
       </section>
 
