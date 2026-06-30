@@ -1,7 +1,7 @@
 # Launch Progress
 
 *Single source of truth for the 30-day Localizer launch.*
-*Last updated: June 29, 2026*
+*Last updated: June 30, 2026*
 
 Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbers and item descriptions below mirror that file; status reflects actual shipped work per `docs/SESSION_LOG.md` and session work through May 23.
 
@@ -299,9 +299,9 @@ The May 23 Free tier spec (watermark, 5-shows/mo counter, 3-format limit, custom
 
 ---
 
-## Pricing reshape (Phases 1–3 complete — June 29)
+## Pricing reshape (complete — June 30)
 
-Four-phase rework of the Localizer pricing model: format-data consolidated to one source of truth, Stripe prices restructured, internal `solo` key renamed to `indie` everywhere, artist caps changed, Indie tour cap bumped. Phases 1, 2, the tier rename, and Phase 3 (the Indie static-only gate) have shipped; remaining work is the copy sweep and the Agency Pro card.
+Four-phase rework of the Localizer pricing model: format-data consolidated to one source of truth, Stripe prices restructured, internal `solo` key renamed to `indie` everywhere, artist caps changed, Indie tour cap bumped. Phases 1–3, the tier rename, the copy sweep, and the Agency Pro tier have all shipped — the reshape is complete.
 
 ### Complete (committed + pushed, June 26–29)
 
@@ -310,11 +310,12 @@ Four-phase rework of the Localizer pricing model: format-data consolidated to on
 - ✅ **Tier rename solo → indie + limit changes.** Internal entry-tier key renamed across the codebase: `LOCALIZER_PRICE_MAP` outer key, `LocalizerTier` union, `ARTIST_LIMITS`, `TOUR_LIMITS`, `TRIAL_ARTIST_LIMIT`, `TRIAL_TOUR_LIMIT`, `PLAN_LABELS`, pricing-page card name, landing-page card name. Artist caps adjusted to Indie 1, Pro 5, Agency 15 (Agency bumped from 12). Indie tour cap bumped 3 → 5; the hard-coded "3 tours" toast string in `ArtistDetailClient.tsx` updated to match. The `"3 tours"` feature bullet on the Indie pricing card is deliberately left for the copy sweep. Commit `de6dec0`. **No DB migration:** verified zero `localizer_plan = 'solo'` rows in production and no CHECK constraint on `localizer_plan` would reject the new value — code-only change, build green is the consistency proof.
 - ✅ **Phase 3 — Indie static-only gate + upgrade UX.** Indie tier is now enforced static-only: the three image formats (square/story/landscape) + band/sponsor logos are allowed; video (tiktok/yt_shorts), and custom fonts are blocked. **Backend enforcement** (the real protection): `lib/localizer/tierGate.ts` resolves an effective feature-tier (trial = full access; `effectiveTierForFeatures` / `isFormatAllowedForTier` / `isCustomFontAllowedForTier`); `app/api/renders/generate/route.ts` filters formats by tier with a 403 defense-in-depth; `app/api/fonts/upload/route.ts` blocks custom-font upload for Indie. Print-pdf and the download routes are **deliberately NOT gated at the route level** (documented in `docs/BACKLOG.md` decisions) — print regenerates fresh per request so route-gating would break forward-only for already-sent links; it's protected instead by the editor gate (Indie can't configure a print asset) plus rate-limiting. **Frontend UX** (grayed-but-visible, not hidden, so prospects see what they'd unlock): video-gen POST skipped client-side for Indie in `EventsTable.tsx`; locked rich-format tabs in the template editor (grayed + crimson "PRO" badge) that open a bold solid-crimson upgrade banner on click; grayed rich-format download buttons in `ShareWithMarketingButton.tsx` (PRO badge + upgrade toast); custom fonts filtered from both font pickers with the "+ Upload Custom Font" button locked (PRO badge + a font-specific crimson upgrade banner). **Forward-only preserved throughout**: already-applied custom fonts still render in preview, sent venue links keep working, and downgraded orgs are never retroactively broken — only NEW actions after a downgrade are gated. Commits `363d82c`, `4cc3af2`, `2bc82c2`, `a041f80`, `66acd2a`, `5111a87`, `129a0c9`, `73be5d0`, `17dff87`, `72b59dc`, `825311c`, `1b715bd`, `6d96b59`.
 - ✅ **Trial 7 → 14 day change.** Both trial clocks bumped to 14 days: the no-card seed (`lib/auth/ensureOrgExists.ts:47` + docstring at :16) and the Stripe checkout trial (`app/api/stripe/checkout/route.ts:24` `trial_period_days: 14`), plus 8 user-facing copy strings across the landing/pricing/support surfaces. The cron nudge timing auto-adjusts (it's relative to `trial_ends_at`). Commit `a83d215`.
+- ✅ **Copy sweep.** Fixed 11 stale tier/price/count strings across 5 customer-facing files (commit `c001894`): solo→Indie, $19/$39/$199 monthly + $190/$390/$1990 annual, Indie 5 tours, Agency 15 artists. Surfaces: pricing-page FAQ + Indie/Agency feature bullets, support FAQ (2 answers), trial-nudge email pricing table, landing-page Agency card. **The recon caught two stale strings this doc's flagged-list had missed** — the landing-page Agency artist count (above-the-fold) and the pricing-page Agency feature bullet — worth noting that the flagged-item lists aren't always complete; a wide grep is cheap insurance. Also confirmed the trial-nudge timing is already correct for the 14-day trial (windows relative to `trial_ends_at`, no 7-day assumption) — only copy was stale.
+- ✅ **Agency Pro tier (5th tier, contact-sales).** Added to `/pricing` as a full card (commit `ecf07ee`) — custom-priced ("Custom"/"Contact us"), mailto CTA to support@, toggle-immune, not highlighted; grid bumped 4→5 cols (4 signed-in), wrapper 1000→1200. Additive `isContactSales` field (not an enum refactor). On the landing page, a single crimson footnote below the grid (commit `caec71d`) rather than a 5th card — a rarely-used contact-sales tier shouldn't carry equal visual weight to the self-serve plans. **Provisioning gap logged to BACKLOG**: no tier resolves for a manually-comped Agency Pro org yet (would lock them out) — a 1-line fix when the first deal closes.
 
 ### Remaining (decided, not built)
 
-- ⬜ **Copy sweep.** Mops up the strings deliberately deferred across Phases 2 and the rename: `app/pricing/page.tsx:34` FAQ body ("Solo / Pro / Agency / up to 12"), `app/pricing/page.tsx:77` `"3 tours"` feature bullet (now displays 3 even though the gate allows 5), `app/dashboard/support/page.tsx:48,52` support FAQ (Solo + 12 + old prices), `app/api/billing/trial-nudge/cron/route.ts:139` trial-nudge email HTML (Solo $29/mo). Single coordinated pass.
-- ⬜ **Agency Pro card.** Fifth tier — custom-priced, uncapped artists + tours, "contact `support@`" CTA instead of Stripe checkout. Both pricing pages currently use `repeat(4, 1fr)` grid (3 when signed in); 5-card variant needs a grid-CSS pass on `/pricing` and `/`.
+*All pricing-reshape work shipped. Nothing remaining.*
 
 ### Tier model (final, locked June 26)
 

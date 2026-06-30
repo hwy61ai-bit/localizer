@@ -418,7 +418,7 @@ Both also use the wrong "20%" annual figure (correct is ~17%, as documented in t
 
 ---
 
-## 🧹 Code hygiene queue (15)
+## 🧹 Code hygiene queue (17)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -592,6 +592,43 @@ Priority: low (hygiene). Not user-reachable today.
 **Action:** delete the dead RETRY button + `reRenderEvent` function, OR if RETRY is wanted back, route it through the same canvas path as Generate All (`renderPoster` → upload → `save-urls`) so logos are preserved. Do NOT simply re-expose the existing button.
 
 **Context:** the server-side `buildCloudinaryUrl` image path is "effectively dead code" per `docs/SESSION_LOG.md` (it's immediately overwritten by the canvas path in normal Generate All flow). This backlog item is the cleanup that makes that true permanently.
+
+---
+
+### Agency Pro provisioning gap — no tier resolution path for comped customers
+
+*Surfaced 2026-06-30 when the Agency Pro contact-sales card was added to `/pricing` and `/`.*
+
+The "Agency Pro" tier (added to `/pricing` and the landing page as a contact-sales option on June 30) exists only as marketing copy. There is no `LOCALIZER_PRICE_MAP` entry, no `LocalizerTier` union value, and no resolution path in `lib/localizer/tierGate.ts::effectiveTierForFeatures`. If an Agency Pro customer is manually provisioned post-sales-call (comped or invoiced outside Stripe), their org has no tier to resolve to — `effectiveTierForFeatures` returns `"none"` and **locks them out of the product**, the exact opposite of what a paying Agency Pro customer should get.
+
+**Why not broken today:** Agency Pro is a contact-sales tier with zero signups. The mailto CTA on both `/pricing` and `/` lands in support@; no Stripe checkout, no webhook, no provisioning code is exercised. Latent until first deal.
+
+**Fix paths (pick at first-deal time):**
+1. **Comp them as `localizer_plan = 'agency'`.** Identical feature set to what Agency Pro promises (Agency unlocks every rich format + custom fonts + every count limit they'd hit in practice). Zero code change. Custom pricing handled out-of-band via Stripe invoice or comp record. Simplest.
+2. **Add a real `agency_pro` `LocalizerTier` value.** Extend the union in `lib/stripe/localizerPrices.ts`, add an `agency_pro` branch to `effectiveTierForFeatures` that returns full access, optionally add a `LOCALIZER_PRICE_MAP.agency_pro` entry if Stripe ever runs the billing. More work but cleaner if Agency Pro ever gets count limits distinct from Agency.
+
+**Not a blocker for the marketing card** — the card is honest copy ("contact us, custom pricing") and the lockout only triggers if someone is comped *and* the comp uses an `agency_pro` plan string that doesn't resolve. The fix is conditional on the first deal closing.
+
+Files involved when triggered: `lib/stripe/localizerPrices.ts` (`LocalizerTier` union + `LOCALIZER_PRICE_MAP`), `lib/localizer/tierGate.ts` (`effectiveTierForFeatures`), `lib/localizer/artistLimits.ts` + `lib/localizer/tourLimits.ts` (count helpers if Agency Pro gets distinct limits).
+
+---
+
+### trial-nudge `day5` / `day7` variable + NudgeType names are misnomers post-trial-extension
+
+*Surfaced 2026-06-30 during the trial 7→14 day extension.*
+
+`app/api/billing/trial-nudge/cron/route.ts` uses the names `day5` and `day7` for both the local variables and the `NudgeType` literals. After the trial went from 7 to 14 days, these nudges now fire at **signup + 12** and **signup + 14**, not days 5 and 7. The **timing logic is correct** — the windows are relative to `trial_ends_at`, which moved with the trial-length change — only the names are stale.
+
+**Why this can't be a casual rename — footgun:** the strings `"day5"` and `"day7"` are persisted as the `nudge_type` column in the `trial_nudge_emails` table, which has a unique constraint on `(org_id, nudge_type)` for idempotency. Renaming the literals in code without migrating the column would make **every org that already received an old-typed nudge eligible to receive a duplicate of the new-typed nudge** — the unique constraint wouldn't catch the new value as a dup of the old.
+
+**Proper fix (coordinated):**
+1. SQL migration: `UPDATE trial_nudge_emails SET nudge_type = 'day12' WHERE nudge_type = 'day5';` plus `'day7' → 'day14'`.
+2. Code change: rename literals + variables + `NudgeType` union in `app/api/billing/trial-nudge/cron/route.ts` to match.
+3. Deploy both atomically (migration runs first, then code).
+
+**Or just leave the names as historical artifacts.** Purely cosmetic — nothing reads the variable name; the logic is correct.
+
+Low priority.
 
 ---
 
