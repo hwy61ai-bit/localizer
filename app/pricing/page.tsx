@@ -18,6 +18,7 @@ type Plan = {
   features: string[];
   highlight: boolean;
   isFree: boolean;
+  isContactSales: boolean;
 };
 
 const FAQS: { q: string; a: string }[] = [
@@ -66,6 +67,7 @@ const PLANS: Plan[] = [
     features: [],
     highlight: false,
     isFree: true,
+    isContactSales: false,
   },
   {
     name: "Indie",
@@ -77,6 +79,7 @@ const PLANS: Plan[] = [
     features: ["1 band", "5 tours", "AI import parser", "Venue share links", "All asset formats"],
     highlight: false,
     isFree: false,
+    isContactSales: false,
   },
   {
     name: "Pro",
@@ -88,6 +91,7 @@ const PLANS: Plan[] = [
     features: ["Up to 5 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support"],
     highlight: true,
     isFree: false,
+    isContactSales: false,
   },
   {
     name: "Agency",
@@ -99,6 +103,19 @@ const PLANS: Plan[] = [
     features: ["Up to 15 bands", "Unlimited tours", "AI import parser", "Venue share links", "All asset formats", "Priority support", "Dedicated onboarding"],
     highlight: false,
     isFree: false,
+    isContactSales: false,
+  },
+  {
+    name: "Agency Pro",
+    desc: "For roster operations beyond Agency.",
+    monthlyPrice: 0,
+    annualPrice: 0,
+    monthlyPriceId: null,
+    annualPriceId: null,
+    features: ["Unlimited artists", "Unlimited tours", "Everything in Agency", "Dedicated account manager", "Custom onboarding"],
+    highlight: false,
+    isFree: false,
+    isContactSales: true,
   },
 ];
 
@@ -175,8 +192,8 @@ export default function PricingPage() {
         .pricing-page .pricing-toggle .save-badge { margin-left: 8px; font-family: var(--hw-font-mono); font-size: 9px; font-weight: 700; letter-spacing: 1px; opacity: 0.7; }
 
         /* Pricing grid */
-        .pricing-page .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 40px; }
-        .pricing-page .pricing-grid--3cols { grid-template-columns: repeat(3, 1fr); }
+        .pricing-page .pricing-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 24px; margin-top: 40px; }
+        .pricing-page .pricing-grid--4cols { grid-template-columns: repeat(4, 1fr); }
         .pricing-page .pricing-card { background: var(--hw-bg-surface); border: 3px solid var(--hw-border-strong); padding: 40px 32px; text-align: center; transition: all 0.15s ease; border-radius: 0; position: relative; display: flex; flex-direction: column; }
         .pricing-page .pricing-card.featured { border-color: var(--hw-crimson); transform: translateY(-8px); box-shadow: 6px 6px 0 var(--hw-crimson); }
         .pricing-page .featured-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--hw-crimson); border: 3px solid var(--hw-border-strong); color: #fff; font-family: var(--hw-font-mono); font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 4px 14px; border-radius: 0; text-transform: uppercase; }
@@ -226,7 +243,7 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 24px 80px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
         <Link href="/" className="back-link">← Back</Link>
 
         {trialExpired && (
@@ -251,7 +268,7 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <div id="plans" className={`pricing-grid${hasSession ? " pricing-grid--3cols" : ""}`}>
+        <div id="plans" className={`pricing-grid${hasSession ? " pricing-grid--4cols" : ""}`}>
           {PLANS.filter((plan) => !(hasSession && plan.isFree)).map((plan) => {
             const priceId = annual ? plan.annualPriceId : plan.monthlyPriceId;
             const price = annual ? plan.annualPrice : plan.monthlyPrice;
@@ -260,15 +277,17 @@ export default function PricingPage() {
               <div key={plan.name} className={`pricing-card${plan.highlight ? " featured" : ""}`}>
                 {plan.highlight && <div className="featured-badge">Most Popular</div>}
                 <div className="plan-name">{plan.name}</div>
-                <div className="plan-price">{plan.isFree ? "$0" : `$${price}`}</div>
-                <div className="plan-period">{plan.isFree ? "14 days" : (annual ? "Per Year" : "Per Month")}</div>
+                <div className="plan-price">{plan.isContactSales ? "Custom" : (plan.isFree ? "$0" : `$${price}`)}</div>
+                <div className="plan-period">{plan.isContactSales ? "Contact us" : (plan.isFree ? "14 days" : (annual ? "Per Year" : "Per Month"))}</div>
                 <div className="plan-desc">{plan.desc}</div>
                 <div className="plan-features">
                   {plan.features.map((f) => (
                     <div key={f} className="plan-feature">{f}</div>
                   ))}
                 </div>
-                {plan.isFree ? (
+                {plan.isContactSales ? (
+                  <a href="mailto:support@hwy61labs.com?subject=Agency Pro inquiry" className="pricing-cta">Contact Sales</a>
+                ) : plan.isFree ? (
                   <Link href="/login" className="pricing-cta">Start Free</Link>
                 ) : (
                   <button
