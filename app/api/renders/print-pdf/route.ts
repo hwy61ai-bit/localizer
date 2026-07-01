@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, rgb } from "pdf-lib";
 import { createClient } from "@supabase/supabase-js";
 import { fetchFontBytes } from "@/lib/fetchFont";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 // Public route — token-gated (validates against venue_links or marketing_tokens)
 export const dynamic = "force-dynamic";
@@ -110,6 +111,19 @@ export async function GET(req: NextRequest) {
     if (!scopedEvent) {
       return NextResponse.json({ error: "token_event_mismatch" }, { status: 403 });
     }
+  }
+
+  const rl = await checkRateLimit(`print-pdf:${token}`);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment and try again." },
+      {
+        status: 429,
+        headers: rl.reset
+          ? { "Retry-After": String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))) }
+          : undefined,
+      }
+    );
   }
 
   // Fetch event
