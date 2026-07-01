@@ -234,7 +234,7 @@ export default function PricingPage() {
       {/* NAV */}
       <nav>
         <div className="nav-inner">
-          <Link href="/" className="logo">HWY<span>61</span> Labs</Link>
+          <Link href={hasSession ? "/dashboard" : "/"} className="logo">HWY<span>61</span> Labs</Link>
           <ul className="nav-links">
             <li><Link href="/pricing">Pricing</Link></li>
             {!hasSession && <li><Link href="/login">Sign in</Link></li>}
@@ -244,7 +244,7 @@ export default function PricingPage() {
       </nav>
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
-        <Link href="/" className="back-link">← Back</Link>
+        <Link href={hasSession ? "/dashboard" : "/"} className="back-link">← Back</Link>
 
         {trialExpired && (
           <div className="pricing-trial-banner">
