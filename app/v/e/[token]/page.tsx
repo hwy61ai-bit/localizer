@@ -37,16 +37,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, spotify_url, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists, manager_name, manager_email, manager_phone, tour_manager_name, tour_manager_email, tour_manager_phone, booking_agent_name, booking_agent_email, booking_agent_phone, publicist_name, publicist_email, publicist_phone, team_extra, meta_business_id, bio")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists, manager_name, manager_email, manager_phone, tour_manager_name, tour_manager_email, tour_manager_phone, booking_agent_name, booking_agent_email, booking_agent_phone, publicist_name, publicist_email, publicist_phone, team_extra, meta_business_id, bio")
     .eq("id", (tour as any).artist_id)
     .single();
 
   const t = tour as any;
   const bandName = t.band_name ?? t.band_tour_label ?? t.name ?? "Artist";
-  const spotifyUrl: string | null = (artist as any)?.spotify_url ?? null;
-  const spotifyEmbedUrl = spotifyUrl
-    ? spotifyUrl.replace("open.spotify.com/", "open.spotify.com/embed/")
-    : null;
 
   const a = artist as any;
   const customMaterials = (a?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
@@ -296,16 +292,6 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           threads={a?.social_threads ?? null}
           youtube={a?.social_youtube ?? null}
         />
-
-        {/* Spotify */}
-        {spotifyEmbedUrl && (
-          <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", paddingBottom: 10, borderBottom: "2px solid var(--hw-text)", marginBottom: 20 }}>Listen</div>
-            <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy" style={{ border: "3px solid var(--hw-border-strong)" }} />
-          </div>
-        )}
 
         {/* Footer */}
         <div style={{ maxWidth: 480, margin: "48px auto 0", background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-md)", padding: 24, textAlign: "center" }}>
