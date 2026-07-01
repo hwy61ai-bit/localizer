@@ -1140,7 +1140,7 @@ export default function ArtistProfilePage() {
               }}
             />
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: 6 }}>
-              Your Spotify profile will be embedded into your links sent to promoters.
+              Saved to this artist. To feature Spotify on your venue links, add it under Press & Playlists.
             </div>
           </div>
         </div>
