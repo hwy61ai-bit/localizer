@@ -130,7 +130,9 @@ Both are ~2-min copy swaps in `app/pricing/page.tsx` `FAQS` array. Gated on the 
 
 *Scoped, unblocked, just needs a session.*
 
-### Unit D — Rate limiting (Upstash Redis)
+### Unit D — Rate limiting (Upstash Redis) — ⚠️ LARGELY SHIPPED June 30
+
+**Status:** The launch-critical slice shipped June 30 — shared fail-open `lib/rateLimit.ts` (30/min per org, NOT the old four-tier /hr scheme below), wired into `/api/renders/generate`, `/api/renders/approve`, and `/api/tours/[tourId]/upload-image` (commits `90657b7`, `4224201`, `6ebecc5`, `1955a5a`). Remaining fast-follow (post-launch acceptable): rate-limit `/api/import/extract`, `/api/import/parse-w9`, `/api/renders/print-pdf`; signup friction. The original April-9 spec below (four priority tiers, /hr/org) was NOT the design shipped — kept for history only.
 
 Fourth unit of the April 9 freemium work, not started. Tim's decision doc specifies Upstash Redis with four priority tiers: AI parsing routes (50/hr/org), venue/contact reads (200/hr/org), exports (30/hr/org), everything else (500/hr/org). Returns 429 with `Retry-After` header on limit. Scoped for roughly 90 minutes when tackled fresh. Deferred to a future session because Tim's Localizer bug (discovered mid-session) took priority and consumed the remaining time in the April 9 session.
 
@@ -206,7 +208,9 @@ Effort: ~1 hour including migration, writer update, reader update, and verifying
 
 ---
 
-### Welcome email — rewrite Localizer-focused (suite-positioning issue)
+### Welcome email — rewrite Localizer-focused — ✅ SHIPPED June 4
+
+**Status:** Done June 4 in commit `0c7df71` (Localizer-only rewrite of `/api/welcome` body + subject — flyer stack → One image./Every asset./Every show.; body → Localizer-only; subject → "Welcome to Localizer"). LAUNCH_PROGRESS Day 6 confirms. Original item below kept for history.
 
 The transactional welcome email at `app/api/welcome/route.ts` (Resend, fires from `lib/auth/ensureOrgExists.ts:71–78` on first signup) currently pitches the full HWY61 suite. The "flyer stack" centerpiece reads:
 
