@@ -56,19 +56,8 @@ export default async function MarketingPage({
 
   if (!tour) notFound();
 
-  // Only select spotify_url — no advance materials
-  const { data: artist } = await supabase
-    .from("artists")
-    .select("spotify_url")
-    .eq("id", (tour as Record<string, any>).artist_id)
-    .maybeSingle();
-
   const t = tour as any;
   const bandName = t.band_name ?? t.band_tour_label ?? t.name ?? "Artist";
-  const spotifyUrl: string | null = (artist as any)?.spotify_url ?? null;
-  const spotifyEmbedUrl = spotifyUrl
-    ? spotifyUrl.replace("open.spotify.com/", "open.spotify.com/embed/")
-    : null;
 
   const venueName = event.venue_name ?? event.venue ?? "";
   const city = event.venue_city ?? event.city ?? "";
@@ -215,16 +204,6 @@ export default async function MarketingPage({
                 </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Spotify */}
-        {spotifyEmbedUrl && (
-          <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Listen</div>
-            <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy" style={{ border: "3px solid var(--hw-border-strong)" }} />
           </div>
         )}
 
