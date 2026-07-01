@@ -90,7 +90,9 @@ Get a real legal review before public launch. The liability, indemnification, an
 
 ---
 
-### /pricing not auth-aware — logged-in users see "Sign in" + get trapped on nav-back
+### /pricing not auth-aware — logged-in users see "Sign in" + get trapped on nav-back — ✅ RESOLVED July 1
+
+**Status:** Mostly fixed June 11 (session-aware nav added to `/` and `/pricing` — "Sign in" link hidden for logged-in users, nav CTA swaps to Dashboard→/dashboard, Free-tier card filtered, grid resizes, paid buttons relabel to "Select plan"). The "trap on nav-back" via COMING_SOON was already resolved by the middleware session-bypass. Finished July 1 (commit `614f8bb`): the logo and "← Back" link are now auth-aware too (→ /dashboard when logged in). This backlog entry (written June 2) predated the June 11 fix and overstated the remaining scope. Only-known-remaining: a brief hydration flash (~50–200ms logged-out UI before the client session check resolves) — cosmetic, consistent with the rest of the page's client-auth pattern, not worth a pre-launch restructure. Gate closed.
 
 **Symptom:** A logged-in user clicking "View all plans" (`app/account/AccountClient.tsx:111`) or "VIEW PLANS" lands on `/pricing`, which shows logged-OUT chrome ("Sign in" nav link, "Start your free trial" CTA). Clicking the logo or "← Back" (both point to `/`) routes them through the COMING_SOON band-aid to `/coming-soon`, sealing the impression they've been logged out. They are NOT logged out — session is intact (cookie scoped to `.hwy61labs.com`, present on all subdomains). Confirmed via recon June 2: no code path clears the session; middleware does not touch `/pricing`; `/pricing` makes zero auth calls.
 
