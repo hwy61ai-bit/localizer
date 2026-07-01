@@ -29,15 +29,7 @@ export default async function TourMarketingHubPage({
 
   if (!tour) notFound();
 
-  // 3. Artist lookup — only spotify_url
   const t = tour as any;
-  const { data: artist } = t.artist_id
-    ? await supabase
-        .from("artists")
-        .select("spotify_url")
-        .eq("id", t.artist_id)
-        .single()
-    : { data: null };
 
   // 4. Events for the tour
   const { data: events } = await supabase
@@ -59,11 +51,6 @@ export default async function TourMarketingHubPage({
   // Derived values
   const bandName = t.band_name ?? t.band_tour_label ?? t.name ?? "Artist";
   const showCount = eventList.length;
-
-  const spotifyUrl: string | null = (artist as any)?.spotify_url ?? null;
-  const spotifyEmbedUrl = spotifyUrl
-    ? spotifyUrl.replace("open.spotify.com/", "open.spotify.com/embed/")
-    : null;
 
   // Date range
   let dateRange = "";
@@ -178,16 +165,6 @@ export default async function TourMarketingHubPage({
                 </div>
               );
             })}
-          </div>
-        )}
-
-        {/* Spotify */}
-        {spotifyEmbedUrl && (
-          <div style={{ marginBottom: 48 }}>
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", marginBottom: 20 }}>Listen</div>
-            <iframe src={spotifyEmbedUrl} width="100%" height="352" frameBorder="0"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy" style={{ border: "3px solid var(--hw-border-strong)" }} />
           </div>
         )}
 
