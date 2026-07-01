@@ -49,7 +49,7 @@ function itemStyle(isActive: boolean): React.CSSProperties {
 export function TourPageNav({ tourId, active }: Props) {
   return (
     <>
-      <Link href={`/dashboard/tours/${tourId}`} style={{ ...itemStyle(active === "gigs"), border: "3px solid var(--hw-border-strong)" }}>
+      <Link href={`/dashboard/tours/${tourId}`} style={{ ...itemStyle(active === "gigs"), border: "3px solid var(--hw-border-strong)", borderRadius: 9999, marginLeft: 24 }}>
         GIGS DASHBOARD
       </Link>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 8 }}>
