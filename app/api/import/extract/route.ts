@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 const client = new Anthropic();
 
@@ -16,6 +17,19 @@ export async function POST(request: Request) {
       .eq("user_id", user.id)
       .maybeSingle();
     if (!profile?.org_id) return NextResponse.json({ error: "no_org" }, { status: 403 });
+
+    const rl = await checkRateLimit(`extract:${profile.org_id}`);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment and try again." },
+        {
+          status: 429,
+          headers: rl.reset
+            ? { "Retry-After": String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))) }
+            : undefined,
+        }
+      );
+    }
 
     const { base64, filename, mimeType } = await request.json();
 
