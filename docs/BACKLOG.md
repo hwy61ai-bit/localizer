@@ -18,6 +18,8 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 As of April 9, 2026, the orgs table has 12 rows all named "My Workspace" — leftover test accounts from earlier development. Before public launch, audit and delete any that aren't tied to active users (Drew, Tim, or beta invitees).
 
+**Progress (July 1):** `testcorkys` and `testalex` (both "My Workspace", June 4) deleted via the `deleteOrg` routine — dry-run-previewed (empty Cloudinary/Storage, one auth user each), then hard-deleted with audit rows written and auth.users removed; verified gone by re-query. `test2026` retained per prior decision. Remaining "My Workspace" test orgs from the original ~12 still need the same treatment before launch.
+
 ---
 
 ### Remaining custom fonts need to be re-uploaded
@@ -252,7 +254,7 @@ Design preview locked in May 24, 2026 chat session.
 
 ---
 
-## ⚪ Awaiting Tim (5)
+## ⚪ Awaiting Tim (6)
 
 *Blocked on his decision, copy, or sign-off.*
 
@@ -333,6 +335,12 @@ Status: Proposed in TIM_STATUS_2026-04-15.md, awaiting Tim's answers on three su
 - Force re-send checkbox in the modal? (Off by default if added.)
 - Handling for rows missing a promoter email — silent skip or surface in confirmation?
 - Button label preference?
+
+---
+
+### Confirm Tim blessed the venue section header names
+
+The June 14 Team/Marketing build named/renamed venue section headers (Marketing, Team, Press & Playlists, Follow the Artist). Tim was to bless/rename these. Status unconfirmed as of July 1 — verify with Tim. Low-stakes (naming only, not a launch gate); folding the floating June-14 session-log item here so it's tracked.
 
 ---
 

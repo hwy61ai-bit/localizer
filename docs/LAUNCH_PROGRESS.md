@@ -228,6 +228,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
   - Tim + Drew bios + photos
   - 3 pre-written Tim quotes
   - `press@hwy61labs.com` contact
+  - *Note (July 1): `press@hwy61labs.com` alias not yet created — set up when building the press kit (per Drew, do it when needed).*
 - ⬜ IG post + IG story announcement graphics (use Localizer itself)
 - ⬜ `@hwy61labs` accounts on IG / X / TikTok
 
