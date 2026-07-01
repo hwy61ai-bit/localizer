@@ -334,9 +334,9 @@ No show cap on any tier. Indie is deliberately light — asset-type gating carri
 
 **Decision B — artists + tours, no show cap.** Indie capped at 5 tours; Pro and Agency unlimited. Shows-per-tour remains uncapped at every tier (matches the May 28 "no per-month counter" trial-model decision). Show counting was considered and rejected: it adds a meter shape that doesn't exist anywhere else in the data model, and the asset-type gate (Phase 3) already does the Indie-vs-Pro economic work. Indie tour cap bumped from 3 to 5 in the same session — three felt too pinched for one-artist managers running a spring + summer + fall + winter pattern.
 
-### Abuse-surface hardening (launch-critical items shipped June 30; fast-follow items remain)
+### Abuse-surface hardening (rate-limiting complete July 1; signup friction remains)
 
-Rate limiting shipped June 30 on the launch-critical routes (see the ✅ items below) using Upstash Redis on the free tier via a shared fail-open `lib/rateLimit.ts` helper. The `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` env vars (slots reserved in `.env.example` during the April 9 "Unit D" spec) are now populated in `.env.local` + Vercel Production. Fast-follow items (import-route + print-pdf rate limits, signup friction) remain open and are post-launch-acceptable.
+Rate limiting shipped across all six paid-API routes — launch-critical trio June 30 (`generate`, `approve`, `upload-image`), fast-follow trio July 1 (`extract`, `parse-w9`, `print-pdf`) — using Upstash Redis on the free tier via a shared fail-open `lib/rateLimit.ts` helper. The `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` env vars (slots reserved in `.env.example` during the April 9 "Unit D" spec) are populated in `.env.local` + Vercel Production. Only signup friction remains open in the abuse-surface work (separate pattern; post-launch-acceptable).
 
 **Launch-critical (~1.25 hrs total):**
 - ✅ **`/api/welcome` open email relay — CLOSED** (commit `f33688e`). Now requires a `WELCOME_INTERNAL_SECRET` Bearer token (fail-closed — missing env var returns 403), passed by `ensureOrgExists` on its server-side fetch. Smoke-tested in production.
@@ -346,8 +346,8 @@ Rate limiting shipped June 30 on the launch-critical routes (see the ✅ items b
 - ✅ **`/api/tours/[tourId]/upload-image` ownership check — SHIPPED** (June 30, commit `1955a5a`). The route previously ran the Cloudinary upload with NO auth or ownership check — anyone could burn Cloudinary cost against any tourId. Added an auth + org-membership gate (mirroring `sponsor-logo/route.ts`) BEFORE the upload, closing the hole; the resolved org also keys a 30/min upload rate limit, and the final DB write is now scoped to org_id as defense-in-depth.
 
 **Fast-follow (post-launch acceptable):**
-- Rate-limit `/api/import/extract` and `/api/import/parse-w9` (Anthropic completions, authenticated). ~10 min × 2 once the helper is in place.
-- Rate-limit `/api/renders/print-pdf` (token-gated, but tokens are reusable forever — caps the high-res Cloudinary fetch + pdf-lib cost). Token + IP keying. ~15 min.
+- ✅ **Rate-limited `/api/import/extract` + `/api/import/parse-w9`** (July 1, commits `81886af`, `487b17c`) — 30/min per org, own keys, fail-open. Caps Anthropic API cost.
+- ✅ **Rate-limited `/api/renders/print-pdf`** (July 1, commit `079b180`) — 30/min per token (keyed on the reusable link token, not org — caps re-hammering a single sent link), fail-open. Caps the high-res Cloudinary fetch + pdf-lib cost.
 - Signup friction: magic-link signup creates a full-access trial in one click — no captcha, no domain check, no throwaway-domain blocklist. Separate hardening pass; not bundled with rate limiting.
 
 **Notes on prior spec drift:**
