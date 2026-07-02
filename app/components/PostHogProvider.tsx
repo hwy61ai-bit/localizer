@@ -38,25 +38,6 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     });
   }, [initialized]);
 
-  // Claim beta invite code after login
-  const betaClaimed = useRef(false);
-  useEffect(() => {
-    if (betaClaimed.current) return;
-    const code = typeof window !== "undefined" ? localStorage.getItem("beta_invite_code") : null;
-    if (!code) return;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      betaClaimed.current = true;
-      fetch("/api/beta/claim", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, userId: user.id }),
-      }).then(() => {
-        localStorage.removeItem("beta_invite_code");
-      }).catch(() => {});
-    });
-  }, []);
-
   if (!initialized) return <>{children}</>;
 
   return <PHProvider client={posthog}>{children}</PHProvider>;
