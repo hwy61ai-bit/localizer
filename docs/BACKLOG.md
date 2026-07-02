@@ -22,11 +22,13 @@ As of April 9, 2026, the orgs table has 12 rows all named "My Workspace" — lef
 
 ---
 
-### Remaining custom fonts need to be re-uploaded
+### Remaining custom fonts need to be re-uploaded — OBSOLETE (2026-07-02)
 
 Two of the three existing `custom_fonts` rows still point at Cloudinary assets that don't exist: BebasNeue-Regular and Pragmatica-Extended-Extra-Bold. They were uploaded under the old broken pipeline that never wrote to Cloudinary. The render code will silently fail on any tour that uses these two fonts on a video overlay.
 
 BullandRegular-d91g6 was already re-uploaded tonight and verified working on Uncle Lucius. The other two just need to be deleted via the UI and re-uploaded from their original font files (sources in Supabase storage URLs from the `custom_fonts.storage_url` column if Drew no longer has the local originals).
+
+**OBSOLETE (July 2, 2026):** rows no longer exist in `custom_fonts`, upload pipeline fixed April 9 2026 (commit `2465c9f`), all current rows post-fix, nothing references these font names. Replaced by the Day 22–23 QA smoke test in `docs/LAUNCH_PROGRESS.md` (custom font on video overlay → Generate All).
 
 ---
 
