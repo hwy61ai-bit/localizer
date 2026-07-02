@@ -8,7 +8,15 @@ const nextConfig = {
   },
   // Increase API route body size limit
   async headers() {
-    return [];
+    return [
+      {
+        source: '/v/:path*',
+        headers: [
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+          { key: 'Referrer-Policy', value: 'no-referrer' },
+        ],
+      },
+    ];
   },
   async redirects() {
     return [
