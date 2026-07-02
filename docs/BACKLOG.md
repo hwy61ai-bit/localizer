@@ -1196,3 +1196,27 @@ Pre-launch gate to verify the post-May-28 trial-seed `ensureOrgExists` path end-
 **Correction to the original entry:** The claim "Supabase email signups are currently DISABLED at the project level" was stale at the time of the test. Email signups were already ENABLED in the Supabase Dashboard as of June 4 (confirmed during the test). Whoever wrote that line was working from out-of-date information; the actual project setting allowed the signup to proceed without a config change.
 
 **Items 5 + 6 from the original test plan not exercised in this pass:** the beta-invite gate block on un-invited signups, and the Google OAuth fresh-account path. Magic-link path is verified; the other two remain unverified but are LOW risk (beta gate already protects production, OAuth is similar enough auth flow that the same `ensureOrgExists` call site fires). Acceptable launch posture.
+
+---
+
+### Silent-write verification pass (Supabase .update/.insert without .select)
+
+QA sweep 2026-07-02 found ~40 user-triggered write sites that don't verify a row came back (CLAUDE.md rule 6). Full candidate list in localizer-qa-reports/2026-07-02_readonly-qa-sweep.md §4. Split: (a) Localizer-critical sites (renders/save-urls, renders/approve, renders/generate status writes, overlay-config, import/save, marketing-tokens create/revoke, notifications/read, onboarding steps) — batch-fix candidate, pre-launch optional; (b) all TourRouter sites — deferred until/unless TourRouter resumes. Note: list contains grep false-positives where .select() chains on the next line — read each site before editing.
+
+---
+
+### Console.log cleanup
+
+11 sites from QA sweep 2026-07-02 §5. Noisiest: app/dashboard/routing/[tourId]/page.tsx (4 debug logs) and app/labs/page.tsx form-submit stubs (2). Remove or gate behind NODE_ENV === "development". Auth-callback trace logs (3) intentionally kept until prod is stable post-launch.
+
+---
+
+### Wordmark aria-label says "HWY61.AI"
+
+app/components/HWY61Wordmark.tsx:147 — update aria-label to current branding ("HWY61 Labs"). A11y-only, not visible to sighted users.
+
+---
+
+### Drop beta_invites table + retire /api/beta/validate
+
+Beta invite claim system removed 2026-07-02 (commit a623833) — the beta_invites table (10 rows) is now orphaned and can be dropped post-launch. Separately: /api/beta/validate (BETA_GATE_PASSWORD mechanism) is still deployed — decide at COMING_SOON flip whether it retires with the gate or stays.
