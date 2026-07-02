@@ -31,7 +31,7 @@ function getRewriteForHost(hostname: string): string | null {
   return null;
 }
 
-// Hostnames that serve the public showcase (no auth required)
+// Hostnames that skip auth (marketing pages, no auth required)
 const PUBLIC_HOSTS = new Set([
   "hwy61labs.com",
   "www.hwy61labs.com",
