@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 const DEAL_MEMO_PROMPT = `You are a music industry deal memo parser. Extract all show information from this deal memo document.
 
@@ -34,6 +35,9 @@ Return ONLY the JSON array, no other text.`;
 export async function POST(req: NextRequest) {
   const access = await requireTourRouterAccess();
   if (!access.ok) return tourRouterAccessErrorResponse(access);
+  if (!isAdminEmail(access.user.email)) {
+    return NextResponse.json({ error: "Not available" }, { status: 403 });
+  }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return NextResponse.json({ error: "Anthropic API key not configured" }, { status: 500 });

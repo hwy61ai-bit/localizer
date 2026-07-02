@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 export async function POST(req: NextRequest) {
   const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
+  if (!isAdminEmail(result.user.email)) {
+    return NextResponse.json({ error: "Not available" }, { status: 403 });
+  }
   const supabase = await supabaseServer();
 
   const apiKey = process.env.ANTHROPIC_API_KEY;

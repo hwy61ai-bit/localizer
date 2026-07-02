@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST() {
   const result = await requireTourRouterAccess();
   if (!result.ok) return tourRouterAccessErrorResponse(result);
+  if (!isAdminEmail(result.user.email)) {
+    return NextResponse.json({ error: "Not available" }, { status: 403 });
+  }
 
   const orgId = result.orgId;
 

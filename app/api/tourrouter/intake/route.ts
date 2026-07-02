@@ -4,6 +4,7 @@ import { buildDocumentTypePrompt } from "@/lib/tourrouter/prompts/documentTypePr
 import { PARSE_PROMPTS } from "@/lib/tourrouter/prompts/parsePrompts";
 import { createNotification } from "@/lib/notifications";
 import { requireTourRouterAccess, tourRouterAccessErrorResponse } from "@/lib/tourrouter/requireAccess";
+import { isAdminEmail } from "@/lib/auth/adminEmails";
 
 async function callClaude(model: string, max_tokens: number, messages: unknown[]) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -54,6 +55,9 @@ const PAYMENT_FIELDS = [
 export async function POST(req: NextRequest) {
   const access = await requireTourRouterAccess();
   if (!access.ok) return tourRouterAccessErrorResponse(access);
+  if (!isAdminEmail(access.user.email)) {
+    return NextResponse.json({ error: "Not available" }, { status: 403 });
+  }
   const supabase = await supabaseServer();
 
   const body = await req.json();
