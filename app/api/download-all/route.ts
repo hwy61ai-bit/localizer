@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 
   const { data: artist } = tour?.artist_id ? await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, venue_show_advance_docs, venue_show_w9")
     .eq("id", tour.artist_id)
     .single() : { data: null };
 
@@ -82,15 +82,23 @@ export async function GET(req: NextRequest) {
     { name: "FOH_Requirements",   value: artist?.adv_foh_url },
     { name: "W-9",                value: artist?.adv_w9_url },
   ];
+  // Visibility gates (default on; null/undefined treated as true) — mirrors
+  // the venue page's server-side gate so the zip stays consistent with what
+  // the promoter can see.
+  const showAdvanceDocs = artist?.venue_show_advance_docs !== false;
+  const showW9 = artist?.venue_show_w9 !== false;
   const fixedAdvUrl: { filename: string; url: string }[] = [];
   const fixedAdvPrivate: { filename: string; path: string }[] = [];
-  for (const s of fixedAdvSources) {
-    if (!s.value) continue;
-    const filename = rootFolder + `Advance/${filePrefix}_${s.name}.pdf`;
-    if (s.value.startsWith("http")) {
-      fixedAdvUrl.push({ filename, url: s.value });
-    } else {
-      fixedAdvPrivate.push({ filename, path: s.value });
+  if (showAdvanceDocs) {
+    for (const s of fixedAdvSources) {
+      if (!s.value) continue;
+      if (!showW9 && s.name === "W-9") continue;
+      const filename = rootFolder + `Advance/${filePrefix}_${s.name}.pdf`;
+      if (s.value.startsWith("http")) {
+        fixedAdvUrl.push({ filename, url: s.value });
+      } else {
+        fixedAdvPrivate.push({ filename, path: s.value });
+      }
     }
   }
 
