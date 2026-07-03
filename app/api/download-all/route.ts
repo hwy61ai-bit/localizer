@@ -73,22 +73,40 @@ export async function GET(req: NextRequest) {
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const customMaterials = ((artist as { adv_custom_materials?: Array<{ id: string; label: string; url: string }> } | null)?.adv_custom_materials) || [];
+
+  // Fixed advance docs may be legacy public URLs (pre-B4) or private advance-docs paths (post-B2).
+  // Custom materials remain public.
+  const fixedAdvSources = [
+    { name: "Stage_Plot",         value: artist?.adv_stage_plot_url },
+    { name: "Hospitality_Rider",  value: artist?.adv_hospitality_url },
+    { name: "FOH_Requirements",   value: artist?.adv_foh_url },
+    { name: "W-9",                value: artist?.adv_w9_url },
+  ];
+  const fixedAdvUrl: { filename: string; url: string }[] = [];
+  const fixedAdvPrivate: { filename: string; path: string }[] = [];
+  for (const s of fixedAdvSources) {
+    if (!s.value) continue;
+    const filename = rootFolder + `Advance/${filePrefix}_${s.name}.pdf`;
+    if (s.value.startsWith("http")) {
+      fixedAdvUrl.push({ filename, url: s.value });
+    } else {
+      fixedAdvPrivate.push({ filename, path: s.value });
+    }
+  }
+
   const advAssets: { filename: string; url: string }[] = [
-    { filename: rootFolder + `Advance/${filePrefix}_Stage_Plot.pdf`,        url: artist?.adv_stage_plot_url },
-    { filename: rootFolder + `Advance/${filePrefix}_Hospitality_Rider.pdf`, url: artist?.adv_hospitality_url },
-    { filename: rootFolder + `Advance/${filePrefix}_FOH_Requirements.pdf`,  url: artist?.adv_foh_url },
-    { filename: rootFolder + `Advance/${filePrefix}_W-9.pdf`,                url: artist?.adv_w9_url },
+    ...fixedAdvUrl,
     ...customMaterials.filter((c) => c.url).map((c) => {
       const safeLabel = c.label.replace(/[^a-zA-Z0-9_.-]/g, "_");
       const cleanUrl = c.url.split("?")[0];
       const ext = cleanUrl.split(".").pop() || "pdf";
       return { filename: rootFolder + `Advance/${filePrefix}_${safeLabel}.${ext}`, url: c.url };
     }),
-  ].filter((a) => !!a.url) as { filename: string; url: string }[];
+  ];
 
   const allAssets = [...imageAssets, ...videoAssets, ...advAssets];
 
-  if (!allAssets.length) return NextResponse.json({ error: "No assets available" }, { status: 404 });
+  if (!allAssets.length && !fixedAdvPrivate.length) return NextResponse.json({ error: "No assets available" }, { status: 404 });
 
   const zip = new JSZip();
   await Promise.all(
@@ -101,6 +119,25 @@ export async function GET(req: NextRequest) {
         }
       } catch (err) {
         console.error("Failed to fetch asset:", asset.filename, err);
+      }
+    })
+  );
+
+  // Private advance-docs (post-B2): download via admin storage client.
+  await Promise.all(
+    fixedAdvPrivate.map(async (doc) => {
+      try {
+        const { data, error } = await supabase.storage
+          .from("advance-docs")
+          .download(doc.path);
+        if (error || !data) {
+          console.warn("[download-all] advance-doc private download failed:", doc.path, error?.message);
+          return;
+        }
+        const buffer = await data.arrayBuffer();
+        zip.file(doc.filename, buffer);
+      } catch (err) {
+        console.warn("[download-all] advance-doc private download threw:", doc.filename, err);
       }
     })
   );
