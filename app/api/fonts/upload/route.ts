@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { v2 as cloudinary } from "cloudinary";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { effectiveTierForFeatures, isCustomFontAllowedForTier } from "@/lib/localizer/tierGate";
 import { isAdminEmail } from "@/lib/auth/adminEmails";
 
@@ -40,6 +41,20 @@ export async function POST(req: NextRequest) {
 
     if (!membership) {
       return NextResponse.json({ error: "Not a member of this org" }, { status: 403 });
+    }
+
+    // Rate limit: 30/min per org for font uploads (keyed on the verified org).
+    const rl = await checkRateLimit(`font-upload:${orgId}`);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment and try again." },
+        {
+          status: 429,
+          headers: rl.reset
+            ? { "Retry-After": String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))) }
+            : undefined,
+        }
+      );
     }
 
     // Check plan — custom fonts are Pro/Agency only. Admin bypass via shared

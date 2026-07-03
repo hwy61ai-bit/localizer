@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function GET(
   req: NextRequest,
@@ -93,6 +94,20 @@ export async function POST(
       return NextResponse.json(
         { error: "Not a member of this org" },
         { status: 403 }
+      );
+    }
+
+    // Rate limit: 30/min per org for sponsor-logo uploads (keyed on the verified org).
+    const rl = await checkRateLimit(`sponsor-logo:${tour.org_id}`);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment and try again." },
+        {
+          status: 429,
+          headers: rl.reset
+            ? { "Retry-After": String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))) }
+            : undefined,
+        }
       );
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { v2 as cloudinary } from "cloudinary";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -28,6 +29,20 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!membership) return NextResponse.json({ error: "Not a member of this org" }, { status: 403 });
+
+  // Rate limit: 30/min per org for font deletes (keyed on the verified org).
+  const rl = await checkRateLimit(`font-delete:${orgId}`);
+  if (!rl.success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a moment and try again." },
+      {
+        status: 429,
+        headers: rl.reset
+          ? { "Retry-After": String(Math.max(1, Math.ceil((rl.reset - Date.now()) / 1000))) }
+          : undefined,
+      }
+    );
+  }
 
   // Get font record
   const { data: font } = await supabase
