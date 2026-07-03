@@ -6,6 +6,7 @@ import { ArtistSocialLinks } from "./SocialIcons";
 import { PressPlaylists } from "./PressPlaylists";
 import { TeamContacts } from "./TeamContacts";
 import { BioSection } from "./BioSection";
+import W9DownloadGate from "./W9DownloadGate";
 
 export default async function VenuePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -46,11 +47,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const a = artist as any;
   const customMaterials = (a?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
-  const advMaterials: { label: string; url: string | null }[] = [
-    { label: "Stage Plot", url: a?.adv_stage_plot_url ?? null },
-    { label: "Hospitality Rider", url: a?.adv_hospitality_url ?? null },
-    { label: "FOH Requirements", url: a?.adv_foh_url ?? null },
-    { label: "W-9", url: a?.adv_w9_url ?? null },
+  type FixedFieldId = "adv_stage_plot_url" | "adv_hospitality_url" | "adv_foh_url" | "adv_w9_url";
+  const advMaterials: Array<{ fieldId?: FixedFieldId; label: string; url: string | null }> = [
+    { fieldId: "adv_stage_plot_url", label: "Stage Plot", url: a?.adv_stage_plot_url ?? null },
+    { fieldId: "adv_hospitality_url", label: "Hospitality Rider", url: a?.adv_hospitality_url ?? null },
+    { fieldId: "adv_foh_url", label: "FOH Requirements", url: a?.adv_foh_url ?? null },
+    { fieldId: "adv_w9_url", label: "W-9", url: a?.adv_w9_url ?? null },
     ...customMaterials.filter((c) => c.url).map((c) => ({ label: c.label, url: c.url })),
   ];
 
@@ -209,22 +211,50 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
         <div style={{ marginBottom: 48 }}>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", paddingBottom: 10, borderBottom: "2px solid var(--hw-text)", marginBottom: 20 }}>Advance Materials</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
-            {advMaterials.map((mat) => (
-              mat.url ? (
-                <a key={mat.label} href={mat.url} target="_blank" rel="noopener noreferrer"
-                  style={{ aspectRatio: "1 / 1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "var(--hw-green-ghost)", border: "3px solid var(--hw-border-strong)", textDecoration: "none", textAlign: "center" }}>
-                  <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, color: "var(--hw-green)" }}>↓</span>
-                  <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 15, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-green)", lineHeight: 1.2 }}>{mat.label}</span>
-                </a>
-              ) : (
-                <div key={mat.label}
-                  style={{ aspectRatio: "1 / 1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 16, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", cursor: "not-allowed", textAlign: "center" }}>
+            {advMaterials.map((mat) => {
+              // W-9: gated confirm flow — the client component handles both
+              // available (green tile → confirm) and unavailable (disabled tile).
+              if (mat.fieldId === "adv_w9_url") {
+                return (
+                  <W9DownloadGate
+                    key={mat.fieldId}
+                    token={token}
+                    available={Boolean(mat.url)}
+                  />
+                );
+              }
+              // Available: fixed docs route through /api/advance-doc (gated,
+              // signed-URL delivery). Custom materials keep their direct public
+              // href until B4.
+              if (mat.url) {
+                const href = mat.fieldId
+                  ? `/api/advance-doc?token=${encodeURIComponent(token)}&fieldId=${mat.fieldId}`
+                  : mat.url;
+                return (
+                  <a
+                    key={mat.fieldId ?? mat.label}
+                    href={href}
+                    target={mat.fieldId ? undefined : "_blank"}
+                    rel="noopener noreferrer"
+                    style={{ aspectRatio: "1 / 1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 16, background: "var(--hw-green-ghost)", border: "3px solid var(--hw-border-strong)", textDecoration: "none", textAlign: "center" }}
+                  >
+                    <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, color: "var(--hw-green)" }}>↓</span>
+                    <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 15, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-green)", lineHeight: 1.2 }}>{mat.label}</span>
+                  </a>
+                );
+              }
+              // Not uploaded — disabled tile unchanged
+              return (
+                <div
+                  key={mat.fieldId ?? mat.label}
+                  style={{ aspectRatio: "1 / 1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, padding: 16, background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", cursor: "not-allowed", textAlign: "center" }}
+                >
                   <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 24, opacity: 0.3, color: "var(--hw-text-muted)" }}>↓</span>
                   <span style={{ fontFamily: "var(--hw-font-display)", fontSize: 15, letterSpacing: "2px", textTransform: "uppercase", color: "var(--hw-text-muted)", lineHeight: 1.2 }}>{mat.label}</span>
                   <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, fontStyle: "italic", letterSpacing: "1px", color: "var(--hw-text-muted)" }}>Not uploaded yet</span>
                 </div>
-              )
-            ))}
+              );
+            })}
           </div>
         </div>
 
