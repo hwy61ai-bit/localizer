@@ -96,6 +96,7 @@ export default function ArtistProfilePage() {
   const advFileRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
   const [advUploading, setAdvUploading] = useState<string | null>(null);
   const [advDragOver, setAdvDragOver] = useState<string | null>(null);
+  const [advUploadMsg, setAdvUploadMsg] = useState<string | null>(null);
   const [photoDragOver, setPhotoDragOver] = useState(false);
   const [logoDragOver, setLogoDragOver] = useState(false);
   const [nameHovered, setNameHovered] = useState(false);
@@ -632,19 +633,29 @@ export default function ArtistProfilePage() {
 
   // ── Advance Upload ───────────────────────────────────────────
 
+  function showAdvUploadMsg(msg: string) {
+    setAdvUploadMsg(msg);
+    setTimeout(() => setAdvUploadMsg(null), 4000);
+  }
+
   async function handleAdvUpload(fieldId: string, file: File) {
     setAdvUploading(fieldId);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "pdf";
-      const path = `artist-assets/${artistId}/advance/${fieldId}.${ext}`;
-      const { error } = await supabase.storage.from("localizer-assets").upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data } = supabase.storage.from("localizer-assets").getPublicUrl(path);
-      const url = data.publicUrl + "?t=" + Date.now();
-      await supabase.from("artists").update({ [fieldId]: url }).eq("id", artistId);
-      setArtist((prev) => prev ? { ...prev, [fieldId]: url } : prev);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fieldId", fieldId);
+      const res = await fetch(`/api/artists/${artistId}/advance-upload`, {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        throw new Error(json?.error ?? `Upload failed (${res.status})`);
+      }
+      setArtist((prev) => (prev ? { ...prev, [fieldId]: json.path } : prev));
     } catch (e) {
       console.error("Upload failed:", e);
+      showAdvUploadMsg(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setAdvUploading(null);
     }
@@ -1300,6 +1311,11 @@ export default function ArtistProfilePage() {
           padding: 28, marginBottom: 20,
         }}>
           <SectionLabel>Advance Materials</SectionLabel>
+          {advUploadMsg && (
+            <div style={{ marginBottom: 10, padding: "8px 14px", background: "var(--hw-red-ghost)", border: "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-crimson)" }}>
+              {advUploadMsg}
+            </div>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             {ADV_FIELDS.map((field) => {
               const url = (artist as any)[field.id] as string | null;
