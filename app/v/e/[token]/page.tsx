@@ -38,7 +38,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: artist } = await supabase
     .from("artists")
-    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists, manager_name, manager_email, manager_phone, tour_manager_name, tour_manager_email, tour_manager_phone, booking_agent_name, booking_agent_email, booking_agent_phone, publicist_name, publicist_email, publicist_phone, team_extra, meta_business_id, bio")
+    .select("adv_stage_plot_url, adv_hospitality_url, adv_foh_url, adv_w9_url, adv_custom_materials, social_facebook, social_instagram, social_tiktok, social_x, social_threads, social_youtube, press_playlists, manager_name, manager_email, manager_phone, tour_manager_name, tour_manager_email, tour_manager_phone, booking_agent_name, booking_agent_email, booking_agent_phone, publicist_name, publicist_email, publicist_phone, team_extra, meta_business_id, bio, venue_show_team, venue_show_advance_docs, venue_show_w9")
     .eq("id", (tour as any).artist_id)
     .single();
 
@@ -48,13 +48,25 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
   const a = artist as any;
   const customMaterials = (a?.adv_custom_materials as Array<{ id: string; label: string; url: string }> | null) || [];
   type FixedFieldId = "adv_stage_plot_url" | "adv_hospitality_url" | "adv_foh_url" | "adv_w9_url";
-  const advMaterials: Array<{ fieldId?: FixedFieldId; label: string; url: string | null }> = [
-    { fieldId: "adv_stage_plot_url", label: "Stage Plot", url: a?.adv_stage_plot_url ?? null },
-    { fieldId: "adv_hospitality_url", label: "Hospitality Rider", url: a?.adv_hospitality_url ?? null },
-    { fieldId: "adv_foh_url", label: "FOH Requirements", url: a?.adv_foh_url ?? null },
-    { fieldId: "adv_w9_url", label: "W-9", url: a?.adv_w9_url ?? null },
+  // Server-side visibility gates — default on (null/undefined treated as true).
+  // When a flag is false the corresponding data is excluded from the payload
+  // (never leaves the server). Custom materials sit outside the toggles.
+  const showAdvanceDocs = a?.venue_show_advance_docs !== false;
+  const showW9 = a?.venue_show_w9 !== false;
+  const advMaterials: Array<{ fieldId?: FixedFieldId; label: string; url: string | null }> = [];
+  if (showAdvanceDocs) {
+    advMaterials.push(
+      { fieldId: "adv_stage_plot_url", label: "Stage Plot", url: a?.adv_stage_plot_url ?? null },
+      { fieldId: "adv_hospitality_url", label: "Hospitality Rider", url: a?.adv_hospitality_url ?? null },
+      { fieldId: "adv_foh_url", label: "FOH Requirements", url: a?.adv_foh_url ?? null },
+    );
+    if (showW9) {
+      advMaterials.push({ fieldId: "adv_w9_url", label: "W-9", url: a?.adv_w9_url ?? null });
+    }
+  }
+  advMaterials.push(
     ...customMaterials.filter((c) => c.url).map((c) => ({ label: c.label, url: c.url })),
-  ];
+  );
 
   const venueName = event.venue_name ?? event.venue ?? "";
   const city = event.venue_city ?? event.city ?? "";
@@ -207,7 +219,8 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           </div>
         )}
 
-        {/* Advance Materials */}
+        {/* Advance Materials — whole section hidden when advMaterials is empty (avoids orphaned header). */}
+        {advMaterials.length > 0 && (
         <div style={{ marginBottom: 48 }}>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", paddingBottom: 10, borderBottom: "2px solid var(--hw-text)", marginBottom: 20 }}>Advance Materials</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
@@ -257,6 +270,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             })}
           </div>
         </div>
+        )}
 
         {/* Marketing — only renders when an artist has set a Meta Business Manager ID */}
         {a?.meta_business_id && (
@@ -300,8 +314,10 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
           </div>
         )}
 
-        {/* Team — label "Team" awaiting Tim sign-off */}
-        <TeamContacts label="Team" artist={a} />
+        {/* Team — label "Team" awaiting Tim sign-off. Gated by artist.venue_show_team (default true). */}
+        {a?.venue_show_team !== false && (
+          <TeamContacts label="Team" artist={a} />
+        )}
 
         {/* Bio */}
         <BioSection label="Bio" bio={a?.bio ?? null} />

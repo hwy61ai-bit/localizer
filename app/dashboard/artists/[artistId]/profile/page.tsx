@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import VehicleManager from "@/app/components/tourrouter/VehicleManager";
+import HwToggle from "@/app/components/hw/HwToggle";
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -43,6 +44,9 @@ type ArtistData = {
   social_youtube: string | null;
   press_playlists: Array<{ id: string; label: string; url: string }> | null;
   team_extra: Array<{ id: string; role: string; name: string; email: string; phone: string }> | null;
+  venue_show_team: boolean | null;
+  venue_show_advance_docs: boolean | null;
+  venue_show_w9: boolean | null;
   [key: string]: unknown;
 };
 
@@ -1201,6 +1205,13 @@ export default function ArtistProfilePage() {
           }}
         >
           <SectionLabel>Team</SectionLabel>
+          <div style={{ marginTop: 4, marginBottom: 12 }}>
+            <HwToggle
+              checked={artist.venue_show_team !== false}
+              onChange={(v) => saveFields({ venue_show_team: v })}
+              label="Show on venue links"
+            />
+          </div>
           <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "0.5px", marginTop: -6, marginBottom: 16 }}>
             Include all team members you want shared with promoters.
           </div>
@@ -1311,6 +1322,13 @@ export default function ArtistProfilePage() {
           padding: 28, marginBottom: 20,
         }}>
           <SectionLabel>Advance Materials</SectionLabel>
+          <div style={{ marginTop: 4, marginBottom: 12 }}>
+            <HwToggle
+              checked={artist.venue_show_advance_docs !== false}
+              onChange={(v) => saveFields({ venue_show_advance_docs: v })}
+              label="Show on venue links"
+            />
+          </div>
           {advUploadMsg && (
             <div style={{ marginBottom: 10, padding: "8px 14px", background: "var(--hw-red-ghost)", border: "2px solid var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-crimson)" }}>
               {advUploadMsg}
@@ -1439,6 +1457,15 @@ export default function ArtistProfilePage() {
                 </div>
               );
             })}
+          </div>
+          {/* W-9 sub-toggle — disabled when the section toggle is off (section override wins). */}
+          <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
+            <HwToggle
+              checked={artist.venue_show_w9 !== false}
+              onChange={(v) => saveFields({ venue_show_w9: v })}
+              label="Show W-9 on venue links"
+              disabled={artist.venue_show_advance_docs === false}
+            />
           </div>
           <button
             onClick={addCustomMaterial}
