@@ -34,7 +34,7 @@ export async function ensureOrgExists(supabase: SupabaseClient) {
   try {
     const { error: assentError } = await admin
       .from("user_assents")
-      .upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+      .upsert({ user_id: user.id, tos_version: "v1.0-2026-07" }, { onConflict: "user_id", ignoreDuplicates: true });
     if (assentError) {
       console.error("ensureOrgExists: user_assents upsert failed (non-blocking)", assentError);
     }

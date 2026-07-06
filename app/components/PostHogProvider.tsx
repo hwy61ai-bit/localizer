@@ -4,7 +4,7 @@ import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { getConsent, CONSENT_EVENT } from "./cookieConsent";
+import { getConsent, CONSENT_EVENT, ConsentEventDetail } from "./cookieConsent";
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const [initialized, setInitialized] = useState(false);
@@ -38,9 +38,17 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     }
 
     function onConsentChanged(e: Event) {
-      const detail = (e as CustomEvent<"accepted" | "declined">).detail;
+      const detail = (e as CustomEvent<ConsentEventDetail>).detail;
       if (detail === "accepted") {
-        initPostHog();
+        if (didInitRef.current) {
+          posthog.opt_in_capturing();
+        } else {
+          initPostHog();
+        }
+      } else if (didInitRef.current) {
+        // "declined" or null — revoke on a running session; no-op if never initialized.
+        posthog.opt_out_capturing();
+        posthog.reset();
       }
     }
     window.addEventListener(CONSENT_EVENT, onConsentChanged);

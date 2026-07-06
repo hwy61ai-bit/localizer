@@ -1,13 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getConsent, setConsent } from "./cookieConsent";
+import { getConsent, setConsent, CONSENT_EVENT, ConsentEventDetail } from "./cookieConsent";
 
 export function CookieConsentBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     setVisible(getConsent() === null);
+    function onConsentChanged(e: Event) {
+      const detail = (e as CustomEvent<ConsentEventDetail>).detail;
+      if (detail === null) setVisible(true);
+    }
+    window.addEventListener(CONSENT_EVENT, onConsentChanged);
+    return () => {
+      window.removeEventListener(CONSENT_EVENT, onConsentChanged);
+    };
   }, []);
 
   if (!visible) return null;
