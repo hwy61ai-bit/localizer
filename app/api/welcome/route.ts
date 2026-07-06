@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { LOCALIZER_FROM } from "@/lib/email/sender";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
 </html>`;
 
   await resend.emails.send({
-    from: "HWY61 Labs <noreply@hwy61labs.com>",
+    from: LOCALIZER_FROM,
     to: email,
     subject: "Welcome to Localizer",
     html,

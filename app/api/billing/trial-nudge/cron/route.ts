@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { LOCALIZER_FROM } from "@/lib/email/sender";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -267,7 +268,7 @@ export async function GET(req: NextRequest) {
 
     try {
       const { data: emailResult } = await resend.emails.send({
-        from: "HWY61 Labs <noreply@hwy61labs.com>",
+        from: LOCALIZER_FROM,
         to: recipient,
         subject: SUBJECT[nudgeType],
         html: buildNudgeHtml(nudgeType, appUrl),

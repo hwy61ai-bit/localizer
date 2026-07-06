@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { LOCALIZER_FROM } from "@/lib/email/sender";
 import { tierFromPriceId } from "@/lib/stripe/localizerPrices";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2026-02-25.clover" });
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
     }
 
     await resend.emails.send({
-      from: "HWY61 Labs <noreply@hwy61labs.com>",
+      from: LOCALIZER_FROM,
       to: "hwy61ai@gmail.com",
       subject: `New Localizer customer — ${(tier ?? "unknown").toUpperCase()}`,
       html: `

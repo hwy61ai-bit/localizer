@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
 import { Resend } from "resend";
+import { LOCALIZER_FROM } from "@/lib/email/sender";
 import { checkRateLimit } from "@/lib/rateLimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -111,7 +112,7 @@ export async function POST(req: NextRequest) {
   if (event.promoter_email) {
     const toEmails = event.promoter_email.split(",").map((e: string) => e.trim()).filter(Boolean);
     await resend.emails.send({
-      from: "HWY61 Labs <noreply@hwy61labs.com>",
+      from: LOCALIZER_FROM,
       to: toEmails,
       subject: `Show assets ready — ${bandName} @ ${venueName}`,
       html: `
