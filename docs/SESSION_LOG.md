@@ -3820,3 +3820,6 @@ Next session: signup assent checkbox (0.5d) → cookie consent banner (1d). Then
 
 
 Log for today: assent checkbox + user_assents stamp shipped (619910f, verified in prod table); cookie consent banner + PostHog consent gate shipped (670847f); Tim decided keep both agreement lines; queue empty, gated on Tim; open Tim questions: tos_version string, cookie banner copy review.
+
+
+Append to today's entry: v1.0 legal text deployed (ad125d8) — Tim's blocks verbatim into /terms and /privacy; cookie settings reopen + PostHog revoke/reset built; tos_version stamp added; launch-day runbook now in Day 29 (fill dates → tag v1.0-2026-07 → flip gate). Launch gates down to two: script review, Stripe call.
