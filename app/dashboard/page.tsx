@@ -145,7 +145,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <div className="dash-header" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, position: "relative" }}>
           <div style={{ width: "100%" }}>
             <div className="dash-header-nav" style={{ position: "absolute", top: 0, right: 0, display: "flex", gap: 8, alignItems: "center" }}>
-              <a href="/dashboard/support" style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, color: "#000", textDecoration: "none" }}>SUPPORT</a>
+              <a href="/dashboard/support" style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "2px", textTransform: "uppercase" as const, color: "#000", textDecoration: "none" }}>SUPPORT/FAQ</a>
               <NotificationBell />
               <a href="/account" style={{ fontFamily: "var(--hw-font-display)", fontSize: 12, fontWeight: 400, letterSpacing: "3px", textTransform: "uppercase", color: "#fff", textDecoration: "none", background: "var(--hw-bg-invert)", padding: "8px 16px", border: "3px solid var(--hw-border-strong)" }}>Account</a>
             </div>

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 /* ------------------------------------------------------------------ */
 /*  FAQ DATA – verbatim from docs/HWY61_FAQ_CONTENT_FINAL.md          */
 /* ------------------------------------------------------------------ */
 
-type QA = { q: string; a: string };
+type QA = { q: string; a: ReactNode };
 type Section = { title: string; items: QA[] };
 
 const FAQ_DATA: Section[] = [
@@ -45,11 +46,16 @@ const FAQ_DATA: Section[] = [
       },
       {
         q: "How much does Localizer cost?",
-        a: "Three plans, billed monthly or annually:\n\u2022 Indie \u2014 $19/mo ($190/yr) \u2014 1 artist\n\u2022 Pro \u2014 $39/mo ($390/yr) \u2014 up to 5 artists\n\u2022 Agency \u2014 $199/mo ($1,990/yr) \u2014 up to 15 artists\n\nAnnual billing saves you about 17% versus paying monthly.",
+        a: "Three plans, billed monthly or annually \u2014 plus a custom tier:\n\u2022 Indie \u2014 $19/mo ($190/yr) \u2014 1 artist\n\u2022 Pro \u2014 $39/mo ($390/yr) \u2014 up to 5 artists\n\u2022 Agency \u2014 $199/mo ($1,990/yr) \u2014 up to 15 artists\n\u2022 Agency Pro \u2014 for larger rosters, contact sales at support@hwy61labs.com\n\nAnnual billing saves you about 17% versus paying monthly.",
       },
       {
         q: "What\u2019s the difference between the plans?",
-        a: "Just the number of artists you can manage. Every plan gets the full Localizer feature set \u2014 all platforms, all asset types, custom branding, promoter links. Indie is one artist, Pro is up to five, Agency is up to fifteen.",
+        a: (
+          <>
+            Mainly the number of artists you can manage — every plan gets the full Localizer feature set. Indie is one artist, Pro is up to five, Agency is up to fifteen, and Agency Pro is for larger rosters. See the full breakdown on our{" "}
+            <Link href="/pricing" style={{ color: "#c5535b", fontWeight: 700 }}>pricing page</Link>.
+          </>
+        ),
       },
       {
         q: 'What counts as an "artist"?',
@@ -57,11 +63,11 @@ const FAQ_DATA: Section[] = [
       },
       {
         q: "Can I switch plans later?",
-        a: "Reach out and we\u2019ll switch you over.",
+        a: "Yes \u2014 upgrade or downgrade anytime. Go to your account page, click Manage Billing & Invoices, and pick your new plan. Changes take effect right away.",
       },
       {
         q: "How do I cancel?",
-        a: "Once you\u2019re on a paid plan, you can cancel anytime through the billing portal \u2014 go to your account page and click Manage Billing & Invoices to open it. While you\u2019re on the free trial there\u2019s nothing to cancel; it simply ends after 14 days unless you choose a plan. Either way your data stays put \u2014 your artists, shows, and assets are all still there if you come back, and you can re-subscribe whenever you like.",
+        a: "Once you\u2019re on a paid plan, you can cancel anytime through the billing portal \u2014 go to your account page and click Manage Billing & Invoices to open it. While you\u2019re on the free trial there\u2019s nothing to cancel; it simply ends after 14 days unless you choose a plan. If you cancel a paid plan, your access runs through the end of the period you\u2019ve already paid for. Either way your data stays put \u2014 your artists, shows, and assets are all still there if you come back, and you can re-subscribe whenever you like.",
       },
       {
         q: "What payment methods do you take?",

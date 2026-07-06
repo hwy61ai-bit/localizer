@@ -36,7 +36,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Can I switch plans later?",
-    a: "Need to move up or down a tier? Reach out and we'll switch you over — quick, no hassle.",
+    a: "Yes — upgrade or downgrade anytime. Go to your account page, click Manage Billing & Invoices, and pick your new plan. Changes take effect right away.",
   },
   {
     q: "How does annual billing work?",
@@ -48,7 +48,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Can I cancel?",
-    a: "Anytime. And your data stays put — nothing gets wiped because you cancelled. Re-subscribe whenever and you pick up right where you left off.",
+    a: "Anytime. Your access runs through the end of the period you've already paid for. And your data stays put — nothing gets wiped because you cancelled. Re-subscribe whenever and you pick up right where you left off.",
   },
   {
     q: "Is my data safe?",

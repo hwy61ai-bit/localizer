@@ -35,24 +35,26 @@ Crew members don't need an HWY61 account. Your tour manager generates a 6-charac
 
 ## Billing & Plans
 
-**How much does HWY61 cost?**
-It depends on what you need:
-- **TourRouter** (the complete touring OS): $49–$149/mo depending on how many artists and users
-- **Localizer** (tour marketing automation): $39–$139/mo
-- **DIY** (routing + budget for self-managed acts): $19/mo
-- **Road App** (mobile schedule for band + crew): Free, always
-- **The Full HWY61 Suite** (everything bundled): $249/mo
+**How much does Localizer cost?**
+Three plans, billed monthly or annually — plus a custom tier:
+- **Indie** — $19/mo ($190/yr) — 1 artist
+- **Pro** — $39/mo ($390/yr) — up to 5 artists
+- **Agency** — $199/mo ($1,990/yr) — up to 15 artists
+- **Agency Pro** — for larger rosters, contact sales at support@hwy61labs.com
 
-Annual billing saves 20% across all plans.
+Annual billing saves you about 17% versus paying monthly.
+
+**What's the difference between the plans?**
+Mainly the number of artists you can manage — every plan gets the full Localizer feature set. Indie is one artist, Pro is up to five, Agency is up to fifteen, and Agency Pro is for larger rosters. See the full breakdown on our [pricing page](/pricing).
 
 **Is there a free trial?**
-During beta, everything is free. No credit card required. When we launch paid plans, we'll give you plenty of notice and you'll be able to choose your plan before being charged.
+Yes — and you don't need a credit card. When you sign up you get 14 days of full Localizer access, completely free. Generate as many assets as you want. When the trial ends, you pick a plan to keep going. No card up front, no surprise charge.
 
-**Can I change my plan later?**
-Yes. You can upgrade or downgrade anytime from Settings → Billing. Changes take effect immediately. If you upgrade mid-cycle, we'll prorate the difference.
+**Can I switch plans later?**
+Yes — upgrade or downgrade anytime. Go to your account page, click Manage Billing & Invoices, and pick your new plan. Changes take effect right away.
 
 **How do I cancel?**
-Settings → Billing → Manage Subscription. You can cancel anytime. Your data stays accessible through the end of your billing period. After that, your account goes read-only — you can still view and export your data, but you can't create new tours or shows.
+Once you're on a paid plan, you can cancel anytime through the billing portal — go to your account page and click Manage Billing & Invoices to open it. While you're on the free trial there's nothing to cancel; it simply ends after 14 days unless you choose a plan. If you cancel a paid plan, your access runs through the end of the period you've already paid for. Either way your data stays put — your artists, shows, and assets are all still there if you come back, and you can re-subscribe whenever you like.
 
 **Can I export my data if I leave?**
 Yes. Every tour can be exported as CSV, Excel, or PDF at any time. Your data is yours. We'll never hold it hostage.

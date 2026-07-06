@@ -348,7 +348,7 @@ The June 14 Team/Marketing build named/renamed venue section headers (Marketing,
 
 ---
 
-## ⏳ Soak items (4)
+## ⏳ Soak items (5)
 
 *Waiting on production data or time to pass.*
 
@@ -431,6 +431,20 @@ Starting Oct 30, 2026, Supabase removes the default Data API grant on public-sch
 Both also use the wrong "20%" annual figure (correct is ~17%, as documented in the May 28 landing-page correction).
 
 **Why deferred:** `/tourrouter` is currently redirected to `/coming-soon` via `next.config` / middleware (per LAUNCH_PROGRESS Day 8–9 "Hide /tourrouter, /diy, /roadapp via config-level redirects"). No real customer sees this page at launch. **Trigger:** if/when TourRouter is un-gated as a public surface, do a copy pass first. Mirror the June 4 fixes on `/` (drop "Free during beta," replace with the actual trial model offer, correct the 20% → ~17%).
+
+---
+
+### HWY61_FAQ_CONTENT_FINAL.md overhaul — stale suite-era content
+
+`docs/HWY61_FAQ_CONTENT_FINAL.md` is an April 2026 suite-wide FAQ that predates the Localizer-only pivot. Plans & Billing section synced to the live support page July 6, but the rest of the doc still contains:
+
+- Retired TourRouter pricing at line ~64 (the "Do you offer discounts for multiple acts?" answer names the TourRouter Agency tier at $149/mo with "unlimited artists" and the Full HWY61 Suite bundle at $249/mo — all superseded)
+- Wrong magic-link domain at line ~126 (`@hwy61.io` should be `@hwy61labs.com`)
+- Suite-scoped framing throughout — questions like "How does routing work?", "What is Localizer?", "What is DIY mode?", "What is the Road App?" describe products that are either paused (TourRouter, DIY) or not currently sold as separate products at launch
+
+**Decide post-launch:** rescope the doc to Localizer-only (mirror the code page's four Localizer-only sections), or retire the doc entirely and make `app/dashboard/support/page.tsx` the canonical source. The file-top comment at line 7 of the support page still points to this doc as verbatim source — that pointer will need updating either way.
+
+**Why deferred:** the doc isn't customer-facing at launch (only the code page is). Cleanup is post-launch polish, not a launch gate.
 
 ---
 
