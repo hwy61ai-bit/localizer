@@ -27,6 +27,21 @@ export async function ensureOrgExists(supabase: SupabaseClient) {
   if (!user) return;
   const admin = supabaseAdmin();
 
+  // Stamp user assent on every login. Existing users' first login after the
+  // checkbox deploy is their assent moment, so this must run before the
+  // "already has an org" early return. Non-blocking: a failure here must
+  // never break login.
+  try {
+    const { error: assentError } = await admin
+      .from("user_assents")
+      .upsert({ user_id: user.id }, { onConflict: "user_id", ignoreDuplicates: true });
+    if (assentError) {
+      console.error("ensureOrgExists: user_assents upsert failed (non-blocking)", assentError);
+    }
+  } catch (e) {
+    console.error("ensureOrgExists: user_assents upsert threw (non-blocking)", e);
+  }
+
   const { data: existing } = await admin
     .from("org_members")
     .select("org_id")

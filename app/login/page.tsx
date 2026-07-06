@@ -16,6 +16,7 @@ function LoginContent() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [assentChecked, setAssentChecked] = useState(false);
 
   // Beta access gate
   const [accessPassword, setAccessPassword] = useState("");
@@ -60,6 +61,7 @@ function LoginContent() {
   }
 
   async function sendMagicLink() {
+    if (!assentChecked) return;
     setError(null);
     setLoading(true);
 
@@ -82,6 +84,7 @@ function LoginContent() {
   }
 
   async function signInWithGoogle() {
+    if (!assentChecked) return;
     setError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -284,10 +287,10 @@ function LoginContent() {
               <button
                 style={{
                   ...primaryBtnStyle,
-                  opacity: !email || loading ? 0.4 : 1,
-                  pointerEvents: !email || loading ? "none" : "auto",
+                  opacity: !email || loading || !assentChecked ? 0.4 : 1,
+                  pointerEvents: !email || loading || !assentChecked ? "none" : "auto",
                 }}
-                disabled={!email || loading}
+                disabled={!email || loading || !assentChecked}
                 onClick={sendMagicLink}
               >
                 {loading ? "SENDING\u2026" : "SEND LOGIN LINK"}
@@ -306,7 +309,12 @@ function LoginContent() {
               </div>
 
               <button
-                style={secondaryBtnStyle}
+                style={{
+                  ...secondaryBtnStyle,
+                  opacity: !assentChecked ? 0.4 : 1,
+                  pointerEvents: !assentChecked ? "none" : "auto",
+                }}
+                disabled={!assentChecked}
                 onClick={signInWithGoogle}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -317,6 +325,40 @@ function LoginContent() {
                 </svg>
                 SIGN IN WITH GOOGLE
               </button>
+
+              <label style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                marginTop: 20,
+                fontFamily: "var(--hw-font-body)",
+                fontSize: 14,
+                fontWeight: 300,
+                color: "var(--hw-text-secondary)",
+                lineHeight: 1.5,
+                cursor: "pointer",
+              }}>
+                <input
+                  type="checkbox"
+                  checked={assentChecked}
+                  onChange={(e) => setAssentChecked(e.target.checked)}
+                  style={{
+                    marginTop: 3,
+                    width: 20,
+                    height: 20,
+                    accentColor: "var(--hw-crimson)",
+                    borderRadius: 0,
+                    flexShrink: 0,
+                    cursor: "pointer",
+                  }}
+                />
+                <span>
+                  I agree to the{" "}
+                  <a href="/terms" style={{ color: "var(--hw-text-secondary)", textDecoration: "underline" }}>Terms of Service</a>{" "}
+                  and{" "}
+                  <a href="/privacy" style={{ color: "var(--hw-text-secondary)", textDecoration: "underline" }}>Privacy Policy</a>.
+                </span>
+              </label>
 
               <div style={{
                 marginTop: 20,
