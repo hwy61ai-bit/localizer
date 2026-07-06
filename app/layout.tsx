@@ -4,6 +4,7 @@ import "./globals.css";
 import "./animations.css";
 import { ToastProvider } from "./components/Toast";
 import { PostHogProvider } from "./components/PostHogProvider";
+import { CookieConsentBanner } from "./components/CookieConsentBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
         <PostHogProvider>
           <ToastProvider>{children}</ToastProvider>
         </PostHogProvider>
+        <CookieConsentBanner />
       </body>
     </html>
   );
