@@ -3823,3 +3823,5 @@ Log for today: assent checkbox + user_assents stamp shipped (619910f, verified i
 
 
 Append to today's entry: v1.0 legal text deployed (ad125d8) — Tim's blocks verbatim into /terms and /privacy; cookie settings reopen + PostHog revoke/reset built; tos_version stamp added; launch-day runbook now in Day 29 (fill dates → tag v1.0-2026-07 → flip gate). Launch gates down to two: script review, Stripe call.
+
+Addendum: Tim's five-item review batch — FAQ edits + Agency Pro + pricing link (09bee6c), portal switching enabled directly in Stripe (six prices, Agency Pro excluded, cancel-at-period-end verified — June 4 BACKLOG item resolved ahead of the screen-share), SUPPORT/FAQ nav rename, email relabel to HWY61 Labs/Localizer via LOCALIZER_FROM (e4a4784, verified live), build-cache scare recovered via standard rm -rf .next.

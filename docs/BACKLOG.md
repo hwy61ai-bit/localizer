@@ -10,7 +10,7 @@ Forward-looking list of features, refactors, and design questions to revisit aft
 
 ---
 
-## 🟡 Pre-launch gates (6)
+## 🟡 Pre-launch gates (5)
 
 *Things that must be true before flipping `COMING_SOON=false`.*
 
@@ -117,18 +117,6 @@ In `app/pricing/page.tsx` (already `"use client"`):
 **Effort:** ~15 min. One file (`app/pricing/page.tsx`). `tsc` + build after.
 
 **Related latent issue (separate, lower priority):** `middleware.ts:104` — the unconditional `/` → `/coming-soon` redirect bounces authenticated users too. Self-resolves at launch when COMING_SOON lifts, but if any logged-in user needs `/` to work pre-launch, that's where to look. Not part of this fix.
-
----
-
-### Pricing FAQ copy upgrades — gated on Stripe portal-config screen-share
-
-Two FAQ answers on `/pricing` currently ship in their SAFE/soft form because the behavior depends on Stripe Dashboard Customer Portal config (unverified). After the live-Stripe screen-share with Tim (already on the launch checklist), verify the portal config and upgrade the copy:
-
-1. **SWITCH PLANS** — current copy: "Reach out and we'll switch you over." IF the screen-share confirms the portal has plan-switching enabled with all 6 Localizer prices (Solo/Pro/Agency × monthly/annual) listed as switchable → swap in the stronger version: "Upgrade or downgrade anytime from your account settings. Changes take effect right away." (Tim pre-approved this stronger version conditional on the portal being live.) Also consider adding "…and switch plans" to the account-page button which currently reads "MANAGE BILLING & INVOICES" (doesn't telegraph plan-switching).
-
-2. **CANCEL** — current copy: "Anytime. And your data stays put… Re-subscribe whenever." (data-preservation only — verified unconditionally true). IF the screen-share confirms the portal is set to "cancel at period end" (Stripe default, NOT "cancel immediately") → add the end-of-period line back: "Your access runs through the end of the period you've already paid for." Only add if confirmed — if portal is "cancel immediately," leave as-is.
-
-Both are ~2-min copy swaps in `app/pricing/page.tsx` `FAQS` array. Gated on the Stripe screen-share, not standalone work.
 
 ---
 
@@ -348,7 +336,7 @@ The June 14 Team/Marketing build named/renamed venue section headers (Marketing,
 
 ---
 
-## ⏳ Soak items (5)
+## ⏳ Soak items (6)
 
 *Waiting on production data or time to pass.*
 
@@ -445,6 +433,19 @@ Both also use the wrong "20%" annual figure (correct is ~17%, as documented in t
 **Decide post-launch:** rescope the doc to Localizer-only (mirror the code page's four Localizer-only sections), or retire the doc entirely and make `app/dashboard/support/page.tsx` the canonical source. The file-top comment at line 7 of the support page still points to this doc as verbatim source — that pointer will need updating either way.
 
 **Why deferred:** the doc isn't customer-facing at launch (only the code page is). Cleanup is post-launch polish, not a launch gate.
+
+---
+
+### TourRouter advance sender inconsistency
+
+The TourRouter advance flow currently sends from two different Resend addresses depending on trigger:
+
+- **Manual send** (`app/api/tourrouter/advance/send/route.ts:79`) — `HWY61 Labs <noreply@hwy61labs.com>`
+- **Cron send** (`app/api/tourrouter/advance/cron/route.ts:215, 290`) — `HWY61 Labs <advances@hwy61labs.com>` (initial dispatch + escalation to tour-owner)
+
+Same product flow (venue-advance emails to promoter contacts) delivered from two sender addresses. Effect: an initial manual send and its automated follow-ups arrive in the recipient's inbox as separate Gmail threads rather than one conversation. Anyone replying to `advances@` also might not reach the same handler as replies to `noreply@`.
+
+**Why deferred:** TourRouter is paused at launch (`/tourrouter` → `/coming-soon` redirect); no external customer sees these emails today. **Trigger:** when TourRouter un-pauses, pick one sender for the flow (probably `advances@` since it names the purpose) and unify — either add a TourRouter-specific constant to `lib/email/sender.ts` or hard-code both call sites to the same address. Whichever address is retired should stay in DNS SPF/DKIM until any in-flight replies drain.
 
 ---
 
@@ -798,6 +799,16 @@ None of the five download routes get an Indie static-only tier gate. They keep t
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### Pricing FAQ copy upgrades — gated on Stripe portal-config screen-share
+
+**Resolution (2026-07-06):** Shipped. Portal config verified directly (ahead of the still-pending live-Stripe screen-share): (a) "customers can switch plans" toggled on with all six Localizer prices listed as available upgrade/downgrade targets, Agency Pro excluded (that tier is contact-sales, not portal-switchable); (b) cancellations set to "cancel at period end" (not immediate). Strong-form copy shipped on both surfaces in `09bee6c`:
+
+- `/pricing` FAQS (`app/pricing/page.tsx`): switch-plans answer swapped to "Yes — upgrade or downgrade anytime. Go to your account page, click Manage Billing & Invoices, and pick your new plan. Changes take effect right away."; cancel answer gained "Your access runs through the end of the period you've already paid for."
+- `/dashboard/support` FAQ Plans & Billing (`app/dashboard/support/page.tsx`): same switch/cancel upgrades, plus Agency Pro added to the "How much does Localizer cost?" answer, plus a crimson `/pricing` link on the "difference between plans" answer (required widening `QA.a` from `string` to `ReactNode`).
+- `docs/HWY61_FAQ_CONTENT_FINAL.md` Plans & Billing section synced to match the live copy in the same commit.
+
+**Original problem:** Two FAQ answers on `/pricing` shipped in SAFE/soft form because behavior depended on Stripe Dashboard Customer Portal config (unverified). Switch-plans read "Reach out and we'll switch you over." Cancel answer omitted the end-of-period line ("Your access runs through the end of the period you've already paid for.") pending confirmation of cancel-at-period-end vs. cancel-immediately. Gated on the live-Stripe screen-share with Tim; upgraded early once the portal config was verified directly.
 
 ### Org / account deletion routine
 
