@@ -61,10 +61,22 @@ function formatDateForRender(iso: string, short = false): string {
 }
 
 function sanitize(t: string): string {
-  // Remove dangerous chars, normalize spaces, but DON'T use encodeURIComponent
-  // Cloudinary needs manual encoding: spaces -> %20, commas -> %252C
-  const clean = t.replace(/[/?&#%()'"]/g, "").replace(/\s+/g, " ").trim();
-  return clean.replace(/ /g, "%20").replace(/,/g, "%252C");
+  // Cloudinary l_text needs manual double-encoding (URL is decoded twice).
+  // Encode special chars rather than stripping them so text renders verbatim.
+  return t
+    .replace(/%/g, "%2525")   // must be first — escapes the escape char
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\//g, "%252F")
+    .replace(/,/g, "%252C")
+    .replace(/\?/g, "%253F")
+    .replace(/&/g, "%2526")
+    .replace(/#/g, "%2523")
+    .replace(/\(/g, "%2528")
+    .replace(/\)/g, "%2529")
+    .replace(/'/g, "%2527")
+    .replace(/"/g, "%2522")
+    .replace(/ /g, "%20");
 }
 
 function fitFontSize(text: string, maxSize: number, availableW: number): number {
