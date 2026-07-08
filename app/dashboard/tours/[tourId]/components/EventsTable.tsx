@@ -551,7 +551,10 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
             )}
             {staleEvents.length > 0 && !generating ? (
               <>
-                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", textAlign: "right", textTransform: "uppercase" }}>{staleEvents.length} SHOW{staleEvents.length !== 1 ? "S" : ""} HAVE CHANGES NOT IN THEIR ASSETS</div>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontWeight: 700, letterSpacing: "1.5px", color: "var(--hw-crimson)", border: "1.5px solid var(--hw-crimson)", padding: "3px 10px", textAlign: "left", textTransform: "uppercase", display: "flex", flexDirection: "column", gap: 2 }}>
+                  <div style={{ fontSize: 12, whiteSpace: "nowrap" }}>{staleEvents.length === 1 ? "1 SHOW HAS UNRENDERED CHANGES" : `${staleEvents.length} SHOWS HAVE UNRENDERED CHANGES`}</div>
+                  <div style={{ fontSize: 11, whiteSpace: "nowrap", textAlign: "center" }}>UPDATE YOUR SHOW LINKS</div>
+                </div>
                 <button
                   onClick={regenerateStale}
                   disabled={generating}
