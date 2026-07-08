@@ -3825,3 +3825,13 @@ Log for today: assent checkbox + user_assents stamp shipped (619910f, verified i
 Append to today's entry: v1.0 legal text deployed (ad125d8) — Tim's blocks verbatim into /terms and /privacy; cookie settings reopen + PostHog revoke/reset built; tos_version stamp added; launch-day runbook now in Day 29 (fill dates → tag v1.0-2026-07 → flip gate). Launch gates down to two: script review, Stripe call.
 
 Addendum: Tim's five-item review batch — FAQ edits + Agency Pro + pricing link (09bee6c), portal switching enabled directly in Stripe (six prices, Agency Pro excluded, cancel-at-period-end verified — June 4 BACKLOG item resolved ahead of the screen-share), SUPPORT/FAQ nav rename, email relabel to HWY61 Labs/Localizer via LOCALIZER_FROM (e4a4784, verified live), build-cache scare recovered via standard rm -rf .next.
+
+
+the substance for July 8:
+
+Set All Formats confirm dialog copy simplified and shipped (commit 926ad3a)
+Opening act feature designed with Tim/Don, ratified, spec'd (docs/SPEC_OPENER_RERENDER.md), and built end-to-end all three phases in one day — per-event opener across editor/canvas/video/gigs inline edit; staleness flag watching date/city/state/venue/venue_name/opener; per-row ↻ RE-RENDER in LINK cell; bulk RE-RENDER UPDATED banner; instant flag via commitEdit merging the PATCH response
+Pre-existing prod bug fixed in passing: old reRenderEvent regenerated images through the dead Cloudinary URL path (no custom fonts) — now uses the canvas pipeline via extracted renderEvents() helper. Tell Tim; beta users could have hit it.
+QA finding, no code bug: custom text (tour-level) and opener (per-event) are confusable in the editor — a stray custom_text_1 entry caused a phantom "cross-event leak" that cost real debugging time. Backlog: label overlay elements in the editor preview.
+Known limitation (commented in code): multi-event bulk re-render falls back to tour-wide video regeneration — generate route can't take an eventIds array yet. Backlog item.
+Open Tim questions: opener on print PDF (recommendation: yes, non-blocking); mention the reRenderEvent bug fix.

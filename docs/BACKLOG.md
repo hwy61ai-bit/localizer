@@ -120,9 +120,37 @@ In `app/pricing/page.tsx` (already `"use client"`):
 
 ---
 
-## 🟢 Ready to build (6)
+## 🟢 Ready to build (9)
 
 *Scoped, unblocked, just needs a session.*
+
+### Editor overlay element labels (2026-07-08)
+
+Custom text (tour-level) and opener (per-event) overlay elements are visually indistinguishable on the template editor canvas — both render in the same font/color/weight. Caused a phantom cross-event bug report during opener QA where a custom-text label on one show was mistaken for the opener from a different show. Fix: add hover labels on the draggable preview elements, or highlight the corresponding sidebar section on hover so the element's identity is obvious.
+
+**Priority:** Low. Doesn't affect render output — pure editor discoverability. Post-launch UX polish.
+
+---
+
+### eventIds array support in `/api/renders/generate` (2026-07-08)
+
+Route accepts a single `eventId` or a `tourId`, not an array. The RE-RENDER UPDATED bulk action in `EventsTable.tsx`'s toolbar falls back to tour-wide video regeneration whenever more than one event is flagged — over-rendering videos for unaffected events. Comment in `renderEvents()` in `app/dashboard/tours/[tourId]/components/EventsTable.tsx` (video-pass block) calls this out.
+
+**Fix:** accept `eventIds: string[]` in the POST body; when present, filter server-side to that subset; keep single `eventId` and `tourId` for back-compat. Update the caller in `renderEvents` to pass the array when `targetEvents.length > 1`.
+
+**Effort:** ~30 min. **Priority:** Low. Images still render correctly per-event; only the video pass over-renders in the multi-flagged-subset case.
+
+---
+
+### Template-level staleness indicator (2026-07-08)
+
+Template editor changes (fonts, positions, colors, tour-level custom text, band-font-family) don't set `needs_rerender` on any events — by launch-scope decision (see `docs/SPEC_OPENER_RERENDER.md` "Locked product decisions"). The July 8 custom-text QA incident (see "Editor overlay element labels" item above) demonstrated the gap: users edit template settings expecting the assets to reflect them, but no visible indicator says "assets are now stale relative to the template."
+
+**Consider post-launch:** a tour-level "template changed since last generate" indicator driven by comparing overlay_config JSON snapshots or a `tour.template_touched_at` timestamp vs the max `venue_link.created_at` for that tour.
+
+**Priority:** Medium. Not a bug — an intentional deferral. Worth revisiting once real users report the same friction Drew hit during QA.
+
+---
 
 ### Unit D — Rate limiting (Upstash Redis) — ✅ SHIPPED (rate limits complete July 1; signup friction separate)
 
