@@ -1067,11 +1067,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               {activeFormat === "square" && <button
                   onClick={() => {
                     const confirmed = window.confirm(
-                      "The feature helps you maintain the same fonts and color schemes for your other photo and video assets.\n\n" +
-                      "Apply Square's settings to all other formats?\n\n" +
-                      "This will overwrite each format's current band, venue, city, date, and custom text — sizes, positions, alignments, fonts, and colors — with Square's settings.\n\n" +
-                      "Sizes will scale proportionally to each format's canvas height. Show/hide toggles and image-format-specific settings will not be affected.\n\n" +
-                      "This cannot be undone."
+                      "Match every format to Square?\n\n" +
+                      "This copies your fonts, colors, sizes, and positions to all formats so you don't have to match them by hand. Your other formats' current settings will be replaced — you can still fine-tune any format afterward."
                     );
                     if (!confirmed) return;
                     const sourceCfg = configs.square;
