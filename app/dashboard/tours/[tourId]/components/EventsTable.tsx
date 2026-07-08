@@ -14,6 +14,7 @@ type EventRow = {
   promoter_email: string | null; manager_email: string | null;
   sent_at: string | null; event_index: number | null;
   render_status: string | null;
+  opener?: string | null;
 };
 
 type Props = {
@@ -23,7 +24,7 @@ type Props = {
   tier: FeatureTier;
 };
 
-const EDITABLE_FIELDS = ["date_iso","day","city","state","venue","promoter_email"] as const;
+const EDITABLE_FIELDS = ["date_iso","day","city","state","venue","promoter_email","opener"] as const;
 type EditableField = typeof EDITABLE_FIELDS[number];
 
 function formatDate(iso: string) {
@@ -346,6 +347,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
             dateFormatted: formatDateForRender(event.date_iso, shortDate),
             venueName,
             cityState: [city, state].filter(Boolean).join(", "),
+            opener: event.opener ?? null,
             customText1: tour.custom_text_1 ?? null,
             customText2: tour.custom_text_2 ?? null,
           };
@@ -541,7 +543,24 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
               <Cell event={e} field="date_iso" display={e.date_iso ? formatDate(e.date_iso) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <Cell event={e} field="day" display={e.day ? e.day.slice(0,3) : ""} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
               <CityStateCell event={e} editing={editing} saving={saving} drafts={drafts} inputRef={inputRef} onStartEdit={startEdit} onCityChange={val => setDrafts(d => ({ ...d, city: val }))} onStateChange={val => setDrafts(d => ({ ...d, state: val }))} onCommit={commitEdit} onKey={handleKey} />
-              <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+              <div>
+                <Cell event={e} field="venue" display={e.venue} editing={editing} saving={saving} draft={draft} inputRef={inputRef} onStartEdit={startEdit} onDraftChange={setDraft} onCommit={commitEdit} onKey={handleKey} />
+                {editing?.id === e.id && editing?.field === "opener" ? (
+                  <div style={{ padding: "2px 4px", marginTop: 2, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)" }}>
+                    <input ref={inputRef} value={draft} onChange={ev => setDraft(ev.target.value)} onBlur={commitEdit} onKeyDown={handleKey} maxLength={60} placeholder="Opening act" style={{ border: "none", outline: "none", width: "100%", fontSize: 12, background: "transparent", padding: 0, color: "var(--hw-text-muted)" }} />
+                  </div>
+                ) : e.opener ? (
+                  <div onClick={() => startEdit(e, "opener")} style={{ cursor: "text", padding: "2px 4px", marginTop: 2, fontSize: 12, color: "var(--hw-text-muted)", lineHeight: 1.3, border: "2px solid transparent" }}
+                    onMouseEnter={ev => (ev.currentTarget.style.borderColor = "var(--hw-border)")}
+                    onMouseLeave={ev => (ev.currentTarget.style.borderColor = "transparent")}>
+                    {e.opener}
+                  </div>
+                ) : hoveredRow === e.id ? (
+                  <div onClick={() => startEdit(e, "opener")} style={{ cursor: "text", padding: "2px 4px", marginTop: 2, fontFamily: "var(--hw-font-mono)", fontSize: 11, color: "var(--hw-text-muted)", letterSpacing: "1px", lineHeight: 1.3 }}>
+                    + opener
+                  </div>
+                ) : null}
+              </div>
               <div style={{ opacity: 0.8, display: "flex", alignItems: "center", gap: 4 }}>
                 <button onClick={() => { const current = e.promoter_email ?? ""; startEdit(e, "promoter_email"); setTimeout(() => { setDraft(current ? current + ", " : ""); inputRef.current?.focus(); }, 50); }} title="Hit + to add another email address" style={{ width: 22, height: 22, borderRadius: 0, border: "2px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text-muted)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, lineHeight: 1 }}>+</button>
                 <div style={{ flex: 1, minWidth: 0 }}>

@@ -26,6 +26,8 @@ type FormatConfig = {
   city: FieldConfig;
   showCustomText1?: boolean;
   customText1?: FieldConfig;
+  showOpener?: boolean;
+  opener?: FieldConfig;
   showCustomText2?: boolean;
   customText2?: FieldConfig;
   showVenue?: boolean;
@@ -38,12 +40,14 @@ type EventData = {
   dateFormatted: string;
   venueName: string;
   cityState: string;
+  opener?: string | null;
   customText1?: string | null;
   customText2?: string | null;
 };
 
 const CUSTOM_TEXT_1_DEFAULT: FieldConfig = { x: 0.5, y: 0.08, size: 48, align: "center" };
 const CUSTOM_TEXT_2_DEFAULT: FieldConfig = { x: 0.5, y: 0.92, size: 48, align: "center" };
+const OPENER_DEFAULT: FieldConfig = { x: 0.5, y: 0.72, size: 40, align: "center" };
 
 // Match the generate route's output dimensions exactly
 const FORMAT_DIMS: Record<string, { w: number; h: number }> = {
@@ -353,6 +357,12 @@ export async function renderPoster(
     const rawCity = caps ? eventData.cityState.toUpperCase() : eventData.cityState;
     const cityColor = cfg.cityColor ? `#${cfg.cityColor}` : undefined;
     drawText(rawCity, cfg.city, cfg.city.size, false, "", cityColor);
+  }
+
+  // Opener — per-event, opt-in, not drawn on print
+  if (formatKey !== "print" && (cfg.showOpener ?? false) && (eventData.opener ?? "").length > 0) {
+    const op = cfg.opener ?? OPENER_DEFAULT;
+    drawText(eventData.opener!, op, op.size);
   }
 
   // Custom text 1 — opt-in, not drawn on print

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   const { data: events } = await supabase
     .from("events")
-    .select("id, date_iso, city, state, venue, venue_name, venue_city, venue_state")
+    .select("id, date_iso, city, state, venue, venue_name, venue_city, venue_state, opener")
     .eq("tour_id", tourId)
     .order("date_iso");
 

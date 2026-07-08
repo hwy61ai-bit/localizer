@@ -30,7 +30,7 @@ export default async function TemplatePage({ params }: { params: Promise<{ tourI
 
   const { data: events } = await supabase
     .from("events")
-    .select("date_iso, city, state, venue")
+    .select("date_iso, city, state, venue, opener")
     .eq("tour_id", tourId)
     .order("date_iso", { ascending: true });
 

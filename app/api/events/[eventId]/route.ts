@@ -107,6 +107,7 @@ export async function PATCH(
   const allowed = [
     "date_iso", "day", "city", "state",
     "venue", "venue_name", "promoter_email",
+    "opener",
   ];
 
   const update: Record<string, unknown> = {};

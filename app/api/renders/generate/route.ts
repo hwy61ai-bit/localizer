@@ -248,7 +248,7 @@ function buildCloudinaryVideoUrl(
   cloudName: string,
   format: VideoFormat,
   overlayConfig: any,
-  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string },
+  eventData: { bandName: string; dateFormatted: string; venueName: string; cityState: string; opener?: string | null },
   customFontsMap: Map<string, string>,
   logoUrl: string | null,
   sponsorLogo1Url: string | null,
@@ -315,6 +315,16 @@ function buildCloudinaryVideoUrl(
   const showSponsorLogo2 = cfg.showSponsorLogo2 ?? false;
   const sponsorLogo2Cfg = cfg.sponsorLogo2 ?? null;
 
+  const showOpener = cfg.showOpener ?? false;
+  const openerCfg = cfg.opener ?? null;
+  const openerSize = openerCfg?.size ?? 40;
+  const openerXF = openerCfg?.x ?? 0.5;
+  const openerYF = openerCfg?.y ?? 0.72;
+  const openerAlign = openerCfg?.align ?? "center";
+  const hasOpenerContent = !!(eventData.opener && eventData.opener.trim().length > 0);
+  const drawOpener = showOpener && hasOpenerContent;
+  const openerFinal = drawOpener ? sanitize(eventData.opener!) : "";
+
   const showCustomText1 = cfg.showCustomText1 ?? false;
   const customText1Cfg = cfg.customText1 ?? null;
   const customText1Size = customText1Cfg?.size ?? 28;
@@ -348,6 +358,9 @@ function buildCloudinaryVideoUrl(
     ...((cfg.showVenue ?? true) ? [buildTextLayer(font, venueSize, venueName, venueColor, venueXF, venueYF, w, h, venueAlign)] : []),
     ...((cfg.showDate ?? true)  ? [buildTextLayer(font, dateSize,  dateStr,   dateColor, dateXF,  dateYF,  w, h, dateAlign)]  : []),
     ...((cfg.showCity ?? true)  ? [buildTextLayer(font, citySize,  cityState, cityColor, cityXF,  cityYF,  w, h, cityAlign)]  : []),
+    ...(drawOpener
+      ? [buildTextLayer(font, openerSize, openerFinal, color, openerXF, openerYF, w, h, openerAlign)]
+      : []),
     ...(drawCustomText1
       ? [buildTextLayer(font, customText1Size, customText1Final, color, customText1XF, customText1YF, w, h, customText1Align)]
       : []),
@@ -496,6 +509,7 @@ export async function POST(req: NextRequest) {
         bandName:  (tour as any).band_name ?? tour.band_tour_label ?? tour.name ?? "Artist",
         venueName: event.venue_name ?? event.venue ?? "",
         cityState: [event.venue_city ?? event.city, event.venue_state ?? event.state].filter(Boolean).join(", "),
+        opener: event.opener ?? null,
       };
 
       const renderUrls: Record<string, string | null> = {};

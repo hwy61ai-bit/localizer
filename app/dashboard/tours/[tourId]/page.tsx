@@ -17,6 +17,7 @@ type EventRow = {
   promoter_email: string | null; manager_email: string | null;
   sent_at: string | null; event_index: number | null;
   render_status: string | null;
+  opener: string | null;
 };
 
 export default async function TourPage({ params, searchParams }: { params: Promise<{ tourId: string }>; searchParams?: { saved?: string } }) {
@@ -56,7 +57,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
   });
 
   const { data: eventsData, error: eventsError } = await supabase
-    .from("events").select("id, tour_id, date_iso, day, city, state, venue, promoter_email, manager_email, sent_at, event_index, render_status")
+    .from("events").select("id, tour_id, date_iso, day, city, state, venue, promoter_email, manager_email, sent_at, event_index, render_status, opener")
     .eq("tour_id", tourId).order("date_iso", { ascending: true });
   if (eventsError) throw new Error(eventsError.message);
 

@@ -34,7 +34,7 @@ const FONTS = [
   { label: "Permanent Marker", value: "Permanent Marker" },
 ];
 
-type FieldKey = "date" | "venue" | "city" | "customText1" | "customText2";
+type FieldKey = "date" | "venue" | "city" | "opener" | "customText1" | "customText2";
 type BaseFieldKey = "date" | "venue" | "city";
 type FormatKey = CatalogFormatKey;
 type CropFormatKey = Extract<FormatKey, "square" | "story" | "landscape" | "print">;
@@ -66,6 +66,8 @@ type FormatConfig = {
   date: FieldConfig;
   venue: FieldConfig;
   city: FieldConfig;
+  showOpener?: boolean;
+  opener?: FieldConfig;
   showCustomText1?: boolean;
   customText1?: FieldConfig;
   showCustomText2?: boolean;
@@ -132,6 +134,7 @@ const FIELD_LABELS: Record<FieldKey, string> = {
   venue: "Venue",
   date:  "Date",
   city:  "City",
+  opener: "Opening Act",
   customText1: "Custom Text 1",
   customText2: "Custom Text 2",
 };
@@ -140,6 +143,7 @@ const SAMPLE_TEXT: Record<FieldKey, string> = {
   venue: "Stubbs Waller Creek Amphitheater",
   date:  "April 25 2026",
   city:  "Little Rock, AR",
+  opener: "w/ Opening Act Name",
   customText1: "Your text here",
   customText2: "Your text here",
 };
@@ -149,6 +153,7 @@ const SPONSOR_1_DEFAULT: FieldConfig = { x: 0.35, y: 0.88, size: 60, align: "cen
 const SPONSOR_2_DEFAULT: FieldConfig = { x: 0.65, y: 0.88, size: 60, align: "center" };
 const CUSTOM_TEXT_1_DEFAULT: FieldConfig = { x: 0.5, y: 0.08, size: 48, align: "center" };
 const CUSTOM_TEXT_2_DEFAULT: FieldConfig = { x: 0.5, y: 0.92, size: 48, align: "center" };
+const OPENER_DEFAULT: FieldConfig = { x: 0.5, y: 0.72, size: 40, align: "center" };
 
 type Tour = {
   id: string;
@@ -175,7 +180,7 @@ function getTransform(align: Align): string {
   return "translate(-50%, -50%)";
 }
 
-type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string } | null;
+type FirstEvent = { date_iso: string; city: string; state: string | null; venue: string; opener?: string | null } | null;
 
 export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, orgId, tier }: { tour: Tour; tourId: string; firstEvent: FirstEvent; allEvents: NonNullable<FirstEvent>[]; orgId: string; tier: FeatureTier }) {
   const saved0 = (tour.overlay_config ?? {}) as Partial<Record<FormatKey, FormatConfig>>;
@@ -573,6 +578,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
             customText2: { ...(prev[activeFormat].customText2 ?? CUSTOM_TEXT_2_DEFAULT), x, y },
           },
         }));
+      } else if (dragging === "opener") {
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), x, y },
+          },
+        }));
       } else {
         setConfigs(prev => ({
           ...prev,
@@ -643,14 +656,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     router.refresh();
   }
 
-  function AlignButtons({ field }: { field: BaseFieldKey | "band" | "customText1" | "customText2" }) {
+  function AlignButtons({ field }: { field: BaseFieldKey | "band" | "opener" | "customText1" | "customText2" }) {
     const fc = field === "band"
       ? (cfg.band ?? BAND_DEFAULT)
-      : field === "customText1"
-        ? (cfg.customText1 ?? CUSTOM_TEXT_1_DEFAULT)
-        : field === "customText2"
-          ? (cfg.customText2 ?? CUSTOM_TEXT_2_DEFAULT)
-          : cfg[field];
+      : field === "opener"
+        ? (cfg.opener ?? OPENER_DEFAULT)
+        : field === "customText1"
+          ? (cfg.customText1 ?? CUSTOM_TEXT_1_DEFAULT)
+          : field === "customText2"
+            ? (cfg.customText2 ?? CUSTOM_TEXT_2_DEFAULT)
+            : cfg[field];
     const current = fc.align ?? "center";
     const handleClick = (a: Align) => {
       if (field === "band") {
@@ -659,6 +674,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           [activeFormat]: {
             ...prev[activeFormat],
             band: { ...(prev[activeFormat].band ?? BAND_DEFAULT), align: a },
+          },
+        }));
+      } else if (field === "opener") {
+        setConfigs(prev => ({
+          ...prev,
+          [activeFormat]: {
+            ...prev[activeFormat],
+            opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), align: a },
           },
         }));
       } else if (field === "customText1") {
@@ -1097,6 +1120,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           date: scaleField(sourceCfg.date),
                         };
                         if (sourceCfg.band) merged.band = scaleField(sourceCfg.band);
+                        if (sourceCfg.opener) merged.opener = scaleField(sourceCfg.opener);
                         if (sourceCfg.customText1) merged.customText1 = scaleField(sourceCfg.customText1);
                         if (sourceCfg.customText2) merged.customText2 = scaleField(sourceCfg.customText2);
                         updated[fmt] = merged;
@@ -1130,6 +1154,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       dateFormatted: formatDateForRender(firstEvent.date_iso, shortDate),
                       venueName: firstEvent.venue,
                       cityState: [firstEvent.city, firstEvent.state].filter(Boolean).join(', '),
+                      opener: firstEvent.opener ?? null,
                       customText1: customText1 || null,
                       customText2: customText2 || null,
                     } : {
@@ -1392,6 +1417,24 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       </div>
                     );
                   })}
+                  {!isPrintFormat && (cfg.showOpener ?? false) && (() => {
+                    const fc = cfg.opener ?? OPENER_DEFAULT;
+                    const align = fc.align ?? "center";
+                    const isActive = dragging === "opener";
+                    return (
+                      <div key="opener" onMouseDown={(e) => {
+                        e.preventDefault();
+                        const rect = (imgRef.current ?? containerRef.current)!.getBoundingClientRect();
+                        const mouseX = (e.clientX - rect.left) / rect.width;
+                        const mouseY = (e.clientY - rect.top) / rect.height;
+                        setDragOffset({ x: mouseX - fc.x, y: mouseY - fc.y });
+                        setDragging("opener");
+                      }}
+                        style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
+                        {firstEvent?.opener || SAMPLE_TEXT.opener}
+                      </div>
+                    );
+                  })()}
                   {!isPrintFormat && (cfg.showCustomText1 ?? false) && (() => {
                     const fc = cfg.customText1 ?? CUSTOM_TEXT_1_DEFAULT;
                     const align = fc.align ?? "center";
@@ -1764,6 +1807,63 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 </div>
               </label>
             </div>
+
+            {!isPrintFormat && (
+              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showOpener ?? false) ? 12 : 0 }}>
+                  <span onClick={() => updateCfg("showOpener", !(cfg.showOpener ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showOpener ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                    {(cfg.showOpener ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                  </span>
+                  <div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Opening Act</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>Per-show text from the gigs page</div>
+                  </div>
+                </label>
+                {(cfg.showOpener ?? false) && (
+                  <>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <input
+                          type="number"
+                          min={16}
+                          max={isPrintFormat ? 400 : 120}
+                          value={cfg.opener?.size ?? OPENER_DEFAULT.size}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val) && val >= 1 && val <= 999) {
+                              setConfigs(prev => ({
+                                ...prev,
+                                [activeFormat]: {
+                                  ...prev[activeFormat],
+                                  opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), size: val },
+                                },
+                              }));
+                            }
+                          }}
+                          style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                        />
+                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>px</span>
+                      </div>
+                    </div>
+                    <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
+                      value={cfg.opener?.size ?? OPENER_DEFAULT.size}
+                      onChange={(e) => {
+                        setConfigs(prev => ({
+                          ...prev,
+                          [activeFormat]: {
+                            ...prev[activeFormat],
+                            opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), size: parseInt(e.target.value) },
+                          },
+                        }));
+                      }}
+                      style={{ width: "100%", cursor: "pointer" }}
+                    />
+                    <AlignButtons field="opener" />
+                  </>
+                )}
+              </div>
+            )}
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
