@@ -110,6 +110,8 @@ export async function PATCH(
     "opener",
   ];
 
+  const RENDER_AFFECTING = ["date_iso", "city", "state", "venue", "venue_name", "opener"];
+
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) update[key] = body[key];
@@ -117,6 +119,22 @@ export async function PATCH(
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "no_valid_fields" }, { status: 400 });
+  }
+
+  const { data: current } = await supabase
+    .from("events")
+    .select("date_iso, city, state, venue, venue_name, opener, needs_rerender")
+    .eq("id", eventId)
+    .maybeSingle();
+
+  if (current) {
+    const changed = RENDER_AFFECTING.some(k => {
+      if (!(k in update)) return false;
+      const before = (current as Record<string, unknown>)[k] ?? null;
+      const after = update[k] ?? null;
+      return before !== after;
+    });
+    if (changed) update.needs_rerender = true;
   }
 
   const { data, error } = await supabase

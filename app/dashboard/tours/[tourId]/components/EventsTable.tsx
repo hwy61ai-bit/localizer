@@ -15,6 +15,7 @@ type EventRow = {
   sent_at: string | null; event_index: number | null;
   render_status: string | null;
   opener?: string | null;
+  needs_rerender?: boolean | null;
 };
 
 type Props = {
@@ -157,11 +158,19 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     setSaving(id + field);
     setEditing(null);
     setEvents(prev => prev.map(e => e.id === id ? { ...e, [field]: value || null } : e));
-    await fetch(`/api/events/${id}`, {
+    const res = await fetch(`/api/events/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ [field]: value || null }),
     });
+    if (res.ok) {
+      try {
+        const data = await res.json();
+        if (data?.event) {
+          setEvents(prev => prev.map(e => e.id === id ? { ...e, needs_rerender: data.event.needs_rerender ?? e.needs_rerender ?? null } : e));
+        }
+      } catch {}
+    }
     setSaving(null);
   }
 
@@ -252,15 +261,168 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     return flagged.length > 0 ? flagged : null;
   }
 
+  async function renderEvents(
+    eventIds: string[],
+    onProgress?: (done: number, total: number) => void,
+  ): Promise<{ errors: string[] }> {
+    const dataRes = await fetch("/api/renders/tour-data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tourId, orgId }),
+    });
+    const tourData = await dataRes.json();
+    if (!dataRes.ok) throw new Error(tourData.error ?? "Failed to load tour data");
+
+    const { tour, events: serverEvents, customFonts, logoUrl, sponsorLogo1Url, sponsorLogo2Url } = tourData;
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
+    const overlayConfig = tour.overlay_config ?? {};
+    const bandName = tour.band_name ?? tour.band_tour_label ?? tour.name ?? "Artist";
+
+    for (const cf of customFonts) {
+      if (cf.url) {
+        const face = new FontFace(cf.fontName, "url(" + cf.url + ")");
+        try {
+          const loaded = await face.load();
+          document.fonts.add(loaded);
+        } catch (e) {
+          console.warn("Failed to load custom font:", cf.fontName, e);
+        }
+      }
+    }
+
+    const imageIds: Record<string, string | null> = {
+      square: tour.image_square_id,
+      story: tour.image_story_id,
+      landscape: tour.image_landscape_id,
+    };
+
+    const formatDims: Record<string, { w: number; h: number }> = {
+      square: { w: 1080, h: 1080 },
+      story: { w: 1080, h: 1350 },
+      landscape: { w: 820, h: 312 },
+    };
+
+    const idSet = new Set(eventIds);
+    const targetEvents = serverEvents.filter((e: any) => idSet.has(e.id));
+
+    const formats = ["square", "story", "landscape"];
+    const total = targetEvents.length * formats.length;
+    let done = 0;
+    onProgress?.(0, total);
+
+    const errors: string[] = [];
+
+    for (const event of targetEvents) {
+      const renderUrls: Record<string, string | null> = {};
+
+      for (const fmt of formats) {
+        const pid = imageIds[fmt];
+        if (!pid) {
+          renderUrls["render_" + fmt + "_url"] = null;
+          done++;
+          onProgress?.(done, total);
+          continue;
+        }
+
+        const dims = formatDims[fmt];
+        const cfg = overlayConfig[fmt] ?? {};
+        const shortDate = cfg.shortDate ?? false;
+
+        const cropRegion = (tour as any).crop_config?.[fmt] ?? null;
+        const baseLayer = isValidCropRegion(cropRegion)
+          ? "c_crop,x_" + formatFraction(cropRegion.x) + ",y_" + formatFraction(cropRegion.y) + ",w_" + formatFraction(cropRegion.w) + ",h_" + formatFraction(cropRegion.h) + "/c_fill,w_" + dims.w + ",h_" + dims.h
+          : "c_fill,g_center,w_" + dims.w + ",h_" + dims.h;
+        const baseUrl = "https://res.cloudinary.com/" + cloudName + "/image/upload/" + baseLayer + "/" + pid;
+
+        const venueName = event.venue_name ?? event.venue ?? "";
+        const city = event.venue_city ?? event.city ?? "";
+        const state = event.venue_state ?? event.state ?? "";
+
+        const eventData = {
+          bandName,
+          dateFormatted: formatDateForRender(event.date_iso, shortDate),
+          venueName,
+          cityState: [city, state].filter(Boolean).join(", "),
+          opener: event.opener ?? null,
+          customText1: tour.custom_text_1 ?? null,
+          customText2: tour.custom_text_2 ?? null,
+        };
+
+        try {
+          const fontFamily = cfg.fontFamily ?? "Oswald";
+          const fontLink = document.getElementById("gfont-" + fontFamily.replace(/ /g, "+"));
+          if (!fontLink) {
+            const link = document.createElement("link");
+            link.id = "gfont-" + fontFamily.replace(/ /g, "+");
+            link.rel = "stylesheet";
+            link.href = "https://fonts.googleapis.com/css2?family=" + fontFamily.replace(/ /g, "+") + ":wght@400;700&display=swap";
+            document.head.appendChild(link);
+            await new Promise(r => setTimeout(r, 500));
+            await document.fonts.ready;
+          }
+
+          const blob = await renderPoster(baseUrl, cfg, fmt, eventData, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.band_font_family);
+
+          const fd = new FormData();
+          fd.append("file", blob, "poster.jpg");
+          fd.append("upload_preset", "localizer_tours");
+          const uploadRes = await fetch(
+            "https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload",
+            { method: "POST", body: fd }
+          );
+          if (!uploadRes.ok) throw new Error("Upload failed");
+          const uploadData = await uploadRes.json();
+          renderUrls["render_" + fmt + "_url"] = uploadData.secure_url;
+        } catch (err: any) {
+          errors.push(event.venue + " " + fmt + ": " + (err?.message ?? String(err)));
+        }
+
+        done++;
+        onProgress?.(done, total);
+      }
+
+      if (Object.keys(renderUrls).length > 0) {
+        try {
+          await fetch("/api/renders/save-urls", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId: event.id, orgId, renderUrls }),
+          });
+        } catch (err: any) {
+          errors.push(event.venue + " save: " + (err?.message ?? String(err)));
+        }
+      }
+    }
+
+    // Video pass — /api/renders/generate accepts eventId or tourId but not an
+    // array. Single-event callers get precisely-scoped re-renders; multi-event
+    // callers fall back to tour-wide (over-renders untouched events' videos).
+    if (tier === "pro" || tier === "agency") {
+      try {
+        const body = targetEvents.length === 1
+          ? { eventId: targetEvents[0].id, orgId, videosOnly: true }
+          : { tourId, orgId, videosOnly: true };
+        await fetch("/api/renders/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } catch (e) {
+        console.warn("Video render pass failed (non-blocking):", e);
+      }
+    }
+
+    return { errors };
+  }
+
   async function generateAll() {
-    // If we haven't done the venue check yet, do it now
     if (!longVenues) {
       setGenerating(true);
       const flagged = await preCheckVenues();
       setGenerating(false);
       if (flagged) {
         setLongVenues(flagged);
-        return; // Show modal, user will re-trigger after editing
+        return;
       }
     }
     setLongVenues(null);
@@ -270,164 +432,18 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     setEvents(prev => prev.map(e => ({ ...e, render_status: "rendering" })));
 
     try {
-      // Fetch tour data for rendering
-      const dataRes = await fetch("/api/renders/tour-data", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tourId, orgId }),
-      });
-      const tourData = await dataRes.json();
-      if (!dataRes.ok) throw new Error(tourData.error ?? "Failed to load tour data");
-
-      const { tour, events: serverEvents, customFonts, logoUrl, sponsorLogo1Url, sponsorLogo2Url } = tourData;
-      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? "";
-      const overlayConfig = tour.overlay_config ?? {};
-      const bandName = tour.band_name ?? tour.band_tour_label ?? tour.name ?? "Artist";
-
-      // Load custom fonts into browser
-      for (const cf of customFonts) {
-        if (cf.url) {
-          const face = new FontFace(cf.fontName, "url(" + cf.url + ")");
-          try {
-            const loaded = await face.load();
-            document.fonts.add(loaded);
-          } catch (e) {
-            console.warn("Failed to load custom font:", cf.fontName, e);
-          }
-        }
-      }
-
-      const imageIds: Record<string, string | null> = {
-        square: tour.image_square_id,
-        story: tour.image_story_id,
-        landscape: tour.image_landscape_id,
-      };
-
-      const formatDims: Record<string, { w: number; h: number }> = {
-        square: { w: 1080, h: 1080 },
-        story: { w: 1080, h: 1350 },
-        landscape: { w: 820, h: 312 },
-      };
-
-      const formats = ["square", "story", "landscape"];
-      const total = serverEvents.length * formats.length;
-      let done = 0;
-      setRenderProgress({ done: 0, total });
-
-      const errors: string[] = [];
-
-      for (const event of serverEvents) {
-        const renderUrls: Record<string, string | null> = {};
-
-        for (const fmt of formats) {
-          const pid = imageIds[fmt];
-          if (!pid) {
-            renderUrls["render_" + fmt + "_url"] = null;
-            done++;
-            setRenderProgress({ done, total });
-            continue;
-          }
-
-          const dims = formatDims[fmt];
-          const cfg = overlayConfig[fmt] ?? {};
-          const shortDate = cfg.shortDate ?? false;
-
-          const cropRegion = (tour as any).crop_config?.[fmt] ?? null;
-          const baseLayer = isValidCropRegion(cropRegion)
-            ? "c_crop,x_" + formatFraction(cropRegion.x) + ",y_" + formatFraction(cropRegion.y) + ",w_" + formatFraction(cropRegion.w) + ",h_" + formatFraction(cropRegion.h) + "/c_fill,w_" + dims.w + ",h_" + dims.h
-            : "c_fill,g_center,w_" + dims.w + ",h_" + dims.h;
-          const baseUrl = "https://res.cloudinary.com/" + cloudName + "/image/upload/" + baseLayer + "/" + pid;
-
-          const venueName = event.venue_name ?? event.venue ?? "";
-          const city = event.venue_city ?? event.city ?? "";
-          const state = event.venue_state ?? event.state ?? "";
-
-          const eventData = {
-            bandName,
-            dateFormatted: formatDateForRender(event.date_iso, shortDate),
-            venueName,
-            cityState: [city, state].filter(Boolean).join(", "),
-            opener: event.opener ?? null,
-            customText1: tour.custom_text_1 ?? null,
-            customText2: tour.custom_text_2 ?? null,
-          };
-
-          try {
-            // Load Google Font if needed
-            const fontFamily = cfg.fontFamily ?? "Oswald";
-            const fontLink = document.getElementById("gfont-" + fontFamily.replace(/ /g, "+"));
-            if (!fontLink) {
-              const link = document.createElement("link");
-              link.id = "gfont-" + fontFamily.replace(/ /g, "+");
-              link.rel = "stylesheet";
-              link.href = "https://fonts.googleapis.com/css2?family=" + fontFamily.replace(/ /g, "+") + ":wght@400;700&display=swap";
-              document.head.appendChild(link);
-              // Give font time to load
-              await new Promise(r => setTimeout(r, 500));
-              await document.fonts.ready;
-            }
-
-            const blob = await renderPoster(baseUrl, cfg, fmt, eventData, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.band_font_family);
-
-            // Upload to Cloudinary
-            const fd = new FormData();
-            fd.append("file", blob, "poster.jpg");
-            fd.append("upload_preset", "localizer_tours");
-            const uploadRes = await fetch(
-              "https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload",
-              { method: "POST", body: fd }
-            );
-            if (!uploadRes.ok) throw new Error("Upload failed");
-            const uploadData = await uploadRes.json();
-            renderUrls["render_" + fmt + "_url"] = uploadData.secure_url;
-          } catch (err: any) {
-            errors.push(event.venue + " " + fmt + ": " + (err?.message ?? String(err)));
-          }
-
-          done++;
-          setRenderProgress({ done, total });
-        }
-
-        // Save URLs to venue_links
-        if (Object.keys(renderUrls).length > 0) {
-          try {
-            await fetch("/api/renders/save-urls", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ eventId: event.id, orgId, renderUrls }),
-            });
-          } catch (err: any) {
-            errors.push(event.venue + " save: " + (err?.message ?? String(err)));
-          }
-        }
-      }
+      const { errors } = await renderEvents(
+        events.map(e => e.id),
+        (done, total) => setRenderProgress({ done, total }),
+      );
 
       if (errors.length > 0) {
         setGenerateError(errors[0]);
         setEvents(prev => prev.map(e => ({ ...e, render_status: "ready" })));
       } else {
-        setEvents(prev => prev.map(e => ({ ...e, render_status: "ready" })));
+        setEvents(prev => prev.map(e => ({ ...e, render_status: "ready", needs_rerender: false })));
         setShowSuccess(true);
       }
-
-      // Generate video render URLs via server-side Cloudinary (non-blocking).
-      // Runs after all image renders and venue_links writes have completed so
-      // the videosOnly upsert only touches video columns on existing rows.
-      // Skip for tiers that can't generate video (Indie / none). Trial resolves
-      // to "pro" via tierGate so trial users still fire it. Backend gate is the
-      // actual protection; this just stops the client firing a doomed request.
-      if (tier === "pro" || tier === "agency") {
-        try {
-          await fetch("/api/renders/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tourId, orgId, videosOnly: true }),
-          });
-        } catch (e) {
-          console.warn("Video render pass failed (non-blocking):", e);
-        }
-      }
-
     } catch (err: any) {
       setGenerateError(err?.message ?? "Generate failed");
       setEvents(prev => prev.map(e => ({ ...e, render_status: "error" })));
@@ -459,20 +475,49 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
 
   async function reRenderEvent(eventId: string) {
     setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, render_status: "rendering" } : ev));
-    const res = await fetch("/api/renders/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId, orgId }),
-    });
-    const data = await res.json();
-    setEvents(prev => prev.map(ev => ev.id === eventId
-      ? { ...ev, render_status: data.ok ? "ready" : "error" }
-      : ev
-    ));
+    try {
+      const { errors } = await renderEvents([eventId]);
+      if (errors.length > 0) {
+        setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, render_status: "error" } : ev));
+        toast.error(errors[0]);
+      } else {
+        setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, render_status: "ready", needs_rerender: false } : ev));
+      }
+    } catch (err: any) {
+      setEvents(prev => prev.map(ev => ev.id === eventId ? { ...ev, render_status: "error" } : ev));
+      toast.error(err?.message ?? "Re-render failed");
+    }
+  }
+
+  async function regenerateStale() {
+    const targetIds = staleEvents.map(e => e.id);
+    if (targetIds.length === 0) return;
+    const idSet = new Set(targetIds);
+
+    setGenerating(true);
+    setGenerateError(null);
+    setEvents(prev => prev.map(e => idSet.has(e.id) ? { ...e, render_status: "rendering" } : e));
+
+    try {
+      const { errors } = await renderEvents(targetIds, (done, total) => setRenderProgress({ done, total }));
+      if (errors.length > 0) {
+        setGenerateError(errors[0]);
+        setEvents(prev => prev.map(e => idSet.has(e.id) ? { ...e, render_status: "ready" } : e));
+      } else {
+        setEvents(prev => prev.map(e => idSet.has(e.id) ? { ...e, render_status: "ready", needs_rerender: false } : e));
+      }
+    } catch (err: any) {
+      setGenerateError(err?.message ?? "Re-render failed");
+      setEvents(prev => prev.map(e => idSet.has(e.id) ? { ...e, render_status: "error" } : e));
+    } finally {
+      setGenerating(false);
+      setRenderProgress(null);
+    }
   }
 
   const COLS = "100px 50px 150px 200px 250px 100px 130px";
   const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
+  const staleEvents = events.filter(e => e.needs_rerender && e.render_status === "ready");
   return (
     <>
       <div style={{ overflowX: "auto" }}>
@@ -504,7 +549,18 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
             {generateError && (
               <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, color: "var(--hw-crimson)", fontWeight: 700 }}>{generateError}</span>
             )}
-            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", textAlign: "right" }}>Hit Generate to create all localized assets.</div>
+            {staleEvents.length > 0 && !generating ? (
+              <>
+                <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", textAlign: "right", textTransform: "uppercase" }}>{staleEvents.length} SHOW{staleEvents.length !== 1 ? "S" : ""} HAVE CHANGES NOT IN THEIR ASSETS</div>
+                <button
+                  onClick={regenerateStale}
+                  disabled={generating}
+                  style={{ padding: "10px 20px", border: "3px solid var(--hw-crimson)", background: "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+                >RE-RENDER UPDATED</button>
+              </>
+            ) : (
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-secondary)", textAlign: "right" }}>Hit Generate to create all localized assets.</div>
+            )}
             <button
               onClick={generateAll}
               disabled={generating || events.length === 0}
@@ -603,7 +659,13 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
                   const data = await res.json();
                   if (data.token) window.open(`/v/e/${data.token}`, "_blank");
                 }} style={{ padding: "4px 12px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" }}>LINK</button>
-                <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 3, textAlign: "center" }}>Preview assets</div>
+                {e.render_status === "rendering" ? (
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", marginTop: 3, textAlign: "center", textTransform: "uppercase" }}>RENDERING…</div>
+                ) : e.needs_rerender && e.render_status === "ready" ? (
+                  <div onClick={() => reRenderEvent(e.id)} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", marginTop: 3, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>↻ RE-RENDER</div>
+                ) : (
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 3, textAlign: "center" }}>Preview assets</div>
+                )}
               </div>
               {hoveredRow === e.id && (
                 <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)" }}>

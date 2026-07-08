@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   // Mark event as ready
   const { data: eventUpdate, error: eventUpdateErr } = await supabase
     .from("events")
-    .update({ render_status: "ready" })
+    .update({ render_status: "ready", needs_rerender: false })
     .eq("id", eventId)
     .select()
     .maybeSingle();
