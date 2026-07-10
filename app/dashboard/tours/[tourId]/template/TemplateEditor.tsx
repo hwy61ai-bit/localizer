@@ -1311,7 +1311,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragging("logo");
                       }}
                         style={{ position: "absolute", left: lc.x * 100 + "%", top: lc.y * 100 + "%", transform: "translate(-50%, -50%)", cursor: "grab", zIndex: 6 }}>
-                        <div style={{ height: Math.round(lc.size * previewScale) + "px", width: Math.round(lc.size * previewScale * 2) + "px", backgroundColor: "#" + cfg.textColor, WebkitMaskImage: "url(" + logoUrl + ")", WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: "url(" + logoUrl + ")", maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", opacity: 0.9, pointerEvents: "none" }} />
+                        <img src={logoUrl} alt="" style={{ height: Math.round(lc.size * previewScale) + "px", width: Math.round(lc.size * previewScale * 2) + "px", objectFit: "contain", opacity: 0.9, pointerEvents: "none" }} />
                       </div>
                     );
                   })()}
@@ -1329,14 +1329,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           setDragging("sponsorLogo1");
                         }}
                         style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }}>
-                        {isVideoFormat ? (
-                          <img src={sponsorLogo1Url} style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none" }} alt="" />
-                        ) : (
-                          <>
-                            <img src={sponsorLogo1Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
-                            <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo1Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo1Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
-                          </>
-                        )}
+                        <img src={sponsorLogo1Url} style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none" }} alt="" />
                       </div>
                     );
                   })()}
@@ -1354,14 +1347,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           setDragging("sponsorLogo2");
                         }}
                         style={{ position: "absolute", left: `${sc.x * 100}%`, top: `${sc.y * 100}%`, transform: "translate(-50%, -50%)", width: `${Math.round(sc.size * previewScale)}px`, cursor: "move", pointerEvents: "auto", userSelect: "none", zIndex: 7 }}>
-                        {isVideoFormat ? (
-                          <img src={sponsorLogo2Url} style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none" }} alt="" />
-                        ) : (
-                          <>
-                            <img src={sponsorLogo2Url} style={{ width: "100%", height: "auto", display: "block", visibility: "hidden" }} alt="" />
-                            <div style={{ position: "absolute", inset: 0, backgroundColor: `#${cfg.textColor}`, WebkitMaskImage: `url(${sponsorLogo2Url})`, WebkitMaskSize: "contain", WebkitMaskRepeat: "no-repeat", WebkitMaskPosition: "center", maskImage: `url(${sponsorLogo2Url})`, maskSize: "contain", maskRepeat: "no-repeat", maskPosition: "center", pointerEvents: "none" }} />
-                          </>
-                        )}
+                        <img src={sponsorLogo2Url} style={{ width: "100%", height: "auto", display: "block", pointerEvents: "none" }} alt="" />
                       </div>
                     );
                   })()}

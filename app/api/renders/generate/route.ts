@@ -217,7 +217,6 @@ function buildCloudinaryUrl(
 function buildLogoLayer(
   logoUrl: string,
   logoCfg: { x: number; y: number; size: number },
-  color: string,
   canvasW: number,
   canvasH: number
 ): string {
@@ -231,8 +230,8 @@ function buildLogoLayer(
   const xPx = Math.round((logoCfg.x - 0.5) * canvasW);
   const yPx = Math.round((logoCfg.y - 0.5) * canvasH);
 
-  // Scale logo by height (width auto-preserved), colorize to text color, layer at center-relative position
-  return `l_fetch:${base64Url}/c_scale,h_${logoCfg.size}/e_colorize:100,co_rgb:${color}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
+  // Scale logo by height (width auto-preserved), native colors, layer at center-relative position
+  return `l_fetch:${base64Url}/c_scale,h_${logoCfg.size}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
 }
 
 function buildSponsorLogoLayer(
@@ -363,7 +362,7 @@ function buildCloudinaryVideoUrl(
 
   const layers = [
     `c_fill,g_center,h_${h},w_${w}`,
-    ...(showLogo && logoUrl && logoCfg ? [buildLogoLayer(logoUrl, logoCfg, color, w, h)] : []),
+    ...(showLogo && logoUrl && logoCfg ? [buildLogoLayer(logoUrl, logoCfg, w, h)] : []),
     ...(showSponsorLogo1 && sponsorLogo1Url && sponsorLogo1Cfg ? [buildSponsorLogoLayer(sponsorLogo1Url, sponsorLogo1Cfg, w, h)] : []),
     ...(showSponsorLogo2 && sponsorLogo2Url && sponsorLogo2Cfg ? [buildSponsorLogoLayer(sponsorLogo2Url, sponsorLogo2Cfg, w, h)] : []),
     ...(showBand ? [buildTextLayer(bandFont, bandSize, bandName, bandColor, bandXF, bandYF, w, h, bandAlign)] : []),

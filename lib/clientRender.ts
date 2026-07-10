@@ -173,17 +173,12 @@ export async function renderPoster(
       const logoX = logoCfg.x * w - logoW / 2;
       const logoY = logoCfg.y * h - logoH / 2;
 
-      // Draw logo to offscreen canvas, then tint to text color
+      // Draw logo to offscreen canvas
       const logoCanvas = document.createElement("canvas");
       logoCanvas.width = logoW;
       logoCanvas.height = logoH;
       const logoCtx = logoCanvas.getContext("2d")!;
       logoCtx.drawImage(logoImg, 0, 0, logoW, logoH);
-
-      // Apply text color tint: draw color over logo using source-in composite
-      logoCtx.globalCompositeOperation = "source-in";
-      logoCtx.fillStyle = "#" + (cfg.textColor ?? "ffffff");
-      logoCtx.fillRect(0, 0, logoW, logoH);
 
       ctx.drawImage(logoCanvas, logoX, logoY);
     } catch (e) {
@@ -191,7 +186,7 @@ export async function renderPoster(
     }
   }
 
-  // Draw sponsor logo 1 if enabled (tinted to text color)
+  // Draw sponsor logo 1 if enabled
   if (formatKey !== "print" && cfg.showSponsorLogo1 && sponsorLogo1Url) {
     try {
       const sponsorImg = await loadImage(sponsorLogo1Url);
@@ -207,18 +202,13 @@ export async function renderPoster(
       const sponsorCtx = sponsorCanvas.getContext("2d")!;
       sponsorCtx.drawImage(sponsorImg, 0, 0, sponsorW, sponsorH);
 
-      // Apply text color tint: draw color over logo using source-in composite
-      sponsorCtx.globalCompositeOperation = "source-in";
-      sponsorCtx.fillStyle = "#" + (cfg.textColor ?? "ffffff");
-      sponsorCtx.fillRect(0, 0, sponsorW, sponsorH);
-
       ctx.drawImage(sponsorCanvas, sponsorX, sponsorY);
     } catch (e) {
       console.warn("Failed to draw sponsor logo 1:", e);
     }
   }
 
-  // Draw sponsor logo 2 if enabled (tinted to text color)
+  // Draw sponsor logo 2 if enabled
   if (formatKey !== "print" && cfg.showSponsorLogo2 && sponsorLogo2Url) {
     try {
       const sponsorImg = await loadImage(sponsorLogo2Url);
@@ -233,11 +223,6 @@ export async function renderPoster(
       sponsorCanvas.height = sponsorH;
       const sponsorCtx = sponsorCanvas.getContext("2d")!;
       sponsorCtx.drawImage(sponsorImg, 0, 0, sponsorW, sponsorH);
-
-      // Apply text color tint: draw color over logo using source-in composite
-      sponsorCtx.globalCompositeOperation = "source-in";
-      sponsorCtx.fillStyle = "#" + (cfg.textColor ?? "ffffff");
-      sponsorCtx.fillRect(0, 0, sponsorW, sponsorH);
 
       ctx.drawImage(sponsorCanvas, sponsorX, sponsorY);
     } catch (e) {

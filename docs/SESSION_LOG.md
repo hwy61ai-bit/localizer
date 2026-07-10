@@ -3835,3 +3835,6 @@ Pre-existing prod bug fixed in passing: old reRenderEvent regenerated images thr
 QA finding, no code bug: custom text (tour-level) and opener (per-event) are confusable in the editor — a stray custom_text_1 entry caused a phantom "cross-event leak" that cost real debugging time. Backlog: label overlay elements in the editor preview.
 Known limitation (commented in code): multi-event bulk re-render falls back to tour-wide video regeneration — generate route can't take an eventIds array yet. Backlog item.
 Open Tim questions: opener on print PDF (recommendation: yes, non-blocking); mention the reRenderEvent bug fix.
+
+
+third pre-existing bug flushed out by the opener feature — video overlays have been silently deleting slashes, apostrophes, parens, quotes, ampersands, and question marks from all text (venue names, custom text) since the video pipeline was built. Fixed by encoding instead of stripping. Worth including in the Tim note tomorrow, same reasoning as the RETRY bug: any beta tour with "Toad's Place"-style venue names on videos was affected.
