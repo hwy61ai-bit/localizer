@@ -149,12 +149,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", paddingBottom: 10, borderBottom: "2px solid var(--hw-text)", marginBottom: 20 }}>Photos</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20, marginBottom: 48 }}>
           {photoAssets.map((asset) => (
-            <div key={asset.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            <div key={asset.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", alignSelf: "start" }}>
+              <div style={{ aspectRatio: asset.aspect, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {asset.url ? (
-                  <img src={asset.url} alt={asset.label} style={{ width: "100%", display: "block" }} />
+                  <img src={asset.url} alt={asset.label} style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }} />
                 ) : (
-                  <div style={{ aspectRatio: asset.aspect, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", fontSize: 13, letterSpacing: "1px", textTransform: "uppercase" }}>
+                  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", fontSize: 13, letterSpacing: "1px", textTransform: "uppercase" }}>
                     Not provided
                   </div>
                 )}
@@ -184,14 +184,14 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 16, fontWeight: 400, color: "var(--hw-blue)", letterSpacing: "4px", textTransform: "uppercase", paddingBottom: 10, borderBottom: "2px solid var(--hw-text)", marginBottom: 20 }}>Video</div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }}>
               {[
-                { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", shape: "VERTICAL VIDEO", dims: "1080 × 1920", filename: "Vertical_Video", url: (link as any).render_tiktok_url },
-                { label: "Instagram Post / Facebook Post", shape: "SQUARE VIDEO", dims: "1080 × 1080", filename: "Square_Video", url: (link as any).render_yt_shorts_url },
+                { label: "TikTok, IG Reels, FB Stories, YouTube Shorts", shape: "VERTICAL VIDEO", dims: "1080 × 1920", filename: "Vertical_Video", aspect: "9/16", url: (link as any).render_tiktok_url },
+                { label: "Instagram Post / Facebook Post", shape: "SQUARE VIDEO", dims: "1080 × 1080", filename: "Square_Video", aspect: "1/1", url: (link as any).render_yt_shorts_url },
               ].filter(v => !!v.url).map((video) => {
                 const posterUrl = video.url.replace('/video/upload/', '/video/upload/so_0,f_jpg/');
                 return (
-                <div key={video.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
-                  <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                    <video src={video.url} poster={posterUrl} controls playsInline preload="metadata" style={{ width: "100%", display: "block" }} />
+                <div key={video.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", alignSelf: "start" }}>
+                  <div style={{ aspectRatio: video.aspect, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    <video src={video.url} poster={posterUrl} controls playsInline preload="metadata" style={{ width: "100%", height: "100%", display: "block", objectFit: "cover" }} />
                   </div>
                   <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid var(--hw-border-strong)", marginTop: "auto" }}>
                     <div>
