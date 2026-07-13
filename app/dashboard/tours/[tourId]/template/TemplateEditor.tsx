@@ -194,6 +194,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     const cs = [e.city, e.state].filter(Boolean).join(", ");
     return cs.length > max.length ? cs : max;
   }, firstEvent ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ") : "");
+  const longestOpener = allEvents.reduce((max, e) => (e.opener ?? "").length > max.length ? (e.opener ?? "") : max, firstEvent?.opener ?? "");
 
   function availableWidthForField(field: FieldConfig, canvasW: number): number {
     const align = field.align ?? "center";
@@ -223,6 +224,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
       if (measureTextWidth(text, size, cfg.fontFamily) <= avail) return size;
     }
     return 12;
+  }
+
+  function shrinkPct(text: string, field: FieldConfig, canvasW: number): number {
+    if (!text) return 0;
+    const suggested = suggestedSize(text, field, canvasW);
+    return field.size > 0 ? Math.round((1 - suggested / field.size) * 100) : 0;
   }
 
   const router = useRouter();
@@ -1189,6 +1196,28 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", padding: "8px 16px", border: previewLongest ? "2px solid var(--hw-crimson)" : "2px solid var(--hw-border-strong)", background: previewLongest ? "var(--hw-red-ghost)" : "var(--hw-bg-invert)", color: previewLongest ? "var(--hw-crimson)" : "#fff", cursor: "pointer", transition: "var(--hw-ease)" }}>
                 {previewLongest ? "SHOWING LONGEST NAMES" : "PREVIEW LONGEST NAMES"}
               </button>
+              {!previewLongest && (() => {
+                const capsOn = cfg.allCaps ?? false;
+                const venueMeasureText = (capsOn ? longestVenue.toUpperCase() : longestVenue)
+                  .split("|")
+                  .reduce((a, b) => (b.trim().length > a.length ? b.trim() : a), "");
+                const cityMeasureText = capsOn ? longestCity.toUpperCase() : longestCity;
+                const candidates: { label: string; shrink: number }[] = [
+                  { label: "VENUE", shrink: shrinkPct(venueMeasureText, cfg.venue, fmtDims.w) },
+                  { label: "CITY", shrink: shrinkPct(cityMeasureText, cfg.city, fmtDims.w) },
+                ];
+                if ((cfg.showOpener ?? false) && longestOpener && !isPrintFormat) {
+                  candidates.push({ label: "OPENER", shrink: shrinkPct(longestOpener, cfg.opener ?? OPENER_DEFAULT, fmtDims.w) });
+                }
+                const worst = candidates.reduce((w, c) => c.shrink > w.shrink ? c : w, { label: "", shrink: 0 });
+                if (worst.shrink <= 20) return null;
+                return (
+                  <button onClick={() => setPreviewLongest(true)}
+                    style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", background: "transparent", border: "2px solid var(--hw-crimson)", padding: "6px 12px", cursor: "pointer" }}>
+                    ⚠ LONGEST {worst.label} SHRINKS {worst.shrink}%
+                  </button>
+                );
+              })()}
               {activeFormat !== "tiktok" && activeFormat !== "yt_shorts" && (() => {
                 const activeCrop = getFormatCrop(cropConfig, activeFormat);
                 const hasCrop = !!activeCrop;
@@ -1417,7 +1446,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragging("opener");
                       }}
                         style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
-                        {firstEvent?.opener || SAMPLE_TEXT.opener}
+                        {previewLongest && longestOpener ? longestOpener : (firstEvent?.opener || SAMPLE_TEXT.opener)}
                       </div>
                     );
                   })()}

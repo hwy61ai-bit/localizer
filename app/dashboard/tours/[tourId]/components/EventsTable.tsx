@@ -186,7 +186,8 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
   }
 
   const [renderProgress, setRenderProgress] = useState<{ done: number; total: number } | null>(null);
-  const [longVenues, setLongVenues] = useState<{ eventId: string; venue: string; edited: string }[] | null>(null);
+  // note: for field="opener" rows, the `venue` property holds opener text (naming preserved to minimize diff)
+  const [longVenues, setLongVenues] = useState<{ eventId: string; field: "venue" | "opener"; venue: string; edited: string }[] | null>(null);
 
   function measureVenueWidth(text: string, fontSize: number, fontFamily: string): number {
     const canvas = document.createElement("canvas");
@@ -212,49 +213,90 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
       square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, landscape: { w: 820, h: 312 },
     };
 
-    const flagged: { eventId: string; venue: string; edited: string }[] = [];
+    const flagged: { eventId: string; field: "venue" | "opener"; venue: string; edited: string }[] = [];
 
     for (const event of tourData.events) {
+      // --- Venue check ---
       const venueName = event.venue_name ?? event.venue ?? "";
-      if (!venueName || venueName.includes("|")) continue;
+      if (venueName && !venueName.includes("|")) {
+        let worstRatio = 1;
+        for (const fmt of formats) {
+          const cfg = overlayConfig[fmt] ?? {};
+          const fontFamily = cfg.fontFamily ?? "Oswald";
+          const venueSize = cfg.venue?.size ?? 36;
+          const caps = cfg.allCaps ?? false;
+          const text = caps ? venueName.toUpperCase() : venueName;
+          const venueX = cfg.venue?.x ?? 0.5;
+          const venueAlign = cfg.venue?.align ?? "center";
+          const dims = formatDims[fmt];
+          const margin = 0.95;
+          let avail: number;
+          if (venueAlign === "left") avail = (1 - venueX) * dims.w * margin;
+          else if (venueAlign === "right") avail = venueX * dims.w * margin;
+          else avail = Math.min(venueX, 1 - venueX) * 2 * dims.w * margin;
 
-      // Check against the widest format (most likely to overflow)
-      let worstRatio = 1;
-      for (const fmt of formats) {
-        const cfg = overlayConfig[fmt] ?? {};
-        const fontFamily = cfg.fontFamily ?? "Oswald";
-        const venueSize = cfg.venue?.size ?? 36;
-        const caps = cfg.allCaps ?? false;
-        const text = caps ? venueName.toUpperCase() : venueName;
-        const venueX = cfg.venue?.x ?? 0.5;
-        const venueAlign = cfg.venue?.align ?? "center";
-        const dims = formatDims[fmt];
-        const margin = 0.95;
-        let avail: number;
-        if (venueAlign === "left") avail = (1 - venueX) * dims.w * margin;
-        else if (venueAlign === "right") avail = venueX * dims.w * margin;
-        else avail = Math.min(venueX, 1 - venueX) * 2 * dims.w * margin;
+          // Load font if needed
+          const fontLink = document.getElementById("gfont-" + fontFamily.replace(/ /g, "+"));
+          if (!fontLink) {
+            const link = document.createElement("link");
+            link.id = "gfont-" + fontFamily.replace(/ /g, "+");
+            link.rel = "stylesheet";
+            link.href = "https://fonts.googleapis.com/css2?family=" + fontFamily.replace(/ /g, "+") + ":wght@400;700&display=swap";
+            document.head.appendChild(link);
+            await new Promise(r => setTimeout(r, 300));
+            await document.fonts.ready;
+          }
 
-        // Load font if needed
-        const fontLink = document.getElementById("gfont-" + fontFamily.replace(/ /g, "+"));
-        if (!fontLink) {
-          const link = document.createElement("link");
-          link.id = "gfont-" + fontFamily.replace(/ /g, "+");
-          link.rel = "stylesheet";
-          link.href = "https://fonts.googleapis.com/css2?family=" + fontFamily.replace(/ /g, "+") + ":wght@400;700&display=swap";
-          document.head.appendChild(link);
-          await new Promise(r => setTimeout(r, 300));
-          await document.fonts.ready;
+          const textWidth = measureVenueWidth(text, venueSize, fontFamily);
+          const ratio = avail / textWidth;
+          if (ratio < worstRatio) worstRatio = ratio;
         }
 
-        const textWidth = measureVenueWidth(text, venueSize, fontFamily);
-        const ratio = avail / textWidth;
-        if (ratio < worstRatio) worstRatio = ratio;
+        // If text would need to shrink below 70%, flag it
+        if (worstRatio < 0.7) {
+          flagged.push({ eventId: event.id, field: "venue", venue: venueName, edited: venueName });
+        }
       }
 
-      // If text would need to shrink below 70%, flag it
-      if (worstRatio < 0.7) {
-        flagged.push({ eventId: event.id, venue: venueName, edited: venueName });
+      // --- Opener check --- (only when opener non-empty AND at least one format has showOpener)
+      const openerText = event.opener ?? "";
+      if (openerText) {
+        const openerFormats = formats.filter(fmt => (overlayConfig[fmt]?.showOpener ?? false));
+        if (openerFormats.length > 0) {
+          let worstRatio = 1;
+          for (const fmt of openerFormats) {
+            const cfg = overlayConfig[fmt] ?? {};
+            const fontFamily = cfg.fontFamily ?? "Oswald";
+            const openerSize = cfg.opener?.size ?? 40;
+            const openerX = cfg.opener?.x ?? 0.5;
+            const openerAlign = cfg.opener?.align ?? "center";
+            const dims = formatDims[fmt];
+            const margin = 0.95;
+            let avail: number;
+            if (openerAlign === "left") avail = (1 - openerX) * dims.w * margin;
+            else if (openerAlign === "right") avail = openerX * dims.w * margin;
+            else avail = Math.min(openerX, 1 - openerX) * 2 * dims.w * margin;
+
+            const fontLink = document.getElementById("gfont-" + fontFamily.replace(/ /g, "+"));
+            if (!fontLink) {
+              const link = document.createElement("link");
+              link.id = "gfont-" + fontFamily.replace(/ /g, "+");
+              link.rel = "stylesheet";
+              link.href = "https://fonts.googleapis.com/css2?family=" + fontFamily.replace(/ /g, "+") + ":wght@400;700&display=swap";
+              document.head.appendChild(link);
+              await new Promise(r => setTimeout(r, 300));
+              await document.fonts.ready;
+            }
+
+            const textWidth = measureVenueWidth(openerText, openerSize, fontFamily);
+            const ratio = avail / textWidth;
+            if (ratio < worstRatio) worstRatio = ratio;
+          }
+
+          if (worstRatio < 0.7) {
+            flagged.push({ eventId: event.id, field: "opener", venue: openerText, edited: openerText });
+          }
+        }
       }
     }
 
@@ -691,12 +733,15 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
           <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-xl)", maxWidth: 600, width: "90%", maxHeight: "80vh", overflow: "auto" }}>
             <div style={{ padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)" }}>
               <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>LONG VENUE NAMES</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>These venues are too long for one line. Add a <b>|</b> where you want the line break, or shorten the name.</div>
+              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>These fields are too long for one line. For venues, add a <b>|</b> where you want the line break or shorten the name. For openers, shorten the text.</div>
             </div>
             <div style={{ padding: "16px 24px" }}>
               {longVenues.map((lv, i) => (
                 <div key={lv.eventId} style={{ marginBottom: 12 }}>
-                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 4 }}>ORIGINAL: {lv.venue}</div>
+                  <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-muted)", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                    {lv.field === "opener" && <span style={{ display: "inline-block", padding: "2px 6px", border: "1.5px solid var(--hw-crimson)", color: "var(--hw-crimson)", fontSize: 10, letterSpacing: "1px" }}>OPENER</span>}
+                    <span>ORIGINAL: {lv.venue}</span>
+                  </div>
                   <input
                     value={lv.edited}
                     onChange={(e) => {
@@ -704,7 +749,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
                       setLongVenues(prev => prev!.map((v, j) => j === i ? { ...v, edited: val } : v));
                     }}
                     style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 15, fontWeight: 500, outline: "none" }}
-                    placeholder="Add | for line break"
+                    placeholder={lv.field === "opener" ? "Shorter opener text" : "Add | for line break"}
                   />
                 </div>
               ))}
@@ -714,12 +759,17 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
                 onClick={async () => {
                   for (const lv of longVenues!) {
                     if (lv.edited !== lv.venue) {
+                      const body = lv.field === "opener"
+                        ? { opener: lv.edited }
+                        : { venue: lv.edited, venue_name: lv.edited };
                       await fetch("/api/events/" + lv.eventId, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ venue: lv.edited, venue_name: lv.edited }),
+                        body: JSON.stringify(body),
                       });
-                      setEvents(prev => prev.map(e => e.id === lv.eventId ? { ...e, venue: lv.edited } : e));
+                      setEvents(prev => prev.map(e => e.id === lv.eventId
+                        ? (lv.field === "opener" ? { ...e, opener: lv.edited } : { ...e, venue: lv.edited })
+                        : e));
                     }
                   }
                   generateAll();
