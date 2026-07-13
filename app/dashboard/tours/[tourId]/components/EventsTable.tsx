@@ -732,8 +732,22 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
           <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", boxShadow: "var(--hw-shadow-xl)", maxWidth: 600, width: "90%", maxHeight: "80vh", overflow: "auto" }}>
             <div style={{ padding: "20px 24px", borderBottom: "3px solid var(--hw-border-strong)" }}>
-              <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>LONG VENUE NAMES</div>
-              <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>These fields are too long for one line. For venues, add a <b>|</b> where you want the line break or shorten the name. For openers, shorten the text.</div>
+              {(() => {
+                const hasVenues = longVenues!.some(v => v.field === "venue");
+                const hasOpeners = longVenues!.some(v => v.field === "opener");
+                const title = hasVenues && hasOpeners ? "LONG NAMES" : hasOpeners ? "LONG OPENER NAMES" : "LONG VENUE NAMES";
+                const description = hasVenues && hasOpeners
+                  ? <>These fields are too long for one line. For venues, add a <b>|</b> where you want the line break or shorten the name. For openers, shorten the text.</>
+                  : hasOpeners
+                  ? <>These openers are too long for one line. Shorten the text.</>
+                  : <>These venues are too long for one line. Add a <b>|</b> where you want the line break, or shorten the name.</>;
+                return (
+                  <>
+                    <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase", marginBottom: 4 }}>{title}</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, color: "var(--hw-text-secondary)" }}>{description}</div>
+                  </>
+                );
+              })()}
             </div>
             <div style={{ padding: "16px 24px" }}>
               {longVenues.map((lv, i) => (

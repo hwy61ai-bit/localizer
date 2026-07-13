@@ -364,7 +364,7 @@ The June 14 Team/Marketing build named/renamed venue section headers (Marketing,
 
 ---
 
-## ⏳ Soak items (6)
+## ⏳ Soak items (7)
 
 *Waiting on production data or time to pass.*
 
@@ -474,6 +474,16 @@ The TourRouter advance flow currently sends from two different Resend addresses 
 Same product flow (venue-advance emails to promoter contacts) delivered from two sender addresses. Effect: an initial manual send and its automated follow-ups arrive in the recipient's inbox as separate Gmail threads rather than one conversation. Anyone replying to `advances@` also might not reach the same handler as replies to `noreply@`.
 
 **Why deferred:** TourRouter is paused at launch (`/tourrouter` → `/coming-soon` redirect); no external customer sees these emails today. **Trigger:** when TourRouter un-pauses, pick one sender for the flow (probably `advances@` since it names the purpose) and unify — either add a TourRouter-specific constant to `lib/email/sender.ts` or hard-code both call sites to the same address. Whichever address is retired should stay in DNS SPF/DKIM until any in-flight replies drain.
+
+---
+
+### Storage bucket backup story (2026-07-13)
+
+Supabase Pro daily backups cover the database only — Storage objects are NOT included. The non-recreatable set is the W-9s in the private `advance-docs` bucket (uploaded once by artists, no source of truth elsewhere). Fonts and logos in other buckets are recreatable from the artist's original files or by re-upload; W-9s are not.
+
+**Consider post-launch:** periodic bucket export (cron → zip → offsite) or a PITR + storage snapshot strategy. Either approach has cost and operational implications worth evaluating with real usage volume first.
+
+**Priority:** Low right now (small W-9 volume, low bucket-corruption probability), rising with customer count. Revisit when either (a) W-9 count crosses ~50, or (b) any Supabase Storage incident surfaces publicly.
 
 ---
 
