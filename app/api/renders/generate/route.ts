@@ -388,6 +388,16 @@ export async function POST(req: NextRequest) {
   if (!orgId) return NextResponse.json({ error: "Missing orgId" }, { status: 400 });
   if (!tourId && !eventId) return NextResponse.json({ error: "Missing tourId or eventId" }, { status: 400 });
 
+  // Image path below (buildCloudinaryUrl loop) is deprecated dead code. Images
+  // render client-side via lib/clientRender.ts renderPoster() through the
+  // canvas pipeline in EventsTable.renderEvents(); this route now serves videos
+  // only. Any caller omitting videosOnly would trigger the dead image builder,
+  // which lacks opener / custom fonts / logos / custom text — silent output
+  // corruption. Hard-fail to make the deprecation loud.
+  if (!videosOnly) {
+    return NextResponse.json({ error: "images_render_client_side" }, { status: 400 });
+  }
+
   const supabase = await supabaseServer();
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!;
 
@@ -504,7 +514,18 @@ export async function POST(req: NextRequest) {
   if (events.length === 0) return NextResponse.json({ error: "No events found" }, { status: 400 });
 
   const ids = events.map((e: any) => e.id);
-  await supabase.from("events").update({ render_status: "rendering" }).in("id", ids);
+  {
+    const { data: bulkData, error: bulkErr } = await supabase
+      .from("events")
+      .update({ render_status: "rendering" })
+      .in("id", ids)
+      .select("id");
+    if (bulkErr) {
+      console.error("[renders/generate] bulk render_status update errored — status may lag behind actual work", { tourId: tourId_resolved, orgId, error: bulkErr.message });
+    } else if ((bulkData?.length ?? 0) !== ids.length) {
+      console.error("[renders/generate] bulk render_status update row-count mismatch — possible silent RLS rejection on some rows", { tourId: tourId_resolved, orgId, expected: ids.length, actual: bulkData?.length ?? 0 });
+    }
+  }
 
   const errors: string[] = [];
 
@@ -569,7 +590,6 @@ export async function POST(req: NextRequest) {
           .eq("id", existing.id)
           .select()
           .maybeSingle();
-        console.log("UPDATE RESULT:", existing.id, "rows=" + (data ? 1 : 0), updateErr ? JSON.stringify(updateErr) : "");
         if (updateErr) throw updateErr;
         if (!data) {
           console.error("[renders/generate] venue_links update returned no row — possible silent RLS rejection", { eventId: event.id, orgId, venue_link_id: existing.id });
@@ -577,20 +597,46 @@ export async function POST(req: NextRequest) {
         }
       } else {
         const token = generatePublicToken();
-        await supabase.from("venue_links").insert({
+        const { data: newLink, error: insertErr } = await supabase.from("venue_links").insert({
           org_id: orgId,
           event_id: event.id,
           token,
           is_active: true,
           ...renderUrls,
-        });
+        }).select("id").maybeSingle();
+        if (insertErr || !newLink) {
+          console.error("[renders/generate] venue_links insert failed — event will not be marked ready", { eventId: event.id, orgId, error: insertErr?.message });
+          throw new Error("venue_links_insert_failed");
+        }
       }
 
-      await supabase.from("events").update({ render_status: "ready" }).eq("id", event.id);
+      {
+        const { data: readyData, error: readyErr } = await supabase
+          .from("events")
+          .update({ render_status: "ready" })
+          .eq("id", event.id)
+          .select("id")
+          .maybeSingle();
+        if (readyErr) {
+          console.error("[renders/generate] render_status:ready write errored — UI may show stale status", { eventId: event.id, orgId, error: readyErr.message });
+        } else if (!readyData) {
+          console.error("[renders/generate] render_status:ready write returned no row — possible silent RLS rejection", { eventId: event.id, orgId });
+        }
+      }
 
     } catch (err: any) {
       errors.push(`${event.venue} (${event.date_iso}): ${err?.message ?? String(err)}`);
-      await supabase.from("events").update({ render_status: "error" }).eq("id", event.id);
+      const { data: errData, error: errWriteErr } = await supabase
+        .from("events")
+        .update({ render_status: "error" })
+        .eq("id", event.id)
+        .select("id")
+        .maybeSingle();
+      if (errWriteErr) {
+        console.error("[renders/generate] render_status:error write errored — UI may show stale status", { eventId: event.id, orgId, error: errWriteErr.message });
+      } else if (!errData) {
+        console.error("[renders/generate] render_status:error write returned no row — possible silent RLS rejection", { eventId: event.id, orgId });
+      }
     }
   }
 

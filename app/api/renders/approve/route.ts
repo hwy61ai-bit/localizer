@@ -84,12 +84,16 @@ export async function POST(req: NextRequest) {
     token = existing.token;
   } else {
     token = generatePublicToken();
-    await supabase.from("venue_links").insert({
+    const { data: newLink, error: insertErr } = await supabase.from("venue_links").insert({
       org_id: orgId,
       event_id: eventId,
       token,
       is_active: true,
-    });
+    }).select("id").maybeSingle();
+    if (insertErr || !newLink) {
+      console.error("[renders/approve] venue_links insert failed — aborting before sent_at/email", { eventId, orgId, error: insertErr?.message });
+      return NextResponse.json({ error: "venue_link_create_failed" }, { status: 500 });
+    }
   }
 
   const now = new Date().toISOString();

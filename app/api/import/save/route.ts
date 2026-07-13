@@ -42,6 +42,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Tour not found." }, { status: 404 });
     }
 
+    const { data: membership } = await supabase
+      .from("org_members")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .eq("org_id", tour.org_id)
+      .maybeSingle();
+
+    if (!membership) {
+      return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    }
+
     const rows = events.map((e: {
       date_iso: string | null;
       day: string | null;
@@ -68,13 +79,22 @@ export async function POST(request: Request) {
       manager_email: e.manager_email,
     }));
 
-    const { error: insertErr } = await supabase.from("events").insert(rows);
+    const { data: inserted, error: insertErr } = await supabase
+      .from("events")
+      .insert(rows)
+      .select("id");
 
     if (insertErr) {
       return NextResponse.json({ error: insertErr.message }, { status: 500 });
     }
 
-    return NextResponse.json({ saved: rows.length });
+    const insertedCount = inserted?.length ?? 0;
+    if (insertedCount !== rows.length) {
+      console.error("[import/save] events insert row-count mismatch — possible silent RLS rejection", { tourId, orgId: tour.org_id, expected: rows.length, inserted: insertedCount });
+      return NextResponse.json({ error: "import_partial_failure", expected: rows.length, inserted: insertedCount }, { status: 500 });
+    }
+
+    return NextResponse.json({ saved: insertedCount });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error.";
     return NextResponse.json({ error: message }, { status: 500 });

@@ -28,7 +28,7 @@ export async function createEventAction(tourId: string, formData: FormData) {
   const promoterEmail = optionalString(formData, "promoter_email");
   const managerEmail = optionalString(formData, "manager_email");
 
-  const { error: insErr } = await supabase.from("events").insert({
+  const { data: created, error: insErr } = await supabase.from("events").insert({
     org_id: tour.org_id,
     tour_id: tourId,
     date_iso: eventDate,
@@ -41,9 +41,10 @@ export async function createEventAction(tourId: string, formData: FormData) {
     source: "manual",
     status: "ready",
     event_index: 0,
-  });
+  }).select("id").maybeSingle();
 
   if (insErr) throw new Error(insErr.message);
+  if (!created) throw new Error("Event creation failed — no row returned (possible permissions issue)");
 
   redirect(`/dashboard/tours/${tourId}`);
 }

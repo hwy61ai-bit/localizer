@@ -101,12 +101,17 @@ export async function POST(
   }
 
   const column = FORMAT_COLUMN[formatId] ?? "image_url";
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("tours")
     .update({ [column]: public_id })
     .eq("id", tourId)
-    .eq("org_id", tour.org_id);
+    .eq("org_id", tour.org_id)
+    .select("id")
+    .maybeSingle();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error || !data) {
+    console.error("[tours/upload-image] tours update failed — Cloudinary asset uploaded but not saved to DB", { tourId, column, error: error?.message });
+    return NextResponse.json({ error: "asset_save_failed" }, { status: 500 });
+  }
   return NextResponse.json({ ok: true, public_id });
 }
