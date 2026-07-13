@@ -129,7 +129,7 @@ export async function GET(req: NextRequest) {
   // Fetch event
   const { data: event, error: eventError } = await supabase
     .from("events")
-    .select("id, tour_id, date_iso, city, state, venue, venue_name, venue_city, venue_state")
+    .select("id, tour_id, date_iso, city, state, venue, venue_name, venue_city, venue_state, opener")
     .eq("id", eventId)
     .single();
 
@@ -213,6 +213,7 @@ export async function GET(req: NextRequest) {
   const venueColor = printConfig.venueColor ? hexToRgb(printConfig.venueColor) : textColor;
   const cityColor = printConfig.cityColor ? hexToRgb(printConfig.cityColor) : textColor;
   const dateColor = printConfig.dateColor ? hexToRgb(printConfig.dateColor) : textColor;
+  const openerColor = printConfig.openerColor ? hexToRgb(printConfig.openerColor) : textColor;
   const allCaps = printConfig.allCaps ?? false;
   const shortDate = printConfig.shortDate ?? false;
 
@@ -363,6 +364,12 @@ export async function GET(req: NextRequest) {
   if (printConfig.showCity ?? true) {
     const cityText = allCaps ? cityState.toUpperCase() : cityState;
     drawTextField(cityText, printConfig.city, false, undefined, cityColor);
+  }
+
+  // Draw opener (renders raw as typed — no caps transform, matching image/video paths)
+  if ((printConfig.showOpener ?? false) && (event.opener ?? "").trim().length > 0) {
+    const openerField = printConfig.opener ?? { x: 0.5, y: 0.72, size: 120, align: "center" };
+    drawTextField(event.opener, openerField, false, undefined, openerColor);
   }
 
   // Serialize PDF

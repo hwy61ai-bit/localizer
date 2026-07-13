@@ -154,6 +154,7 @@ const SPONSOR_2_DEFAULT: FieldConfig = { x: 0.65, y: 0.88, size: 60, align: "cen
 const CUSTOM_TEXT_1_DEFAULT: FieldConfig = { x: 0.5, y: 0.08, size: 48, align: "center" };
 const CUSTOM_TEXT_2_DEFAULT: FieldConfig = { x: 0.5, y: 0.92, size: 48, align: "center" };
 const OPENER_DEFAULT: FieldConfig = { x: 0.5, y: 0.72, size: 40, align: "center" };
+const OPENER_PRINT_DEFAULT: FieldConfig = { x: 0.5, y: 0.72, size: 120, align: "center" };
 
 type Tour = {
   id: string;
@@ -590,7 +591,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           ...prev,
           [activeFormat]: {
             ...prev[activeFormat],
-            opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), x, y },
+            opener: { ...(prev[activeFormat].opener ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT)), x, y },
           },
         }));
       } else {
@@ -667,7 +668,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     const fc = field === "band"
       ? (cfg.band ?? BAND_DEFAULT)
       : field === "opener"
-        ? (cfg.opener ?? OPENER_DEFAULT)
+        ? (cfg.opener ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT))
         : field === "customText1"
           ? (cfg.customText1 ?? CUSTOM_TEXT_1_DEFAULT)
           : field === "customText2"
@@ -688,7 +689,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           ...prev,
           [activeFormat]: {
             ...prev[activeFormat],
-            opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), align: a },
+            opener: { ...(prev[activeFormat].opener ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT)), align: a },
           },
         }));
       } else if (field === "customText1") {
@@ -1206,8 +1207,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   { label: "VENUE", shrink: shrinkPct(venueMeasureText, cfg.venue, fmtDims.w) },
                   { label: "CITY", shrink: shrinkPct(cityMeasureText, cfg.city, fmtDims.w) },
                 ];
-                if ((cfg.showOpener ?? false) && longestOpener && !isPrintFormat) {
-                  candidates.push({ label: "OPENER", shrink: shrinkPct(longestOpener, cfg.opener ?? OPENER_DEFAULT, fmtDims.w) });
+                if ((cfg.showOpener ?? false) && longestOpener) {
+                  candidates.push({ label: "OPENER", shrink: shrinkPct(longestOpener, cfg.opener ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT), fmtDims.w) });
                 }
                 const worst = candidates.reduce((w, c) => c.shrink > w.shrink ? c : w, { label: "", shrink: 0 });
                 if (worst.shrink <= 20) return null;
@@ -1432,8 +1433,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       </div>
                     );
                   })}
-                  {!isPrintFormat && (cfg.showOpener ?? false) && (() => {
-                    const fc = cfg.opener ?? OPENER_DEFAULT;
+                  {(cfg.showOpener ?? false) && (() => {
+                    const fc = cfg.opener ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT);
                     const align = fc.align ?? "center";
                     const isActive = dragging === "opener";
                     return (
@@ -1823,62 +1824,60 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               )}
             </div>
 
-            {!isPrintFormat && (
-              <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
-                <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showOpener ?? false) ? 12 : 0 }}>
-                  <span onClick={() => updateCfg("showOpener", !(cfg.showOpener ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showOpener ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
-                    {(cfg.showOpener ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
-                  </span>
-                  <div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Opening Act</div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>Per-show text from the gigs page</div>
-                  </div>
-                </label>
-                {(cfg.showOpener ?? false) && (
-                  <>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <input
-                          type="number"
-                          min={16}
-                          max={isPrintFormat ? 400 : 120}
-                          value={cfg.opener?.size ?? OPENER_DEFAULT.size}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            if (!isNaN(val) && val >= 1 && val <= 999) {
-                              setConfigs(prev => ({
-                                ...prev,
-                                [activeFormat]: {
-                                  ...prev[activeFormat],
-                                  opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), size: val },
-                                },
-                              }));
-                            }
-                          }}
-                          style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
-                        />
-                        <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>px</span>
-                      </div>
+            <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: (cfg.showOpener ?? false) ? 12 : 0 }}>
+                <span onClick={() => updateCfg("showOpener", !(cfg.showOpener ?? false))} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: (cfg.showOpener ?? false) ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
+                  {(cfg.showOpener ?? false) && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
+                </span>
+                <div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Opening Act</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>Per-show text from the gigs page</div>
+                </div>
+              </label>
+              {(cfg.showOpener ?? false) && (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                    <span style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1px", color: "var(--hw-text)" }}>Size</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <input
+                        type="number"
+                        min={16}
+                        max={isPrintFormat ? 400 : 120}
+                        value={cfg.opener?.size ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT).size}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val) && val >= 1 && val <= 999) {
+                            setConfigs(prev => ({
+                              ...prev,
+                              [activeFormat]: {
+                                ...prev[activeFormat],
+                                opener: { ...(prev[activeFormat].opener ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT)), size: val },
+                              },
+                            }));
+                          }
+                        }}
+                        style={{ width: 44, fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, color: "var(--hw-text)", border: "2px solid var(--hw-border-strong)", padding: "2px 4px", textAlign: "right" as const, outline: "none" }}
+                      />
+                      <span style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, color: "var(--hw-text-muted)" }}>px</span>
                     </div>
-                    <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
-                      value={cfg.opener?.size ?? OPENER_DEFAULT.size}
-                      onChange={(e) => {
-                        setConfigs(prev => ({
-                          ...prev,
-                          [activeFormat]: {
-                            ...prev[activeFormat],
-                            opener: { ...(prev[activeFormat].opener ?? OPENER_DEFAULT), size: parseInt(e.target.value) },
-                          },
-                        }));
-                      }}
-                      style={{ width: "100%", cursor: "pointer" }}
-                    />
-                    <AlignButtons field="opener" />
-                  </>
-                )}
-              </div>
-            )}
+                  </div>
+                  <input type="range" min={16} max={isPrintFormat ? 400 : 120} step={2}
+                    value={cfg.opener?.size ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT).size}
+                    onChange={(e) => {
+                      setConfigs(prev => ({
+                        ...prev,
+                        [activeFormat]: {
+                          ...prev[activeFormat],
+                          opener: { ...(prev[activeFormat].opener ?? (isPrintFormat ? OPENER_PRINT_DEFAULT : OPENER_DEFAULT)), size: parseInt(e.target.value) },
+                        },
+                      }));
+                    }}
+                    style={{ width: "100%", cursor: "pointer" }}
+                  />
+                  <AlignButtons field="opener" />
+                </>
+              )}
+            </div>
 
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
