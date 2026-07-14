@@ -196,6 +196,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     return cs.length > max.length ? cs : max;
   }, firstEvent ? [firstEvent.city, firstEvent.state].filter(Boolean).join(", ") : "");
   const longestOpener = allEvents.reduce((max, e) => (e.opener ?? "").length > max.length ? (e.opener ?? "") : max, firstEvent?.opener ?? "");
+  const sampleOpener = (firstEvent?.opener ?? "") || allEvents.find(e => (e.opener ?? "").trim().length > 0)?.opener || "";
 
   function availableWidthForField(field: FieldConfig, canvasW: number): number {
     const align = field.align ?? "center";
@@ -1447,7 +1448,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setDragging("opener");
                       }}
                         style={{ position: "absolute", left: `${fc.x * 100}%`, top: `${fc.y * 100}%`, transform: getTransform(align), cursor: "grab", fontFamily: "'" + cfg.fontFamily + "', sans-serif", fontSize: `${Math.round(fc.size * previewScale)}px`, fontWeight: 700, color: `#${cfg.textColor}`, whiteSpace: "nowrap", textAlign: "center", outline: isActive ? "2px solid rgba(255,220,0,0.9)" : "none", outlineOffset: 4, padding: "2px 6px", borderRadius: 3, zIndex: isActive ? 10 : 5, pointerEvents: "all" }}>
-                        {previewLongest && longestOpener ? longestOpener : (firstEvent?.opener || SAMPLE_TEXT.opener)}
+                        {previewLongest && longestOpener ? longestOpener : (sampleOpener || SAMPLE_TEXT.opener)}
                       </div>
                     );
                   })()}
@@ -1831,7 +1832,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 </span>
                 <div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Opening Act</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>Per-show text from the gigs page</div>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>Per-show text from the gigs page — previewing an example from your tour</div>
                 </div>
               </label>
               {(cfg.showOpener ?? false) && (
