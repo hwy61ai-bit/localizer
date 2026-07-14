@@ -560,6 +560,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
   const COLS = "100px 50px 150px 200px 250px 100px 130px";
   const allReady = events.length > 0 && events.every(e => e.render_status === "ready" || !!e.sent_at);
   const staleEvents = events.filter(e => e.needs_rerender && e.render_status === "ready");
+  const tourHasRenders = events.some(ev => ev.render_status === "ready" || !!ev.sent_at);
   return (
     <>
       <div style={{ overflowX: "auto" }}>
@@ -706,6 +707,8 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
                 }} style={{ padding: "4px 12px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", cursor: "pointer", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 11, letterSpacing: "1.5px", textTransform: "uppercase" }}>LINK</button>
                 {e.render_status === "rendering" ? (
                   <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", marginTop: 3, textAlign: "center", textTransform: "uppercase" }}>RENDERING…</div>
+                ) : (!e.render_status || e.render_status === "pending") && tourHasRenders ? (
+                  <div onClick={() => reRenderEvent(e.id)} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", marginTop: 3, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>⚡ RENDER</div>
                 ) : e.needs_rerender && e.render_status === "ready" ? (
                   <div onClick={() => reRenderEvent(e.id)} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", marginTop: 3, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>↻ RE-RENDER</div>
                 ) : (
