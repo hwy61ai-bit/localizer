@@ -724,9 +724,9 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
                 {e.render_status === "rendering" ? (
                   <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-text-muted)", marginTop: 3, textAlign: "center", textTransform: "uppercase" }}>RENDERING…</div>
                 ) : (!e.render_status || e.render_status === "pending") && tourHasRenders ? (
-                  <div onClick={() => reRenderEvent(e.id)} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", marginTop: 3, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>⚡ RENDER</div>
+                  <div onClick={() => reRenderEvent(e.id)} style={{ padding: "6px 12px", border: "2px solid var(--hw-crimson)", color: "var(--hw-crimson)", background: "transparent", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", cursor: "pointer", whiteSpace: "nowrap", marginTop: 4, textAlign: "center" }}>RENDER SHOW</div>
                 ) : e.needs_rerender && e.render_status === "ready" ? (
-                  <div onClick={() => reRenderEvent(e.id)} style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", marginTop: 3, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>↻ RE-RENDER</div>
+                  <div onClick={() => reRenderEvent(e.id)} style={{ padding: "6px 12px", border: "2px solid var(--hw-crimson)", color: "var(--hw-crimson)", background: "transparent", fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", cursor: "pointer", whiteSpace: "nowrap", marginTop: 4, textAlign: "center" }}>RE-RENDER</div>
                 ) : (
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 11, fontWeight: 300, color: "var(--hw-text-secondary)", marginTop: 3, textAlign: "center" }}>Preview assets</div>
                 )}
