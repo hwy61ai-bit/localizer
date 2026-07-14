@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { createVenueLink } from "./events/actions";
 import EventsTable from "./components/EventsTable";
 import ShareWithMarketingButton from "./components/ShareWithMarketingButton";
 import { TourPageNav } from "./TourPageNav";
+import BandTourForm from "./BandTourForm";
 import { effectiveTierForFeatures } from "@/lib/localizer/tierGate";
 
 type TourRow = {
@@ -21,9 +21,8 @@ type EventRow = {
   needs_rerender: boolean | null;
 };
 
-export default async function TourPage({ params, searchParams }: { params: Promise<{ tourId: string }>; searchParams?: { saved?: string } }) {
+export default async function TourPage({ params }: { params: Promise<{ tourId: string }> }) {
   const { tourId } = await params;
-  const justSaved = searchParams?.saved === "1";
   const supabase = await supabaseServer();
 
   const { data: tour, error: tourError } = await supabase
@@ -64,20 +63,6 @@ export default async function TourPage({ params, searchParams }: { params: Promi
 
   const eventRows = (eventsData ?? []) as EventRow[];
 
-  async function saveBandTourLabel(formData: FormData) {
-    "use server";
-    const band = String(formData.get("band_name") ?? "").trim();
-    const tour_label = String(formData.get("band_tour_label") ?? "").trim();
-    const supabase = await supabaseServer();
-    const { error } = await supabase.from("tours").update({
-      band_name: band.length ? band : null,
-      band_tour_label: tour_label.length ? tour_label : null,
-    }).eq("id", tourId);
-    if (error) throw new Error(error.message);
-    redirect(`/dashboard/tours/${tourId}?saved=1`);
-  }
-
-
 
   return (
     <div className="fade-in" style={{ padding: 32, minHeight: "100vh" }}>
@@ -95,19 +80,7 @@ export default async function TourPage({ params, searchParams }: { params: Promi
         </div>
 
         <div style={{ padding: 18, border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", marginBottom: 18 }}>
-          <form action={saveBandTourLabel} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", marginBottom: 6 }}>BAND</div>
-              <input name="band_name" defaultValue={bandName ?? ""} placeholder="Band name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 18, fontWeight: 500, outline: "none" }} />
-            </div>
-            <div>
-              <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--hw-text-secondary)", marginBottom: 6 }}>TOUR</div>
-              <input name="band_tour_label" defaultValue={bandTourLabel ?? ""} placeholder="Tour name" style={{ width: "100%", boxSizing: "border-box", padding: "12px 16px", border: "3px solid var(--hw-border-strong)", fontFamily: "var(--hw-font-body)", fontSize: 16, fontWeight: 400, outline: "none" }} />
-            </div>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <button type="submit" style={{ padding: "10px 24px", border: `3px solid ${justSaved ? "var(--hw-green)" : "var(--hw-crimson)"}`, background: justSaved ? "var(--hw-green)" : "var(--hw-crimson)", color: "#fff", fontFamily: "var(--hw-font-display)", fontSize: 14, letterSpacing: "3px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}>{justSaved ? "SAVED ✓" : "SAVE"}</button>
-            </div>
-          </form>
+          <BandTourForm tourId={tourId} initialBand={bandName ?? ""} initialTourLabel={bandTourLabel ?? ""} />
         </div>
 
         <div style={{ border: "3px solid var(--hw-border-strong)", overflow: "hidden", background: "var(--hw-bg-surface)" }}>

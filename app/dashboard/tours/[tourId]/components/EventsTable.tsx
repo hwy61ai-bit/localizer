@@ -139,6 +139,22 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     return () => clearTimeout(t);
   }, [showSuccess]);
 
+  useEffect(() => {
+    function onTourFieldsChanged(e: Event) {
+      const detail = (e as CustomEvent<{ tourId: string }>).detail;
+      if (detail?.tourId !== tourId) return;
+      // Mirror the server-side flag filter (.in("render_status", ["ready"])) so
+      // local UI matches DB — the ↻ RE-RENDER microcopy + toolbar chip flip immediately.
+      setEvents(prev => prev.map(ev =>
+        ev.render_status === "ready"
+          ? { ...ev, needs_rerender: true }
+          : ev
+      ));
+    }
+    window.addEventListener("tour-fields-changed", onTourFieldsChanged);
+    return () => window.removeEventListener("tour-fields-changed", onTourFieldsChanged);
+  }, [tourId]);
+
   function startEdit(e: EventRow, field: EditableField) {
     setEditing({ id: e.id, field });
     setDraft((e[field] ?? "") as string);

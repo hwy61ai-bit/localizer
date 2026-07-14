@@ -76,3 +76,58 @@ export async function createVenueLink(formData: FormData) {
 
   redirect(`/v/e/${token}`);
 }
+
+export async function saveBandTourInfo(
+  tourId: string,
+  bandName: string | null,
+  tourLabel: string | null,
+): Promise<{ ok: true; flagged: boolean } | { ok: false; error: string }> {
+  const supabase = await supabaseServer();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { ok: false, error: "unauthorized" };
+
+  const { data: tour, error: tourErr } = await supabase
+    .from("tours")
+    .select("id, org_id, band_name, band_tour_label")
+    .eq("id", tourId)
+    .maybeSingle();
+  if (tourErr || !tour) return { ok: false, error: "tour_not_found" };
+
+  const { data: membership } = await supabase
+    .from("org_members")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .eq("org_id", tour.org_id)
+    .maybeSingle();
+  if (!membership) return { ok: false, error: "forbidden" };
+
+  const bandChanged = (tour.band_name ?? null) !== bandName;
+  const tourChanged = (tour.band_tour_label ?? null) !== tourLabel;
+  if (!bandChanged && !tourChanged) return { ok: true, flagged: false };
+
+  const { data: updated, error: updateErr } = await supabase
+    .from("tours")
+    .update({ band_name: bandName, band_tour_label: tourLabel })
+    .eq("id", tourId)
+    .select("id")
+    .maybeSingle();
+  if (updateErr || !updated) {
+    console.error("[saveBandTourInfo] tours update failed", { tourId, error: updateErr?.message });
+    return { ok: false, error: "save_failed" };
+  }
+
+  // Band/tour text is baked into every rendered poster — flag all currently-rendered
+  // events on this tour as stale. Only fires when a value actually changed.
+  const { error: flagErr } = await supabase
+    .from("events")
+    .update({ needs_rerender: true })
+    .eq("tour_id", tourId)
+    .in("render_status", ["ready"])
+    .select("id");
+  if (flagErr) {
+    console.error("[saveBandTourInfo] staleness flag write failed (non-fatal)", { tourId, error: flagErr.message });
+  }
+
+  return { ok: true, flagged: true };
+}
