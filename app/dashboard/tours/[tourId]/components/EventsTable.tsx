@@ -595,7 +595,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
               <>
                 <div style={{ fontFamily: "var(--hw-font-mono)", fontWeight: 700, letterSpacing: "1.5px", color: "var(--hw-crimson)", border: "1.5px solid var(--hw-crimson)", padding: "3px 10px", textAlign: "left", textTransform: "uppercase", display: "flex", flexDirection: "column", gap: 2 }}>
                   <div style={{ fontSize: 12, whiteSpace: "nowrap" }}>{staleEvents.length === 1 ? "1 SHOW HAS UNRENDERED CHANGES" : `${staleEvents.length} SHOWS HAVE UNRENDERED CHANGES`}</div>
-                  <div style={{ fontSize: 11, whiteSpace: "nowrap", textAlign: "center" }}>UPDATE YOUR SHOW LINKS</div>
+                  <div style={{ fontSize: 11, whiteSpace: "nowrap", textAlign: "center" }}>RE-RENDER TO UPDATE YOUR SHOW LINKS</div>
                 </div>
                 <button
                   onClick={regenerateStale}
