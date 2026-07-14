@@ -3880,3 +3880,30 @@ Opening Act polish batch across three sessions plus three pre-existing bug fixes
 
 
 third pre-existing bug flushed out by the opener feature — video overlays have been silently deleting slashes, apostrophes, parens, quotes, ampersands, and question marks from all text (venue names, custom text) since the video pipeline was built. Fixed by encoding instead of stripping. Worth including in the Tim note tomorrow, same reasoning as the RETRY bug: any beta tour with "Toad's Place"-style venue names on videos was affected.
+
+---
+
+## Session — July 14, 2026
+
+### What Got Done
+
+**Gigs page workflow completeness + polish day (7 commits)**
+
+- **Stale-shows chip copy** (20f01ce): second line now reads "RE-RENDER TO UPDATE YOUR SHOW LINKS" — names the action, not just the goal.
+- **RENDER SHOW action for new events** (4394c30): adding a show to a rendered tour now offers a per-row render action instead of requiring full RE-GENERATE ALL. Gate: render_status "pending" (or null) + tour has at least one rendered event. Reuses renderEvents([id]) — new show goes from nothing to live promoter link in one click. Brand-new tours unaffected (first-run flow stays Generate All).
+- **Nav polish** (f244221): GIGS DASHBOARD button nudged right (marginLeft on shared TourPageNav — affects all four tour pages).
+- **Band/tour card rebuilt** (2751c86): single-line layout (equal-width fields, labels above), SAVE button removed in favor of autosave on blur/Enter with SAVED ✓ / SAVE FAILED feedback, extracted to BandTourForm.tsx client component. Save path follows rule 6 (verified write). **Tour-level staleness closed:** changing band_name or band_tour_label now flags ALL rendered events needs_rerender=true server-side (these fields bake into every poster). Live table sync via window CustomEvent ("tour-fields-changed") dispatched by the form, listened for in EventsTable — flags appear without refresh.
+- **Row render actions final form** (958feb7 + intermediate commits): both actions (RENDER SHOW / RE-RENDER) are now bordered crimson button chips centered under the LINK button, matching the SEND/LINK button grammar. Label shortened from "RENDER NEW SHOW" (NOT READY badge already communicates newness).
+
+### Key Lessons
+
+- **New events are born render_status "pending" via a DATABASE column default** — invisible to code greps. The RENDER SHOW gate was first built on "null" from grepping creation paths; the DB said otherwise. Verify column birth states in the database, not the code.
+- **Border says "clickable" in the Warhol system** — plain crimson text read as a status label; glyphs (⚡, ↻) were illegible at microcopy sizes and fought the text when enlarged. The bordered chip solved what four glyph iterations couldn't. Shortening the label beat shrinking the button.
+- **Tour-level fields were the last staleness hole** — event-level fields (venue/date/city/opener) were watched since July 8; band/tour name changes silently staled every poster until today. All render-affecting fields now announce themselves.
+- **CustomEvent is the right wiring for sibling client components under a server page** — a callback would have forced the whole page into a client wrapper.
+
+### Next Session Should Start With
+
+- git pull if on a different machine
+- Tim remains the launch gate: Stripe screen-share, demo script v2, ad script markup
+- Drew's optional bench: UptimeRobot, email deliverability, artist-limit + cookie-consent smoke tests
