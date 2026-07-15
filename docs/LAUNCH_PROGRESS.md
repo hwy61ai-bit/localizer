@@ -275,7 +275,7 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 - ⬜ Last-pass marketing copy review
 - ⬜ Permissions check on Stripe / Resend / Cloudinary / Mapbox / Anthropic
 - ⬜ PostHog events firing across full funnel
-- ⬜ UptimeRobot monitors live (free tier, 5-min interval, 2 monitors): `/` and a `+test2026` test-tour venue link (`/v/e/[token]`) with keyword matching on the band name. Alert contacts: drew@hwy61labs.com + tim@hwy61labs.com. Note: monitors are plain HTTP fetches — no JS execution, so PostHog analytics are unaffected (consent-gated init never fires); expect the 5-min heartbeat in Vercel request logs. `/pricing` and `/login` deliberately skipped — same infrastructure, won't fail independently; add later if desired.
+- ⬜ UptimeRobot monitor live (free tier, 5-min interval, 1 monitor): HTTP(s) check on `https://hwy61labs.com/`. Alert contacts: drew@hwy61labs.com + tim@hwy61labs.com. Venue-link keyword monitoring considered and skipped — test venue links get deleted during routine cleanup, making them unreliable anchors; a dedicated fixture band or `/api/health` endpoint is the post-launch path if deeper monitoring is wanted. Note: plain HTTP fetch, no JS execution — PostHog unaffected; expect the 5-min heartbeat in Vercel request logs.
 
 ### Day 29 — Coming Soon gate removed in production
 - ⬜ Fill `Effective Date` on `/terms` and `/privacy` with launch date (currently `[SET AT PUBLISH]`)
