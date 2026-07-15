@@ -3907,3 +3907,14 @@ third pre-existing bug flushed out by the opener feature — video overlays have
 - git pull if on a different machine
 - Tim remains the launch gate: Stripe screen-share, demo script v2, ad script markup
 - Drew's optional bench: UptimeRobot, email deliverability, artist-limit + cookie-consent smoke tests
+
+### Late afternoon addition — Editor opener preview + example-data framing
+
+Two more commits after the log was first written:
+
+- **Editor opener preview fixed** (b07bde6): the template editor's opener preview read only firstEvent.opener, so when the tour's earliest-dated show lacked an opener it showed the placeholder "w/ Opening Act Name" even though other shows had real openers — looked broken while renders were always correct. Now falls back through `sampleOpener` (first event on the tour WITH a non-empty opener) before the placeholder; placeholder appears only when no show on the tour has an opener. Preview Longest Names swap behavior preserved. Preview Render eventData untouched (per-event-accurate by design).
+- **Product framing decision:** before building, Drew raised whether this breaks the "lay out the first show" onboarding story. Conclusion: the editor's real contract was never "this is show #1" — Preview Longest Names already swaps in data from anywhere on the tour. The honest concept is **example data**, not "first show" and not "optimized show" (rejected as over-promising). OPENING ACT sub-label updated to "Per-show text from the gigs page — previewing an example from your tour."
+- **Copy note for Tim:** onboarding/demo language should say "lay out your template using example data from your tour" rather than "lay out the first show" — more accurate to existing behavior including longest-names.
+- **BACKLOG candidate (not filed as code):** a small preview caption naming whose data is shown ("PREVIEWING: The Neon Foundry — Oct 11") would dissolve the question entirely; post-launch polish.
+
+Day total: 9 commits (20f01ce through b07bde6).
