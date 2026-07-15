@@ -3932,3 +3932,7 @@ third pre-existing bug flushed out by the opener feature — video overlays have
 - Manual 10-step end-to-end (fold in artist-limit smoke test at the create-artist step) — the last solo-runnable Day 22-23 item
 - Schedule the unsupervised signup observation (Don?)
 - Tim gates unchanged: Stripe screen-share, demo script v2, ad script markup
+
+
+### Late addendum — Cloudinary re-render accumulation quantified
+Drew's lifecycle question surfaced a real (slow) leak: image re-renders upload new assets with auto-generated public_ids, orphaning every prior generation — nothing deletes them. Videos unaffected (transformation URLs). Recon confirmed at EventsTable.tsx:424-430. New-URL-per-render deliberately kept (CDN staleness protection); fix shape is delete-old-on-replace in save-urls, spec'd in BACKLOG. Quantified against Cloudinary dashboard: 6.25K assets / 6.01 GB / 7.2% of Plus credits — comfortably post-launch. Recheck monthly.
