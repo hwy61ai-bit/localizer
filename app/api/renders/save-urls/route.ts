@@ -10,6 +10,46 @@ export async function POST(req: NextRequest) {
 
   const supabase = await supabaseServer();
 
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: "auth_required" }, { status: 401 });
+  }
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("id, tour_id")
+    .eq("id", eventId)
+    .maybeSingle();
+
+  if (!event) {
+    return NextResponse.json({ error: "event_not_found" }, { status: 404 });
+  }
+
+  const { data: tour } = await supabase
+    .from("tours")
+    .select("org_id")
+    .eq("id", event.tour_id)
+    .maybeSingle();
+
+  if (!tour) {
+    return NextResponse.json({ error: "event_not_found" }, { status: 404 });
+  }
+
+  const { data: membership } = await supabase
+    .from("org_members")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .eq("org_id", tour.org_id)
+    .maybeSingle();
+
+  if (!membership) {
+    return NextResponse.json({ error: "not_org_member" }, { status: 403 });
+  }
+
+  if (orgId !== tour.org_id) {
+    return NextResponse.json({ error: "org_mismatch" }, { status: 403 });
+  }
+
   // Upsert venue_link — same logic as existing generate route
   const { data: existing } = await supabase
     .from("venue_links")
