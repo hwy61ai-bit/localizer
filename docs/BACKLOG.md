@@ -487,7 +487,7 @@ Supabase Pro daily backups cover the database only — Storage objects are NOT i
 
 ---
 
-## 🧹 Code hygiene queue (18)
+## 🧹 Code hygiene queue (17)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -701,11 +701,6 @@ Low priority.
 
 ---
 
-### Cloudinary image-asset accumulation on re-render (delete-old-on-replace)
-Recon July 15 (EventsTable.tsx:424-430): client image uploads pass no public_id — Cloudinary auto-generates one per upload, so every re-render creates a NEW asset and orphans the previous generation. Nothing in the app ever deletes old renders. Videos unaffected (transformation URLs, no stored derivatives). The new-URL-per-render behavior is deliberately kept — it's what makes CDN staleness impossible — so the fix is NOT deterministic public_ids. Fix shape: in /api/renders/save-urls, before overwriting a render_*_url, extract the old asset's public_id from the outgoing URL and queue a signed Cloudinary destroy (fire-and-forget with error logging; a destroy failure must never fail the render save). Verify first whether any surface (approve email, downloads) references Cloudinary URLs directly such that destroying old assets could break a promoter-held reference. Distinct from (and complementary to) the existing per-entity file-cleanup sweep entry. Post-launch unless Cloudinary usage numbers say otherwise — check dashboard usage before prioritizing. Baseline July 15: 6.25K assets / 6.01 GB storage / 16.21 of 225 credits (7.2%) on Cloudinary Plus — comfortable; recheck monthly post-launch.
-
----
-
 ## 💭 Future ideas (5)
 
 *Speculative post-launch work.*
@@ -842,6 +837,10 @@ None of the five download routes get an Indie static-only tier gate. They keep t
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### Cloudinary image-asset accumulation on re-render (delete-old-on-replace)
+
+SHIPPED July 15, 2026 — moved to Resolved pending this note's relocation. Three commits: a451dc1 (auth + org membership on save-urls — the route was previously unauthenticated, a prerequisite before giving it destroy capability), 067a1be (lib/cloudinary/destroyRenderAsset.ts — image-only regex, video-URL refusal guard, never-throws), 72a199b (wired into save-urls UPDATE branch: hard-coded three-column allowlist render_square/story/landscape_url, destroys awaited post-verified-update, failures log "[save-urls] old render destroy failed" and never fail the save). Verified locally + prod: old square asset 404s after re-render, both source videos untouched, zero destroy errors. REMAINING (optional): one-time purge of pre-July-15 orphans (~6.25K assets baseline incl. months of orphaned generations) — dry-run-mandatory admin route diffing Cloudinary assets against all DB-referenced URLs, same pattern as the July 3 W-9 migration; only worth doing if Cloudinary usage climbs. Recheck dashboard usage monthly post-launch.
 
 ### Pricing FAQ copy upgrades — gated on Stripe portal-config screen-share
 

@@ -3936,3 +3936,19 @@ third pre-existing bug flushed out by the opener feature — video overlays have
 
 ### Late addendum — Cloudinary re-render accumulation quantified
 Drew's lifecycle question surfaced a real (slow) leak: image re-renders upload new assets with auto-generated public_ids, orphaning every prior generation — nothing deletes them. Videos unaffected (transformation URLs). Recon confirmed at EventsTable.tsx:424-430. New-URL-per-render deliberately kept (CDN staleness protection); fix shape is delete-old-on-replace in save-urls, spec'd in BACKLOG. Quantified against Cloudinary dashboard: 6.25K assets / 6.01 GB / 7.2% of Plus credits — comfortably post-launch. Recheck monthly.
+
+
+### Evening addendum — Cloudinary delete-old-on-replace SHIPPED (pre-launch, Drew's call)
+
+Reversed the morning's post-launch deferral — Drew's reasoning: safer to change a load-bearing route now, against test orgs and forgiving beta users, than post-launch with paying customers. Failure mode is benign (destroy fails → leak continues, today's known state); rollback is one revert.
+
+Three commits, each verified before the next:
+- **a451dc1 — auth + org membership on save-urls.** Recon revealed the route was completely unauthenticated — anyone with an eventId could overwrite render URLs. Survivable as vandalism, unacceptable once the route gains destroy capability. Pattern from events PATCH. Verified: dashboard re-render passes the gate (local + prod), logged-out curl → 401.
+- **067a1be — lib/cloudinary/destroyRenderAsset.ts.** Image-only public_id extraction regex (video alternation deliberately removed), "/video/upload/" refusal guard, "ok" + "not found" both success, never throws. npm run build clean (lib/ rule).
+- **72a199b — wiring in save-urls.** Hard-coded 3-column allowlist (square/story/landscape — the guarantee videos never reach the destroy path; render_tiktok/yt_shorts URLs are transformation URLs whose public_id IS the source video). Old values captured by extending the existing venue_links SELECT. Destroys awaited (May 11 Vercel-teardown lesson — NOT fire-and-forget) post-verified-update, update branch only, failures log "[save-urls] old render destroy failed" and never fail the save.
+
+Verified local + prod on Hollow Forks/Ogden Theatre: old square URL 404s after re-render, both source videos (custom BullandRegular font overlays) untouched and playing, venue page correct, zero destroy-error strings in dev terminal and Vercel logs. Bonus observation: video transformation URLs regenerated correctly with the edited city baked in — the accumulation-free video path confirmed working alongside.
+
+Design decision preserved: new-URL-per-render kept deliberately (CDN staleness protection); the fix destroys the old asset AFTER the new one lands, rather than overwriting in place.
+
+Remaining (optional, BACKLOG): one-time purge of pre-July-15 orphans; only if usage climbs.
