@@ -487,7 +487,7 @@ Supabase Pro daily backups cover the database only — Storage objects are NOT i
 
 ---
 
-## 🧹 Code hygiene queue (17)
+## 🧹 Code hygiene queue (18)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -698,6 +698,11 @@ Files involved when triggered: `lib/stripe/localizerPrices.ts` (`LocalizerTier` 
 **Or just leave the names as historical artifacts.** Purely cosmetic — nothing reads the variable name; the logic is correct.
 
 Low priority.
+
+---
+
+### Cloudinary image-asset accumulation on re-render (delete-old-on-replace)
+Recon July 15 (EventsTable.tsx:424-430): client image uploads pass no public_id — Cloudinary auto-generates one per upload, so every re-render creates a NEW asset and orphans the previous generation. Nothing in the app ever deletes old renders. Videos unaffected (transformation URLs, no stored derivatives). The new-URL-per-render behavior is deliberately kept — it's what makes CDN staleness impossible — so the fix is NOT deterministic public_ids. Fix shape: in /api/renders/save-urls, before overwriting a render_*_url, extract the old asset's public_id from the outgoing URL and queue a signed Cloudinary destroy (fire-and-forget with error logging; a destroy failure must never fail the render save). Verify first whether any surface (approve email, downloads) references Cloudinary URLs directly such that destroying old assets could break a promoter-held reference. Distinct from (and complementary to) the existing per-entity file-cleanup sweep entry. Post-launch unless Cloudinary usage numbers say otherwise — check dashboard usage before prioritizing. Baseline July 15: 6.25K assets / 6.01 GB storage / 16.21 of 225 credits (7.2%) on Cloudinary Plus — comfortable; recheck monthly post-launch.
 
 ---
 
