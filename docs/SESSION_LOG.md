@@ -3908,13 +3908,27 @@ third pre-existing bug flushed out by the opener feature — video overlays have
 - Tim remains the launch gate: Stripe screen-share, demo script v2, ad script markup
 - Drew's optional bench: UptimeRobot, email deliverability, artist-limit + cookie-consent smoke tests
 
-### Late afternoon addition — Editor opener preview + example-data framing
 
-Two more commits after the log was first written:
 
-- **Editor opener preview fixed** (b07bde6): the template editor's opener preview read only firstEvent.opener, so when the tour's earliest-dated show lacked an opener it showed the placeholder "w/ Opening Act Name" even though other shows had real openers — looked broken while renders were always correct. Now falls back through `sampleOpener` (first event on the tour WITH a non-empty opener) before the placeholder; placeholder appears only when no show on the tour has an opener. Preview Longest Names swap behavior preserved. Preview Render eventData untouched (per-event-accurate by design).
-- **Product framing decision:** before building, Drew raised whether this breaks the "lay out the first show" onboarding story. Conclusion: the editor's real contract was never "this is show #1" — Preview Longest Names already swaps in data from anywhere on the tour. The honest concept is **example data**, not "first show" and not "optimized show" (rejected as over-promising). OPENING ACT sub-label updated to "Per-show text from the gigs page — previewing an example from your tour."
-- **Copy note for Tim:** onboarding/demo language should say "lay out your template using example data from your tour" rather than "lay out the first show" — more accurate to existing behavior including longest-names.
-- **BACKLOG candidate (not filed as code):** a small preview caption naming whose data is shown ("PREVIEWING: The Neon Foundry — Oct 11") would dissolve the question entirely; post-launch polish.
+## July 15, 2026 — Doc reconciliation + monitoring + QA checkbox day
 
-Day total: 9 commits (20f01ce through b07bde6).
+### What Got Done
+- LAUNCH_PROGRESS.md reconciled to reality across 5 commits (a9d0f0d, 3d7c833, 4dca735, a1f8dce + the sync):
+  - July 14 gigs-batch session added to "Currently in flight" (tracker was a session behind)
+  - Day 22-23 cross-browser flipped ⬜→✅ (was done July 13, report 2026-07-13_cross-browser.md, never tracked)
+  - Day 22-23 QA agent flipped →✅: satisfied by the July 13-14 sweep + 7 hardening fixes + live 8-test pass. Mac-mini requirement declared moot — the machine was write-protection for agent sessions; read-only sweeps with diff review provide that on any machine.
+  - Custom-font-on-video smoke test RUN and PASSED (July 15): custom font on band name, video format, shared-org tour, RE-GENERATE ALL clean, verified in incognito. Cloudinary l_text authenticated-font path healthy.
+- UptimeRobot decided + documented as Day 28 item: single HTTP(s) monitor on `/` (free tier, 5-min). Venue-link keyword monitoring considered and SKIPPED — test venue links get deleted in routine cleanup, unreliable anchor. Fixture band or /api/health is the post-launch path if deeper monitoring wanted. Dashboard signup itself NOT YET DONE — do at uptimerobot.com, add tim@ as alert contact.
+
+### Discovered / noted
+- +test2026 org has ZERO venue links — "retained for QA" but unusable as a public-surface anchor. Shared org (Hollow Forks) is the durable test target.
+- 17 stale "My Workspace" test orgs surfaced (March–July) — deletable via deleteOrg routine, chips at pre-launch cleanup gate. Two Hollow Forks data quirks in shared org: two "New Tour" tours with null band_name, one with typo'd "The Hollow forks".
+
+### Day 22-23 status after today
+✅ cross-browser, ✅ QA agent sweep, ✅ custom-font-video smoke. Remaining: ⬜ manual 10-step end-to-end from clean browser, ⬜ non-tester unsupervised signup (needs a warm body — Don candidate).
+
+### Next Session Should Start With
+- UptimeRobot dashboard signup if not done (2 min)
+- Manual 10-step end-to-end (fold in artist-limit smoke test at the create-artist step) — the last solo-runnable Day 22-23 item
+- Schedule the unsupervised signup observation (Don?)
+- Tim gates unchanged: Stripe screen-share, demo script v2, ad script markup
