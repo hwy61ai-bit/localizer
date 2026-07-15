@@ -244,9 +244,9 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 ## Week 4 (Days 22–30)
 
 ### Day 22–23 — Full QA sweep
-- ⬜ QA agent on Mac mini against production
+- 🟡 QA agent on Mac mini against production — read-only code sweeps completed July 2 + July 13 (reports in localizer-qa-reports/), zero critical findings. A live adversarial agent pass against production has not run; decide whether the read-only sweeps satisfy this item or schedule the live pass.
 - ⬜ Manual 10-step end-to-end test from clean browser
-- ⬜ Cross-browser test (Safari, Chrome, Firefox + mobile Safari/Chrome)
+- ✅ Cross-browser test — completed July 13, all four browsers pass (Safari desktop, Chrome, Firefox, iPhone Safari) including the full render pipeline (Generate All canvas/FontFace/blob, template editor, gigs inline edit + re-render, downloads). One bug found and fixed: venue-page photo/video cards mis-shaped on first uncached load (commit 7c63135, verified across all four browsers). iPhone scope: venue link page (the promoter-facing launch surface). Report: localizer-qa-reports/2026-07-13_cross-browser.md (commit 146bb0a).
 - ⬜ One non-tester unsupervised signup observation
 - ⬜ Smoke test: custom font on a video overlay → Generate All → verify rendered video (exercises the historically silent-failing Cloudinary `l_text` path)
 
