@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { generatePublicToken } from "@/lib/tokens";
+import { destroyRenderAsset } from "@/lib/cloudinary/destroyRenderAsset";
 
 export async function POST(req: NextRequest) {
   const { eventId, orgId, renderUrls } = await req.json();
@@ -9,6 +10,10 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = await supabaseServer();
+
+  // Literal list — the guarantee that video URLs can never reach destroyRenderAsset.
+  // Never derive from Object.keys(renderUrls).
+  const IMAGE_RENDER_COLUMNS = ["render_square_url", "render_story_url", "render_landscape_url"] as const;
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
@@ -53,7 +58,7 @@ export async function POST(req: NextRequest) {
   // Upsert venue_link — same logic as existing generate route
   const { data: existing } = await supabase
     .from("venue_links")
-    .select("id, token")
+    .select("id, token, render_square_url, render_story_url, render_landscape_url")
     .eq("event_id", eventId)
     .eq("is_active", true)
     .maybeSingle();
@@ -69,6 +74,26 @@ export async function POST(req: NextRequest) {
     if (!data) {
       console.error("[renders/save-urls] venue_links update returned no row — possible silent RLS rejection", { eventId, orgId, venue_link_id: existing.id });
       return NextResponse.json({ error: "venue_links_update_failed" }, { status: 500 });
+    }
+
+    // Old-render cleanup: after a verified successful update, destroy any
+    // image render assets we just replaced. Fire-and-forget-with-log —
+    // destroy failures must NEVER change the response.
+    for (const col of IMAGE_RENDER_COLUMNS) {
+      if (!(col in renderUrls)) continue;
+      const oldUrl = (existing as Record<string, unknown>)[col];
+      const newUrl = (renderUrls as Record<string, unknown>)[col];
+      if (typeof oldUrl !== "string" || oldUrl.length === 0) continue;
+      if (oldUrl === newUrl) continue;
+      try {
+        const result = await destroyRenderAsset(oldUrl);
+        if (!result.ok) {
+          console.error("[save-urls] old render destroy failed", { column: col, eventId, orgId, error: result.error });
+        }
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        console.error("[save-urls] old render destroy failed", { column: col, eventId, orgId, error: message });
+      }
     }
   } else {
     const token = generatePublicToken();
