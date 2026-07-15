@@ -244,11 +244,11 @@ Source plan: `docs/HWY61_Localizer_30_Day_Launch_Plan_May_19_2026.md`. Day numbe
 ## Week 4 (Days 22–30)
 
 ### Day 22–23 — Full QA sweep
-- 🟡 QA agent on Mac mini against production — read-only code sweeps completed July 2 + July 13 (reports in localizer-qa-reports/), zero critical findings. A live adversarial agent pass against production has not run; decide whether the read-only sweeps satisfy this item or schedule the live pass.
+- ✅ QA agent sweep — satisfied July 13-14. Read-only Claude Code sweep of all code shipped since July 2 (report: localizer-qa-reports/2026-07-13_pre-launch-sweep.md, zero critical) produced 7 hardening fixes, all shipped: SEND blocked from marking events sent when venue-link creation fails, dead image path in the generate route gated, silent-write verification added across venue_links/events/tours writes, import route membership check. Followed by a live 8-test verification pass against production, which caught and fixed the dual-column city/state mirroring bug (inline edits silently not reaching venue links/renders — would have hit real customers). The "Mac mini" requirement is moot: the machine was write-protection for agent sessions; read-only sweeps with diff review provide that regardless of machine. Decided July 15.
 - ⬜ Manual 10-step end-to-end test from clean browser
 - ✅ Cross-browser test — completed July 13, all four browsers pass (Safari desktop, Chrome, Firefox, iPhone Safari) including the full render pipeline (Generate All canvas/FontFace/blob, template editor, gigs inline edit + re-render, downloads). One bug found and fixed: venue-page photo/video cards mis-shaped on first uncached load (commit 7c63135, verified across all four browsers). iPhone scope: venue link page (the promoter-facing launch surface). Report: localizer-qa-reports/2026-07-13_cross-browser.md (commit 146bb0a).
 - ⬜ One non-tester unsupervised signup observation
-- ⬜ Smoke test: custom font on a video overlay → Generate All → verify rendered video (exercises the historically silent-failing Cloudinary `l_text` path)
+- ✅ Smoke test: custom font on a video overlay — passed July 15. Custom font applied to band name on a video format on the shared-org test tour, RE-GENERATE ALL clean, rendered video verified in incognito showing the custom font. Cloudinary `l_text` authenticated-font path confirmed healthy.
 
 ### Day 24–25 — Bug fix sprint
 - ⬜ Triage QA findings (CRITICAL/HIGH only — rest to BACKLOG)
