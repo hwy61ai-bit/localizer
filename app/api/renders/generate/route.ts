@@ -230,8 +230,8 @@ function buildLogoLayer(
   const xPx = Math.round((logoCfg.x - 0.5) * canvasW);
   const yPx = Math.round((logoCfg.y - 0.5) * canvasH);
 
-  // Scale logo by height (width auto-preserved), native colors, layer at center-relative position
-  return `l_fetch:${base64Url}/c_scale,h_${logoCfg.size}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
+  // Fit logo inside a width=size*2, height=size box (matches editor preview's objectFit:contain)
+  return `l_fetch:${base64Url}/c_fit,w_${logoCfg.size * 2},h_${logoCfg.size}/fl_layer_apply,g_center,x_${xPx},y_${yPx}`;
 }
 
 function buildSponsorLogoLayer(
