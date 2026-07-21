@@ -487,7 +487,7 @@ Supabase Pro daily backups cover the database only — Storage objects are NOT i
 
 ---
 
-## 🧹 Code hygiene queue (17)
+## 🧹 Code hygiene queue (18)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -698,6 +698,12 @@ Files involved when triggered: `lib/stripe/localizerPrices.ts` (`LocalizerTier` 
 **Or just leave the names as historical artifacts.** Purely cosmetic — nothing reads the variable name; the logic is correct.
 
 Low priority.
+
+---
+
+### Sponsor logo video layers — probable preview/render size mismatch
+
+Sponsor logo previews in TemplateEditor size by width with auto height (container `width: size * previewScale`, img `width: 100%`, `height: auto`), but `buildSponsorLogoLayer` in `app/api/renders/generate/route.ts` scales by height (`c_scale,h_${size}`). Same bug class as the band logo `c_fit` fix shipped July 20, 2026 (commit `ff23108`), but a different sizing model — the fix is NOT the same `c_fit` box; the video layer should probably scale by width (`c_scale,w_${size}`) to match the preview, but needs its own verification pass with a non-square sponsor logo first. Not user-reported. Discovered during recon July 20.
 
 ---
 

@@ -3952,3 +3952,39 @@ Verified local + prod on Hollow Forks/Ogden Theatre: old square URL 404s after r
 Design decision preserved: new-URL-per-render kept deliberately (CDN staleness protection); the fix destroys the old asset AFTER the new one lands, rather than overwriting in place.
 
 Remaining (optional, BACKLOG): one-time purge of pre-July-15 orphans; only if usage climbs.
+
+
+
+## July 20, 2026 — Video logo size bug (ff23108)
+
+**Shipped:** One-line fix in buildLogoLayer (app/api/renders/generate/route.ts):
+c_scale,h_${size} → c_fit,w_${size*2},h_${size}. Video path only; clientRender.ts
+and TemplateEditor untouched.
+
+**Root cause vs. reported:** Reported as anchor mismatch (logo lower on video,
+colliding with venue text). Actual cause: TemplateEditor preview renders the band
+logo inside a hardcoded 2:1 objectFit:contain box, under-displaying any logo wider
+than 2:1, while the Cloudinary layer honored full h_size. Wide (~3.16:1) logo
+rendered ~1.58× larger than preview, expanding symmetrically around a fixed
+center — the bottom half of that expansion read as "dropped lower." All three
+surfaces were center-anchored all along.
+
+**Verification:** Fix proven before any code change by hand-editing the
+transformation in the render URL — video renders are URL strings, so this is a
+zero-cost production-accurate test. Keeper technique for future video-layer bugs.
+Post-ship residual ("still touching a little") measured programmatically: preview
+and render landmarks match within 0.3–0.4% of frame height (~6–7px), inside
+measurement precision. No second bug — config places logo and venue text genuinely
+close, and the script's descender crosses the text in the editor too. Resolution:
+drag logo up in editor, not code. Prod re-render confirmed c_fit,w_964,h_482 in
+the deployed URL, and a post-fix logo drag (y_402 → y_430) flowed through to the
+render correctly — config→render loop verified end-to-end.
+
+**Gotchas:** (1) Square logos are invisible to this bug class — a 1:1 logo fits
+the 2:1 box identically under both paths, so the round test logo masked the bug
+mid-diagnosis. (2) Canvas image renders have the same preview mismatch
+(full-height draw vs. boxed preview) but nobody's noticed at small image-logo
+sizes.
+
+**Backlog added:** sponsor logo video layers — same bug class, different sizing
+model (see BACKLOG.md).
