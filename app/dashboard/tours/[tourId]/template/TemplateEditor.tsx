@@ -126,8 +126,8 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "story",     label: "Vertical",      w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
   { key: "landscape", label: "FB Cover",      w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: FORMAT_CATALOG.print.w, h: FORMAT_CATALOG.print.h },
-  { key: "tiktok",    label: "Vertical Video", w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
   { key: "yt_shorts", label: "Square Video",  w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
+  { key: "tiktok",    label: "Vertical Video", w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
 ];
 
 const FIELD_LABELS: Record<FieldKey, string> = {
@@ -1140,6 +1140,50 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   }}
                   style={{ padding: "8px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
                 >SET ALL FORMATS</button>}
+              {activeFormat === "yt_shorts" && !!formatImageIds.yt_shorts && !formatImageIds.square && !formatImageIds.story && !formatImageIds.landscape && <button
+                  onClick={() => {
+                    const confirmed = window.confirm(
+                      "Match every video format to Square Video?\n\n" +
+                      "This copies your fonts, colors, sizes, and positions to all video formats so you don't have to match them by hand. Your other video formats' current settings will be replaced — you can still fine-tune any format afterward."
+                    );
+                    if (!confirmed) return;
+                    const sourceCfg = configs.yt_shorts;
+                    const sourceH = FORMATS.find(f => f.key === "yt_shorts")!.h;
+                    setConfigs(prev => {
+                      const updated: typeof prev = { ...prev };
+                      const targets: FormatKey[] = ["tiktok"];
+                      for (const fmt of targets) {
+                        const targetH = FORMATS.find(f => f.key === fmt)!.h;
+                        const scale = targetH / sourceH;
+                        const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
+                        const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
+                        const merged: typeof prev[FormatKey] = {
+                          ...prev[fmt],
+                          fontFamily: sourceCfg.fontFamily,
+                          textColor: sourceCfg.textColor,
+                          bandTextColor: sourceCfg.bandTextColor ?? null,
+                          venueColor: sourceCfg.venueColor ?? null,
+                          cityColor: sourceCfg.cityColor ?? null,
+                          dateColor: sourceCfg.dateColor ?? null,
+                          allCaps: sourceCfg.allCaps,
+                          shortDate: sourceCfg.shortDate,
+                          bandSize: scaleSize(sourceCfg.bandSize),
+                          venue: scaleField(sourceCfg.venue),
+                          city: scaleField(sourceCfg.city),
+                          date: scaleField(sourceCfg.date),
+                        };
+                        if (sourceCfg.band) merged.band = scaleField(sourceCfg.band);
+                        if (sourceCfg.opener) merged.opener = scaleField(sourceCfg.opener);
+                        if (sourceCfg.customText1) merged.customText1 = scaleField(sourceCfg.customText1);
+                        if (sourceCfg.customText2) merged.customText2 = scaleField(sourceCfg.customText2);
+                        updated[fmt] = merged;
+                      }
+                      return updated;
+                    });
+                    toast.success("Square Video layout applied to video formats.");
+                  }}
+                  style={{ padding: "8px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+                >SET ALL VIDEO FORMATS</button>}
               {!isVideoFormat && !isPrintFormat && <button
                   onClick={async () => {
                     const pid = formatImageIds[activeFormat];
