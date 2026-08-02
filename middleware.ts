@@ -28,6 +28,11 @@ function getRewriteForHost(hostname: string): string | null {
     return "/dashboard/routing";
   }
 
+  // localizer.music serves marketing at root and the app at /dashboard on the
+  // same host. Intentionally NOT in PUBLIC_HOSTS so the auth middleware still
+  // runs for its /dashboard routes.
+  if (host === "localizer.music" || host === "www.localizer.music") return null;
+
   return null;
 }
 

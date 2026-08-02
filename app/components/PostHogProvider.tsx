@@ -16,7 +16,8 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       if (didInitRef.current) return;
       if (
         typeof window !== "undefined" &&
-        window.location.hostname.includes("hwy61labs.com") &&
+        (window.location.hostname.includes("hwy61labs.com") ||
+          window.location.hostname.includes("localizer.music")) &&
         process.env.NEXT_PUBLIC_POSTHOG_KEY
       ) {
         posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
