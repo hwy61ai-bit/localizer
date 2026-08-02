@@ -3988,3 +3988,6 @@ sizes.
 
 **Backlog added:** sponsor logo video layers — same bug class, different sizing
 model (see BACKLOG.md).
+
+
+Aug 2 — Domain migration Phase 1: localizer.music nameservers → Vercel DNS, apex connected to Production, www → 308 redirect to apex. Middleware explicit host case + PostHog gate broadened (commit 7f190a9, build verified). Supabase redirect URLs added for both variants. Auth verified end-to-end on localizer.music; hwy61labs.com untouched. Next session: 10-step QA on localizer.music; then schedule Phase 2 flip with Tim (pair with Stripe live-mode call).
