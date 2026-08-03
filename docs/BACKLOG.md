@@ -707,7 +707,7 @@ Sponsor logo previews in TemplateEditor size by width with auto height (containe
 
 ---
 
-## 💭 Future ideas (5)
+## 💭 Future ideas (6)
 
 *Speculative post-launch work.*
 
@@ -799,6 +799,21 @@ This is intentional for launch (CLAUDE.md rule 9 covers financial fields, not co
 **Originated:** June 14, 2026, as the Team venue display shipped.
 
 Post-launch refinement.
+
+---
+
+### GTM container GTM-5P9TCJ63 (Don) — install post-launch behind cookie-consent gate
+
+Don provided GTM container ID `GTM-5P9TCJ63` for the site. Not installed at launch — decision deferred pending two upstream conversations:
+
+1. **Don's tracking goals.** What events / conversions does Don want GTM to capture beyond what PostHog already tracks (autocapture on all clicks + custom events for critical funnel steps)? If the goal overlaps meaningfully with existing PostHog coverage, GTM may be redundant. If Don wants GA4-style behavioral reports or Meta/Google ads conversion tracking, GTM is the right vehicle.
+2. **Tim privacy-policy disclosure.** Adding GTM introduces third-party processors (Google + whatever tags Don loads through it). Privacy §3 currently discloses PostHog only. Any GTM install requires: (a) updating the processor list in `app/privacy/page.tsx`, (b) gating the GTM `<script>` tag behind the cookie-consent Accept flow (same pattern as `PostHogProvider.tsx`'s `getConsent() === 'accepted'` check), (c) reissuing the Last Updated date on the Privacy Policy.
+
+**Why not at launch:** neither upstream conversation has happened. Installing GTM without cookie gating would be a Privacy §7 violation (analytics loading before consent). Installing without a Privacy disclosure update would misrepresent the processor list.
+
+**When to revisit:** first post-launch retro with Don and Tim.
+
+**Originated:** August 3, 2026, container ID provided by Don.
 
 ---
 
