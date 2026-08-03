@@ -181,7 +181,7 @@ function buildNudgeHtml(nudgeType: NudgeType, appUrl: string): string {
           <td align="center">
             <div style="width: 40px; height: 2px; background-color: #c5535b; margin: 0 auto 14px auto;"></div>
             <div style="font-family: 'Courier New', Courier, monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #888888;">
-              hwy61labs.com
+              localizer.music
             </div>
           </td>
         </tr>
@@ -211,7 +211,7 @@ export async function GET(req: NextRequest) {
   }
 
   const supabase = getServiceClient();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.hwy61labs.com";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://localizer.music";
 
   const now = new Date();
   const dayMs = 24 * 60 * 60 * 1000;
