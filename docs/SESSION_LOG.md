@@ -3991,3 +3991,5 @@ model (see BACKLOG.md).
 
 
 Aug 2 — Domain migration Phase 1: localizer.music nameservers → Vercel DNS, apex connected to Production, www → 308 redirect to apex. Middleware explicit host case + PostHog gate broadened (commit 7f190a9, build verified). Supabase redirect URLs added for both variants. Auth verified end-to-end on localizer.music; hwy61labs.com untouched. Next session: 10-step QA on localizer.music; then schedule Phase 2 flip with Tim (pair with Stripe live-mode call).
+
+Later Aug 2 — 10-step clean-browser QA passed in full on localizer.music (signup → trial → upload → parse → render → venue link → download). Magic-link email round-trip verified on new domain. Venue link minted as hwy61labs.com URL as expected pre-flip; opens and downloads correctly. Phase 1 complete; Day 22–23 QA item closed. Remaining: Phase 2 flip, gated on Tim (date + Stripe call).
