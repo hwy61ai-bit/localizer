@@ -9,7 +9,7 @@ import { CookieConsentBanner } from "./components/CookieConsentBanner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://hwy61labs.com"),
+  metadataBase: new URL("https://localizer.music"),
   title: "Localizer",
   description: "Event asset rendering",
 };

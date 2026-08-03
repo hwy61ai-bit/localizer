@@ -15,7 +15,7 @@ export default function PrivacyPage() {
         <p style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: 4, textTransform: "uppercase" as const, color: "var(--hw-blue)", marginBottom: 32 }}>Last Updated: July 6, 2026</p>
         <div style={{ background: "var(--hw-bg-surface)", borderRadius: 0, border: "3px solid var(--hw-border-strong)", padding: "32px 28px", fontFamily: "var(--hw-font-body)", fontSize: 14, fontWeight: 300, lineHeight: 1.7, color: "var(--hw-text-secondary)" }}>
 
-          <p>This Privacy Policy describes how HWY61 LLC collects, uses, and protects information when you use Localizer at hwy61labs.com. By using the Service, you agree to the practices described in this policy.</p>
+          <p>This Privacy Policy describes how HWY61 LLC collects, uses, and protects information when you use Localizer at localizer.music. By using the Service, you agree to the practices described in this policy.</p>
 
           <h2 style={{ fontFamily: "var(--hw-font-display)", fontSize: 18, fontWeight: 400, letterSpacing: 2, textTransform: "uppercase" as const, marginTop: 32, marginBottom: 12, color: "var(--hw-text)" }}>1. Information We Collect</h2>
           <p><strong>Account Information:</strong> We collect your email address. We use passwordless authentication (magic link) so we do not collect or store passwords.</p>
