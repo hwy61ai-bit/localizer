@@ -6,7 +6,7 @@
 
 ---
 
-## [00:00 — Hook] Screen: hwy61labs.com landing page or Localizer dashboard
+## [00:00 — Hook] Screen: localizer.music landing page or Localizer dashboard
 
 If you've ever announced a tour, you know the routine. You spend a half-day
 in Photoshop making the same flyer twenty different ways — Instagram post,

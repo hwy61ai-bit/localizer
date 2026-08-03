@@ -6,7 +6,7 @@ Status: second-pass draft, Drew-approved structure. Edit hard to voice before re
 ---
 
 ## [00:00 — Hook]
-Screen: hwy61labs.com landing page or Localizer dashboard
+Screen: localizer.music landing page or Localizer dashboard
 
 If you've ever announced a tour, you know the routine. You spend a half-day in Photoshop making the same flyer twenty different ways — Instagram post, Instagram story, Facebook cover, TikTok vertical, YouTube short — and then you email those off to every venue, one by one.
 
