@@ -3994,6 +3994,41 @@ Aug 2 — Domain migration Phase 1: localizer.music nameservers → Vercel DNS, 
 
 Later Aug 2 — 10-step clean-browser QA passed in full on localizer.music (signup → trial → upload → parse → render → venue link → download). Magic-link email round-trip verified on new domain. Venue link minted as hwy61labs.com URL as expected pre-flip; opens and downloads correctly. Phase 1 complete; Day 22–23 QA item closed. Remaining: Phase 2 flip, gated on Tim (date + Stripe call).
 
-Aug 3 — Investigated "missing Manage Billing & Invoices button" report: not a bug, admin account has no stripe_customer_id so the fallback state renders. Verified live-mode Stripe Customer Portal config: plan switching enabled, all three Localizer tiers (Indie $19 / Pro $39 / Agency $199 + annual) in the eligible list, updates apply immediately. FAQ copy on /pricing and dashboard support page confirmed accurate. No code changes.
-
 Aug 3 — Domain flip (Phase 2) executed: metadataBase, email fallback URLs + footer site names, privacy/terms service URLs → localizer.music (commit 164f6d8, TourRouter references intentionally unchanged, all email addresses unchanged). New live Stripe webhook endpoint at localizer.music/api/billing/webhook (API version matched, 3 events, new signing secret in Vercel); Stripe business website + privacy policy URL updated. NEXT_PUBLIC_APP_URL flipped in Vercel. All hwy61labs.com hosts (apex, www, localizer/tourrouter/diy subdomains) 308-redirect to localizer.music, path-preserving — old venue links verified forwarding. Supabase Site URL flipped. UptimeRobot: new localizer.music monitor + old monitor renamed as redirect check. Magic-link round-trip verified on new primary. Webhook live-delivery verification deliberately deferred to Tim screen-share (stripe trigger disabled in live mode). hwy61.ai legacy chain untouched — follow-up session. GTM container GTM-5P9TCJ63 received from Don — parked, consent-gated install post-decision.
+
+
+## 2026-08-05 — Cloudinary cleanup: recon → sweep script built → first report run
+
+**Commits:** 772f162 (sweep script + reports), plus BACKLOG.md scoped entry earlier in day.
+
+**Cloudinary recon (morning):** Full destroy/upload/orphan map written to
+localizer-qa-reports/2026-08-05_cloudinary-cleanup-recon.md. Key corrections
+discovered during the day: (1) image renders are STANDALONE client-uploaded
+JPEGs with random public_ids — NOT transformation URLs; recon §4's exclusion
+of render_*_url from the live set was wrong and would have destroyed live
+renders. (2) Current source uploads are folderless with timestamp suffixes
+(recon's "deterministic id in localizer/tours/" is stale). (3) Admin API
+listing is CACHED — lags reality by minutes-to-hours; fresh renders read as
+"missing" in coverage checks. Safe by design: unlisted = undeletable.
+
+**DB hygiene:** Purged 6 pre-cascade zombie tours (all March 2026, NULL
+artist_id — confirmed fossils; no new zombies since June 12 CASCADE
+migration). Discovered tours.name is vestigial — UI reads/writes
+band_tour_label; every tours.name in DB says "New Tour". BACKLOG: grep
+whether anything user-facing reads tours.name.
+
+**Ghost pointer epidemic quantified:** ~150 live DB references point at
+Cloudinary assets that no longer exist (37 sources + ~113 renders, mostly
+April tester tours) — those venue links serve broken images today. Cleanup
+SQL to be drafted from cloudinary-live-missing CSV tomorrow.
+
+**Sweep script:** scripts/cloudinary-sweep.mjs — report mode (default) +
+--destroy, live-set from DB (tours source cols + venue_links render URLs),
+coverage guard with 10% destroy gate, live-found/live-missing diagnostic
+CSVs, empty-live-set refusal. First report run: 657 listed, 571 orphans
+(517 MB), 86/266 coverage — gate correctly held destroy pending cache
+settle + ghost cleanup.
+
+**Also today:** Tim approved both feature-request copy strings (dashboard
+post-render + welcome email P.S. — final text in Aug 4-5 chat). Cloudinary
+usage
