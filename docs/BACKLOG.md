@@ -759,15 +759,23 @@ Option 2 is the closest fit to existing patterns. Decision made at build time.
 
 ---
 
-### Cloudinary / Storage orphan-file sweep across delete and replace paths
+### Cloudinary orphan sweep (scoped 2026-08-05 — see localizer-qa-reports/2026-08-05_cloudinary-cleanup-recon.md)
 
-The same gap that motivated the (now-shipped) `deleteOrg` work applies to ALL per-entity delete and replace paths today — deleting an artist or a tour, or replacing an uploaded image, orphans the old Cloudinary/Storage files. Only `custom_fonts` cleans up after itself (`app/api/fonts/delete/route.ts` — use as the template).
+**Decision: periodic sweep, NOT cascade-on-delete.** Tour delete is client-only (no API route to hang a destroy on), per-entity destroys need refcount checks against shared assets, and `lib/admin/deleteOrg.ts` already contains the enumerate + batch-destroy pattern to reuse.
 
-Post-launch follow-on: sweep every delete/replace path to remove associated files. Scope is probably every `app/api/` route that does `.delete()` on artists / tours / venue_links / etc. or `.update({ ..._url: ... })` on artists / tours columns that hold Cloudinary public_ids or Storage URLs.
+**Orphan sources (confirmed):** tour delete, artist delete (via cascaded tours), and the upload-image edge case where a row points at a non-deterministic public_id. Event delete does NOT orphan Cloudinary assets.
 
-**Why this still matters after `deleteOrg` shipped:** `deleteOrg` solves the org-wide orphan problem (CCPA/GDPR + churn cleanup). This entry tracks the per-entity orphan problem that's still live during normal app use — a user deleting one artist out of three, or swapping a logo, still leaves files behind in Cloudinary / Supabase Storage. Long-tail billing waste.
+**Sweep design constraints (from recon §4–5):**
+- Live set = union over `tours.image_square_id` / `image_story_id` / `image_landscape_id` / `image_print_id` / `video_tiktok_id` / `video_yt_shorts_id` (bare public_ids). SQL sketch in recon §4.
+- Scope Cloudinary listing to folder `localizer/tours`, split by `resource_type=image` and `resource_type=video`, `type=upload` only.
+- Fonts (raw/authenticated): SKIP the diff-sweep — delete route + upload rollback already destroy them; authenticated type doesn't appear in default listings anyway.
+- NEVER destroy from `venue_links.render_*_url` columns — all transformation URLs on live sources. Includes `render_poster_url`, which is the live Print Poster column (BUG-E resolution 2026-04-14), not vestigial.
+- Age threshold before destroy (e.g. 30 days since last_updated) = undo window for accidental entity deletes.
+- Run refcount duplicate check from recon §5.C before first production run.
+- Use `cloudinary.api.delete_resources` directly (`deleteOrg` pattern) — do not loop app routes (rate limited).
+- Sibling item, separate scope: Supabase Storage orphans (sponsor logos, artist images/logos, advance docs) — not covered by this sweep.
 
-**Originated:** June 11, 2026, as part of the `Org / account deletion routine` BACKLOG entry (now in `## Resolved`, shipped June 12). Carved out as its own item per the user's note that it shouldn't ride along into Resolved with the parent work.
+**Priority: post-launch.** Orphan cost at current scale (~945 total assets) is negligible. No user impact, no security exposure — orphans are unreferenced.
 
 ---
 
