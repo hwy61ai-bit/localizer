@@ -4032,3 +4032,5 @@ settle + ghost cleanup.
 **Also today:** Tim approved both feature-request copy strings (dashboard
 post-render + welcome email P.S. — final text in Aug 4-5 chat). Cloudinary
 usage
+
+confirmed Supabase Pro daily backups live (8 snapshots, Jul 30–Aug 6); enabled Cloudinary automatic backup for new uploads (skipped existing test assets); added backup-worth-it review to monthly Cloudinary check; skipped env var offline copy (all rotatable); storage bucket backup deferred (low risk).
