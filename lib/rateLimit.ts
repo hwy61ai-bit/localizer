@@ -1,7 +1,7 @@
-import { Ratelimit } from "@upstash/ratelimit";
+import { Ratelimit, type Duration } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-// Shared rate-limit helper. Per-org, 30 requests / 60 s sliding window.
+// Shared rate-limit helper. Per-org, 30 requests / 60 s sliding window by default.
 //
 // FAIL-OPEN by design: if Upstash is unreachable, slow, or misconfigured
 // (missing env vars in local dev), checkRateLimit returns { success: true }
@@ -11,6 +11,10 @@ import { Redis } from "@upstash/redis";
 // Callers pass route-scoped keys (e.g. `generate:${orgId}`, `approve:${orgId}`)
 // so each route gets its own 30/min budget per org — hitting the generate
 // limit doesn't also block approve.
+//
+// A caller needing a different budget passes { limit, window } — e.g. the public
+// prelaunch signup route uses 5/hour per IP. Keys are route-scoped and the Redis
+// key is `${prefix}:${key}`, so two budgets never share a counter.
 
 export type RateLimitResult = {
   success: boolean;
@@ -19,11 +23,20 @@ export type RateLimitResult = {
   reset?: number;
 };
 
-let cachedLimiter: Ratelimit | null = null;
-let initAttempted = false;
+export type RateLimitOptions = {
+  limit?: number;
+  window?: Duration;
+};
 
-function getLimiter(): Ratelimit | null {
-  if (initAttempted) return cachedLimiter;
+const DEFAULT_LIMIT = 30;
+const DEFAULT_WINDOW: Duration = "60 s";
+
+let cachedRedis: Redis | null = null;
+let initAttempted = false;
+const limiters = new Map<string, Ratelimit>();
+
+function getRedis(): Redis | null {
+  if (initAttempted) return cachedRedis;
   initAttempted = true;
 
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -38,20 +51,37 @@ function getLimiter(): Ratelimit | null {
     return null;
   }
 
-  const redis = new Redis({ url, token });
+  cachedRedis = new Redis({ url, token });
+  return cachedRedis;
+}
 
-  cachedLimiter = new Ratelimit({
+function getLimiter(limit: number, window: Duration): Ratelimit | null {
+  const redis = getRedis();
+  if (!redis) return null;
+
+  const cacheKey = `${limit}:${window}`;
+  const existing = limiters.get(cacheKey);
+  if (existing) return existing;
+
+  const limiter = new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(30, "60 s"),
+    limiter: Ratelimit.slidingWindow(limit, window),
     analytics: false, // free-tier command budget — analytics adds commands
     prefix: "localizer_rl",
   });
 
-  return cachedLimiter;
+  limiters.set(cacheKey, limiter);
+  return limiter;
 }
 
-export async function checkRateLimit(key: string): Promise<RateLimitResult> {
-  const limiter = getLimiter();
+export async function checkRateLimit(
+  key: string,
+  options: RateLimitOptions = {}
+): Promise<RateLimitResult> {
+  const limiter = getLimiter(
+    options.limit ?? DEFAULT_LIMIT,
+    options.window ?? DEFAULT_WINDOW
+  );
   if (!limiter) return { success: true };
 
   try {

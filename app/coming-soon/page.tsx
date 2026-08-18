@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import SignupForm from "./SignupForm";
 
 export const metadata: Metadata = {
   title: "HWY61 LABS",
@@ -59,6 +60,7 @@ export default function ComingSoonPage() {
           HWY<span className="crimson">6</span><span className="crimson">1</span> LABS
         </h1>
         <p className="coming-soon-tagline">Something is coming</p>
+        <SignupForm />
         <a href="/login" className="coming-soon-login">
           Team Login →
         </a>
