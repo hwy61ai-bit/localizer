@@ -4034,3 +4034,6 @@ post-render + welcome email P.S. — final text in Aug 4-5 chat). Cloudinary
 usage
 
 confirmed Supabase Pro daily backups live (8 snapshots, Jul 30–Aug 6); enabled Cloudinary automatic backup for new uploads (skipped existing test assets); added backup-worth-it review to monthly Cloudinary check; skipped env var offline copy (all rotatable); storage bucket backup deferred (low risk).
+
+
+Capture: prelaunch signup shipped end-to-end (prelaunch_signups table RLS-locked with no policies, lib/rateLimit.ts extended with optional per-route budgets, signup route with honeypot + dedup + enumeration-safe duplicates, Warhol form on /coming-soon), placeholder copy awaiting Tim, Klaviyo deferred by design — emails accumulate locally, CSV import or API sync when Tim signs up. Also note the two font scripts got committed as part of this push. Then git add -A → commit → push.
