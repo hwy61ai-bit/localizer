@@ -43,3 +43,4 @@ reference/
 
 # Test documents with personal data - local only
 docs/test-documents/
+supabase/.temp/
