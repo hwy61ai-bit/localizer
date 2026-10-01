@@ -4044,3 +4044,11 @@ confirmed Supabase Pro daily backups live (8 snapshots, Jul 30–Aug 6); enabled
 
 
 Capture: prelaunch signup shipped end-to-end (prelaunch_signups table RLS-locked with no policies, lib/rateLimit.ts extended with optional per-route budgets, signup route with honeypot + dedup + enumeration-safe duplicates, Warhol form on /coming-soon), placeholder copy awaiting Tim, Klaviyo deferred by design — emails accumulate locally, CSV import or API sync when Tim signs up. Also note the two font scripts got committed as part of this push. Then git add -A → commit → push.
+
+Done:
+Recon (docs/recon/2026-10-01_formats-dates-recon.md).
+Facebook Event Cover shipped: 1920×1005, renamed, shared format defaults, renderer crash fix. Reset SQL run: 22 configs, 2 crops, 57 events flagged.
+Date format dropdown shipped: 6 formats, long format now has a comma, formatters consolidated.
+Fixed local login on the laptop: BETA_GATE_PASSWORD was missing.
+Not done: 9:16 Vertical plus the "Feed/Grid (4:5)" relabel. Decision on | line breaks (A: keep, and strip the pipe on landscape and video; B: remove everywhere).
+Next session: a Playwright smoke suite, then the 9:16 Vertical spec. Tim still needs to confirm the "Facebook Event Cover" label, and Don still needs to confirm the date menu.
