@@ -94,7 +94,7 @@ export const FORMATS: Record<FormatKey, FormatDef> = {
   print: {
     key: "print",
     uploadId: "print",
-    label: "Local Poster",
+    label: "Print Poster",
     w: 3300,
     h: 5100,
     mediaType: "pdf",

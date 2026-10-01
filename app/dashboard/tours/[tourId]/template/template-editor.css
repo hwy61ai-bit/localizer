@@ -39,3 +39,52 @@
     display: none !important;
   }
 }
+
+/* Range sliders — design-system styling, no browser-default blue.
+   #111111 fill + round 16px thumb, #DDDDDD track. --fill is set per input by
+   TemplateEditor (WebKit has no native progress pseudo-element). */
+.template-editor-content input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  background: transparent;
+  accent-color: #111111;
+}
+.template-editor-content input[type="range"]:focus {
+  outline: none;
+}
+.template-editor-content input[type="range"]:focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 2px;
+}
+.template-editor-content input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border: none;
+  background: linear-gradient(to right, #111111 0, #111111 var(--fill, 0%), #DDDDDD var(--fill, 0%), #DDDDDD 100%);
+}
+.template-editor-content input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border: none;
+  border-radius: 50%;
+  background: #111111;
+}
+.template-editor-content input[type="range"]::-moz-range-track {
+  height: 4px;
+  border: none;
+  background: #DDDDDD;
+}
+.template-editor-content input[type="range"]::-moz-range-progress {
+  height: 4px;
+  background: #111111;
+}
+.template-editor-content input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: #111111;
+}

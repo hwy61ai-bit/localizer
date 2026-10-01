@@ -116,7 +116,7 @@ const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "story",     label: "Feed/Grid (4:5)", w: FORMAT_CATALOG.story.w,   h: FORMAT_CATALOG.story.h },
   { key: "vertical",  label: "Vertical",      w: FORMAT_CATALOG.vertical.w,  h: FORMAT_CATALOG.vertical.h },
   { key: "landscape", label: "Facebook Event Cover", w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
-  { key: "print",     label: "LOCAL POSTER FOR PRINT", w: FORMAT_CATALOG.print.w, h: FORMAT_CATALOG.print.h },
+  { key: "print",     label: "Print Poster",  w: FORMAT_CATALOG.print.w, h: FORMAT_CATALOG.print.h },
   { key: "yt_shorts", label: "Square Video",  w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
   { key: "tiktok",    label: "Vertical Video", w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
 ];
@@ -260,6 +260,19 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [isDraggingFont, setIsDraggingFont] = useState(false);
   const fontFileRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const editorRootRef = useRef<HTMLDivElement>(null);
+
+  // Slider fill (styling only): WebKit has no native "progress" pseudo-element,
+  // so expose each range's fill % as --fill for template-editor.css. Runs after
+  // every render, which covers drags (controlled inputs) and tab switches.
+  useEffect(() => {
+    editorRootRef.current?.querySelectorAll<HTMLInputElement>('input[type="range"]').forEach((el) => {
+      const min = Number(el.min || 0);
+      const max = Number(el.max || 100);
+      const pct = max > min ? ((Number(el.value) - min) / (max - min)) * 100 : 0;
+      el.style.setProperty("--fill", `${Math.min(100, Math.max(0, pct))}%`);
+    });
+  });
   const imgRef = useRef<HTMLImageElement>(null);
   const SNAP = 0.04;  // ~4% snap zone for center alignment
 
@@ -878,7 +891,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
         <div className="template-mobile-gate-msg">Please switch to a larger screen to use the template editor.</div>
       </div>
     </div>
-    <div className="fade-in template-editor-content" style={{ minHeight: "100vh", padding: 32 }}>
+    <div ref={editorRootRef} className="fade-in template-editor-content" style={{ minHeight: "100vh", padding: 32 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: "3px solid var(--hw-border-strong)" }}>
@@ -1077,190 +1090,42 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           </div>
         )}
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {FORMATS.map(f => {
-              const locked = (tier === "indie" || tier === "none") && FORMAT_CATALOG[f.key].category === "rich";
-              return (
-                <button key={f.key} onClick={() => {
-                  if (locked) {
-                    setShowUpgradeBanner(true);
-                    return;
-                  }
-                  setActiveFormat(f.key);
-                }}
-                  style={{ padding: "8px 16px", whiteSpace: "pre-line", border: activeFormat === f.key ? "3px solid var(--hw-border-strong)" : "3px solid var(--hw-border)", background: activeFormat === f.key ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: activeFormat === f.key ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: activeFormat === f.key ? 700 : 400, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", opacity: locked ? 0.4 : 1, transition: "var(--hw-ease)" }}>
-                  {f.label}
-                  {locked ? <span style={{ color: "var(--hw-crimson)", marginLeft: 6, fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 10 }}>PRO</span> : null}
-                  {getFormatCrop(cropConfig, f.key) ? <span style={{ color: "var(--hw-crimson)", marginLeft: 6 }}>•</span> : null}
-                </button>
-              );
-            })}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-            <div style={{ padding: "3px 10px", border: "1.5px solid var(--hw-crimson)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px" }}>
-              EVERYTHING AUTOSAVES
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "10px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
-              {activeFormat === "square" && <button
-                  onClick={() => {
-                    const confirmed = window.confirm(
-                      "Match every format to Square?\n\n" +
-                      "This copies your fonts, colors, sizes, and positions to all formats so you don't have to match them by hand. Your other formats' current settings will be replaced — you can still fine-tune any format afterward."
-                    );
-                    if (!confirmed) return;
-                    const sourceCfg = configs.square;
-                    const sourceH = 1080;
-                    setConfigs(prev => {
-                      const updated: typeof prev = { ...prev };
-                      const targets: FormatKey[] = ["story", "vertical", "landscape", "print", "tiktok", "yt_shorts"];
-                      for (const fmt of targets) {
-                        const target = FORMATS.find(f => f.key === fmt)!;
-                        const targetH = target.h;
-                        // Vertical shares Square's 1080 width — scale by width
-                        // (1.0), not height, or text balloons 1.78x.
-                        const scale = fmt === "vertical" ? target.w / 1080 : targetH / sourceH;
-                        const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
-                        const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
-                        // Vertical keeps its own x/y/align (safe-area layout) and
-                        // only takes Square's size; every other format copies the field.
-                        const isVertical = fmt === "vertical";
-                        const placeField = (src: typeof sourceCfg.venue, cur: typeof sourceCfg.venue | undefined) =>
-                          isVertical && cur ? { ...cur, size: scaleSize(src.size) } : scaleField(src);
-                        const cur = prev[fmt];
-                        const merged: typeof prev[FormatKey] = {
-                          ...prev[fmt],
-                          fontFamily: sourceCfg.fontFamily,
-                          textColor: sourceCfg.textColor,
-                          bandTextColor: sourceCfg.bandTextColor ?? null,
-                          venueColor: sourceCfg.venueColor ?? null,
-                          cityColor: sourceCfg.cityColor ?? null,
-                          dateColor: sourceCfg.dateColor ?? null,
-                          allCaps: sourceCfg.allCaps,
-                          shortDate: sourceCfg.shortDate,
-                          dateFormat: sourceCfg.dateFormat,
-                          bandSize: scaleSize(sourceCfg.bandSize),
-                          venue: placeField(sourceCfg.venue, cur.venue),
-                          city: placeField(sourceCfg.city, cur.city),
-                          date: placeField(sourceCfg.date, cur.date),
-                          // Vertical also takes Square's show/hide toggles.
-                          ...(isVertical ? {
-                            showBandName: sourceCfg.showBandName,
-                            showVenue: sourceCfg.showVenue,
-                            showCity: sourceCfg.showCity,
-                            showDate: sourceCfg.showDate,
-                            showOpener: sourceCfg.showOpener,
-                            showCustomText1: sourceCfg.showCustomText1,
-                            showCustomText2: sourceCfg.showCustomText2,
-                            showLogo: sourceCfg.showLogo,
-                            showSponsorLogo1: sourceCfg.showSponsorLogo1,
-                            showSponsorLogo2: sourceCfg.showSponsorLogo2,
-                          } : {}),
-                        };
-                        if (sourceCfg.band) merged.band = placeField(sourceCfg.band, cur.band);
-                        if (sourceCfg.opener) merged.opener = placeField(sourceCfg.opener, cur.opener);
-                        if (sourceCfg.customText1) merged.customText1 = placeField(sourceCfg.customText1, cur.customText1);
-                        if (sourceCfg.customText2) merged.customText2 = placeField(sourceCfg.customText2, cur.customText2);
-                        updated[fmt] = merged;
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 20 }}>
+          {/* Two fixed rows (images / videos). Every tab has identical metrics in
+              both states — active is a color/background inversion only — so
+              wrapping never depends on which tab is active. */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, flex: 1 }}>
+            {[
+              FORMATS.filter(f => FORMAT_CATALOG[f.key].mediaType !== "video"),
+              FORMATS.filter(f => FORMAT_CATALOG[f.key].mediaType === "video"),
+            ].map((row, rowIdx) => (
+              <div key={rowIdx} style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {row.map(f => {
+                  const locked = (tier === "indie" || tier === "none") && FORMAT_CATALOG[f.key].category === "rich";
+                  const isActive = activeFormat === f.key;
+                  const hasCustomCrop = !!getFormatCrop(cropConfig, f.key);
+                  return (
+                    <button key={f.key} onClick={() => {
+                      if (locked) {
+                        setShowUpgradeBanner(true);
+                        return;
                       }
-                      return updated;
-                    });
-                    toast.success("Square layout applied to 6 formats.");
-                  }}
-                  style={{ padding: "8px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
-                >SET ALL FORMATS</button>}
-              {activeFormat === "yt_shorts" && !!formatImageIds.yt_shorts && !formatImageIds.square && !formatImageIds.story && !formatImageIds.vertical && !formatImageIds.landscape && <button
-                  onClick={() => {
-                    const confirmed = window.confirm(
-                      "Match every video format to Square Video?\n\n" +
-                      "This copies your fonts, colors, sizes, and positions to all video formats so you don't have to match them by hand. Your other video formats' current settings will be replaced — you can still fine-tune any format afterward."
-                    );
-                    if (!confirmed) return;
-                    const sourceCfg = configs.yt_shorts;
-                    const sourceH = FORMATS.find(f => f.key === "yt_shorts")!.h;
-                    setConfigs(prev => {
-                      const updated: typeof prev = { ...prev };
-                      const targets: FormatKey[] = ["tiktok"];
-                      for (const fmt of targets) {
-                        const targetH = FORMATS.find(f => f.key === fmt)!.h;
-                        const scale = targetH / sourceH;
-                        const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
-                        const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
-                        const merged: typeof prev[FormatKey] = {
-                          ...prev[fmt],
-                          fontFamily: sourceCfg.fontFamily,
-                          textColor: sourceCfg.textColor,
-                          bandTextColor: sourceCfg.bandTextColor ?? null,
-                          venueColor: sourceCfg.venueColor ?? null,
-                          cityColor: sourceCfg.cityColor ?? null,
-                          dateColor: sourceCfg.dateColor ?? null,
-                          allCaps: sourceCfg.allCaps,
-                          shortDate: sourceCfg.shortDate,
-                          dateFormat: sourceCfg.dateFormat,
-                          bandSize: scaleSize(sourceCfg.bandSize),
-                          venue: scaleField(sourceCfg.venue),
-                          city: scaleField(sourceCfg.city),
-                          date: scaleField(sourceCfg.date),
-                        };
-                        if (sourceCfg.band) merged.band = scaleField(sourceCfg.band);
-                        if (sourceCfg.opener) merged.opener = scaleField(sourceCfg.opener);
-                        if (sourceCfg.customText1) merged.customText1 = scaleField(sourceCfg.customText1);
-                        if (sourceCfg.customText2) merged.customText2 = scaleField(sourceCfg.customText2);
-                        updated[fmt] = merged;
-                      }
-                      return updated;
-                    });
-                    toast.success("Square Video layout applied to video formats.");
-                  }}
-                  style={{ padding: "8px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
-                >SET ALL VIDEO FORMATS</button>}
-              {!isVideoFormat && !isPrintFormat && <button
-                  onClick={async () => {
-                    const pid = formatImageIds[activeFormat];
-                    if (!pid) { toast.error('No image uploaded for this format.'); return; }
-                    const fd: Record<string, { w: number; h: number }> = {
-                      square:    { w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
-                      story:     { w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
-                      vertical:  { w: FORMAT_CATALOG.vertical.w,  h: FORMAT_CATALOG.vertical.h },
-                      landscape: { w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
-                      tiktok:    { w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
-                      yt_shorts: { w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
-                    };
-                    const dims = fd[activeFormat] ?? fd.square;
-                    const renderCrop = getFormatCrop(cropConfig, activeFormat);
-                    const renderBaseLayer = isValidCropRegion(renderCrop)
-                      ? 'c_crop,x_' + formatFraction(renderCrop.x) + ',y_' + formatFraction(renderCrop.y) + ',w_' + formatFraction(renderCrop.w) + ',h_' + formatFraction(renderCrop.h) + '/c_fill,w_' + dims.w + ',h_' + dims.h
-                      : 'c_fill,g_center,w_' + dims.w + ',h_' + dims.h;
-                    const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/' + renderBaseLayer + '/' + pid;
-                    const ed = firstEvent ? {
-                      bandName: bandName,
-                      dateFormatted: formatShowDate(firstEvent.date_iso, effectiveDateFormat),
-                      venueName: firstEvent.venue,
-                      cityState: [firstEvent.city, firstEvent.state].filter(Boolean).join(', '),
-                      opener: firstEvent.opener ?? null,
-                      customText1: customText1 || null,
-                      customText2: customText2 || null,
-                    } : {
-                      bandName: bandName,
-                      dateFormatted: formatShowDate(SAMPLE_DATE_ISO, effectiveDateFormat),
-                      venueName: 'Stubbs Waller Creek Amphitheater',
-                      cityState: 'Little Rock, AR',
-                      customText1: customText1 || null,
-                      customText2: customText2 || null,
-                    };
-                    try {
-                      const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily);
-                      const url = URL.createObjectURL(blob);
-                      window.open(url, '_blank');
-                    } catch (err: any) {
-                      toast.error('Render failed: ' + err.message);
-                      console.error(err);
-                    }
-                  }}
-                  style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
-                >PREVIEW RENDER</button>}
-            </div>
+                      setActiveFormat(f.key);
+                    }}
+                      style={{ padding: "8px 16px", whiteSpace: "nowrap", border: `3px solid ${isActive ? "var(--hw-border-strong)" : "var(--hw-border)"}`, background: isActive ? "var(--hw-bg-invert)" : "var(--hw-bg-surface)", color: isActive ? "#fff" : "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 400, fontSize: 12, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", opacity: locked ? 0.4 : 1, transition: "var(--hw-ease)" }}>
+                      {f.label}
+                      {locked ? <span style={{ color: "var(--hw-crimson)", marginLeft: 6, fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 10 }}>PRO</span> : null}
+                      {/* Space always reserved; visible only when a custom crop is saved for this format. */}
+                      <span
+                        title={hasCustomCrop ? "Custom crop saved for this format (set with Crop Image)" : undefined}
+                        aria-hidden={!hasCustomCrop}
+                        style={{ color: "var(--hw-crimson)", marginLeft: 6, visibility: hasCustomCrop ? "visible" : "hidden" }}
+                      >•</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -1273,6 +1138,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", padding: "8px 16px", border: previewLongest ? "2px solid var(--hw-crimson)" : "2px solid var(--hw-border-strong)", background: previewLongest ? "var(--hw-red-ghost)" : "var(--hw-bg-invert)", color: previewLongest ? "var(--hw-crimson)" : "#fff", cursor: "pointer", transition: "var(--hw-ease)" }}>
                 {previewLongest ? "SHOWING LONGEST NAMES" : "PREVIEW LONGEST NAMES"}
               </button>
+              {/* Reserved slot for the shrink warning — keeps its width when empty so nothing shifts or wraps. */}
+              <div style={{ flex: "0 0 280px", display: "flex", alignItems: "center" }}>
               {!previewLongest && (() => {
                 const capsOn = cfg.allCaps ?? false;
                 const venueMeasureText = (capsOn ? longestVenue.toUpperCase() : longestVenue)
@@ -1290,11 +1157,12 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 if (worst.shrink <= 20) return null;
                 return (
                   <button onClick={() => setPreviewLongest(true)}
-                    style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", background: "transparent", border: "2px solid var(--hw-crimson)", padding: "6px 12px", cursor: "pointer" }}>
+                    style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", color: "var(--hw-crimson)", background: "transparent", border: "2px solid var(--hw-crimson)", padding: "6px 12px", cursor: "pointer", whiteSpace: "nowrap" }}>
                     ⚠ LONGEST {worst.label} SHRINKS {worst.shrink}%
                   </button>
                 );
               })()}
+              </div>
               {activeFormat !== "tiktok" && activeFormat !== "yt_shorts" && (() => {
                 const activeCrop = getFormatCrop(cropConfig, activeFormat);
                 const hasCrop = !!activeCrop;
@@ -1308,12 +1176,13 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                         setCropModalOpen(true);
                       }}
                       disabled={!hasImage}
-                      style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: hasImage ? "var(--hw-text)" : "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: hasImage ? "pointer" : "not-allowed", opacity: hasImage ? 1 : 0.5, transition: "var(--hw-ease)" }}
+                      style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: hasImage ? "var(--hw-text)" : "var(--hw-text-muted)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", whiteSpace: "nowrap", cursor: hasImage ? "pointer" : "not-allowed", opacity: hasImage ? 1 : 0.5, transition: "var(--hw-ease)" }}
                     >
                       Crop Image
                     </button>
-                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", color: hasCrop ? "var(--hw-crimson)" : "var(--hw-text-muted)", fontWeight: hasCrop ? 700 : 400 }}>
-                      {hasCrop ? "✓ Custom crop" : "Default center"}
+                    {/* Status label (not a control): small, borderless, muted. */}
+                    <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, letterSpacing: "1px", textTransform: "uppercase", whiteSpace: "nowrap", color: hasCrop ? "var(--hw-crimson)" : "var(--hw-text-muted)", fontWeight: 400, cursor: "default", userSelect: "none" }}>
+                      <span style={{ opacity: 0.7 }}>Crop:</span> {hasCrop ? "✓ Custom" : "Default center"}
                     </div>
                   </div>
                 );
@@ -1604,6 +1473,174 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
+          {/* Fixed-size action box at the top of the sidebar: the min-height is
+              the tallest state (Square: two stacked buttons), so switching tabs
+              never shifts the cards below. */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+            <div style={{ padding: "3px 10px", border: "1.5px solid var(--hw-crimson)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textAlign: "center" }}>
+              EVERYTHING AUTOSAVES
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 88, justifyContent: "flex-start" }}>
+              {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, lineHeight: 1.4, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "4px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
+              {activeFormat === "square" && <button
+                  onClick={() => {
+                    const confirmed = window.confirm(
+                      "Match every format to Square?\n\n" +
+                      "This copies your fonts, colors, sizes, and positions to all formats so you don't have to match them by hand. Your other formats' current settings will be replaced — you can still fine-tune any format afterward."
+                    );
+                    if (!confirmed) return;
+                    const sourceCfg = configs.square;
+                    const sourceH = 1080;
+                    setConfigs(prev => {
+                      const updated: typeof prev = { ...prev };
+                      const targets: FormatKey[] = ["story", "vertical", "landscape", "print", "tiktok", "yt_shorts"];
+                      for (const fmt of targets) {
+                        const target = FORMATS.find(f => f.key === fmt)!;
+                        const targetH = target.h;
+                        // Vertical shares Square's 1080 width — scale by width
+                        // (1.0), not height, or text balloons 1.78x.
+                        const scale = fmt === "vertical" ? target.w / 1080 : targetH / sourceH;
+                        const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
+                        const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
+                        // Vertical keeps its own x/y/align (safe-area layout) and
+                        // only takes Square's size; every other format copies the field.
+                        const isVertical = fmt === "vertical";
+                        const placeField = (src: typeof sourceCfg.venue, cur: typeof sourceCfg.venue | undefined) =>
+                          isVertical && cur ? { ...cur, size: scaleSize(src.size) } : scaleField(src);
+                        const cur = prev[fmt];
+                        const merged: typeof prev[FormatKey] = {
+                          ...prev[fmt],
+                          fontFamily: sourceCfg.fontFamily,
+                          textColor: sourceCfg.textColor,
+                          bandTextColor: sourceCfg.bandTextColor ?? null,
+                          venueColor: sourceCfg.venueColor ?? null,
+                          cityColor: sourceCfg.cityColor ?? null,
+                          dateColor: sourceCfg.dateColor ?? null,
+                          allCaps: sourceCfg.allCaps,
+                          shortDate: sourceCfg.shortDate,
+                          dateFormat: sourceCfg.dateFormat,
+                          bandSize: scaleSize(sourceCfg.bandSize),
+                          venue: placeField(sourceCfg.venue, cur.venue),
+                          city: placeField(sourceCfg.city, cur.city),
+                          date: placeField(sourceCfg.date, cur.date),
+                          // Vertical also takes Square's show/hide toggles.
+                          ...(isVertical ? {
+                            showBandName: sourceCfg.showBandName,
+                            showVenue: sourceCfg.showVenue,
+                            showCity: sourceCfg.showCity,
+                            showDate: sourceCfg.showDate,
+                            showOpener: sourceCfg.showOpener,
+                            showCustomText1: sourceCfg.showCustomText1,
+                            showCustomText2: sourceCfg.showCustomText2,
+                            showLogo: sourceCfg.showLogo,
+                            showSponsorLogo1: sourceCfg.showSponsorLogo1,
+                            showSponsorLogo2: sourceCfg.showSponsorLogo2,
+                          } : {}),
+                        };
+                        if (sourceCfg.band) merged.band = placeField(sourceCfg.band, cur.band);
+                        if (sourceCfg.opener) merged.opener = placeField(sourceCfg.opener, cur.opener);
+                        if (sourceCfg.customText1) merged.customText1 = placeField(sourceCfg.customText1, cur.customText1);
+                        if (sourceCfg.customText2) merged.customText2 = placeField(sourceCfg.customText2, cur.customText2);
+                        updated[fmt] = merged;
+                      }
+                      return updated;
+                    });
+                    toast.success("Square layout applied to 6 formats.");
+                  }}
+                  style={{ padding: "8px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+                >SET ALL FORMATS</button>}
+              {activeFormat === "yt_shorts" && !!formatImageIds.yt_shorts && !formatImageIds.square && !formatImageIds.story && !formatImageIds.vertical && !formatImageIds.landscape && <button
+                  onClick={() => {
+                    const confirmed = window.confirm(
+                      "Match every video format to Square Video?\n\n" +
+                      "This copies your fonts, colors, sizes, and positions to all video formats so you don't have to match them by hand. Your other video formats' current settings will be replaced — you can still fine-tune any format afterward."
+                    );
+                    if (!confirmed) return;
+                    const sourceCfg = configs.yt_shorts;
+                    const sourceH = FORMATS.find(f => f.key === "yt_shorts")!.h;
+                    setConfigs(prev => {
+                      const updated: typeof prev = { ...prev };
+                      const targets: FormatKey[] = ["tiktok"];
+                      for (const fmt of targets) {
+                        const targetH = FORMATS.find(f => f.key === fmt)!.h;
+                        const scale = targetH / sourceH;
+                        const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
+                        const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
+                        const merged: typeof prev[FormatKey] = {
+                          ...prev[fmt],
+                          fontFamily: sourceCfg.fontFamily,
+                          textColor: sourceCfg.textColor,
+                          bandTextColor: sourceCfg.bandTextColor ?? null,
+                          venueColor: sourceCfg.venueColor ?? null,
+                          cityColor: sourceCfg.cityColor ?? null,
+                          dateColor: sourceCfg.dateColor ?? null,
+                          allCaps: sourceCfg.allCaps,
+                          shortDate: sourceCfg.shortDate,
+                          dateFormat: sourceCfg.dateFormat,
+                          bandSize: scaleSize(sourceCfg.bandSize),
+                          venue: scaleField(sourceCfg.venue),
+                          city: scaleField(sourceCfg.city),
+                          date: scaleField(sourceCfg.date),
+                        };
+                        if (sourceCfg.band) merged.band = scaleField(sourceCfg.band);
+                        if (sourceCfg.opener) merged.opener = scaleField(sourceCfg.opener);
+                        if (sourceCfg.customText1) merged.customText1 = scaleField(sourceCfg.customText1);
+                        if (sourceCfg.customText2) merged.customText2 = scaleField(sourceCfg.customText2);
+                        updated[fmt] = merged;
+                      }
+                      return updated;
+                    });
+                    toast.success("Square Video layout applied to video formats.");
+                  }}
+                  style={{ padding: "8px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+                >SET ALL VIDEO FORMATS</button>}
+              {!isVideoFormat && !isPrintFormat && <button
+                  onClick={async () => {
+                    const pid = formatImageIds[activeFormat];
+                    if (!pid) { toast.error('No image uploaded for this format.'); return; }
+                    const fd: Record<string, { w: number; h: number }> = {
+                      square:    { w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
+                      story:     { w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
+                      vertical:  { w: FORMAT_CATALOG.vertical.w,  h: FORMAT_CATALOG.vertical.h },
+                      landscape: { w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
+                      tiktok:    { w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
+                      yt_shorts: { w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
+                    };
+                    const dims = fd[activeFormat] ?? fd.square;
+                    const renderCrop = getFormatCrop(cropConfig, activeFormat);
+                    const renderBaseLayer = isValidCropRegion(renderCrop)
+                      ? 'c_crop,x_' + formatFraction(renderCrop.x) + ',y_' + formatFraction(renderCrop.y) + ',w_' + formatFraction(renderCrop.w) + ',h_' + formatFraction(renderCrop.h) + '/c_fill,w_' + dims.w + ',h_' + dims.h
+                      : 'c_fill,g_center,w_' + dims.w + ',h_' + dims.h;
+                    const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/' + renderBaseLayer + '/' + pid;
+                    const ed = firstEvent ? {
+                      bandName: bandName,
+                      dateFormatted: formatShowDate(firstEvent.date_iso, effectiveDateFormat),
+                      venueName: firstEvent.venue,
+                      cityState: [firstEvent.city, firstEvent.state].filter(Boolean).join(', '),
+                      opener: firstEvent.opener ?? null,
+                      customText1: customText1 || null,
+                      customText2: customText2 || null,
+                    } : {
+                      bandName: bandName,
+                      dateFormatted: formatShowDate(SAMPLE_DATE_ISO, effectiveDateFormat),
+                      venueName: 'Stubbs Waller Creek Amphitheater',
+                      cityState: 'Little Rock, AR',
+                      customText1: customText1 || null,
+                      customText2: customText2 || null,
+                    };
+                    try {
+                      const blob = await renderPoster(baseUrl, cfg, activeFormat, ed, logoUrl, sponsorLogo1Url, sponsorLogo2Url, bandFontFamily);
+                      const url = URL.createObjectURL(blob);
+                      window.open(url, '_blank');
+                    } catch (err: any) {
+                      toast.error('Render failed: ' + err.message);
+                      console.error(err);
+                    }
+                  }}
+                  style={{ padding: "8px 16px", border: "3px solid var(--hw-border-strong)", background: "var(--hw-bg-invert)", color: "#fff", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
+                >PREVIEW RENDER</button>}
+            </div>
+          </div>
             <div style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", padding: 16 }}>
               <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "var(--hw-text-muted)", marginBottom: 10 }}>FONT</div>
               <input
@@ -2049,7 +2086,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   </span>
                   <div>
                     <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 1</div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the graphic's uploaded color." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo1Url ? "Renders exactly as uploaded on all assets." : uploadingSponsor1 ? "Uploading..." : "Click to upload a .png"}</div>
                   </div>
                 </label>
                 {(cfg.showSponsorLogo1 ?? false) && sponsorLogo1Url && (
@@ -2107,7 +2144,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   </span>
                   <div>
                     <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Custom Graphic 2</div>
-                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders in text color on all assets. On the Local Poster PDF, renders in the graphic's uploaded color." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>{sponsorLogo2Url ? "Renders exactly as uploaded on all assets." : uploadingSponsor2 ? "Uploading..." : "Click to upload a .png"}</div>
                   </div>
                 </label>
                 {(cfg.showSponsorLogo2 ?? false) && sponsorLogo2Url && (

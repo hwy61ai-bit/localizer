@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
     { filename: rootFolder + `Social/${filePrefix}_Feed_Grid_4x5.jpg`,  url: link.render_story_url },
     { filename: rootFolder + `Social/${filePrefix}_Vertical.jpg`,  url: link.render_vertical_url },
     { filename: rootFolder + `Social/${filePrefix}_FB_Event_Cover.jpg`,  url: link.render_landscape_url },
-    { filename: rootFolder + `Social/${filePrefix}_Tour_Poster.jpg`, url: link.render_poster_url },
+    { filename: rootFolder + `Social/${filePrefix}_Print_Poster.jpg`, url: link.render_poster_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 
   const videoAssets: { filename: string; url: string }[] = [
