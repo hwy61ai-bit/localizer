@@ -4052,3 +4052,19 @@ Date format dropdown shipped: 6 formats, long format now has a comma, formatters
 Fixed local login on the laptop: BETA_GATE_PASSWORD was missing.
 Not done: 9:16 Vertical plus the "Feed/Grid (4:5)" relabel. Decision on | line breaks (A: keep, and strip the pipe on landscape and video; B: remove everywhere).
 Next session: a Playwright smoke suite, then the 9:16 Vertical spec. Tim still needs to confirm the "Facebook Event Cover" label, and Don still needs to confirm the date menu.
+
+Done (later in the session):
+Shipped the Vertical 9:16 image format and the Feed/Grid (4:5) relabel. The LOCKSTEP rule is now CLAUDE.md #19.
+Template editor polish: stable tabs, actions moved to the sidebar, black circle sliders, the Print Poster rename, a crop-dot tooltip, and sponsor copy fixes.
+Asset and video cards all follow one header pattern.
+The artist page shows Localizer only.
+Fixed dashboard access: it now uses getLocalizerAccessLevel. The old check would have bounced paid users after their trial ended.
+Login fix: sign-in now lands on the dashboard.
+Legacy hosts now 308 redirect to localizer.music.
+Upstash rate limiter confirmed connected.
+Next:
+Tim needs to confirm the "Facebook Event Cover" label.
+Don needs to confirm the date menu.
+The | line-break decision, A or B.
+The TourRouter billing route still reads the stale plan_status (TourRouter project).
+The laptop's .env.local is missing BETA_GATE_PASSWORD; it now holds a local value only.
