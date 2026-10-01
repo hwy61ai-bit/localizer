@@ -44,3 +44,8 @@ reference/
 # Test documents with personal data - local only
 docs/test-documents/
 supabase/.temp/
+
+# Playwright smoke suite
+test-results/
+playwright-report/
+e2e/.auth/

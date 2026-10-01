@@ -116,6 +116,8 @@ How to work in this repo. These are process rules, not code rules. They exist to
 
 14. **Run a 20-minute `docs/BACKLOG.md` audit every 2–3 weeks.** Walk 🔴 Active issues and 🟡 Pre-launch gates first. For each open item, ask "would I be surprised if this is still broken?" — test the suspicious ones. Catches side-effect resolutions: items that got incidentally fixed by unrelated work and were never explicitly closed. Rule 13 alone misses these because nobody can predict which adjacent items a given commit will resolve.
 
+15. **`npm run test:smoke` must pass before any commit that touches `lib/`, `app/`, or middleware.** Playwright smoke suite (`playwright.config.ts`, `e2e/`): signs in a seeded E2E user (`scripts/e2e-seed.mjs` — E2E-named data only), runs browser smoke tests against the dev server, plus unit checks including the format-coverage test that fails if a new format misses any hard-coded list.
+
 ---
 
 ## Design system
@@ -177,7 +179,7 @@ Run through this checklist at the start of every session and every new task:
 4. If the task touches financials, PDF generation, the Canvas renderer, or intake parsing, re-read the relevant rule in the "Non-negotiable rules" section above.
 5. Present a numbered plan. Wait for explicit approval.
 6. Work one file at a time. Show the diff. Wait for approval. Apply. Move on.
-7. Run `tsc --noEmit` (or `npm run build` for a full check) before declaring the task done.
+7. Run `tsc --noEmit` (or `npm run build` for a full check) before declaring the task done. If the change touches `lib/`, `app/`, or middleware, `npm run test:smoke` must also pass (workflow rule 15).
 8. Do not commit or push unless explicitly instructed. The human controls git.
 
 ---

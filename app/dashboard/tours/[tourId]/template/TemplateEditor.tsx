@@ -1105,7 +1105,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                   const isActive = activeFormat === f.key;
                   const hasCustomCrop = !!getFormatCrop(cropConfig, f.key);
                   return (
-                    <button key={f.key} onClick={() => {
+                    <button key={f.key} data-testid={`format-tab-${f.key}`} aria-pressed={isActive} onClick={() => {
                       if (locked) {
                         setShowUpgradeBanner(true);
                         return;
@@ -1476,11 +1476,11 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
           {/* Fixed-size action box at the top of the sidebar: the min-height is
               the tallest state (Square: two stacked buttons), so switching tabs
               never shifts the cards below. */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+          <div data-testid="editor-action-box" style={{ display: "flex", flexDirection: "column", alignItems: "stretch", gap: 8 }}>
             <div style={{ padding: "3px 10px", border: "1.5px solid var(--hw-crimson)", color: "var(--hw-crimson)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textAlign: "center" }}>
               EVERYTHING AUTOSAVES
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 88, justifyContent: "flex-start" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, minHeight: 92, justifyContent: "flex-start" }}>
               {isPrintFormat && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, lineHeight: 1.4, letterSpacing: "1px", color: "var(--hw-text-muted)", padding: "4px 0" }}>PRINT POSTER GENERATES AS PDF FROM THE VENUE DOWNLOAD PAGE.</div>}
               {activeFormat === "square" && <button
                   onClick={() => {
@@ -1829,7 +1829,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)", marginBottom: 6 }}>Date Format</div>
-                  <select
+                  <select data-testid="date-format-select"
                     value={effectiveDateFormat}
                     onChange={(e) => updateCfg("dateFormat", e.target.value as DateFormatKey)}
                     style={{ width: "100%", padding: "8px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, cursor: "pointer", outline: "none" }}

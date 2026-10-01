@@ -212,13 +212,13 @@ export default function AssetsPage() {
       const asset = assets.find((a) => a.formatId === fmt.id);
       const isUploading = uploading === fmt.id;
       return (
-        <div key={fmt.id}>
+        <div key={fmt.id} data-testid="asset-card">
           <div style={{ marginBottom: 10 }}>
             {/* Every card (photo + video): format label / dimensions / platforms */}
-            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{fmt.label}</div>
+            <div data-testid="asset-card-label" style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{fmt.label}</div>
             <div style={{ height: 1, background: "var(--hw-border-strong)", margin: "6px 0" }} />
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{fmt.w} × {fmt.h}</div>
-            {fmt.description && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-muted)", marginTop: 3 }}>{fmt.description}</div>}
+            {fmt.description && <div data-testid="asset-card-description" style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-muted)", marginTop: 3 }}>{fmt.description}</div>}
             {fmt.id === "print" && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-amber)", marginTop: 3 }}>Recommended: 3300×5100px or higher resolution</div>}
           </div>
           <input

@@ -17,7 +17,14 @@ export async function PATCH(
     return NextResponse.json({ error: "auth_required" }, { status: 401 });
   }
 
-  const body = await req.json();
+  // Empty or aborted bodies (e.g. a sendBeacon flush cut off on page close)
+  // make req.json() reject — answer 400 instead of throwing a 500.
+  let body: any;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
 
   const update: Record<string, any> = {};
   if (body && typeof body === "object") {
