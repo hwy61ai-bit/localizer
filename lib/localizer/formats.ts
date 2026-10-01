@@ -69,9 +69,9 @@ export const FORMATS: Record<FormatKey, FormatDef> = {
   landscape: {
     key: "landscape",
     uploadId: "facebook",
-    label: "FB Cover",
-    w: 820,
-    h: 312,
+    label: "Facebook Event Cover",
+    w: 1920,
+    h: 1005,
     mediaType: "image",
     category: "static",
     sourceColumn: "image_landscape_id",

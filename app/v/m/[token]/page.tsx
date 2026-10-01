@@ -83,7 +83,8 @@ export default async function MarketingPage({
   const photoAssets = [
     { label: "Instagram Post / Facebook Post", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
     { label: "Instagram Story / Reels / Facebook Story", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
-    { label: "Facebook Cover Image", dims: "820 × 312", aspect: "820/312", url: link.render_landscape_url },
+    // contain: stale 820x312 renders letterbox instead of cropping until re-rendered
+    { label: "Facebook Event Cover", dims: "1920 × 1005", aspect: "1920/1005", fit: "contain" as const, url: link.render_landscape_url },
   ];
 
   const overlayConfig = t.overlay_config as Record<string, any> | null;
@@ -145,7 +146,7 @@ export default async function MarketingPage({
             <div key={asset.label} style={{ background: "var(--hw-bg-surface)", border: "3px solid var(--hw-border-strong)", overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
               <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                 {asset.url ? (
-                  <img src={asset.url} alt={asset.label} style={{ width: "100%", display: "block" }} />
+                  <img src={asset.url} alt={asset.label} style={{ width: "100%", display: "block", ...(asset.fit === "contain" ? { aspectRatio: asset.aspect, objectFit: "contain" as const } : {}) }} />
                 ) : (
                   <div style={{ aspectRatio: asset.aspect, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--hw-font-mono)", color: "var(--hw-text-muted)", fontSize: 13, letterSpacing: "1px", textTransform: "uppercase" }}>
                     Not provided

@@ -226,7 +226,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     // Load font
     const formats = ["square", "story", "landscape"];
     const formatDims: Record<string, { w: number; h: number }> = {
-      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, landscape: { w: 820, h: 312 },
+      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, landscape: { w: 1920, h: 1005 },
     };
 
     const flagged: { eventId: string; field: "venue" | "opener"; venue: string; edited: string }[] = [];
@@ -357,7 +357,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     const formatDims: Record<string, { w: number; h: number }> = {
       square: { w: 1080, h: 1080 },
       story: { w: 1080, h: 1350 },
-      landscape: { w: 820, h: 312 },
+      landscape: { w: 1920, h: 1005 },
     };
 
     const idSet = new Set(eventIds);

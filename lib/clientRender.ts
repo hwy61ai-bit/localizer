@@ -1,6 +1,8 @@
 // Client-side poster rendering via HTML Canvas
 // Replaces Cloudinary text overlay URL construction
 
+import { DEFAULT_FORMAT } from "@/lib/localizer/formatDefaults";
+
 type FieldConfig = { x: number; y: number; size: number; align?: string };
 
 type FormatConfig = {
@@ -53,11 +55,10 @@ const OPENER_DEFAULT: FieldConfig = { x: 0.5, y: 0.72, size: 40, align: "center"
 const FORMAT_DIMS: Record<string, { w: number; h: number }> = {
   square:    { w: 1080, h: 1080 },
   story:     { w: 1080, h: 1350 },
-  landscape: { w: 820,  h: 312 },
+  landscape: { w: 1920, h: 1005 },
 };
 
-// Landscape font sizes are stored at 1920x1080 scale in overlay_config,
-// so we scale them down to match the 820x312 output (820/1920 ≈ 0.427)
+// Font sizes in overlay_config are px at output resolution for every format.
 const SCALE_FACTORS: Record<string, number> = {
   square: 1.0,
   story: 1.0,
@@ -136,9 +137,22 @@ export function formatDateForRender(iso: string, short = false): string {
  * @param eventData     Text content for this event
  * @returns             JPEG Blob ready for upload
  */
+// Merge a missing or partial overlay_config[format] over the shared defaults
+// so venue/date/city always exist. A full saved config passes through as-is.
+function withDefaults(cfg: Partial<FormatConfig> | null | undefined): FormatConfig {
+  const c = cfg ?? {};
+  return {
+    ...DEFAULT_FORMAT,
+    ...c,
+    date:  { ...DEFAULT_FORMAT.date,  ...c.date },
+    venue: { ...DEFAULT_FORMAT.venue, ...c.venue },
+    city:  { ...DEFAULT_FORMAT.city,  ...c.city },
+  };
+}
+
 export async function renderPoster(
   baseImageUrl: string,
-  cfg: FormatConfig,
+  rawCfg: Partial<FormatConfig> | null | undefined,
   formatKey: string,
   eventData: EventData,
   logoUrl?: string | null,
@@ -146,6 +160,7 @@ export async function renderPoster(
   sponsorLogo2Url?: string | null,
   bandFontFamily?: string | null
 ): Promise<Blob> {
+  const cfg = withDefaults(rawCfg);
   const dims = FORMAT_DIMS[formatKey] ?? FORMAT_DIMS.square;
   const scale = SCALE_FACTORS[formatKey] ?? 1.0;
   const { w, h } = dims;

@@ -76,7 +76,7 @@ export async function GET(req: NextRequest) {
   const imageAssets: { filename: string; url: string }[] = [
     { filename: rootFolder + `Social/${filePrefix}_IG_Post.jpg`,   url: link.render_square_url },
     { filename: rootFolder + `Social/${filePrefix}_IG_Story.jpg`,  url: link.render_story_url },
-    { filename: rootFolder + `Social/${filePrefix}_FB_Cover.jpg`,  url: link.render_landscape_url },
+    { filename: rootFolder + `Social/${filePrefix}_FB_Event_Cover.jpg`,  url: link.render_landscape_url },
     { filename: rootFolder + `Social/${filePrefix}_Tour_Poster.jpg`, url: link.render_poster_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];
 

@@ -155,12 +155,9 @@ function buildCloudinaryUrl(
     : fontFamily.replace(/ /g, "%20");
   const color = cfg.textColor ?? "ffffff";
 
-  // Scale font sizes for landscape (820x312 vs 1920x1080 reference)
-  const scaleFactor = format === "landscape" ? 0.427 : 1.0;
-  const venueSizeMax = Math.round((cfg.venue?.size ?? 36) * scaleFactor);
-  const dateSize     = Math.round((cfg.date?.size   ?? 28) * scaleFactor);
-  const citySizeMax  = Math.round((cfg.city?.size   ?? 28) * scaleFactor);
-  const bandSizeScaled = Math.round((cfg.bandSize ?? 48) * scaleFactor);
+  const venueSizeMax = Math.round(cfg.venue?.size ?? 36);
+  const dateSize     = Math.round(cfg.date?.size   ?? 28);
+  const citySizeMax  = Math.round(cfg.city?.size   ?? 28);
 
   const caps = cfg.allCaps ?? false;
   const rawVenue = caps ? eventData.venueName.toUpperCase() : eventData.venueName;
@@ -195,7 +192,7 @@ function buildCloudinaryUrl(
   const venueColor = cfg.venueColor ?? color;
   const cityColor = cfg.cityColor ?? color;
   const dateColor = cfg.dateColor ?? color;
-  const bandSize = format === "landscape" ? bandSizeScaled : (cfg.bandSize ?? 48);
+  const bandSize = cfg.bandSize ?? 48;
   const rawBandName = caps ? eventData.bandName.toUpperCase() : eventData.bandName;
   const bandName = sanitize(rawBandName);
 

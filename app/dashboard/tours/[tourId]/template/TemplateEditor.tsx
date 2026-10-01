@@ -14,6 +14,7 @@ import {
   type FormatKey as CatalogFormatKey,
 } from "@/lib/localizer/formats";
 import { type FeatureTier } from "@/lib/localizer/tierGate";
+import { DEFAULT_FORMAT as SHARED_DEFAULT_FORMAT } from "@/lib/localizer/formatDefaults";
 
 const FONTS = [
   { label: "Oswald", value: "Oswald" },
@@ -96,20 +97,7 @@ function getFormatCrop(crop: CropConfig | null | undefined, format: FormatKey): 
   return crop[format] ?? null;
 }
 
-const DEFAULT_FORMAT: FormatConfig = {
-  fontFamily: "Oswald",
-  textColor: "ffffff",
-  showBandName: false,
-  showVenue: true,
-  showCity: true,
-  showDate: true,
-  bandSize: 48,
-  shortDate: true,
-  allCaps: true,
-  date:  { x: 0.5, y: 0.91, size: 28, align: "center" },
-  venue: { x: 0.5, y: 0.76, size: 36, align: "center" },
-  city:  { x: 0.5, y: 0.84, size: 28, align: "center" },
-};
+const DEFAULT_FORMAT: FormatConfig = SHARED_DEFAULT_FORMAT;
 
 const PRINT_DEFAULTS: Partial<FormatConfig> = {
   showVenue: false,
@@ -124,7 +112,7 @@ function defaultShowField(formatKey: FormatKey): boolean {
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "square",    label: "Square",        w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
   { key: "story",     label: "Vertical",      w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
-  { key: "landscape", label: "FB Cover",      w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
+  { key: "landscape", label: "Facebook Event Cover", w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: FORMAT_CATALOG.print.w, h: FORMAT_CATALOG.print.h },
   { key: "yt_shorts", label: "Square Video",  w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
   { key: "tiktok",    label: "Vertical Video", w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },

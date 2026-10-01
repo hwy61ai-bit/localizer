@@ -298,7 +298,7 @@ export default function ShareWithMarketingButton({ tourId, tier }: { tourId: str
               { format: "square",    label: "Square Image",   w: 90,  h: 90 },
               { format: "story",     label: "Vertical Image", w: 72,  h: 90 },
               { format: "tiktok",    label: "Vertical Video", w: 84,  h: 100 },
-              { format: "landscape", label: "FB Cover",       w: 120, h: 56 },
+              { format: "landscape", label: "Facebook Event Cover", w: 130, h: 68 },
               { format: "yt_shorts", label: "Square Video",   w: 90,  h: 90 },
             ].map((f) => {
               const isLoading = downloadingFormat === f.format;
