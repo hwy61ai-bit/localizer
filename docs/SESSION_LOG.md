@@ -1,5 +1,12 @@
 # TourRouter Session Log
 
+  - HIGHWAY MODE: the Delta61 working style. Spec precedes code; feature-per-prompt;
+    Claude Code interrupts only when blocked or the decision is genuinely Drew's;
+    gates (build → Playwright → Drew uses the preview) instead of line-reading;
+    complete replacement files; session log updated at close.
+    Session length is whatever the job requires — long runs are permitted, never
+    a goal. Finish early, stop early. Do not add work to fill time.
+
 ## Session March 23, 2026 — Phase 0
 
 ### Completed
