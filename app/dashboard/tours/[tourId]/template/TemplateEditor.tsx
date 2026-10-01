@@ -15,7 +15,7 @@ import {
   type FormatKey as CatalogFormatKey,
 } from "@/lib/localizer/formats";
 import { type FeatureTier } from "@/lib/localizer/tierGate";
-import { DEFAULT_FORMAT as SHARED_DEFAULT_FORMAT } from "@/lib/localizer/formatDefaults";
+import { DEFAULT_FORMAT as SHARED_DEFAULT_FORMAT, VERTICAL_DEFAULTS, SAFE_AREA_VERTICAL } from "@/lib/localizer/formatDefaults";
 
 const FONTS = [
   { label: "Oswald", value: "Oswald" },
@@ -39,7 +39,7 @@ const FONTS = [
 type FieldKey = "date" | "venue" | "city" | "opener" | "customText1" | "customText2";
 type BaseFieldKey = "date" | "venue" | "city";
 type FormatKey = CatalogFormatKey;
-type CropFormatKey = Extract<FormatKey, "square" | "story" | "landscape" | "print">;
+type CropFormatKey = Extract<FormatKey, "square" | "story" | "vertical" | "landscape" | "print">;
 type Align = "left" | "center" | "right";
 
 type FieldConfig = { x: number; y: number; size: number; align?: Align };
@@ -113,7 +113,8 @@ function defaultShowField(formatKey: FormatKey): boolean {
 
 const FORMATS: { key: FormatKey; label: string; w: number; h: number }[] = [
   { key: "square",    label: "Square",        w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
-  { key: "story",     label: "Vertical",      w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
+  { key: "story",     label: "Feed/Grid (4:5)", w: FORMAT_CATALOG.story.w,   h: FORMAT_CATALOG.story.h },
+  { key: "vertical",  label: "Vertical",      w: FORMAT_CATALOG.vertical.w,  h: FORMAT_CATALOG.vertical.h },
   { key: "landscape", label: "Facebook Event Cover", w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
   { key: "print",     label: "LOCAL POSTER FOR PRINT", w: FORMAT_CATALOG.print.w, h: FORMAT_CATALOG.print.h },
   { key: "yt_shorts", label: "Square Video",  w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
@@ -159,6 +160,7 @@ type Tour = {
   image_print_id: string | null;
   image_square_id: string | null;
   image_story_id: string | null;
+  image_vertical_id: string | null;
   image_landscape_id: string | null;
   video_tiktok_id: string | null;
   video_yt_shorts_id: string | null;
@@ -235,6 +237,8 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     // DEFAULT_FORMAT.dateFormat would override a legacy shortDate: false.
     square:    { ...DEFAULT_FORMAT, ...saved0.square,    dateFormat: resolveDateFormat(saved0.square) },
     story:     { ...DEFAULT_FORMAT, ...saved0.story,     dateFormat: resolveDateFormat(saved0.story) },
+    // Existing tours have no overlay_config.vertical — safe-area defaults apply.
+    vertical:  { ...DEFAULT_FORMAT, ...VERTICAL_DEFAULTS, ...saved0.vertical, dateFormat: resolveDateFormat(saved0.vertical) },
     landscape: { ...DEFAULT_FORMAT, ...saved0.landscape, dateFormat: resolveDateFormat(saved0.landscape) },
     print:     { ...DEFAULT_FORMAT, ...PRINT_DEFAULTS, ...saved0.print, dateFormat: resolveDateFormat(saved0.print) },
     // Video tabs keep only an explicitly saved dateFormat so autosave never
@@ -433,6 +437,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
   const [formatImageIds, setFormatImageIds] = useState<Record<FormatKey, string | null>>({
     square:    tour.image_square_id,
     story:     tour.image_story_id,
+    vertical:  tour.image_vertical_id ?? null,
     landscape: tour.image_landscape_id,
     print:     tour.image_print_id,
     tiktok:    tour.video_tiktok_id ?? null,
@@ -444,13 +449,14 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
     async function refetchImageIds() {
       const { data } = await supabase
         .from("tours")
-        .select("image_square_id, image_story_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id")
+        .select("image_square_id, image_story_id, image_vertical_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id")
         .eq("id", tourId)
         .maybeSingle();
       if (cancelled || !data) return;
       setFormatImageIds({
         square:    data.image_square_id,
         story:     data.image_story_id,
+        vertical:  data.image_vertical_id ?? null,
         landscape: data.image_landscape_id,
         print:     data.image_print_id,
         tiktok:    data.video_tiktok_id ?? null,
@@ -1108,12 +1114,21 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     const sourceH = 1080;
                     setConfigs(prev => {
                       const updated: typeof prev = { ...prev };
-                      const targets: FormatKey[] = ["story", "landscape", "print", "tiktok", "yt_shorts"];
+                      const targets: FormatKey[] = ["story", "vertical", "landscape", "print", "tiktok", "yt_shorts"];
                       for (const fmt of targets) {
-                        const targetH = FORMATS.find(f => f.key === fmt)!.h;
-                        const scale = targetH / sourceH;
+                        const target = FORMATS.find(f => f.key === fmt)!;
+                        const targetH = target.h;
+                        // Vertical shares Square's 1080 width — scale by width
+                        // (1.0), not height, or text balloons 1.78x.
+                        const scale = fmt === "vertical" ? target.w / 1080 : targetH / sourceH;
                         const scaleSize = (n: number) => Math.max(12, Math.round(n * scale));
                         const scaleField = (f: typeof sourceCfg.venue) => ({ ...f, size: scaleSize(f.size) });
+                        // Vertical keeps its own x/y/align (safe-area layout) and
+                        // only takes Square's size; every other format copies the field.
+                        const isVertical = fmt === "vertical";
+                        const placeField = (src: typeof sourceCfg.venue, cur: typeof sourceCfg.venue | undefined) =>
+                          isVertical && cur ? { ...cur, size: scaleSize(src.size) } : scaleField(src);
+                        const cur = prev[fmt];
                         const merged: typeof prev[FormatKey] = {
                           ...prev[fmt],
                           fontFamily: sourceCfg.fontFamily,
@@ -1126,23 +1141,36 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           shortDate: sourceCfg.shortDate,
                           dateFormat: sourceCfg.dateFormat,
                           bandSize: scaleSize(sourceCfg.bandSize),
-                          venue: scaleField(sourceCfg.venue),
-                          city: scaleField(sourceCfg.city),
-                          date: scaleField(sourceCfg.date),
+                          venue: placeField(sourceCfg.venue, cur.venue),
+                          city: placeField(sourceCfg.city, cur.city),
+                          date: placeField(sourceCfg.date, cur.date),
+                          // Vertical also takes Square's show/hide toggles.
+                          ...(isVertical ? {
+                            showBandName: sourceCfg.showBandName,
+                            showVenue: sourceCfg.showVenue,
+                            showCity: sourceCfg.showCity,
+                            showDate: sourceCfg.showDate,
+                            showOpener: sourceCfg.showOpener,
+                            showCustomText1: sourceCfg.showCustomText1,
+                            showCustomText2: sourceCfg.showCustomText2,
+                            showLogo: sourceCfg.showLogo,
+                            showSponsorLogo1: sourceCfg.showSponsorLogo1,
+                            showSponsorLogo2: sourceCfg.showSponsorLogo2,
+                          } : {}),
                         };
-                        if (sourceCfg.band) merged.band = scaleField(sourceCfg.band);
-                        if (sourceCfg.opener) merged.opener = scaleField(sourceCfg.opener);
-                        if (sourceCfg.customText1) merged.customText1 = scaleField(sourceCfg.customText1);
-                        if (sourceCfg.customText2) merged.customText2 = scaleField(sourceCfg.customText2);
+                        if (sourceCfg.band) merged.band = placeField(sourceCfg.band, cur.band);
+                        if (sourceCfg.opener) merged.opener = placeField(sourceCfg.opener, cur.opener);
+                        if (sourceCfg.customText1) merged.customText1 = placeField(sourceCfg.customText1, cur.customText1);
+                        if (sourceCfg.customText2) merged.customText2 = placeField(sourceCfg.customText2, cur.customText2);
                         updated[fmt] = merged;
                       }
                       return updated;
                     });
-                    toast.success("Square layout applied to 5 formats.");
+                    toast.success("Square layout applied to 6 formats.");
                   }}
                   style={{ padding: "8px 16px", border: "3px solid var(--hw-border)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-mono)", fontWeight: 700, fontSize: 13, letterSpacing: "1.5px", textTransform: "uppercase", cursor: "pointer", transition: "var(--hw-ease)" }}
                 >SET ALL FORMATS</button>}
-              {activeFormat === "yt_shorts" && !!formatImageIds.yt_shorts && !formatImageIds.square && !formatImageIds.story && !formatImageIds.landscape && <button
+              {activeFormat === "yt_shorts" && !!formatImageIds.yt_shorts && !formatImageIds.square && !formatImageIds.story && !formatImageIds.vertical && !formatImageIds.landscape && <button
                   onClick={() => {
                     const confirmed = window.confirm(
                       "Match every video format to Square Video?\n\n" +
@@ -1194,6 +1222,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                     const fd: Record<string, { w: number; h: number }> = {
                       square:    { w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
                       story:     { w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
+                      vertical:  { w: FORMAT_CATALOG.vertical.w,  h: FORMAT_CATALOG.vertical.h },
                       landscape: { w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
                       tiktok:    { w: FORMAT_CATALOG.tiktok.w,    h: FORMAT_CATALOG.tiktok.h },
                       yt_shorts: { w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
@@ -1295,6 +1324,19 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                 <>
                 <div style={{ position: "relative", userSelect: "none", cursor: dragging ? "grabbing" : "default", width: `${Math.round(fmtDims.w * previewScale)}px`, margin: "0 auto" }}>
                   <img ref={imgRef} src={imageUrl} alt="Base" style={{ width: "100%", display: "block" }} />
+
+                  {/* Vertical safe-area guides — editor-only, never rendered into output */}
+                  {activeFormat === "vertical" && (
+                    <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 17 }}>
+                      {[SAFE_AREA_VERTICAL.top, SAFE_AREA_VERTICAL.bottom].map((y, i) => (
+                        <div key={y} style={{ position: "absolute", left: 0, right: 0, top: `${y * 100}%`, borderTop: "2px dashed var(--hw-crimson)" }}>
+                          <div style={{ position: "absolute", right: 6, ...(i === 0 ? { bottom: 4 } : { top: 4 }), fontFamily: "var(--hw-font-mono)", fontSize: 10, fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#fff", background: "var(--hw-crimson)", padding: "2px 6px" }}>
+                            Story UI covers this area
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {dragging && (
                     <svg

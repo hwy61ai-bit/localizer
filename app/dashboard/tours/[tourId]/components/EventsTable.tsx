@@ -225,9 +225,10 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     const overlayConfig = tourData.tour.overlay_config ?? {};
 
     // Load font
-    const formats = ["square", "story", "landscape"];
+    // Vertical has no source fallback — only check it when it will render.
+    const formats = ["square", "story", ...(tourData.tour.image_vertical_id ? ["vertical"] : []), "landscape"];
     const formatDims: Record<string, { w: number; h: number }> = {
-      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, landscape: { w: 1920, h: 1005 },
+      square: { w: 1080, h: 1080 }, story: { w: 1080, h: 1350 }, vertical: { w: 1080, h: 1920 }, landscape: { w: 1920, h: 1005 },
     };
 
     const flagged: { eventId: string; field: "venue" | "opener"; venue: string; edited: string }[] = [];
@@ -352,19 +353,22 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
     const imageIds: Record<string, string | null> = {
       square: tour.image_square_id,
       story: tour.image_story_id,
+      // No fallback: a null vertical source skips the format (URL stays null).
+      vertical: tour.image_vertical_id ?? null,
       landscape: tour.image_landscape_id,
     };
 
     const formatDims: Record<string, { w: number; h: number }> = {
       square: { w: 1080, h: 1080 },
       story: { w: 1080, h: 1350 },
+      vertical: { w: 1080, h: 1920 },
       landscape: { w: 1920, h: 1005 },
     };
 
     const idSet = new Set(eventIds);
     const targetEvents = serverEvents.filter((e: any) => idSet.has(e.id));
 
-    const formats = ["square", "story", "landscape"];
+    const formats = ["square", "story", "vertical", "landscape"];
     const total = targetEvents.length * formats.length;
     let done = 0;
     onProgress?.(0, total);

@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
   // Literal list — the guarantee that video URLs can never reach destroyRenderAsset.
   // Never derive from Object.keys(renderUrls).
-  const IMAGE_RENDER_COLUMNS = ["render_square_url", "render_story_url", "render_landscape_url"] as const;
+  const IMAGE_RENDER_COLUMNS = ["render_square_url", "render_story_url", "render_vertical_url", "render_landscape_url"] as const;
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
   // Upsert venue_link — same logic as existing generate route
   const { data: existing } = await supabase
     .from("venue_links")
-    .select("id, token, render_square_url, render_story_url, render_landscape_url")
+    .select("id, token, render_square_url, render_story_url, render_vertical_url, render_landscape_url")
     .eq("event_id", eventId)
     .eq("is_active", true)
     .maybeSingle();

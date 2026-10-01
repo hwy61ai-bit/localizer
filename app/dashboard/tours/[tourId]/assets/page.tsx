@@ -10,7 +10,8 @@ import "@/app/dashboard/assets.css";
 
 const FORMATS = [
   { id: "ig_post",     label: "Instagram Post / Facebook Post",        w: 1080, h: 1080, aspect: "1 / 1",     section: "photo", sub: "SQUARE" },
-  { id: "ig_story",    label: "Instagram Story / Reels / Facebook Story",        w: 1080, h: 1350, aspect: "4 / 5",     section: "photo", sub: "VERTICAL" },
+  { id: "ig_story",    label: "Feed/Grid (4:5)", description: "Instagram / Facebook Feed", w: 1080, h: 1350, aspect: "4 / 5", section: "photo", sub: "4:5" },
+  { id: "vertical",    label: "Vertical", description: "Instagram Story / Reels / Facebook Story", w: 1080, h: 1920, aspect: "9 / 16", section: "photo", sub: "9:16" },
   { id: "facebook",    label: "Facebook Event Cover",  w: 1920, h: 1005, aspect: "1920 / 1005", section: "photo", sub: "LANDSCAPE" },
   { id: "print", label: "Local Poster For Print (PDF)", w: 3300, h: 5100, aspect: "3300 / 5100", section: "photo", sub: "11×17 / 300 DPI" },
   { id: "yt_shorts",   label: "Square Video — 1080 × 1080",  w: 1080, h: 1080, aspect: "1 / 1",   section: "video", sub: "SQUARE VIDEO" },
@@ -57,7 +58,7 @@ export default function AssetsPage() {
     async function loadExisting() {
       const { data } = await supabase
         .from("tours")
-        .select("image_url, image_square_id, image_story_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id")
+        .select("image_url, image_square_id, image_story_id, image_vertical_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id")
         .eq("id", tourId)
         .single();
       if (!data) return;
@@ -66,6 +67,7 @@ export default function AssetsPage() {
       const loaded: { formatId: string; url: string }[] = [];
       if (data.image_square_id) loaded.push({ formatId: "ig_post", url: `${base}${data.image_square_id}` });
       if (data.image_story_id) loaded.push({ formatId: "ig_story", url: `${base}${data.image_story_id}` });
+      if (data.image_vertical_id) loaded.push({ formatId: "vertical", url: `${base}${data.image_vertical_id}` });
       if (data.image_landscape_id) loaded.push({ formatId: "facebook", url: `${base}${data.image_landscape_id}` });
       if (data.image_print_id) loaded.push({ formatId: "print", url: `${base}${data.image_print_id}` });
       const videoBase = `https://res.cloudinary.com/${cloudName}/video/upload/`;
@@ -79,15 +81,17 @@ export default function AssetsPage() {
   const FORMAT_DB_COLS: Record<string, string> = {
     ig_post: "image_square_id",
     ig_story: "image_story_id",
+    vertical: "image_vertical_id",
     facebook: "image_landscape_id",
     print: "image_print_id",
     tiktok: "video_tiktok_id",
     yt_shorts: "video_yt_shorts_id",
   };
 
-  const FORMAT_CROP_KEY: Record<string, "square" | "story" | "landscape" | "print" | null> = {
+  const FORMAT_CROP_KEY: Record<string, "square" | "story" | "vertical" | "landscape" | "print" | null> = {
     ig_post: "square",
     ig_story: "story",
+    vertical: "vertical",
     facebook: "landscape",
     print: "print",
     tiktok: null,
@@ -213,6 +217,7 @@ export default function AssetsPage() {
             <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{(fmt as any).sub} {fmt.w} × {fmt.h}</div>
             <div style={{ height: 1, background: "var(--hw-border-strong)", margin: "6px 0" }} />
             <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{fmt.label}</div>
+            {(fmt as any).description && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-muted)", marginTop: 3 }}>{(fmt as any).description}</div>}
             {fmt.id === "print" && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-amber)", marginTop: 3 }}>Recommended: 3300×5100px or higher resolution</div>}
           </div>
           <input

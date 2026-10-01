@@ -11,11 +11,12 @@ import { effectiveTierForFeatures, isFormatAllowedForTier } from "@/lib/localize
 import { checkRateLimit } from "@/lib/rateLimit";
 import { formatShowDate, resolveDateFormat, resolveVideoDateFormat } from "@/lib/localizer/dateFormat";
 
-type RenderFormat = Extract<FormatKey, "square" | "story" | "landscape">;
+type RenderFormat = Extract<FormatKey, "square" | "story" | "vertical" | "landscape">;
 
 const FORMAT_DIMS: Record<RenderFormat, { w: number; h: number }> = {
   square:    { w: FORMAT_CATALOG.square.w,    h: FORMAT_CATALOG.square.h },
   story:     { w: FORMAT_CATALOG.story.w,     h: FORMAT_CATALOG.story.h },
+  vertical:  { w: FORMAT_CATALOG.vertical.w,  h: FORMAT_CATALOG.vertical.h },
   landscape: { w: FORMAT_CATALOG.landscape.w, h: FORMAT_CATALOG.landscape.h },
 };
 
@@ -395,7 +396,7 @@ export async function POST(req: NextRequest) {
 
   const { data: tour, error: tourError } = await supabase
     .from("tours")
-    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, crop_config, artist_id, sponsor_logo_1_url, sponsor_logo_2_url, custom_text_1, custom_text_2, band_font_family")
+    .select("id, org_id, name, band_name, band_tour_label, image_square_id, image_story_id, image_vertical_id, image_landscape_id, video_tiktok_id, video_yt_shorts_id, overlay_config, crop_config, artist_id, sponsor_logo_1_url, sponsor_logo_2_url, custom_text_1, custom_text_2, band_font_family")
     .eq("id", tourId_resolved)
     .eq("org_id", orgId)
     .single();
@@ -499,6 +500,7 @@ export async function POST(req: NextRequest) {
       const formatPublicIds: Record<RenderFormat, string | null> = {
         square:    tour.image_square_id ?? null,
         story:     tour.image_story_id ?? tour.image_square_id ?? null,
+        vertical:  (tour as any).image_vertical_id ?? null, // no fallback
         landscape: tour.image_landscape_id ?? tour.image_square_id ?? null,
       };
 
@@ -616,10 +618,10 @@ export async function POST(req: NextRequest) {
     try {
       for (const event of events) {
         const { data: link } = await supabase.from("venue_links")
-          .select("render_square_url, render_story_url, render_landscape_url")
+          .select("render_square_url, render_story_url, render_vertical_url, render_landscape_url")
           .eq("event_id", event.id).maybeSingle();
         if (link) {
-          for (const url of [link.render_square_url, link.render_story_url, link.render_landscape_url]) {
+          for (const url of [link.render_square_url, link.render_story_url, link.render_vertical_url, link.render_landscape_url]) {
             if (url) fetch(url.replace("/image/upload/", "/image/upload/w_600/")).catch(() => {});
           }
         }

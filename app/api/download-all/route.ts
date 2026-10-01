@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   const { data: link } = await supabase
     .from("venue_links")
-    .select("render_square_url, render_story_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url, event_id, org_id")
+    .select("render_square_url, render_story_url, render_vertical_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url, event_id, org_id")
     .eq("token", token)
     .maybeSingle();
 
@@ -62,7 +62,8 @@ export async function GET(req: NextRequest) {
 
   const imageAssets: { filename: string; url: string }[] = [
     { filename: rootFolder + `Social/${filePrefix}_IG_Post.jpg`,   url: link.render_square_url },
-    { filename: rootFolder + `Social/${filePrefix}_IG_Story.jpg`,  url: link.render_story_url },
+    { filename: rootFolder + `Social/${filePrefix}_Feed_Grid_4x5.jpg`,  url: link.render_story_url },
+    { filename: rootFolder + `Social/${filePrefix}_Vertical.jpg`,  url: link.render_vertical_url },
     { filename: rootFolder + `Social/${filePrefix}_FB_Event_Cover.jpg`,  url: link.render_landscape_url },
     { filename: rootFolder + `Social/${filePrefix}_Tour_Poster.jpg`, url: link.render_poster_url },
   ].filter((a) => !!a.url) as { filename: string; url: string }[];

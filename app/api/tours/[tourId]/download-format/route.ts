@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 // it renders via a separate pdf-lib path and is not offered for bulk download.
 const FORMAT_MAP: Record<string, { column: string; label: string; ext: string }> = {
   square:    { column: "render_square_url",    label: "IG_Post",      ext: "jpg" },
-  story:     { column: "render_story_url",     label: "IG_Story",     ext: "jpg" },
+  story:     { column: "render_story_url",     label: "Feed_Grid_4x5", ext: "jpg" },
+  vertical:  { column: "render_vertical_url",  label: "Vertical",     ext: "jpg" },
   landscape: { column: "render_landscape_url", label: "FB_Event_Cover", ext: "jpg" },
   tiktok:    { column: "render_tiktok_url",    label: "TikTok_Reels", ext: "mp4" },
   yt_shorts: { column: "render_yt_shorts_url", label: "Square_Video", ext: "mp4" },

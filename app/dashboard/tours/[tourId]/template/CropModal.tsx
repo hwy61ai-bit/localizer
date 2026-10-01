@@ -5,7 +5,7 @@ import Cropper from "react-easy-crop";
 import type { Area, Point } from "react-easy-crop";
 import HwButton from "@/app/components/hw/HwButton";
 
-export type CropFormatKey = "square" | "story" | "landscape" | "print";
+export type CropFormatKey = "square" | "story" | "vertical" | "landscape" | "print";
 export type CropRegion = { x: number; y: number; w: number; h: number };
 
 type Props = {

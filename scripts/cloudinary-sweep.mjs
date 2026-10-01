@@ -137,7 +137,7 @@ async function fetchLiveSet() {
   const { data: tours, error: tourErr } = await supabase
     .from("tours")
     .select(
-      "image_square_id, image_story_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id",
+      "image_square_id, image_story_id, image_vertical_id, image_landscape_id, image_print_id, video_tiktok_id, video_yt_shorts_id",
     );
   if (tourErr) throw new Error(`tours query failed: ${tourErr.message}`);
   for (const row of tours ?? []) {
@@ -151,7 +151,7 @@ async function fetchLiveSet() {
 
   const { data: links, error: linkErr } = await supabase
     .from("venue_links")
-    .select("render_square_url, render_story_url, render_landscape_url, render_poster_url");
+    .select("render_square_url, render_story_url, render_vertical_url, render_landscape_url, render_poster_url");
   if (linkErr) throw new Error(`venue_links query failed: ${linkErr.message}`);
   for (const row of links ?? []) {
     for (const val of Object.values(row)) {

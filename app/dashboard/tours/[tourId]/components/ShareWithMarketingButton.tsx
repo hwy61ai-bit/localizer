@@ -24,7 +24,7 @@ function formatDate(iso: string): string {
   }
 }
 
-export default function ShareWithMarketingButton({ tourId, tier }: { tourId: string; tier: FeatureTier }) {
+export default function ShareWithMarketingButton({ tourId, tier, hasVertical = false }: { tourId: string; tier: FeatureTier; hasVertical?: boolean }) {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState("");
   const [expiration, setExpiration] = useState("never");
@@ -296,7 +296,9 @@ export default function ShareWithMarketingButton({ tourId, tier }: { tourId: str
           <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-end" }}>
             {[
               { format: "square",    label: "Square Image",   w: 90,  h: 90 },
-              { format: "story",     label: "Vertical Image", w: 72,  h: 90 },
+              { format: "story",     label: "Feed/Grid (4:5)", w: 72,  h: 90 },
+              // Vertical has no source fallback — hidden when no 9:16 image is uploaded.
+              ...(hasVertical ? [{ format: "vertical", label: "Vertical", w: 64, h: 112 }] : []),
               { format: "tiktok",    label: "Vertical Video", w: 84,  h: 100 },
               { format: "landscape", label: "Facebook Event Cover", w: 130, h: 68 },
               { format: "yt_shorts", label: "Square Video",   w: 90,  h: 90 },

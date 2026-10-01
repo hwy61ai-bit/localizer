@@ -80,6 +80,8 @@ These are the rules that silently break production when violated. Do not deviate
 
     Fail-loud safety net: if a GRANT is forgotten post-Oct-30, PostgREST returns 42501 with the exact GRANT statement to paste.
 
+19. **LOCKSTEP: any new tours.image_*_id or venue_links.render_*_url column must be added to scripts/cloudinary-sweep.mjs live-sets and lib/admin/deleteOrg.ts in the same change.**
+
 ---
 
 ## Workflow rules

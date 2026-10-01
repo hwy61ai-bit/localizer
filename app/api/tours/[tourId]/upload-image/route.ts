@@ -15,6 +15,7 @@ const FORMAT_COLUMN: Record<string, string> = {
   print: "image_print_id",
   ig_post: "image_square_id",
   ig_story: "image_story_id",
+  vertical: "image_vertical_id",
   facebook: "image_landscape_id",
   tiktok: "video_tiktok_id",
   yt_shorts: "video_yt_shorts_id",

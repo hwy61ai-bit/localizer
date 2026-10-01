@@ -1,9 +1,9 @@
 /**
- * Render-format catalog. Single source of truth for the six asset formats
+ * Render-format catalog. Single source of truth for the seven asset formats
  * the product generates. Mirrors lib/localizer/artistLimits.ts / tourLimits.ts
  * in shape.
  *
- * Canonical keys use the dominant vocabulary (square/story/landscape/print/
+ * Canonical keys use the dominant vocabulary (square/story/vertical/landscape/print/
  * tiktok/yt_shorts) shared by TemplateEditor, generate, clientRender,
  * CropModal, download-format, EventsTable, ShareWithMarketingButton, and the
  * venue pages. The assets-upload surface (assets/page.tsx + upload-image)
@@ -11,7 +11,7 @@
  * as `uploadId` — formatFromUploadId() bridges the two.
  *
  * `category: "static" | "rich"` is the durable pricing axis. Static = the
- * three social JPEGs. Rich = print PDF + the two videos. The tier→category
+ * four social JPEGs. Rich = print PDF + the two videos. The tier→category
  * gate policy lives elsewhere and is intentionally NOT expressed here, so
  * this file does not need to change when tier names evolve.
  *
@@ -23,6 +23,7 @@
 export type FormatKey =
   | "square"
   | "story"
+  | "vertical"
   | "landscape"
   | "print"
   | "tiktok"
@@ -58,13 +59,26 @@ export const FORMATS: Record<FormatKey, FormatDef> = {
   story: {
     key: "story",
     uploadId: "ig_story",
-    label: "Vertical",
+    label: "Feed/Grid (4:5)",
     w: 1080,
     h: 1350,
     mediaType: "image",
     category: "static",
     sourceColumn: "image_story_id",
     renderColumn: "render_story_url",
+  },
+  // 9:16 still image. No source fallback — renders only when
+  // image_vertical_id is set.
+  vertical: {
+    key: "vertical",
+    uploadId: "vertical",
+    label: "Vertical",
+    w: 1080,
+    h: 1920,
+    mediaType: "image",
+    category: "static",
+    sourceColumn: "image_vertical_id",
+    renderColumn: "render_vertical_url",
   },
   landscape: {
     key: "landscape",

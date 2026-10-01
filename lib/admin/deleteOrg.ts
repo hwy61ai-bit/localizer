@@ -120,6 +120,7 @@ async function captureManifest(sb: AdminClient, orgId: string): Promise<AssetMan
   // tours: Cloudinary public_ids + sponsor-logo storage URLs
   type TourRow = {
     image_square_id: string | null; image_story_id: string | null;
+    image_vertical_id: string | null;
     image_landscape_id: string | null; image_print_id: string | null;
     video_tiktok_id: string | null; video_yt_shorts_id: string | null;
     sponsor_logo_1_url: string | null; sponsor_logo_2_url: string | null;
@@ -127,7 +128,7 @@ async function captureManifest(sb: AdminClient, orgId: string): Promise<AssetMan
   const { data: toursData } = await sb
     .from("tours")
     .select(
-      "image_square_id, image_story_id, image_landscape_id, image_print_id, " +
+      "image_square_id, image_story_id, image_vertical_id, image_landscape_id, image_print_id, " +
         "video_tiktok_id, video_yt_shorts_id, " +
         "sponsor_logo_1_url, sponsor_logo_2_url",
     )
@@ -135,7 +136,7 @@ async function captureManifest(sb: AdminClient, orgId: string): Promise<AssetMan
   const tours = (toursData ?? []) as unknown as TourRow[];
 
   for (const t of tours) {
-    for (const id of [t.image_square_id, t.image_story_id, t.image_landscape_id, t.image_print_id]) {
+    for (const id of [t.image_square_id, t.image_story_id, t.image_vertical_id, t.image_landscape_id, t.image_print_id]) {
       if (id) cloudinaryImage.push(id);
     }
     for (const id of [t.video_tiktok_id, t.video_yt_shorts_id]) {

@@ -40,7 +40,7 @@ export default async function MarketingPage({
   // 4. Fetch venue_links by event_id for render URLs
   const { data: link } = await supabase
     .from("venue_links")
-    .select("render_square_url, render_story_url, render_landscape_url, render_tiktok_url, render_yt_shorts_url")
+    .select("render_square_url, render_story_url, render_vertical_url, render_landscape_url, render_tiktok_url, render_yt_shorts_url")
     .eq("event_id", event.id)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -82,10 +82,15 @@ export default async function MarketingPage({
 
   const photoAssets = [
     { label: "Instagram Post / Facebook Post", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
-    { label: "Instagram Story / Reels / Facebook Story", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
+    { label: "Feed/Grid (4:5)", description: "Instagram / Facebook Feed", dims: "4:5 · 1080 × 1350", aspect: "4/5", filename: "Feed_Grid_4x5", url: link.render_story_url },
+    { key: "vertical", label: "Vertical", description: "Instagram Story / Reels / Facebook Story", dims: "9:16 · 1080 × 1920", aspect: "9/16", filename: "Vertical", url: (link as any).render_vertical_url as string | null },
     // contain: stale 820x312 renders letterbox instead of cropping until re-rendered
     { label: "Facebook Event Cover", dims: "1920 × 1005", aspect: "1920/1005", fit: "contain" as const, url: link.render_landscape_url },
-  ];
+  ].filter((a) => a.key !== "vertical" || !!a.url); // Vertical has no fallback — omit when not rendered
+
+  // Download names: letters/digits/underscores only.
+  const assetFilename = (a: { label: string; filename?: string }) =>
+    (a.filename ?? a.label).replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 
   const overlayConfig = t.overlay_config as Record<string, any> | null;
   const hasPrintPoster = !!(t.image_print_id && overlayConfig?.print);
@@ -156,10 +161,13 @@ export default async function MarketingPage({
               <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "3px solid var(--hw-border-strong)", marginTop: "auto" }}>
                 <div>
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 500, color: "var(--hw-text)", marginBottom: 2 }}>{asset.label}</div>
+                  {asset.description && (
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-muted)", marginBottom: 2 }}>{asset.description}</div>
+                  )}
                   <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 12, letterSpacing: "1px", color: "var(--hw-text-muted)" }}>{asset.dims}</div>
                 </div>
                 {asset.url && (
-                  <a href={`/api/download/marketing?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(filenameSlug + "+" + asset.label.replace(/ /g,"_") + ".jpg")}&token=${token}&eventId=${event.id}`} download
+                  <a href={`/api/download/marketing?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(filenameSlug + "+" + assetFilename(asset) + ".jpg")}&token=${token}&eventId=${event.id}`} download
                     style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16 }}>
                     ↓
                   </a>

@@ -14,7 +14,7 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const { data: link } = await supabase
     .from("venue_links")
-    .select("event_id, org_id, is_active, render_square_url, render_story_url, render_landscape_url, render_tiktok_url, render_yt_shorts_url")
+    .select("event_id, org_id, is_active, render_square_url, render_story_url, render_vertical_url, render_landscape_url, render_tiktok_url, render_yt_shorts_url")
     .eq("token", token)
     .maybeSingle();
 
@@ -91,10 +91,15 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
 
   const photoAssets = [
     { label: "Instagram Post / Facebook Post", shape: "SQUARE", dims: "1080 × 1080", aspect: "1/1", url: link.render_square_url },
-    { label: "Instagram Story / Reels / Facebook Story", shape: "VERTICAL", dims: "1080 × 1350", aspect: "4/5", url: link.render_story_url },
+    { label: "Feed/Grid (4:5)", description: "Instagram / Facebook Feed", shape: "4:5", dims: "1080 × 1350", aspect: "4/5", filename: "Feed_Grid_4x5", url: link.render_story_url },
+    { key: "vertical", label: "Vertical", description: "Instagram Story / Reels / Facebook Story", shape: "9:16", dims: "1080 × 1920", aspect: "9/16", filename: "Vertical", url: (link as any).render_vertical_url as string | null },
     // contain: stale 820x312 renders letterbox instead of cropping until re-rendered
     { label: "Facebook Event Cover", shape: "FB EVENT COVER", dims: "1920 × 1005", aspect: "1920/1005", fit: "contain" as const, url: link.render_landscape_url },
-  ];
+  ].filter((a) => a.key !== "vertical" || !!a.url); // Vertical has no fallback — omit when not rendered
+
+  // Download names: letters/digits/underscores only.
+  const assetFilename = (a: { label: string; filename?: string }) =>
+    (a.filename ?? a.label).replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 
   const overlayConfig = t.overlay_config as Record<string, any> | null;
   const hasPrintPoster = !!(t.image_print_id && overlayConfig?.print);
@@ -165,9 +170,12 @@ export default async function VenuePage({ params }: { params: Promise<{ token: s
                   <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{asset.shape} {asset.dims}</div>
                   <div style={{ height: 1, background: "var(--hw-border-strong)", margin: "6px 0" }} />
                   <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{asset.label}</div>
+                  {asset.description && (
+                    <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-muted)", marginTop: 3 }}>{asset.description}</div>
+                  )}
                 </div>
                 {asset.url && (
-                  <a href={`/api/download?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(filenameSlug + "+" + asset.label.replace(/ /g,"_") + ".jpg")}&token=${token}`} download
+                  <a href={`/api/download?url=${encodeURIComponent(asset.url)}&filename=${encodeURIComponent(filenameSlug + "+" + assetFilename(asset) + ".jpg")}&token=${token}`} download
                     style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 36, height: 36, border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", textDecoration: "none", fontFamily: "var(--hw-font-display)", fontSize: 16 }}>
                     ↓
                   </a>

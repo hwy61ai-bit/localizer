@@ -1,7 +1,7 @@
 // Destroys a dedicated image render asset by its secure_url. IMAGE ONLY —
 // video render URLs are transformation URLs on source videos; destroying their
 // public_id would delete the user's uploaded source video. Callers must only
-// pass render_square_url / render_story_url / render_landscape_url values.
+// pass render_square_url / render_story_url / render_vertical_url / render_landscape_url values.
 
 import { v2 as cloudinary } from "cloudinary";
 

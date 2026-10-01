@@ -1,7 +1,7 @@
 // Client-side poster rendering via HTML Canvas
 // Replaces Cloudinary text overlay URL construction
 
-import { DEFAULT_FORMAT } from "@/lib/localizer/formatDefaults";
+import { defaultFormatFor } from "@/lib/localizer/formatDefaults";
 import type { DateFormatKey } from "@/lib/localizer/dateFormat";
 
 type FieldConfig = { x: number; y: number; size: number; align?: string };
@@ -57,6 +57,7 @@ const OPENER_DEFAULT: FieldConfig = { x: 0.5, y: 0.72, size: 40, align: "center"
 const FORMAT_DIMS: Record<string, { w: number; h: number }> = {
   square:    { w: 1080, h: 1080 },
   story:     { w: 1080, h: 1350 },
+  vertical:  { w: 1080, h: 1920 },
   landscape: { w: 1920, h: 1005 },
 };
 
@@ -64,6 +65,7 @@ const FORMAT_DIMS: Record<string, { w: number; h: number }> = {
 const SCALE_FACTORS: Record<string, number> = {
   square: 1.0,
   story: 1.0,
+  vertical: 1.0,
   landscape: 1.0,
 };
 
@@ -102,20 +104,21 @@ function loadImage(url: string): Promise<HTMLImageElement> {
  *
  * @param baseImageUrl  Cloudinary URL for the base image (with c_fill dimensions)
  * @param cfg           The overlay config for this format
- * @param formatKey     "square" | "story" | "landscape"
+ * @param formatKey     "square" | "story" | "vertical" | "landscape"
  * @param eventData     Text content for this event
  * @returns             JPEG Blob ready for upload
  */
 // Merge a missing or partial overlay_config[format] over the shared defaults
 // so venue/date/city always exist. A full saved config passes through as-is.
-function withDefaults(cfg: Partial<FormatConfig> | null | undefined): FormatConfig {
+function withDefaults(cfg: Partial<FormatConfig> | null | undefined, formatKey: string): FormatConfig {
   const c = cfg ?? {};
+  const base = defaultFormatFor(formatKey);
   return {
-    ...DEFAULT_FORMAT,
+    ...base,
     ...c,
-    date:  { ...DEFAULT_FORMAT.date,  ...c.date },
-    venue: { ...DEFAULT_FORMAT.venue, ...c.venue },
-    city:  { ...DEFAULT_FORMAT.city,  ...c.city },
+    date:  { ...base.date,  ...c.date },
+    venue: { ...base.venue, ...c.venue },
+    city:  { ...base.city,  ...c.city },
   };
 }
 
@@ -129,7 +132,7 @@ export async function renderPoster(
   sponsorLogo2Url?: string | null,
   bandFontFamily?: string | null
 ): Promise<Blob> {
-  const cfg = withDefaults(rawCfg);
+  const cfg = withDefaults(rawCfg, formatKey);
   const dims = FORMAT_DIMS[formatKey] ?? FORMAT_DIMS.square;
   const scale = SCALE_FACTORS[formatKey] ?? 1.0;
   const { w, h } = dims;

@@ -10,6 +10,7 @@ import { effectiveTierForFeatures } from "@/lib/localizer/tierGate";
 type TourRow = {
   id: string; org_id: string; name: string;
   band_tour_label: string | null; band_name: string | null; spotify_url: string | null; artist_id: string | null; created_at: string; last_opened_at: string | null;
+  image_vertical_id?: string | null;
 };
 type EventRow = {
   id: string; tour_id: string; date_iso: string; day: string | null;
@@ -26,7 +27,7 @@ export default async function TourPage({ params }: { params: Promise<{ tourId: s
   const supabase = await supabaseServer();
 
   const { data: tour, error: tourError } = await supabase
-    .from("tours").select("id, org_id, name, band_tour_label, band_name, artist_id, created_at, last_opened_at, overlay_config, image_url, image_square_id, image_story_id, image_landscape_id")
+    .from("tours").select("id, org_id, name, band_tour_label, band_name, artist_id, created_at, last_opened_at, overlay_config, image_url, image_square_id, image_story_id, image_vertical_id, image_landscape_id")
     .eq("id", tourId).single<TourRow>();
   if (tourError || !tour) throw new Error(tourError?.message ?? "Tour not found");
 
@@ -86,7 +87,7 @@ export default async function TourPage({ params }: { params: Promise<{ tourId: s
         <div style={{ border: "3px solid var(--hw-border-strong)", overflow: "hidden", background: "var(--hw-bg-surface)" }}>
           <div style={{ padding: 16, display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 12, borderBottom: "3px solid var(--hw-border-strong)" }}>
             <div style={{ fontFamily: "var(--hw-font-display)", fontSize: 22, letterSpacing: "2px", textTransform: "uppercase" }}>EVENTS</div>
-            <ShareWithMarketingButton tourId={tourId} tier={tier} />
+            <ShareWithMarketingButton tourId={tourId} tier={tier} hasVertical={!!tour.image_vertical_id} />
             <div />
           </div>
 

@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const supabase = supabaseAdmin();
   const { data: link } = await supabase
     .from("venue_links")
-    .select("org_id, render_square_url, render_story_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url")
+    .select("org_id, render_square_url, render_story_url, render_vertical_url, render_landscape_url, render_poster_url, render_tiktok_url, render_yt_shorts_url")
     .eq("token", token)
     .maybeSingle();
 
@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
     [
       link.render_square_url,
       link.render_story_url,
+      link.render_vertical_url,
       link.render_landscape_url,
       link.render_poster_url,
       link.render_tiktok_url,
