@@ -51,6 +51,12 @@ function isDiyHost(hostname: string): boolean {
   return hostname.split(":")[0] === "diy.hwy61labs.com";
 }
 
+// Old Localizer hostnames that permanently forward to localizer.music.
+const LEGACY_LOCALIZER_HOSTS = new Set([
+  "localizer.hwy61.ai",
+  "localizer.hwy61labs.com",
+]);
+
 // Routes that redirect to /coming-soon when COMING_SOON=true
 const COMING_SOON_MARKETING_ROUTES = new Set([
   "/",
@@ -73,6 +79,16 @@ const COMING_SOON_PASSTHROUGH_PREFIXES = [
 
 export async function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") || "";
+
+  // --- Legacy Localizer hosts → localizer.music (permanent) ---
+  // Runs before everything else. Path + query preserved so old venue links
+  // (/v/*) and auth callbacks (/auth/callback?code=…) keep working.
+  // Deliberately NOT applied to hwy61labs.com / www.hwy61labs.com.
+  if (LEGACY_LOCALIZER_HOSTS.has(hostname.split(":")[0].toLowerCase())) {
+    const target = new URL(req.nextUrl.pathname + req.nextUrl.search, "https://localizer.music");
+    return NextResponse.redirect(target, 308);
+  }
+
   const cookieDomain = getCookieDomain(hostname);
   const url = req.nextUrl.clone();
 
