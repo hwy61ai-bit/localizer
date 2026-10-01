@@ -4068,3 +4068,16 @@ Don needs to confirm the date menu.
 The | line-break decision, A or B.
 The TourRouter billing route still reads the stale plan_status (TourRouter project).
 The laptop's .env.local is missing BETA_GATE_PASSWORD; it now holds a local value only.
+
+Oct 1 (evening) — Playwright smoke suite (commit d42bea7)
+Done:
+- Smoke suite runs with `npm run test:smoke`. It has 9 tests and takes ~12s on a warm dev server. It runs locally only, in Chromium against the dev server; it isn't in CI or on Vercel. Passed 3 runs in a row, and the seed created nothing after the first.
+- What it covers: seed + sign-in setup; dashboard loads and the artist page is Localizer-only; template editor (all 7 tabs clickable, no tab or sidebar action box moves when switching, exactly 6 date options, zero console errors); assets page (7 cards, labels in order, each with a description); format catalog dims/labels; FORMAT COVERAGE (every static image format checked against 29 hard-coded lists from recon A.4, plus a check that a fake unwired format fails all 29); dateFormat (all 6 keys on 2026-10-02, fallback rules).
+- Sign-in: passes the beta gate through the real /login page (/api/beta/validate), then mints a magic-link token with the Supabase admin API and opens /auth/callback?token_hash=…. No email is sent. The session is saved to e2e/.auth/ (gitignored).
+- E2E data lives in the PRODUCTION DB (one Supabase project): user hwy61ai+e2e@gmail.com, org "E2E Test Org" (trial ends 2099-12-31, onboarding complete), artist "E2E Test Artist", tour "E2E Test Tour", 2 events (2030-10-02/03). The seed (scripts/e2e-seed.mjs) is idempotent and refuses to touch any non-E2E org. EXCLUDE FROM METRICS: filter out orgs named 'E2E%' and owner_email hwy61ai+e2e@gmail.com in any org, trial, signup, or active-user counts. The trial-nudge cron won't email it, since its trial ends in 2099.
+- Found and fixed by the suite: the template editor's sidebar action box was 4px taller on the Square tab (button stack minHeight 88 → 92), which nudged the Font card on tab switches. Also fixed: /api/tours/[tourId]/overlay-config threw a 500 ("Unexpected end of JSON input" / "aborted") when the editor's sendBeacon save-on-close was cut off. An empty or aborted body now returns a 400 with nothing logged.
+- CLAUDE.md workflow rule 15: npm run test:smoke must pass before any commit that touches lib/, app/, or middleware.
+- BACKLOG reconcile: "Artist page pings /api/tourrouter/tours (403)" moved to Resolved. It was a side effect of the Localizer-only artist page (79b374d). Code hygiene queue 18 → 17.
+Next:
+- Exclude the E2E org from any metrics or dashboards built on orgs/users.
+- Unchanged: Tim to confirm the "Facebook Event Cover" label; Don to confirm the date menu; the | line-break decision (A or B); TourRouter billing route still reads stale plan_status.

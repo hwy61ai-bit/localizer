@@ -487,7 +487,7 @@ Supabase Pro daily backups cover the database only — Storage objects are NOT i
 
 ---
 
-## 🧹 Code hygiene queue (18)
+## 🧹 Code hygiene queue (17)
 
 *Refactors, dead code, low-pressure cleanup.*
 
@@ -601,12 +601,6 @@ The Supabase auth email template builds magic links as `{{ .SiteURL }}/auth/call
 **HIGH CAUTION:** this template serves every production login. A typo breaks auth for all users. Test on a throwaway flow (separate Supabase project or a dev email account) before saving to production. No code change in this repo; it's a Supabase dashboard config edit.
 
 **Related (June 11):** `localhost:3000/**` added to Supabase Redirect URLs allowlist as part of the same local-testing session.
-
----
-
-### Artist page pings `/api/tourrouter/tours` (403) for Localizer-only orgs
-
-Pre-existing noise: on the artist page, a fetch hits `/api/tourrouter/tours` and returns 403 for Localizer-only orgs (correctly gated by `requireTourRouterAccess`), surfacing as console errors. First logged in `SESSION_LOG.md:3605`. Cosmetic only — no UX impact — but post-launch polish. Fix: gate the fetch client-side on `localizer_enabled && !hasTourRouter` (or its equivalent) before firing, so the network panel stays clean for Localizer-only customers.
 
 ---
 
@@ -866,6 +860,12 @@ None of the five download routes get an Indie static-only tier gate. They keep t
 ## Resolved
 
 *Items here are completed and verified. Kept in this file (rather than deleted) as historical record — useful for future debugging that retraces a known-fixed bug, and for understanding why certain patterns in the codebase exist.*
+
+### Artist page pings `/api/tourrouter/tours` (403) for Localizer-only orgs
+
+**Resolution (2026-10-01, commit `79b374d`):** Resolved as a side effect of making the artist page Localizer-only. `ArtistHubClient.tsx` no longer probes TourRouter access: the TourRouter tab and its `/api/tourrouter/tours` fetch were removed, and Localizer access is now decided server-side in `app/dashboard/artists/[artistId]/page.tsx` via `getLocalizerAccessLevel`. No request to `/api/tourrouter/tours` is made from this page. The smoke suite's template-editor test asserts zero console errors on the editor; the artist-page test asserts no TourRouter tab. TourRouter's own `ArtistToursClient.tsx` is untouched, now just unused by this page.
+
+*Original:* Pre-existing noise: on the artist page, a fetch hits `/api/tourrouter/tours` and returns 403 for Localizer-only orgs (correctly gated by `requireTourRouterAccess`), surfacing as console errors. First logged in `SESSION_LOG.md:3605`. Cosmetic only — no UX impact — but post-launch polish.
 
 ### Cloudinary image-asset accumulation on re-render (delete-old-on-replace)
 
