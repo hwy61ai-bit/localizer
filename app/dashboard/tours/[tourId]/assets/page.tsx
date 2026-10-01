@@ -9,13 +9,13 @@ import { useToast } from "@/app/components/Toast";
 import "@/app/dashboard/assets.css";
 
 const FORMATS = [
-  { id: "ig_post",     label: "Instagram Post / Facebook Post",        w: 1080, h: 1080, aspect: "1 / 1",     section: "photo", sub: "SQUARE" },
-  { id: "ig_story",    label: "Feed/Grid (4:5)", description: "Instagram / Facebook Feed", w: 1080, h: 1350, aspect: "4 / 5", section: "photo", sub: "4:5" },
-  { id: "vertical",    label: "Vertical", description: "Instagram Story / Reels / Facebook Story", w: 1080, h: 1920, aspect: "9 / 16", section: "photo", sub: "9:16" },
-  { id: "facebook",    label: "Facebook Event Cover",  w: 1920, h: 1005, aspect: "1920 / 1005", section: "photo", sub: "LANDSCAPE" },
-  { id: "print", label: "Print Poster (PDF)", w: 3300, h: 5100, aspect: "3300 / 5100", section: "photo", sub: "11×17 / 300 DPI" },
-  { id: "yt_shorts",   label: "Square Video — 1080 × 1080",  w: 1080, h: 1080, aspect: "1 / 1",   section: "video", sub: "SQUARE VIDEO" },
-  { id: "tiktok",      label: "TikTok, IG Reels, FB Stories, YouTube Shorts — 1080 × 1920",  w: 1080, h: 1920, aspect: "9 / 16",   section: "video", sub: "VERTICAL VIDEO" },
+  { id: "ig_post",     label: "Square",               description: "Instagram / Facebook Post",                w: 1080, h: 1080, aspect: "1 / 1",       section: "photo", sub: "SQUARE" },
+  { id: "ig_story",    label: "Feed/Grid (4:5)",      description: "Instagram / Facebook Feed",                w: 1080, h: 1350, aspect: "4 / 5",       section: "photo", sub: "4:5" },
+  { id: "vertical",    label: "Vertical",             description: "Instagram Story / Reels / Facebook Story", w: 1080, h: 1920, aspect: "9 / 16",      section: "photo", sub: "9:16" },
+  { id: "facebook",    label: "Facebook Event Cover", description: "Facebook Event",                           w: 1920, h: 1005, aspect: "1920 / 1005", section: "photo", sub: "LANDSCAPE" },
+  { id: "print",       label: "Print Poster",         description: "11×17 at 300 DPI",                         w: 3300, h: 5100, aspect: "3300 / 5100", section: "photo", sub: "11×17 / 300 DPI" },
+  { id: "yt_shorts",   label: "Square Video",         description: "Instagram / Facebook Post",                    w: 1080, h: 1080, aspect: "1 / 1",       section: "video", sub: "SQUARE VIDEO" },
+  { id: "tiktok",      label: "Vertical Video",       description: "TikTok, IG Reels, FB Stories, YouTube Shorts", w: 1080, h: 1920, aspect: "9 / 16",      section: "video", sub: "VERTICAL VIDEO" },
 ];
 
 export default function AssetsPage() {
@@ -214,10 +214,11 @@ export default function AssetsPage() {
       return (
         <div key={fmt.id}>
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{(fmt as any).sub} {fmt.w} × {fmt.h}</div>
+            {/* Every card (photo + video): format label / dimensions / platforms */}
+            <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>{fmt.label}</div>
             <div style={{ height: 1, background: "var(--hw-border-strong)", margin: "6px 0" }} />
-            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{fmt.label}</div>
-            {(fmt as any).description && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-muted)", marginTop: 3 }}>{(fmt as any).description}</div>}
+            <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 700, color: "var(--hw-text-muted)", marginTop: 3, letterSpacing: "1.5px", textTransform: "uppercase" }}>{fmt.w} × {fmt.h}</div>
+            {fmt.description && <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 300, color: "var(--hw-text-muted)", marginTop: 3 }}>{fmt.description}</div>}
             {fmt.id === "print" && <div style={{ fontFamily: "var(--hw-font-mono)", fontSize: 11, fontWeight: 400, color: "var(--hw-amber)", marginTop: 3 }}>Recommended: 3300×5100px or higher resolution</div>}
           </div>
           <input

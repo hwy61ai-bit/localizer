@@ -6,6 +6,7 @@ import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { isAdminEmail } from "@/lib/auth/adminEmails";
 import { ensureOrgExists } from "@/lib/auth/ensureOrgExists";
 import { artistLimitForPlan } from "@/lib/localizer/artistLimits";
+import { getLocalizerAccessLevel } from "@/lib/localizer/billingGate";
 import TourTile from "./TourTile";
 import ArtistLimitToast from "./ArtistLimitToast";
 import NotificationBell from "@/app/components/NotificationBell";
@@ -63,10 +64,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
     redirect("/dashboard/onboarding/localizer");
   }
 
-  const isPaid = !!org?.stripe_customer_id && org?.plan_status === "active";
-  const trialActive = org?.trial_ends_at ? new Date(org.trial_ends_at) > new Date() : false;
+  // Same gate as the rest of Localizer: unexpired trial, or localizer/bundle
+  // plan status active/past_due. (orgs.plan_status is no longer written by
+  // billing since c2e6cd6 — don't read it here.)
   const isAdmin = isAdminEmail(user.email);
-  const hasAccess = isPaid || trialActive || isAdmin;
+  const accessLevel = await getLocalizerAccessLevel(orgId, user.email);
+  const hasAccess = isAdmin || accessLevel === "paid";
   const hasTourRouter = isAdmin || org.tourrouter_enabled === true;
 
   if (!hasAccess) redirect("/pricing?reason=trial_expired");

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { supabaseServer } from "@/lib/supabaseServer";
 import ArtistHubClient from "./ArtistHubClient";
+import { getLocalizerAccessLevel } from "@/lib/localizer/billingGate";
 
 export default async function ArtistDetailPage({
   params,
@@ -27,12 +28,15 @@ export default async function ArtistDetailPage({
     .eq("id", artistId)
     .single();
 
+  // Same rule as every other Localizer gate (trial, localizer/bundle plan
+  // status, admin). The old client-side check read the stale orgs.plan_status.
+  const accessLevel = await getLocalizerAccessLevel(membership.org_id, user.email);
+
   return (
     <ArtistHubClient
       artistId={artistId}
       artistName={artist?.name ?? "Artist"}
-      orgId={membership.org_id}
-      userEmail={user.email ?? ""}
+      hasLocalizer={accessLevel === "paid"}
     />
   );
 }

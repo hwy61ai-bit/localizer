@@ -101,6 +101,21 @@ export async function middleware(req: NextRequest) {
     }
   );
 
+  // --- Auth code safety net ---
+  // Supabase falls back to the Site URL (`/?code=…`) when the requested
+  // redirectTo (`/auth/callback`) isn't on the project's Redirect URLs
+  // allowlist. Forward the code to the real callback so sign-in still lands on
+  // /dashboard. Must run before the COMING_SOON gate, which drops the query.
+  if (url.pathname === "/" && url.searchParams.has("code")) {
+    const callbackUrl = new URL("/auth/callback", req.url);
+    callbackUrl.search = url.search;
+    const redirectRes = NextResponse.redirect(callbackUrl);
+    res.cookies.getAll().forEach((cookie) => {
+      redirectRes.cookies.set(cookie);
+    });
+    return redirectRes;
+  }
+
   // --- Permanent /labs redirect (always fires, regardless of COMING_SOON or auth) ---
   if (url.pathname === "/labs" || url.pathname.startsWith("/labs/")) {
     const redirectRes = NextResponse.redirect(new URL("/", req.url), 308);
