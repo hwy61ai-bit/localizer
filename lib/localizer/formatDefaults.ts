@@ -10,6 +10,8 @@
  * Facebook Event Cover (1005 tall).
  */
 
+import type { DateFormatKey } from "@/lib/localizer/dateFormat";
+
 export type DefaultAlign = "left" | "center" | "right";
 export type DefaultFieldConfig = { x: number; y: number; size: number; align?: DefaultAlign };
 
@@ -22,6 +24,7 @@ export type DefaultFormatConfig = {
   showDate: boolean;
   bandSize: number;
   shortDate: boolean;
+  dateFormat: DateFormatKey;
   allCaps: boolean;
   date: DefaultFieldConfig;
   venue: DefaultFieldConfig;
@@ -37,6 +40,7 @@ export const DEFAULT_FORMAT: DefaultFormatConfig = {
   showDate: true,
   bandSize: 48,
   shortDate: true,
+  dateFormat: "ordinal",
   allCaps: true,
   date:  { x: 0.5, y: 0.91, size: 28, align: "center" },
   venue: { x: 0.5, y: 0.76, size: 36, align: "center" },

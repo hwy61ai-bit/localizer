@@ -6,7 +6,8 @@ import { TourPageNav } from "../TourPageNav";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/app/components/Toast";
-import { renderPoster, formatDateForRender } from "@/lib/clientRender";
+import { renderPoster } from "@/lib/clientRender";
+import { DATE_FORMAT_OPTIONS, formatShowDate, resolveDateFormat, resolveVideoDateFormat, type DateFormatKey } from "@/lib/localizer/dateFormat";
 import "./template-editor.css";
 import CropModal from "./CropModal";
 import {
@@ -56,6 +57,7 @@ type FormatConfig = {
   showDate?: boolean;
   bandSize: number;
   shortDate?: boolean;
+  dateFormat?: DateFormatKey;
   allCaps?: boolean;
   showLogo?: boolean;
   logo?: FieldConfig;
@@ -129,12 +131,15 @@ const FIELD_LABELS: Record<FieldKey, string> = {
 
 const SAMPLE_TEXT: Record<FieldKey, string> = {
   venue: "Stubbs Waller Creek Amphitheater",
-  date:  "April 25 2026",
+  date:  "April 25, 2026",
   city:  "Little Rock, AR",
   opener: "w/ Opening Act Name",
   customText1: "Your text here",
   customText2: "Your text here",
 };
+
+// Sample show date for previews when the tour has no shows yet.
+const SAMPLE_DATE_ISO = "2026-04-25";
 
 const BAND_DEFAULT: FieldConfig = { x: 0.5, y: 0.65, size: 80, align: "center" };
 const SPONSOR_1_DEFAULT: FieldConfig = { x: 0.35, y: 0.88, size: 60, align: "center" };
@@ -226,12 +231,16 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
   const [activeFormat, setActiveFormat] = useState<FormatKey>("square");
   const [configs, setConfigs] = useState<Record<FormatKey, FormatConfig>>({
-    square:    { ...DEFAULT_FORMAT, ...saved0.square },
-    story:     { ...DEFAULT_FORMAT, ...saved0.story },
-    landscape: { ...DEFAULT_FORMAT, ...saved0.landscape },
-    print:     { ...DEFAULT_FORMAT, ...PRINT_DEFAULTS, ...saved0.print },
-    tiktok:    { ...DEFAULT_FORMAT, ...saved0.tiktok },
-    yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts },
+    // dateFormat resolves from the SAVED config, not the merged one — otherwise
+    // DEFAULT_FORMAT.dateFormat would override a legacy shortDate: false.
+    square:    { ...DEFAULT_FORMAT, ...saved0.square,    dateFormat: resolveDateFormat(saved0.square) },
+    story:     { ...DEFAULT_FORMAT, ...saved0.story,     dateFormat: resolveDateFormat(saved0.story) },
+    landscape: { ...DEFAULT_FORMAT, ...saved0.landscape, dateFormat: resolveDateFormat(saved0.landscape) },
+    print:     { ...DEFAULT_FORMAT, ...PRINT_DEFAULTS, ...saved0.print, dateFormat: resolveDateFormat(saved0.print) },
+    // Video tabs keep only an explicitly saved dateFormat so autosave never
+    // pins one — they keep inheriting from story (resolveVideoDateFormat).
+    tiktok:    { ...DEFAULT_FORMAT, ...saved0.tiktok,    dateFormat: saved0.tiktok?.dateFormat },
+    yt_shorts: { ...DEFAULT_FORMAT, ...saved0.yt_shorts, dateFormat: saved0.yt_shorts?.dateFormat },
   });
   const [cropConfig, setCropConfig] = useState<CropConfig | null>(tour.crop_config);
   const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -467,6 +476,10 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
 
   const isVideoFormat = activeFormat === "tiktok" || activeFormat === "yt_shorts";
   const isPrintFormat = activeFormat === "print";
+  // What the renderer will use for this tab (video tabs inherit from story).
+  const effectiveDateFormat = isVideoFormat
+    ? resolveVideoDateFormat(cfg, configs.story)
+    : resolveDateFormat(cfg);
   const previewCrop = getFormatCrop(cropConfig, activeFormat);
   const previewBaseLayer = isValidCropRegion(previewCrop)
     ? `c_crop,x_${formatFraction(previewCrop.x)},y_${formatFraction(previewCrop.y)},w_${formatFraction(previewCrop.w)},h_${formatFraction(previewCrop.h)}/c_fill,w_${fmtDims.w},h_${fmtDims.h}`
@@ -1111,6 +1124,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           dateColor: sourceCfg.dateColor ?? null,
                           allCaps: sourceCfg.allCaps,
                           shortDate: sourceCfg.shortDate,
+                          dateFormat: sourceCfg.dateFormat,
                           bandSize: scaleSize(sourceCfg.bandSize),
                           venue: scaleField(sourceCfg.venue),
                           city: scaleField(sourceCfg.city),
@@ -1155,6 +1169,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                           dateColor: sourceCfg.dateColor ?? null,
                           allCaps: sourceCfg.allCaps,
                           shortDate: sourceCfg.shortDate,
+                          dateFormat: sourceCfg.dateFormat,
                           bandSize: scaleSize(sourceCfg.bandSize),
                           venue: scaleField(sourceCfg.venue),
                           city: scaleField(sourceCfg.city),
@@ -1189,10 +1204,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       ? 'c_crop,x_' + formatFraction(renderCrop.x) + ',y_' + formatFraction(renderCrop.y) + ',w_' + formatFraction(renderCrop.w) + ',h_' + formatFraction(renderCrop.h) + '/c_fill,w_' + dims.w + ',h_' + dims.h
                       : 'c_fill,g_center,w_' + dims.w + ',h_' + dims.h;
                     const baseUrl = 'https://res.cloudinary.com/' + cloudName + '/image/upload/' + renderBaseLayer + '/' + pid;
-                    const shortDate = cfg.shortDate ?? false;
                     const ed = firstEvent ? {
                       bandName: bandName,
-                      dateFormatted: formatDateForRender(firstEvent.date_iso, shortDate),
+                      dateFormatted: formatShowDate(firstEvent.date_iso, effectiveDateFormat),
                       venueName: firstEvent.venue,
                       cityState: [firstEvent.city, firstEvent.state].filter(Boolean).join(', '),
                       opener: firstEvent.opener ?? null,
@@ -1200,7 +1214,7 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                       customText2: customText2 || null,
                     } : {
                       bandName: bandName,
-                      dateFormatted: shortDate ? 'APR 26TH' : 'April 25 2026',
+                      dateFormatted: formatShowDate(SAMPLE_DATE_ISO, effectiveDateFormat),
                       venueName: 'Stubbs Waller Creek Amphitheater',
                       cityState: 'Little Rock, AR',
                       customText1: customText1 || null,
@@ -1444,9 +1458,9 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
                             }
                             return text;
                           })() :
-                          field === "date" ? (() => { try { const d = new Date(firstEvent.date_iso + "T12:00:00"); if (cfg.shortDate) { const ord = (n: number) => n >= 11 && n <= 13 ? "TH" : [,"ST","ND","RD"][n%10] || "TH"; return `${["JAN","FEB","MARCH","APRIL","MAY","JUNE","JULY","AUG","SEPT","OCT","NOV","DEC"][d.getMonth()]} ${d.getDate()}${ord(d.getDate())}`; } return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); } catch { return firstEvent.date_iso; } })() :
+                          field === "date" ? formatShowDate(firstEvent.date_iso, effectiveDateFormat) :
                           cfg.allCaps ? (previewLongest ? longestCity : [firstEvent.city, firstEvent.state].filter(Boolean).join(", ")).toUpperCase() : (previewLongest ? longestCity : [firstEvent.city, firstEvent.state].filter(Boolean).join(", "))
-                        ) : SAMPLE_TEXT[field]}
+                        ) : field === "date" ? formatShowDate(SAMPLE_DATE_ISO, effectiveDateFormat) : SAMPLE_TEXT[field]}
 
                         {(fc.x < 0.4 && align !== "left") && (
                           <div style={{ position: "absolute", bottom: "100%", left: "50%", transform: "translateX(-50%)", fontSize: 13, color: "#f59e0b", fontWeight: 700, marginBottom: 8, whiteSpace: "nowrap", background: "rgba(0,0,0,0.8)", padding: "4px 8px", borderRadius: 6 }}>
@@ -1734,12 +1748,17 @@ export default function TemplateEditor({ tour, tourId, firstEvent, allEvents, or
               </label>
               <div style={{ borderBottom: "1px solid var(--hw-border-light)" }} />
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <span onClick={() => updateCfg("shortDate", !cfg.shortDate)} style={{ width: 16, height: 16, border: "2px solid var(--hw-border-strong)", background: cfg.shortDate ? "var(--hw-crimson)" : "var(--hw-bg-surface)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
-                  {cfg.shortDate && <svg width="10" height="8" viewBox="0 0 12 10" fill="none"><path d="M1 5l3.5 3.5L11 1" stroke="#fff" strokeWidth="2.5" strokeLinecap="square" /></svg>}
-                </span>
-                <div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)" }}>Short Date Format</div>
-                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 13, fontWeight: 300, color: "var(--hw-text-muted)" }}>e.g. JUN 26TH</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: "var(--hw-text)", marginBottom: 6 }}>Date Format</div>
+                  <select
+                    value={effectiveDateFormat}
+                    onChange={(e) => updateCfg("dateFormat", e.target.value as DateFormatKey)}
+                    style={{ width: "100%", padding: "8px 10px", border: "2px solid var(--hw-border-strong)", background: "var(--hw-bg-surface)", color: "var(--hw-text)", fontFamily: "var(--hw-font-body)", fontSize: 12, fontWeight: 500, cursor: "pointer", outline: "none" }}
+                  >
+                    {DATE_FORMAT_OPTIONS.map(o => (
+                      <option key={o.key} value={o.key}>{o.label}</option>
+                    ))}
+                  </select>
                 </div>
               </label>
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>

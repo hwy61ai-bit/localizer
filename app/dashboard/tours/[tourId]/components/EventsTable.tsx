@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { renderPoster, formatDateForRender } from "@/lib/clientRender";
+import { renderPoster } from "@/lib/clientRender";
+import { formatShowDate, resolveDateFormat } from "@/lib/localizer/dateFormat";
 import { useToast } from "@/app/components/Toast";
 
 import { useState, useRef, useEffect } from "react";
@@ -384,7 +385,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
 
         const dims = formatDims[fmt];
         const cfg = overlayConfig[fmt] ?? {};
-        const shortDate = cfg.shortDate ?? false;
+        const dateFormat = resolveDateFormat(cfg);
 
         const cropRegion = (tour as any).crop_config?.[fmt] ?? null;
         const baseLayer = isValidCropRegion(cropRegion)
@@ -398,7 +399,7 @@ export default function EventsTable({ events: initial, tourId, orgId, tier }: Pr
 
         const eventData = {
           bandName,
-          dateFormatted: formatDateForRender(event.date_iso, shortDate),
+          dateFormatted: formatShowDate(event.date_iso, dateFormat),
           venueName,
           cityState: [city, state].filter(Boolean).join(", "),
           opener: event.opener ?? null,

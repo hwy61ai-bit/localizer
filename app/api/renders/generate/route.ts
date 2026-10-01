@@ -9,6 +9,7 @@ import {
 } from "@/lib/localizer/formats";
 import { effectiveTierForFeatures, isFormatAllowedForTier } from "@/lib/localizer/tierGate";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { formatShowDate, resolveDateFormat, resolveVideoDateFormat } from "@/lib/localizer/dateFormat";
 
 type RenderFormat = Extract<FormatKey, "square" | "story" | "landscape">;
 
@@ -26,39 +27,6 @@ const VIDEO_DIMS: Record<VideoFormat, { w: number; h: number }> = {
   yt_shorts: { w: FORMAT_CATALOG.yt_shorts.w, h: FORMAT_CATALOG.yt_shorts.h },
 };
 const VIDEO_FORMATS: VideoFormat[] = CATALOG_VIDEO_FORMATS as VideoFormat[];
-
-function ordinal(n: number): string {
-  if (n >= 11 && n <= 13) return "TH";
-  switch (n % 10) {
-    case 1: return "ST";
-    case 2: return "ND";
-    case 3: return "RD";
-    default: return "TH";
-  }
-}
-
-
-  function shortMonth(d: Date): string {
-    const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
-    return months[d.getMonth()];
-  }
-
-function formatDateForRender(iso: string, short = false): string {
-  try {
-    const d = new Date(iso + "T12:00:00");
-    if (short) {
-      const month = shortMonth(d).toUpperCase();
-      const date = d.getDate();
-      return `${month} ${date}${ordinal(date)}`;
-    }
-    const month = d.toLocaleDateString("en-US", { month: "long" });
-    const day = d.getDate();
-    const year = d.getFullYear();
-    return `${month} ${day} ${year}`;
-  } catch {
-    return iso;
-  }
-}
 
 function sanitize(t: string): string {
   // Cloudinary l_text needs manual double-encoding (URL is decoded twice).
@@ -549,8 +517,8 @@ export async function POST(req: NextRequest) {
             renderUrls[`render_${format}_url`] = null;
             continue;
           }
-          const shortDate = !!(tour.overlay_config as any)?.[format]?.shortDate;
-          const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDate) };
+          const dateFormat = resolveDateFormat((tour.overlay_config as any)?.[format]);
+          const eventData = { ...baseEventData, dateFormatted: formatShowDate(event.date_iso, dateFormat) };
           renderUrls[`render_${format}_url`] = buildCloudinaryUrl(pid, cloudName, format, tour.overlay_config, eventData, customFontsMap, (tour as any).band_font_family ?? null, (tour as any).crop_config?.[format] ?? null);
         }
       }
@@ -567,8 +535,14 @@ export async function POST(req: NextRequest) {
           if (!videosOnly) renderUrls[`render_${vformat}_url`] = null;
           continue;
         }
-        const shortDateVideo = !!((tour.overlay_config as any)?.[vformat]?.shortDate || (tour.overlay_config as any)?.story?.shortDate);
-        const eventData = { ...baseEventData, dateFormatted: formatDateForRender(event.date_iso, shortDateVideo) };
+        // Video inherits the story (4:5) date format unless its own config sets
+        // one — preserves the legacy `vformat.shortDate || story.shortDate`
+        // rule. See resolveVideoDateFormat for the full reasoning.
+        const videoDateFormat = resolveVideoDateFormat(
+          (tour.overlay_config as any)?.[vformat],
+          (tour.overlay_config as any)?.story,
+        );
+        const eventData = { ...baseEventData, dateFormatted: formatShowDate(event.date_iso, videoDateFormat) };
         renderUrls[`render_${vformat}_url`] = buildCloudinaryVideoUrl(pid, cloudName, vformat, tour.overlay_config, eventData, customFontsMap, logoUrl, sponsorLogo1Url, sponsorLogo2Url, tour.custom_text_1 ?? null, tour.custom_text_2 ?? null, (tour as any).band_font_family ?? null, null);
       }
 

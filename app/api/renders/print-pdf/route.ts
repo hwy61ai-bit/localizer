@@ -3,6 +3,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 import { createClient } from "@supabase/supabase-js";
 import { fetchFontBytes } from "@/lib/fetchFont";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { formatShowDate, resolveDateFormat } from "@/lib/localizer/dateFormat";
 
 // Public route — token-gated (validates against venue_links or marketing_tokens)
 export const dynamic = "force-dynamic";
@@ -22,35 +23,6 @@ const PAGE_HEIGHT_PT = 1224;
 // Base image pixel dimensions for scaling font sizes
 const PIXEL_WIDTH = 3300;
 const SCALE_FACTOR = PAGE_WIDTH_PT / PIXEL_WIDTH; // ~0.24
-
-const SHORT_MONTHS = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
-
-function ordinal(n: number): string {
-  if (n >= 11 && n <= 13) return "TH";
-  switch (n % 10) {
-    case 1: return "ST";
-    case 2: return "ND";
-    case 3: return "RD";
-    default: return "TH";
-  }
-}
-
-function formatDate(iso: string, short = false): string {
-  try {
-    const d = new Date(iso + "T12:00:00");
-    if (short) {
-      const month = SHORT_MONTHS[d.getMonth()].toUpperCase();
-      const date = d.getDate();
-      return `${month} ${date}${ordinal(date)}`;
-    }
-    const month = d.toLocaleDateString("en-US", { month: "long" });
-    const day = d.getDate();
-    const year = d.getFullYear();
-    return `${month} ${day} ${year}`;
-  } catch {
-    return iso;
-  }
-}
 
 function hexToRgb(hex: string) {
   const h = hex.replace("#", "");
@@ -215,7 +187,7 @@ export async function GET(req: NextRequest) {
   const dateColor = printConfig.dateColor ? hexToRgb(printConfig.dateColor) : textColor;
   const openerColor = printConfig.openerColor ? hexToRgb(printConfig.openerColor) : textColor;
   const allCaps = printConfig.allCaps ?? false;
-  const shortDate = printConfig.shortDate ?? false;
+  const dateFormat = resolveDateFormat(printConfig);
 
   // Embed and draw base image
   const contentType = imageRes.headers.get("content-type") ?? "";
@@ -237,7 +209,7 @@ export async function GET(req: NextRequest) {
   const city = event.venue_city ?? event.city ?? "";
   const state = event.venue_state ?? event.state ?? "";
   const cityState = [city, state].filter(Boolean).join(", ");
-  const dateStr = formatDate(event.date_iso, shortDate);
+  const dateStr = formatShowDate(event.date_iso, dateFormat);
 
   // Baseline offset: the editor uses textBaseline:"middle", meaning the stored y
   // represents the vertical center of the text (midpoint between ascent and descent).

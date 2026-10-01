@@ -2,6 +2,7 @@
 // Replaces Cloudinary text overlay URL construction
 
 import { DEFAULT_FORMAT } from "@/lib/localizer/formatDefaults";
+import type { DateFormatKey } from "@/lib/localizer/dateFormat";
 
 type FieldConfig = { x: number; y: number; size: number; align?: string };
 
@@ -21,6 +22,7 @@ type FormatConfig = {
   showBandName: boolean;
   bandSize: number;
   shortDate?: boolean;
+  dateFormat?: DateFormatKey;
   allCaps?: boolean;
   band?: FieldConfig;
   date: FieldConfig;
@@ -93,39 +95,6 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     img.onerror = () => reject(new Error("Failed to load image: " + url));
     img.src = url;
   });
-}
-
-export function ordinal(n: number): string {
-  if (n >= 11 && n <= 13) return "TH";
-  switch (n % 10) {
-    case 1: return "ST";
-    case 2: return "ND";
-    case 3: return "RD";
-    default: return "TH";
-  }
-}
-
-
-  function shortMonth(d: Date): string {
-    const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
-    return months[d.getMonth()];
-  }
-
-export function formatDateForRender(iso: string, short = false): string {
-  try {
-    const d = new Date(iso + "T12:00:00");
-    if (short) {
-      const month = shortMonth(d).toUpperCase();
-      const date = d.getDate();
-      return `${month} ${date}${ordinal(date)}`;
-    }
-    const month = d.toLocaleDateString("en-US", { month: "long" });
-    const day = d.getDate();
-    const year = d.getFullYear();
-    return `${month} ${day} ${year}`;
-  } catch {
-    return iso;
-  }
 }
 
 /**
